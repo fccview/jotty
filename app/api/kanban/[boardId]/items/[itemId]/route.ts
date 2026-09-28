@@ -1,103 +1,78 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
-import { updateItem, deleteItem } from "@/app/_server/actions/checklist-item";
-import { isKanbanType } from "@/app/_types/enums";
+import { NextResponse } from "next/server";
+import { PermissionTypes } from "@/app/_types/enums";
+import { removeItem } from "@/app/_server/actions/checklist-item/remover";
+import { editItem } from "@/app/_server/actions/checklist-item/editor";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, okSchema } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, cardParams, cardUpdateBody, cardChangedSchema } from "@/app/_schemas/api/kanban";
+import { boardFor, cardChanged } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string; itemId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { text, priority, score, assignee, reminder } = body;
+export const PUT = defineRoute(
+  {
+    id: "updateBoardItem",
+    method: HttpMethod.PUT,
+    path: "/kanban/{boardId}/items/{itemId}",
+    tag: ApiTag.KANBAN,
+    summary: "Update a card",
+    description: "Fields left out keep their current value. Assigning someone else notifies them. Use the status route to move a card between columns. Needs edit permission.",
+    params: cardParams,
+    body: cardUpdateBody,
+    responses: {
+      200: { description: "The board after the change", schema: cardChangedSchema },
+      400: BOARD_REFUSED,
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    if (refused) return refused;
 
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
+    const formData = new FormData();
+    formData.append("itemId", params.itemId);
+    if (body.text !== undefined) formData.append("text", body.text);
+    if (body.priority !== undefined) formData.append("priority", body.priority);
+    if (body.score !== undefined) formData.append("score", String(body.score));
+    if (body.assignee !== undefined) formData.append("assignee", body.assignee);
+    if (body.reminder !== undefined) formData.append("reminder", JSON.stringify(body.reminder));
 
-      if (board.type !== "kanban" && board.type !== "task") {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
+    const result = await editItem(user, board, formData);
+    if (!result.success) return refuse(result.error || "Failed to update item", 400);
 
-      const formData = new FormData();
-      formData.append("itemId", params.itemId);
-      if (text !== undefined) formData.append("text", text);
-      if (priority !== undefined) formData.append("priority", priority);
-      if (score !== undefined) formData.append("score", String(score));
-      if (assignee !== undefined) formData.append("assignee", assignee);
-      if (reminder !== undefined)
-        formData.append("reminder", JSON.stringify(reminder));
+    return cardChanged(result.data, params.itemId);
+  },
+);
 
-      const result = await updateItem(board, formData, user.username);
+export const DELETE = defineRoute(
+  {
+    id: "deleteBoardItem",
+    method: HttpMethod.DELETE,
+    path: "/kanban/{boardId}/items/{itemId}",
+    tag: ApiTag.KANBAN,
+    summary: "Delete a card",
+    description: "Removes the card and its sub-cards. Needs delete permission on the board.",
+    params: cardParams,
+    responses: {
+      200: { description: "Deleted", schema: okSchema },
+      400: BOARD_REFUSED,
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.DELETE, itemId: params.itemId });
+    if (refused) return refused;
 
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to update item" },
-          { status: 400 },
-        );
-      }
+    const result = await removeItem(user, board.uuid, params.itemId);
+    if (!result.success) return refuse(result.error || "Failed to delete item", 400);
 
-      return NextResponse.json({ success: true, data: result.data });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
-
-export async function DELETE(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string; itemId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
-
-      if (!isKanbanType(board.type)) {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
-
-      const formData = new FormData();
-      formData.append("uuid", board.uuid!);
-      formData.append("itemId", params.itemId);
-
-      const result = await deleteItem(formData);
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to delete item" },
-          { status: 400 },
-        );
-      }
-
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+    return NextResponse.json({ success: true });
+  },
+);

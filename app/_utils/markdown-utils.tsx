@@ -10,33 +10,17 @@ import { Element } from "hast";
 import { addCustomHtmlTurndownRules } from "@/app/_utils/custom-html-utils";
 import { html as beautifyHtml } from "js-beautify";
 import { TableSyntax } from "@/app/_types";
-import { decodeCategoryPath, decodeSegment } from "./global-utils";
-import { isUuid } from "@/app/_consts/identity";
+import {
+  canonicalItemHref,
+  escapeLinkText,
+  isItemHref,
+  parseItemHref,
+} from "./item-href-utils";
 import { getContrastColor } from "./color-utils";
+import { matchCallout } from "./callout-utils";
+import { base64ToSvg, base64ToText, utf8ToBase64 } from "./base64-utils";
 
 const turndownPluginGfm = require("turndown-plugin-gfm");
-
-const utf8ToBase64 = (str: string): string => {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(str, "utf8").toString("base64");
-  }
-  const bytes = new TextEncoder().encode(str);
-  let binary = "";
-  bytes.forEach((b) => { binary += String.fromCharCode(b); });
-  return btoa(binary);
-};
-
-const base64ToUtf8 = (str: string): string => {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(str, "base64").toString("utf8");
-  }
-  const binary = atob(str);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return new TextDecoder().decode(bytes);
-};
 
 const hasComplexTableContent = (table: HTMLElement): boolean => {
   const complexSelectors = ["ul", "ol", "pre", "table", "details", "hr"];
@@ -63,6 +47,22 @@ const hasComplexTableContent = (table: HTMLElement): boolean => {
   return false;
 };
 
+const WIKILINK_SPAN = /(!?\[\[[^\[\]\n]+\]\])/;
+const EMPTY_PARAGRAPH_MARK = "\u200b";
+
+const isBlankChar = (char: string) =>
+  char === EMPTY_PARAGRAPH_MARK || /\s/.test(char);
+
+const trimBlankTail = (text: string): string => {
+  let end = text.length;
+  while (end > 0 && isBlankChar(text[end - 1])) end--;
+  return text.slice(end).includes(EMPTY_PARAGRAPH_MARK)
+    ? text.slice(0, end)
+    : text;
+};
+
+const normalizeLineEndings = (text: string) => text.replace(/\r\n/g, "\n");
+
 export const createTurndownService = (tableSyntax?: TableSyntax) => {
   const service = new TurndownService({
     headingStyle: "atx",
@@ -75,11 +75,18 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
         if (element.querySelector?.("img")) {
           return content;
         }
-        return "\u200b";
+        return EMPTY_PARAGRAPH_MARK;
       }
       return content;
     },
   });
+
+  const escapeMarkdown = service.escape.bind(service);
+  service.escape = (text: string) =>
+    text
+      .split(WIKILINK_SPAN)
+      .map((part, index) => (index % 2 === 1 ? part : escapeMarkdown(part)))
+      .join("");
 
   service.addRule("taskItem", {
     filter: (node) =>
@@ -262,11 +269,15 @@ export const createTurndownService = (tableSyntax?: TableSyntax) => {
     },
     replacement: function (content, node) {
       const element = node as HTMLElement;
-      const href = element.getAttribute("data-href");
       const title = element.getAttribute("data-title");
+      const href = canonicalItemHref(
+        element.getAttribute("data-href"),
+        element.getAttribute("data-uuid"),
+        element.getAttribute("data-type"),
+      );
 
       if (href && title) {
-        return `[${title}](${href})`;
+        return `[${escapeLinkText(title)}](${href})`;
       }
 
       return content;
@@ -472,8 +483,8 @@ const markdownProcessor = unified()
               const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
-                const diagramData = base64ToUtf8(dataBase64);
-                const svgData = base64ToUtf8(svgBase64);
+                const diagramData = base64ToText(dataBase64);
+                const svgData = base64ToSvg(svgBase64);
 
                 node.type = "element";
                 node.tagName = "div";
@@ -490,6 +501,7 @@ const markdownProcessor = unified()
                   },
                 ];
               } catch (e) {
+                console.error("Failed to decode draw.io diagram:", e);
               }
             }
           }
@@ -504,8 +516,8 @@ const markdownProcessor = unified()
               const themeMode = themeMatch ? themeMatch[1].trim() : "light";
 
               try {
-                const diagramData = base64ToUtf8(dataBase64);
-                const svgData = svgBase64 ? base64ToUtf8(svgBase64) : "";
+                const diagramData = base64ToText(dataBase64);
+                const svgData = svgBase64 ? base64ToText(svgBase64) : "";
 
                 node.type = "element";
                 node.tagName = "div";
@@ -522,6 +534,7 @@ const markdownProcessor = unified()
                   },
                 ];
               } catch (e) {
+                console.error("Failed to decode excalidraw diagram:", e);
               }
             }
           }
@@ -644,36 +657,17 @@ const markdownProcessor = unified()
 
         if (node.tagName === "a" && node.properties?.href) {
           const href = String(node.properties.href);
-          if (
-            href.startsWith("/jotty/") ||
-            href.startsWith("/note/") ||
-            href.startsWith("/checklist/")
-          ) {
+          if (isItemHref(href)) {
             const textContent =
               node.children?.[0]?.type === "text"
                 ? String(node.children[0].value)
                 : "";
 
-            let uuid = "";
-            let type = "note";
-            let category = "";
-            let itemId = "";
-
-            if (href.startsWith("/jotty/")) {
-              uuid = href.replace("/jotty/", "");
-            } else if (href.startsWith("/note/")) {
-              type = "note";
-              const pathParts = href.replace("/note/", "").split("/");
-              itemId = decodeSegment(pathParts.pop() || "");
-              uuid = isUuid(itemId) ? itemId : "";
-              category = decodeCategoryPath(pathParts.join("/"));
-            } else if (href.startsWith("/checklist/")) {
-              type = "checklist";
-              const pathParts = href.replace("/checklist/", "").split("/");
-              itemId = decodeSegment(pathParts.pop() || "");
-              uuid = isUuid(itemId) ? itemId : "";
-              category = decodeCategoryPath(pathParts.join("/"));
-            }
+            const target = parseItemHref(href);
+            const uuid = target?.uuid || "";
+            const type = target?.type || "";
+            const category = target?.legacy?.category || "";
+            const itemId = target?.legacy?.id || uuid;
 
             const newChildren: any[] = [];
 
@@ -693,7 +687,6 @@ const markdownProcessor = unified()
               "data-type": type,
               "data-category": category,
               "data-item-id": itemId,
-              "data-convert-to-bidirectional": "false",
             };
 
             node.children = newChildren;
@@ -709,10 +702,10 @@ const markdownProcessor = unified()
           if (firstChild && firstChild.children?.length > 0) {
             const textNode = firstChild.children[0];
             if (textNode?.type === "text") {
-              const match = String(textNode.value).match(/^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i);
-              if (match) {
-                const calloutType = match[1].toLowerCase();
-                textNode.value = String(textNode.value).replace(match[0], "");
+              const callout = matchCallout(String(textNode.value));
+              if (callout) {
+                const calloutType = callout.type;
+                textNode.value = String(textNode.value).replace(callout.marker, "");
                 if (!textNode.value && firstChild.children.length === 1) {
                   node.children = node.children.filter((c: any) => c !== firstChild);
                 }
@@ -772,26 +765,34 @@ const markdownProcessor = unified()
   })
   .use(rehypeStringify);
 
+const CODE_STASH_MARK = "\uE000";
+const CODE_STASH_REGEX = new RegExp(
+  `${CODE_STASH_MARK}(\\d+)${CODE_STASH_MARK}`,
+  "g"
+);
+
+export const tagOutsideCode = (markdown: string): string => {
+  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
+  const codeBlocks: string[] = [];
+  const stashed = markdown.replace(codeBlockRegex, (match) => {
+    codeBlocks.push(match);
+    return `${CODE_STASH_MARK}${codeBlocks.length - 1}${CODE_STASH_MARK}`;
+  });
+
+  return stashed
+    .replace(
+      /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
+      '<span data-tag="$1">$1</span>'
+    )
+    .replace(CODE_STASH_REGEX, (match, index: string) =>
+      codeBlocks[Number(index)] ?? match
+    );
+};
+
 export const convertMarkdownToHtml = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
-  const codeBlocks: string[] = [];
-  let processed = markdown.replace(codeBlockRegex, (match) => {
-    codeBlocks.push(match);
-    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-  });
-
-  processed = processed.replace(
-    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/g,
-    '<span data-tag="$1">$1</span>'
-  );
-
-  codeBlocks.forEach((block, i) => {
-    processed = processed.replace(`__CODE_BLOCK_${i}__`, block);
-  });
-
-  const file = markdownProcessor.processSync(processed);
+  const file = markdownProcessor.processSync(tagOutsideCode(markdown));
 
   return String(file);
 };
@@ -801,7 +802,7 @@ export const convertHtmlToMarkdown = (
   tableSyntax?: TableSyntax
 ): string => {
   const turndownService = createTurndownService(tableSyntax);
-  return turndownService.turndown(html);
+  return trimBlankTail(turndownService.turndown(html));
 };
 
 export const processMarkdownContent = (content: string): string => {
@@ -829,10 +830,23 @@ export const getMarkdownPreviewContent = (
   }
 };
 
+const RISKY_HTML = [
+  /<iframe[\s\S]*?<\/iframe>/gi,
+  /<embed[\s\S]*?>/gi,
+  /<object[\s\S]*?<\/object>/gi,
+  /<script[\s\S]*?<\/script>/gi,
+];
+
+const _escapeTags = (match: string): string =>
+  match.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+export const defangHtml = (text: string): string =>
+  RISKY_HTML.reduce((result, pattern) => result.replace(pattern, _escapeTags), text);
+
 export const sanitizeMarkdown = (markdown: string): string => {
   if (!markdown || typeof markdown !== "string") return "";
 
-  let result = markdown.replace(
+  let result = trimBlankTail(normalizeLineEndings(markdown)).replace(
     /\\+\[(📎|🎥)\s+([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g,
     "[$1 $2]($3)"
   );
@@ -842,23 +856,7 @@ export const sanitizeMarkdown = (markdown: string): string => {
   );
   result = result.replace(/\\+\[([^\]]+?)\\+\]\\+\(([^)]+?)\\+\)/g, "[$1]($2)");
 
-  result = result.replace(/<iframe[\s\S]*?<\/iframe>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  result = result.replace(/<embed[\s\S]*?>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  result = result.replace(/<object[\s\S]*?<\/object>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  result = result.replace(/<script[\s\S]*?<\/script>/gi, (match) =>
-    match.replace(/</g, "&lt;").replace(/>/g, "&gt;")
-  );
-
-  return result;
+  return defangHtml(result);
 };
 
 export interface Heading {

@@ -1,5 +1,6 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { SVG_FRAME_ATTR } from "@/app/_consts/notes";
 
 export interface OverlayPosition {
   x: number;
@@ -31,7 +32,10 @@ export const OverlayExtension = Extension.create<OverlayExtensionOptions>({
             click: (view, event) => {
               const target = event.target as HTMLElement;
 
-              if (target.tagName === "IMG") {
+              const isResizable =
+                target.tagName === "IMG" && !target.hasAttribute(SVG_FRAME_ATTR);
+
+              if (isResizable) {
                 const rect = target.getBoundingClientRect();
                 this.options.onImageClick?.({
                   x: rect.left + rect.width / 2,

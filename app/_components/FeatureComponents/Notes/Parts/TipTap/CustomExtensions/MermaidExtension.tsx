@@ -25,7 +25,7 @@ const initializeMermaidTheme = () => {
   mermaid.initialize({
     startOnLoad: false,
     theme: "base",
-    securityLevel: "loose",
+    securityLevel: "strict",
     themeVariables: {
       primaryColor: getCSSVariable("--primary") || "rgb(139, 59, 208)",
       primaryTextColor:

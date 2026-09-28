@@ -10,6 +10,7 @@ const mockGrepExcerpt = vi.fn();
 vi.mock("@/app/_server/actions/file", () => ({
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverWriteFile: (...args: any[]) => mockFs.writeFile(...args),
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
 }));
 
@@ -26,10 +27,9 @@ vi.mock("@/app/_server/actions/note/parsers", () => ({
   parseMarkdownNote: vi.fn(),
 }));
 
-vi.mock("child_process", () => ({
-  exec: vi.fn((_cmd: string, _opts: unknown, callback: any) => {
-    const done = callback || _opts;
-    done(new Error("exec unavailable in tests"));
+vi.mock("@/app/_utils/shell-utils", () => ({
+  boxedShell: vi.fn(async () => {
+    throw new Error("shell unavailable in tests");
   }),
 }));
 
@@ -53,6 +53,11 @@ describe("readNotesRecursively uuid contract", () => {
       mtime: new Date("2024-01-02T00:00:00.000Z"),
     });
     mockFs.writeFile.mockResolvedValue(undefined);
+    mockFs.readFile.mockImplementation(async (filePath: string) => {
+      const content = await mockServerReadFile(filePath);
+      if (content == null) throw new Error("ENOENT");
+      return content;
+    });
   });
 
   it("should stamp and return a uuid when the note has none", async () => {

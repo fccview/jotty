@@ -8,6 +8,8 @@ import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { base64ToText } from "@/app/_utils/base64-utils";
+import { SvgFrame } from "@/app/_components/FeatureComponents/Notes/Parts/SvgFrame";
 
 export const DrawioNodeView = ({
   node,
@@ -103,7 +105,7 @@ export const DrawioNodeView = ({
                   "data:image/svg+xml;base64,",
                   ""
                 );
-                svgData = atob(base64Data);
+                svgData = base64ToText(base64Data);
               } catch (e) {
                 console.error("Failed to decode SVG:", e);
               }
@@ -197,8 +199,9 @@ export const DrawioNodeView = ({
                     ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)"
                     : "none",
               }}
-              dangerouslySetInnerHTML={{ __html: node.attrs.svgData }}
-            />
+            >
+              <SvgFrame svg={node.attrs.svgData} alt={t("editor.drawioDiagram")} />
+            </div>
           </>
         ) : (
           <div className="text-center py-12">

@@ -22,6 +22,12 @@ export interface TargetLocation {
 const _inside = (base: string, category: string): boolean =>
   !category || isPathSafe(base, category);
 
+const _plainSegments = (relative: string): boolean =>
+  !/[\\\0]/.test(relative) &&
+  relative
+    .split("/")
+    .every((segment) => segment !== "" && segment !== "." && segment !== "..");
+
 const _matches = (mount: SharedMount, category: string): boolean =>
   category === mount.displayName ||
   category.startsWith(`${mount.displayName}/`);
@@ -68,13 +74,23 @@ export const targetDir = async (
   if (!mount) return own;
 
   const relative = category.slice(mount.displayName.length).replace(/^\//, "");
+  const stranded: TargetLocation = { ...own, dir: home, category: "" };
+
+  if (relative && !_plainSegments(relative)) return stranded;
+
   const owned = mount.isImplicit
     ? ""
     : [mount.categoryPath, relative].filter(Boolean).join("/");
 
   const lodgings = path.join(process.cwd(), userDirFor(mode, mount.owner));
+  const sharedRoot = mount.isImplicit
+    ? lodgings
+    : path.join(lodgings, mount.categoryPath);
 
-  if (!_inside(lodgings, owned)) return own;
+  if (!_inside(lodgings, owned)) return stranded;
+  if (!mount.isImplicit && !isPathSafe(sharedRoot, path.join(lodgings, owned))) {
+    return stranded;
+  }
 
   return {
     dir: path.join(lodgings, owned),
@@ -105,6 +121,9 @@ export interface MovePlan {
   isMoving: boolean;
 }
 
+const _samePlace = (a: string, b: string): boolean =>
+  (a || UNCATEGORIZED) === (b || UNCATEGORIZED);
+
 export const movePlan = async (
   mode: Modes,
   username: string,
@@ -117,6 +136,12 @@ export const movePlan = async (
   };
 
   const target = await targetDir(mode, username, requested);
+  const shown = await shownAs(mode, username, home.owner, home.category);
+
+  if (_samePlace(requested, shown)) {
+    return { home, target, destination: home, isMoving: false };
+  }
+
   const anchored = target.isImplicit && target.owner === home.owner;
 
   const destination: Place = anchored

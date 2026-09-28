@@ -11,7 +11,7 @@ import {
   readSessions,
   removeSession,
   swapSession,
-} from "../session";
+} from "../session/store";
 import {
   ensureCorDirsAndFiles,
   ensureDir,
@@ -22,7 +22,8 @@ import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import fs from "fs/promises";
 import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { logAuthEvent } from "../log";
-import { getUsername, ensureUser } from "../users";
+import { getUsername } from "../users";
+import { ensureUser } from "../users/ensure-user";
 import {
   isSecureEnv,
   getAuthMode,
@@ -30,6 +31,7 @@ import {
   getMfaPendingCookieName,
 } from "@/app/_utils/env-utils";
 import { ldapLogin } from "./ldap";
+import { decryptMfaSecret } from "../mfa/secret";
 
 interface User {
   username: string;
@@ -377,7 +379,6 @@ export const verifyMfaLogin = async (formData: FormData) => {
       return { error: "MFA not properly configured" };
     }
 
-    const { decryptMfaSecret } = require("@/app/_server/actions/mfa");
     const decryptedSecret = await decryptMfaSecret(user.mfaSecret, username);
 
     isValid = speakeasy.totp.verify({

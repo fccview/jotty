@@ -38,7 +38,7 @@ jobs:
       - name: Setup the best engine ever
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "yarn"
 
       - name: Install all dependencies
@@ -58,3 +58,31 @@ jobs:
 
       - name: Server actions also need to be tested
         run: yarn test:run tests/server-actions --reporter=verbose
+
+  mcp:
+    name: The MCP server gets poked too
+    runs-on: ubuntu-latest
+    needs: validate-branch
+    defaults:
+      run:
+        working-directory: mcp-server
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Bun, because the MCP is fancy
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - name: Install MCP dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Types or it didn't happen
+        run: bun run typecheck
+
+      - name: Fake Jotty, real HTTP
+        run: bun test
+
+      - name: Make sure it still bundles
+        run: bun run build

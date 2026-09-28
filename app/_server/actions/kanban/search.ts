@@ -1,8 +1,8 @@
 "use server";
 
-import { Checklist, Item, KanbanPriority } from "@/app/_types";
-import { getCurrentUser } from "@/app/_server/actions/users";
-import { getListById } from "@/app/_server/actions/checklist";
+import { Item, KanbanPriority } from "@/app/_types";
+import { sessionActor } from "@/app/_server/actions/lib/actor";
+import { viewList } from "@/app/_server/actions/checklist/viewer";
 import { getFormData } from "@/app/_utils/global-utils";
 
 const _matchesText = (item: Item, query: string): boolean => {
@@ -52,12 +52,10 @@ export const searchKanbanItems = async (formData: FormData) => {
     const priority = formData.get("priority") as KanbanPriority | null;
     const assignee = formData.get("assignee") as string | null;
 
-    const [currentUser, list] = await Promise.all([
-      getCurrentUser(),
-      getListById(uuid),
-    ]);
+    const actor = await sessionActor();
+    if ("error" in actor) return { error: actor.error };
 
-    if (!currentUser) return { error: "Not authenticated" };
+    const list = await viewList(uuid);
     if (!list) return { error: "List not found" };
 
     const filtered = _filterItems(

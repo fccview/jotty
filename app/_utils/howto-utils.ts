@@ -1,6 +1,8 @@
 import { HOWTO_DIR } from "@/app/_consts/files";
 import path from "path";
 
+export const API_GUIDE_ID = "api";
+
 export interface HowtoGuide {
   id: string;
   name: string;
@@ -25,11 +27,25 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.markdownGuide",
   },
   {
-    id: "api",
+    id: "brain",
+    name: t("help.brain"),
+    filename: "BRAIN.md",
+    icon: "brain",
+    translationKey: "help.brain",
+  },
+  {
+    id: API_GUIDE_ID,
     name: t("common.api"),
     filename: "API.md",
     icon: "code",
     translationKey: "common.api",
+  },
+  {
+    id: "mcp",
+    name: t("help.mcp"),
+    filename: "MCP.md",
+    icon: "robot",
+    translationKey: "help.mcp",
   },
   {
     id: "customisations",
@@ -86,6 +102,13 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     filename: "SSO.md",
     icon: "squarelock",
     translationKey: "help.sso",
+  },
+  {
+    id: "ldap",
+    name: t("help.ldap"),
+    filename: "LDAP.md",
+    icon: "users",
+    translationKey: "help.ldap",
   },
   {
     id: "translations",

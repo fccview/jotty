@@ -11,7 +11,8 @@ import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { itemHref } from "@/app/_utils/global-utils";
-import { ItemTypes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
+import { useReturnPath } from "@/app/_hooks/useReturnPath";
 import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
 import { SwipeNavigationWrapper } from "@/app/_components/FeatureComponents/Notes/Parts/SwipeNavigationWrapper";
 
@@ -28,6 +29,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const { user } = useAppMode();
   const [localNote, setLocalNote] = useState<Note>(note);
   const [showCloneModal, setShowCloneModal] = useState(false);
+  const returnPath = useReturnPath(`/?mode=${Modes.NOTES}`);
   const prevNoteId = useRef(note.id);
   const prevUpdatedAt = useRef(note.updatedAt);
 
@@ -48,7 +50,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleBack = () => {
     checkNavigation(() => {
-      router.push("/?mode=notes");
+      router.push(returnPath);
     });
   };
 
@@ -75,7 +77,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
 
   const handleDelete = () => {
     checkNavigation(() => {
-      router.push("/?mode=notes");
+      router.push(returnPath);
     });
   };
 
@@ -122,7 +124,7 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
           onClone={handleClone}
         />
       </SwipeNavigationWrapper>
-      <viewModel.DeleteModal />
+      {viewModel.deleteModal}
       {showCloneModal && (
         <CloneCategoryModal
           isOpen={showCloneModal}

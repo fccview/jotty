@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateApiKey } from "@/app/_server/actions/api";
+import { authenticateApiKey } from "@/app/_server/actions/api/authenticate";
+import { getSettings } from "@/app/_server/actions/config";
+import { getCurrentUser } from "@/app/_server/actions/users";
 import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
-import { Modes } from "@/app/_types/enums";
+import { canReach } from "@/app/_server/actions/share/queries";
+import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
+import { AppSettings, User } from "@/app/_types";
+import { API_KEY_HEADER } from "@/app/_consts/api";
+
+export type ApiCaller = Pick<User, "username" | "isAdmin" | "isSuperAdmin">;
+
+export { API_KEY_HEADER };
+
+const CONTENT_ACCESS_DENIED = "no";
 
 /**
  * @deprecated Legacy category+id fallback for checklist-family API routes
@@ -26,7 +37,7 @@ export const withApiAuth = async (
   handler: (user: any, request: NextRequest) => Promise<NextResponse>
 ) => {
   try {
-    const apiKey = request.headers.get("x-api-key");
+    const apiKey = request.headers.get(API_KEY_HEADER);
     const user = await authenticateApiKey(apiKey || "");
 
     if (!user) {
@@ -43,3 +54,26 @@ export const withApiAuth = async (
   }
 };
 
+
+export const turnAway = async (
+  username: string,
+  uuid: string,
+  permission: PermissionTypes,
+): Promise<NextResponse | null> =>
+  (await canReach(uuid, ItemTypes.CHECKLIST, username, permission))
+    ? null
+    : NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+export const whoGoesThere = async (
+  request: NextRequest,
+): Promise<ApiCaller | null> =>
+  (await getCurrentUser()) ??
+  (await authenticateApiKey(request.headers.get(API_KEY_HEADER) || ""));
+
+export const seesAllContent = async (user: ApiCaller): Promise<boolean> => {
+  if (user.isSuperAdmin) return true;
+  if (!user.isAdmin) return false;
+
+  const settings: AppSettings | null = await getSettings();
+  return settings?.adminContentAccess !== CONTENT_ACCESS_DENIED;
+};

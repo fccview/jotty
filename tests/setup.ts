@@ -7,6 +7,13 @@
  */
 
 import { vi, beforeAll, afterAll } from "vitest";
+import os from "os";
+import path from "path";
+
+process.env.JOTTY_RELATIONS_DB = path.join(
+  os.tmpdir(),
+  `jotty-relations-test-${process.pid}.db`,
+);
 
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
@@ -179,6 +186,7 @@ vi.mock("unist-util-visit", () => ({
 
 vi.mock("@/app/_utils/markdown-utils", () => ({
   sanitizeMarkdown: vi.fn().mockImplementation((content: string) => content),
+  defangHtml: vi.fn().mockImplementation((content: string) => content),
   convertMarkdownToHtml: vi
     .fn()
     .mockImplementation((content: string) => content),

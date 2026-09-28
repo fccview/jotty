@@ -1,5 +1,5 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
@@ -32,6 +32,10 @@ export async function generateMetadata(
   return getMedatadaTitle(Modes.CHECKLISTS, params.uuid);
 }
 
+/**
+ * Render a publicly shared checklist, or its owner's preview, with sanitized owner details.
+ * Respect the owner's emoji preference and redirect home when the checklist is unavailable.
+ */
 export default async function PublicChecklistPage(
   props: PublicChecklistPageProps,
 ) {
@@ -67,6 +71,7 @@ export default async function PublicChecklistPage(
     userRecord,
     !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
   );
+  const ownerShowsEmojis = userRecord?.showChecklistEmojis !== "disable";
 
   const isPubliclyShared = await isPublicItem(
     checklist.uuid!,
@@ -90,7 +95,11 @@ export default async function PublicChecklistPage(
     return (
       <MetadataProvider metadata={metadata}>
         <PermissionsProvider item={checklist}>
-          <PublicChecklistView checklist={checklist} user={user} />
+          <PublicChecklistView
+            checklist={checklist}
+            user={user}
+            ownerShowsEmojis={ownerShowsEmojis}
+          />
         </PermissionsProvider>
       </MetadataProvider>
     );

@@ -90,6 +90,15 @@ export async function getOrCompute<T>(
   return [...(await promise)];
 }
 
+export function invalidatePath(target: string) {
+  const abs = path.resolve(target);
+  dirToKeys.forEach((_, dir) => {
+    if (abs === dir || abs.startsWith(dir + path.sep) || dir.startsWith(abs + path.sep)) {
+      invalidateDir(dir);
+    }
+  });
+}
+
 export function invalidateCached(key: string) {
   drop(key);
 }

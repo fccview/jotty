@@ -8,130 +8,17 @@ import {
 import { readJsonFile, writeJsonFile } from "../file";
 import { Result, SanitisedUser, User } from "@/app/_types";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
-import { removeAllSessionsForUser } from "../session";
-import fs from "fs/promises";
 import { createHash } from "crypto";
 import { ItemTypes } from "@/app/_types/enums";
 import { DEFAULT_WEEK_START } from "@/app/_consts/calendar";
 import { getFormData } from "@/app/_utils/global-utils";
 import { logUserEvent } from "@/app/_server/actions/log";
-import { getUserIndex } from "./helpers";
+import { _deleteUserCore, _updateUserCore } from "./core";
+import type { UserUpdatePayload } from "./core";
 import { getCurrentUser } from "./queries";
-import { findUserRecord } from "./records";
+import { findUserRecord, mutateUsers } from "./records";
 
-export type UserUpdatePayload = {
-  username?: string;
-  passwordHash?: string;
-  isAdmin?: boolean;
-  avatarUrl?: string;
-};
-
-export async function _deleteUserCore(username: string): Promise<Result<null>> {
-  const allUsers = await readJsonFile(USERS_FILE);
-  const userIndex = await getUserIndex(username);
-
-  if (userIndex === -1) {
-    return { success: false, error: "User not found" };
-  }
-
-  const userToDelete = allUsers[userIndex];
-
-  if (userToDelete.isSuperAdmin) {
-    return { success: false, error: "Cannot delete the super admin (system owner)" };
-  }
-
-  if (userToDelete.isAdmin) {
-    const adminCount = allUsers.filter((user: User) => user.isAdmin).length;
-    if (adminCount === 1) {
-      return { success: false, error: "Cannot delete the last admin user" };
-    }
-  }
-
-  await removeAllSessionsForUser(username);
-
-  try {
-    await fs.rm(CHECKLISTS_DIR(username), { recursive: true, force: true });
-
-    const docsDir = NOTES_DIR(username);
-    await fs.rm(docsDir, { recursive: true, force: true });
-  } catch (error) {
-    console.warn(
-      `Warning: Could not clean up data files for ${username}:`,
-      error
-    );
-  }
-
-  allUsers.splice(userIndex, 1);
-  await writeJsonFile(allUsers, USERS_FILE);
-
-  return { success: true, data: null };
-}
-
-export async function _updateUserCore(
-  targetUsername: string,
-  updates: UserUpdatePayload
-): Promise<Result<SanitisedUser>> {
-  if (Object.keys(updates).length === 0) {
-    return { success: false, error: "No updates provided." };
-  }
-
-  const allUsers = await readJsonFile(USERS_FILE);
-  const userIndex = await getUserIndex(targetUsername);
-
-  if (updates.username && updates.username !== targetUsername) {
-    const usernameExists = allUsers.some(
-      (user: User) => user.username === updates.username
-    );
-    if (usernameExists) {
-      return { success: false, error: "Username already exists" };
-    }
-
-    try {
-      const oldChecklistsPath = CHECKLISTS_DIR(targetUsername);
-      const newChecklistsPath = CHECKLISTS_DIR(updates.username);
-      await fs.rename(oldChecklistsPath, newChecklistsPath);
-    } catch (error) {
-      console.warn(
-        `Could not rename checklists directory for ${targetUsername}:`,
-        error
-      );
-    }
-
-    try {
-      const oldNotesPath = NOTES_DIR(targetUsername);
-      const newNotesPath = NOTES_DIR(updates.username);
-      await fs.rename(oldNotesPath, newNotesPath);
-    } catch (error) {
-      console.warn(
-        `Could not rename notes directory for ${targetUsername}:`,
-        error
-      );
-    }
-
-    try {
-      const { renameGrants } = await import(
-        "@/app/_server/actions/share/rename"
-      );
-
-      await renameGrants(targetUsername, updates.username);
-    } catch (error) {
-      console.warn(
-        `Could not update sharing data for username change ${targetUsername} -> ${updates.username}:`,
-        error
-      );
-    }
-  }
-
-  const updatedUser: User = {
-    ...allUsers[userIndex],
-    ...updates,
-  };
-
-  allUsers[userIndex] = updatedUser;
-  await writeJsonFile(allUsers, USERS_FILE);
-
-  return { success: true, data: sanitizeUserForClient(updatedUser)! };
-}
+export type { UserUpdatePayload };
 
 export const createUser = async (
   formData: FormData

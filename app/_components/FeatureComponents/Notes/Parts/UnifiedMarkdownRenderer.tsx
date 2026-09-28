@@ -25,10 +25,21 @@ import { prism } from "@/app/_utils/prism-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
-import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
-import { decodeCategoryPath, decodeSegment } from "@/app/_utils/global-utils";
-import { isUuid } from "@/app/_consts/identity";
+import { currentOrigins, parseItemHref } from "@/app/_utils/item-href-utils";
+import { remarkWikilinks, WIKILINK_TAG } from "@/app/_utils/wikilink-utils";
+import { WikiLink } from "./WikiLink";
+import { matchCallout } from "@/app/_utils/callout-utils";
+import { CalloutType } from "@/app/_consts/callouts";
+import { base64ToSvg, base64ToText } from "@/app/_utils/base64-utils";
+import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
+import { BOUNCED_ELEMENTS } from "@/app/_consts/notes";
+import { tagOutsideCode } from "@/app/_utils/markdown-utils";
+
+type WikiLinkComponents = Record<
+  typeof WIKILINK_TAG,
+  (props: { target?: string; label?: string }) => React.ReactElement
+>;
 import { NoteFooterStats } from "@/app/_components/GlobalComponents/Statistics/NoteFooterStats";
 import { useTranslations } from "next-intl";
 import {
@@ -37,6 +48,8 @@ import {
   Tick02Icon,
   AlertCircleIcon,
 } from "hugeicons-react";
+
+const TRAILING_NEWLINE = /\n$/;
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -80,14 +93,14 @@ export const UnifiedMarkdownRenderer = ({
     /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)(?:\s+theme:\s*([^\n]+))?\s*-->/g,
     (match, dataBase64, svgBase64, theme) => {
       try {
-        const diagramData = atob(dataBase64.trim());
-        const svgData = atob(svgBase64.trim());
+        const diagramData = base64ToText(dataBase64.trim());
         const themeMode = theme ? theme.trim() : "light";
         return `<div data-drawio="" data-drawio-data="${diagramData.replace(
           /"/g,
           "&quot;",
         )}" data-drawio-svg="${svgBase64.trim()}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
       } catch (e) {
+        console.error("Failed to decode drawio diagram:", e);
         return match;
       }
     },
@@ -97,8 +110,8 @@ export const UnifiedMarkdownRenderer = ({
     /<!--\s*excalidraw-diagram\s+data:\s*([^\n]+)(?:\s+svg:\s*([^\n]+))?(?:\s+theme:\s*([^\n]+))?\s*-->/g,
     (match, dataBase64, svgBase64, theme) => {
       try {
-        const diagramData = atob(dataBase64.trim());
-        const svgData = svgBase64 ? atob(svgBase64.trim()) : "";
+        const diagramData = base64ToText(dataBase64.trim());
+        const svgData = svgBase64 ? base64ToText(svgBase64.trim()) : "";
         const themeMode = theme ? theme.trim() : "light";
         return `<div data-excalidraw="" data-excalidraw-data="${diagramData.replace(
           /"/g,
@@ -108,24 +121,13 @@ export const UnifiedMarkdownRenderer = ({
           "&quot;",
         )}" data-excalidraw-theme="${themeMode}">[Excalidraw Diagram]</div>`;
       } catch (e) {
+        console.error("Failed to decode excalidraw diagram:", e);
         return match;
       }
     },
   );
 
-  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`/g;
-  const codeBlocks: string[] = [];
-  processedContent = processedContent.replace(codeBlockRegex, (match) => {
-    codeBlocks.push(match);
-    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-  });
-  processedContent = processedContent.replace(
-    /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
-    '<span data-tag="$1">$1</span>',
-  );
-  codeBlocks.forEach((block, i) => {
-    processedContent = processedContent.replace(`__CODE_BLOCK_${i}__`, block);
-  });
+  processedContent = tagOutsideCode(processedContent);
 
   useEffect(() => {
     setIsClient(true);
@@ -157,7 +159,10 @@ export const UnifiedMarkdownRenderer = ({
     );
   }
 
-  const components: Partial<Components> = {
+  const components: Partial<Components> & WikiLinkComponents = {
+    [WIKILINK_TAG]: ({ target, label }: { target?: string; label?: string }) => (
+      <WikiLink target={target} label={label} />
+    ),
     table: ({ node, children, ...props }) => (
       <div className="jotty-x-scroll">
         <table {...props}>{children}</table>
@@ -170,7 +175,9 @@ export const UnifiedMarkdownRenderer = ({
         const codeElement = child as ReactElement<any>;
         const language =
           codeElement.props.className?.replace("language-", "") || "plaintext";
-        const rawCode = getRawTextFromChildren(codeElement.props.children);
+        const rawCode = getRawTextFromChildren(
+          codeElement.props.children,
+        ).replace(TRAILING_NEWLINE, "");
 
         if (language === "mermaid") {
           return (
@@ -214,51 +221,21 @@ export const UnifiedMarkdownRenderer = ({
       const childText = String(children);
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;
-      const isInternalLink =
-        href &&
-        (href?.includes("/note/") ||
-          href?.includes("/checklist/") ||
-          href?.startsWith("/jotty/"));
+      const itemTarget = parseItemHref(href, currentOrigins());
 
-      if (isInternalLink) {
-        let linkType: ItemTypes;
-        let linkCategory: string | null = null;
-        let linkUuid: string | null = null;
-        let linkItemId: string = "";
-
-        if (href?.startsWith("/jotty/")) {
-          linkUuid = href.replace("/jotty/", "");
-          linkType = ItemTypes.NOTE;
-        } else {
-          linkType = href?.includes("/note/")
-            ? ItemTypes.NOTE
-            : ItemTypes.CHECKLIST;
-          const pathParts = href
-            ?.replace("/checklist/", "")
-            .replace("/note/", "")
-            .split("/");
-          linkItemId = decodeSegment(pathParts?.[pathParts.length - 1] || "");
-          linkUuid = isUuid(linkItemId) ? linkItemId : null;
-          linkCategory = decodeCategoryPath(
-            pathParts?.slice(0, -1).join("/") || "",
-          );
-        }
-
+      if (href && itemTarget) {
         return (
           <InternalLinkComponent
             node={{
               attrs: {
-                href: href || "",
+                href,
                 title: childText,
-                type: linkType,
-                category: linkCategory || "Uncategorized",
-                uuid: linkUuid || "",
-                itemId: linkItemId,
-                convertToBidirectional: false,
+                type: itemTarget.type,
+                category: itemTarget.legacy?.category,
+                uuid: itemTarget.uuid,
+                itemId: itemTarget.legacy?.id,
               },
             }}
-            editor={undefined as any}
-            updateAttributes={() => {}}
           />
         );
       }
@@ -320,7 +297,7 @@ export const UnifiedMarkdownRenderer = ({
     },
     blockquote({ node, children, ...props }) {
       const childArray = Children.toArray(children);
-      let calloutType: "info" | "warning" | "success" | "danger" | null = null;
+      let calloutType: CalloutType | null = null;
       let matchIndex = -1;
 
       for (let i = 0; i < childArray.length; i++) {
@@ -330,15 +307,9 @@ export const UnifiedMarkdownRenderer = ({
           const textContent = getRawTextFromChildren(
             childProps?.children as React.ReactNode,
           );
-          const match = textContent.match(
-            /^\[!(INFO|WARNING|SUCCESS|DANGER)\]/i,
-          );
-          if (match) {
-            calloutType = match[1].toLowerCase() as
-              | "info"
-              | "warning"
-              | "success"
-              | "danger";
+          const callout = matchCallout(textContent);
+          if (callout) {
+            calloutType = callout.type;
             matchIndex = i;
             break;
           }
@@ -363,12 +334,10 @@ export const UnifiedMarkdownRenderer = ({
             if (prefixStripped) return child;
 
             if (typeof child === "string") {
-              const match = child.match(
-                /^\[!(INFO|WARNING|SUCCESS|DANGER)\]\s*/i,
-              );
-              if (match) {
+              const callout = matchCallout(child);
+              if (callout) {
                 prefixStripped = true;
-                const remaining = child.replace(match[0], "");
+                const remaining = child.replace(callout.marker, "");
                 return remaining || null;
               }
               return child;
@@ -480,9 +449,11 @@ export const UnifiedMarkdownRenderer = ({
         let decodedSvgData = rawSvgData;
         try {
           if (rawSvgData && !rawSvgData.trim().startsWith("<")) {
-            decodedSvgData = atob(rawSvgData);
+            decodedSvgData = base64ToSvg(rawSvgData);
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error("Failed to decode drawio preview:", e);
+        }
         const themeMode = forceLightMode
           ? "light"
           : props["data-drawio-theme"] ||
@@ -595,9 +566,11 @@ export const UnifiedMarkdownRenderer = ({
         className={`prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 ${className}`}
       >
         <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
+          remarkPlugins={[remarkGfm, remarkWikilinks]}
           rehypePlugins={[rehypeSlug, rehypeRaw]}
           components={components}
+          urlTransform={noteUrlTransform}
+          disallowedElements={BOUNCED_ELEMENTS}
         >
           {processedContent}
         </ReactMarkdown>

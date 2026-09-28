@@ -5,6 +5,7 @@ import path from "path";
 import {
   ensureDir,
   serverDeleteDir,
+  serverRenamePath,
   getUserModeDir,
 } from "@/app/_server/actions/file";
 import fs from "fs/promises";
@@ -20,6 +21,7 @@ import {
 } from "@/app/_server/actions/share/target";
 import { catUuid } from "@/app/_server/actions/share/category-info";
 import { PermissionTypes } from "@/app/_types/enums";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
 const _mountTarget = async (mode: Modes, category: string) => {
   const username = await getUsername();
@@ -145,7 +147,7 @@ export const createCategory = async (formData: FormData) => {
       errorMessage: "Failed to create category",
       metadata: { categoryName: name },
     });
-    return { error: "Failed to create category" };
+    return { error: await failedWith(error, "Failed to create category") };
   }
 };
 
@@ -223,7 +225,7 @@ export const deleteCategory = async (formData: FormData) => {
       errorMessage: "Failed to delete category",
       metadata: { categoryPath },
     });
-    return { error: "Failed to delete category" };
+    return { error: await failedWith(error, "Failed to delete category") };
   }
 };
 
@@ -324,12 +326,12 @@ export const renameCategory = async (formData: FormData) => {
       return { error: "Category with new name already exists" };
     }
 
-    await fs.rename(oldCategoryDir, newCategoryDir);
+    await serverRenamePath(oldCategoryDir, newCategoryDir);
 
     const username = await getUsername();
     if (mode === Modes.NOTES && username) {
       const { commitCategoryRename } =
-        await import("@/app/_server/actions/history");
+        await import("@/app/_server/actions/history/repo");
       await commitCategoryRename(username, oldPath, newPath);
     }
 
@@ -373,6 +375,6 @@ export const renameCategory = async (formData: FormData) => {
       errorMessage: "Failed to rename category",
       metadata: { oldPath },
     });
-    return { error: "Failed to rename category" };
+    return { error: await failedWith(error, "Failed to rename category") };
   }
 };

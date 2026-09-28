@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation";
-import {
-  CheckForNeedsMigration,
-  getNoteById,
-  getUserNotes,
-} from "@/app/_server/actions/note";
+import { CheckForNeedsMigration } from "@/app/_server/actions/note";
+import { getNoteById, getUserNotes } from "@/app/_server/actions/note/queries";
 import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { NoteClient } from "@/app/_components/FeatureComponents/Notes/NoteClient";
 import { Modes } from "@/app/_types/enums";
@@ -12,6 +9,8 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 
 interface AdminNotePageProps {
   params: Promise<{
@@ -27,6 +26,10 @@ export async function generateMetadata(props: AdminNotePageProps): Promise<Metad
   return getMedatadaTitle(Modes.NOTES, uuid);
 }
 
+/**
+ * Render a note with metadata and relations for a user with access to all content.
+ * Run legacy note migration first and redirect home if access or loading fails.
+ */
 export default async function AdminNotePage(props: AdminNotePageProps) {
   const params = await props.params;
   const { uuid } = params;
@@ -69,10 +72,14 @@ export default async function AdminNotePage(props: AdminNotePageProps) {
     type: "note" as const,
   };
 
+  const relations = await getItemRelations(note.uuid || "");
+
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={note}>
-        <NoteClient note={note} categories={docsCategories} />
+        <RelationsProvider relations={relations}>
+          <NoteClient note={note} categories={docsCategories} />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );

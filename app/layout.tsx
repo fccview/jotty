@@ -19,7 +19,6 @@ import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
 import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
-import { readLinkIndex } from "@/app/_server/actions/link";
 import { headers } from "next/headers";
 import {
   themeInitScript,
@@ -27,8 +26,8 @@ import {
   rgbToHex,
 } from "./_consts/themes";
 import { loadCustomThemes } from "./_server/actions/config";
-import { getUserChecklists } from "./_server/actions/checklist";
-import { getUserNotes } from "./_server/actions/note";
+import { getUserChecklists } from "./_server/actions/checklist/queries";
+import { getUserNotes } from "./_server/actions/note/queries";
 
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
@@ -149,6 +148,10 @@ export async function generateViewport(): Promise<Viewport> {
   };
 }
 
+/**
+ * Load session, settings and initial item data for the application providers.
+ * Render the shared document shell while omitting private item lists on public routes.
+ */
 export default async function RootLayout({
   children,
 }: {
@@ -170,9 +173,6 @@ export default async function RootLayout({
   const checklistCategories = user
     ? await getCategories(Modes.CHECKLISTS)
     : { success: false, data: [] };
-  const linkIndex = user?.username
-    ? await readLinkIndex(user.username)
-    : null;
   const messages = await getMessages();
 
   const [
@@ -264,7 +264,6 @@ export default async function RootLayout({
             pathname={pathname || ""}
             initialSettings={settings}
             usersPublicData={users}
-            linkIndex={linkIndex}
             notes={notes}
             checklists={checklists}
             allSharedItems={allSharedItems}

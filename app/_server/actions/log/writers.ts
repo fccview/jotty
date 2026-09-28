@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import {
@@ -12,23 +10,35 @@ import {
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { ensureDir } from "@/app/_server/actions/file";
 import { generateUuid } from "@/app/_utils/yaml-metadata-utils";
+import { apiCaller } from "@/app/_server/api/caller-scope";
+import { runQueued } from "@/app/_server/actions/lib/concurrency";
 import { shouldLog, getRequestContext, getDailyLogPath } from "./helpers";
+import { validateNoPathTraversal } from "@/app/_utils/path-utils";
+
+const SYSTEM_USER = "system";
+
+const _logBucket = (username: string): string =>
+  username && !username.startsWith(".") && validateNoPathTraversal(username) && !username.includes("\0")
+    ? username
+    : SYSTEM_USER;
 
 const writeToDailyLog = async (entry: AuditLogEntry, username: string): Promise<void> => {
-  const logFilePath = await getDailyLogPath(username);
+  const logFilePath = await getDailyLogPath(_logBucket(username));
   await ensureDir(path.dirname(logFilePath));
 
-  let logs: AuditLogEntry[] = [];
+  await runQueued(logFilePath, async () => {
+    let logs: AuditLogEntry[] = [];
 
-  try {
-    const content = await fs.readFile(logFilePath, "utf-8");
-    logs = JSON.parse(content);
-  } catch (error) {
-    logs = [];
-  }
+    try {
+      const content = await fs.readFile(logFilePath, "utf-8");
+      logs = JSON.parse(content);
+    } catch (error) {
+      logs = [];
+    }
 
-  logs.push(entry);
-  await fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), "utf-8");
+    logs.push(entry);
+    await fs.writeFile(logFilePath, JSON.stringify(logs, null, 2), "utf-8");
+  });
 };
 
 export const logAudit = async (params: {
@@ -49,11 +59,11 @@ export const logAudit = async (params: {
       return;
     }
 
-    let username = params.username;
-    if (!username) {
-      const user = await getCurrentUser();
-      username = user?.username || "system";
-    }
+    const username =
+      params.username ||
+      apiCaller()?.username ||
+      (await getCurrentUser())?.username ||
+      SYSTEM_USER;
 
     const { ipAddress, userAgent } = await getRequestContext();
 

@@ -20,6 +20,9 @@ import {
   CodeIcon,
   RainIcon,
   Wrench01Icon,
+  AiBrain04Icon,
+  UserMultipleIcon,
+  RoboticIcon,
 } from "hugeicons-react";
 
 interface HowtoSidebarProps {
@@ -41,6 +44,9 @@ const iconMap: Record<string, any> = {
   translation: TranslationIcon,
   rain: RainIcon,
   patch: Wrench01Icon,
+  brain: AiBrain04Icon,
+  users: UserMultipleIcon,
+  robot: RoboticIcon,
 };
 
 export const HowtoSidebar = ({ isOpen, onClose }: HowtoSidebarProps) => {

@@ -25,7 +25,7 @@ const initializeMermaidTheme = (forceLight = false) => {
   mermaid.initialize({
     startOnLoad: false,
     theme: "base",
-    securityLevel: "loose",
+    securityLevel: "strict",
     themeVariables: {
       primaryColor:
         _getCSSVariable("--primary", forceLight) || "rgb(139, 59, 208)",

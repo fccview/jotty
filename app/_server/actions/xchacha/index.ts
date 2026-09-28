@@ -3,6 +3,7 @@
 import _sodium from "libsodium-wrappers-sumo";
 import { Result } from "@/app/_types";
 import { logAudit } from "@/app/_server/actions/log";
+import { getCurrentUser } from "@/app/_server/actions/users";
 
 let sodium: any;
 const getSodium = async () => {
@@ -17,6 +18,8 @@ export const encryptXChaCha = async (
   formData: FormData
 ): Promise<Result<{ encryptedContent: string }>> => {
   try {
+    if (!(await getCurrentUser())) return { success: false, error: "Not authenticated" };
+
     const sod = await getSodium();
     const content = formData.get("content") as string;
     const passphrase = formData.get("passphrase") as string;
@@ -84,6 +87,8 @@ export const decryptXChaCha = async (
   formData: FormData
 ): Promise<Result<{ decryptedContent: string }>> => {
   try {
+    if (!(await getCurrentUser())) return { success: false, error: "Not authenticated" };
+
     const sod = await getSodium();
     const encryptedString = formData.get("encryptedContent") as string;
     const passphrase = formData.get("passphrase") as string;

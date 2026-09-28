@@ -1,4 +1,3 @@
-"use server";
 import { lock, unlock } from "proper-lockfile";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { NOTES_FOLDER } from "@/app/_consts/notes";

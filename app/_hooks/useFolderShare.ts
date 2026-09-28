@@ -8,7 +8,7 @@ import {
   unshareFolder,
   setFolderPublic,
 } from "@/app/_server/actions/share/operations";
-import { folderShares } from "@/app/_server/actions/share/queries";
+import { folderShares } from "@/app/_server/actions/share/lookups";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 const READ_ONLY: SharingPermissions = {

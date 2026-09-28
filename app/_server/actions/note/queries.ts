@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import { Note, User, GetNotesOptions } from "@/app/_types";
@@ -10,12 +8,17 @@ import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
-import { toIso } from "@/app/_utils/yaml-metadata-utils";
+import {
+  createdAtOf,
+  extractYamlMetadata,
+  toIso,
+} from "@/app/_utils/yaml-metadata-utils";
 import { readNotesRecursively } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
@@ -123,7 +126,7 @@ export const getNoteById = async (
     title: parsedData.title,
     content: parsedData.content,
     category: noteCategory,
-    createdAt: toIso(stats.birthtime),
+    createdAt: createdAtOf(extractYamlMetadata(rawContent).metadata, stats.birthtime),
     updatedAt: toIso(stats.mtime),
     owner: ownerUsername,
     isShared,
@@ -209,7 +212,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
         undefined,
       );
 
-    const notes: Note[] = [...cached];
+    const notes: Note[] = dropClashes(cached, resolvedDir);
 
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
@@ -352,16 +355,4 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     console.error("Error in getNotesUnified:", error);
     return { success: false, error: "Failed to fetch notes" };
   }
-};
-
-export const getNotesForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
-  limit: number = 20,
-  offset: number = 0,
-) => {
-  return getUserNotes({
-    filter: filter || undefined,
-    limit,
-    offset: filter ? offset : undefined,
-  });
 };

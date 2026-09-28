@@ -18,14 +18,17 @@ vi.mock("@/app/_server/actions/users", () => ({
 }));
 
 vi.mock("@/app/_server/actions/share/queries", () => ({
-    canReach: (...args: any[]) => mockCanReach(...args),
+    reachableFile: async (uuid: string, ...rest: any[]) =>
+        (await mockCanReach(uuid, ...rest))
+            ? `${process.cwd()}/data/notes/testuser/Category/${uuid}.md`
+            : null,
 }));
 
-vi.mock("@/app/_server/actions/note", () => ({
+vi.mock("@/app/_server/actions/note/queries", () => ({
     getNoteById: (...args: any[]) => mockGetNoteById(...args),
 }));
 
-vi.mock("@/app/_server/actions/history", async (importOriginal) => {
+vi.mock("@/app/_server/actions/history/repo", async (importOriginal) => {
     const original = (await importOriginal()) as any;
     return {
         ...original,

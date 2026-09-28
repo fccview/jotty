@@ -29,9 +29,13 @@ import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Pa
 import { EditorSettingsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/EditorSettingsDropdown";
 import { useTranslations } from "next-intl";
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
 import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
 import { insertTextAtCursor } from "@/app/_utils/markdown-editor-utils";
+import {
+  QuickBarPortal,
+  QuickBarSlots,
+  quickBarButton,
+} from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteQuickBar";
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 const mod = isMac ? "⌘" : "Ctrl";
@@ -61,7 +65,6 @@ export const TiptapToolbar = ({
   onLinkRequestHandled,
 }: ToolbarProps) => {
   const t = useTranslations();
-  const { user } = useAppMode();
   const [showFileModal, setShowFileModal] = useState(false);
   const [showTableModal, setShowTableModal] = useState(false);
   const [showImageSizeModal, setShowImageSizeModal] = useState(false);
@@ -343,7 +346,10 @@ export const TiptapToolbar = ({
           </Button>
         </div>
 
-        <div className={`fixed bottom-[130px] ${user?.handedness === "left-handed" ? "left-[2.5%]" : "right-[2.5%]"} lg:hidden z-40 flex flex-col gap-1 bg-background border border-border rounded-jotty p-1`}>
+        <QuickBarPortal
+          slot={QuickBarSlots.MODES}
+          fallbackClassName="flex lg:hidden flex-shrink-0 items-center gap-1"
+        >
           {isMarkdownMode && onTogglePreview && (
             <Button
               variant={showPreview ? "default" : "ghost"}
@@ -351,7 +357,8 @@ export const TiptapToolbar = ({
               onMouseDown={(e) => e.preventDefault()}
               onClick={onTogglePreview}
               title={showPreview ? t('editor.hidePreview') : t('editor.showPreview')}
-              className="h-10 w-10"
+              aria-label={showPreview ? t('editor.hidePreview') : t('editor.showPreview')}
+              className={quickBarButton}
             >
               {showPreview ? (
                 <ViewOffSlashIcon className="h-5 w-5" />
@@ -366,7 +373,9 @@ export const TiptapToolbar = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={toggleMode}
             title={t('editor.toggleRichEditorMode')}
-            className="h-10 w-10"
+            aria-label={t('editor.toggleRichEditorMode')}
+            aria-pressed={!isMarkdownMode}
+            className={quickBarButton}
           >
             <Tv02Icon className="h-5 w-5" />
           </Button>
@@ -377,11 +386,13 @@ export const TiptapToolbar = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={toggleMode}
             title={t('editor.toggleMarkdownMode')}
-            className="h-10 w-10"
+            aria-label={t('editor.toggleMarkdownMode')}
+            aria-pressed={isMarkdownMode}
+            className={quickBarButton}
           >
             <File02Icon className="h-5 w-5" />
           </Button>
-        </div>
+        </QuickBarPortal>
 
         <div
           className={cn(

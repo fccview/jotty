@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { SvgFrame } from "@/app/_components/FeatureComponents/Notes/Parts/SvgFrame";
 
 const Excalidraw = dynamic(
   async () => (await import("@excalidraw/excalidraw")).Excalidraw,
@@ -194,8 +195,9 @@ export const ExcalidrawNodeView = ({
                     ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)"
                     : "none",
               }}
-              dangerouslySetInnerHTML={{ __html: node.attrs.svgData || "" }}
-            />
+            >
+              <SvgFrame svg={node.attrs.svgData || ""} alt={t("editor.excalidrawDiagram")} />
+            </div>
           </>
         ) : (
           <div className="text-center py-12">

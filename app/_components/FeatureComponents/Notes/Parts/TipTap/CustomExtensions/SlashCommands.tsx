@@ -25,6 +25,14 @@ import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { PluginKey } from "@tiptap/pm/state";
+import { itemHref } from "@/app/_utils/global-utils";
+
+const WIKILINK_OPEN = "[[";
+
+const WIKILINK_CLOSE_CHAR = "]";
+
+const mentionable = <T extends { uuid?: string }>(items?: T[]): T[] =>
+  items?.filter((item) => Boolean(item.uuid)) || [];
 
 export interface SlashCommandItem {
   title: string;
@@ -317,7 +325,7 @@ export const SlashCommands = Extension.create({
           range: any;
           props: AtMentionItem;
         }) => {
-          const linkTarget = props.uuid ? `/jotty/${props.uuid}` : ``;
+          const linkTarget = props.uuid ? itemHref(props.type, props.uuid) : "";
           editor
             .chain()
             .focus()
@@ -331,7 +339,6 @@ export const SlashCommands = Extension.create({
                 category: props.category,
                 uuid: props.uuid,
                 itemId: props.id,
-                convertToBidirectional: false,
               },
             })
             .run();
@@ -572,12 +579,8 @@ export const SlashCommands = Extension.create({
     return {
       updateAtMentionData:
         (notes: any[], checklists: any[], username: string) => () => {
-          atMentionData.notes =
-            notes?.filter((note: any) => note.owner === username) || [];
-          atMentionData.checklists =
-            checklists?.filter(
-              (checklist: any) => checklist.owner === username
-            ) || [];
+          atMentionData.notes = mentionable(notes);
+          atMentionData.checklists = mentionable(checklists);
 
           return true;
         },
@@ -590,14 +593,8 @@ export const SlashCommands = Extension.create({
   },
 
   addProseMirrorPlugins() {
-    atMentionData.notes =
-      this.options.notes?.filter(
-        (note: any) => note.owner === this.options.username
-      ) || [];
-    atMentionData.checklists =
-      this.options.checklists?.filter(
-        (checklist: any) => checklist.owner === this.options.username
-      ) || [];
+    atMentionData.notes = mentionable(this.options.notes);
+    atMentionData.checklists = mentionable(this.options.checklists);
     tagSuggestionData.tags = this.options.tags || [];
 
     const plugins = [];
@@ -618,6 +615,18 @@ export const SlashCommands = Extension.create({
           editor: this.editor,
           ...this.options.atSuggestion,
           pluginKey: new PluginKey("atSuggestion"),
+        })
+      );
+      plugins.push(
+        Suggestion({
+          editor: this.editor,
+          ...this.options.atSuggestion,
+          char: WIKILINK_OPEN,
+          allowSpaces: true,
+          allow: ({ editor, state, range }: { editor: any; state: any; range: { from: number; to: number } }) =>
+            !editor.isActive("codeBlock") &&
+            !state.doc.textBetween(range.from, range.to).includes(WIKILINK_CLOSE_CHAR),
+          pluginKey: new PluginKey("wikiSuggestion"),
         })
       );
     }

@@ -404,30 +404,91 @@ export const insertTable = (
   return insertTextAtCursor(ta, "\n" + head + sep + rows + "\n", "", "", 0);
 };
 
-export const isInBulletListItem = (textarea: HTMLTextAreaElement): boolean => {
-  const { start } = getTextareaSelection(textarea);
-  const { lineContent } = _getLineAtPosition(textarea.value, start);
-  return /^-\s/.test(lineContent);
+const LIST_ITEM_REGEX = /^(\s*)([-*+]|\d+\.)(\s+)(\[[ xX]\](?:\s+|$))?(.*)$/;
+const ORDERED_MARKER_REGEX = /^\d+\.$/;
+const LIST_INDENT = "    ";
+const EMPTY_TASK = "[ ] ";
+
+interface ListItemParts {
+  indent: string;
+  marker: string;
+  spacing: string;
+  task: string;
+  content: string;
+}
+
+const _parseListItem = (line: string): ListItemParts | null => {
+  const match = line.match(LIST_ITEM_REGEX);
+  if (!match) return null;
+  const [, indent, marker, spacing, task = "", content] = match;
+  return { indent, marker, spacing, task, content };
 };
 
-export const handleBulletListEnter = (
+const _listPrefix = ({ indent, marker, spacing, task }: ListItemParts) =>
+  indent + marker + spacing + task;
+
+const _isOrdered = (marker: string) => ORDERED_MARKER_REGEX.test(marker);
+
+const _nextMarker = (marker: string) =>
+  _isOrdered(marker) ? `${parseInt(marker, 10) + 1}.` : marker;
+
+const _nestedMarker = (
+  value: string,
+  lineStart: number,
+  item: ListItemParts,
+  indent: string
+): string => {
+  if (!_isOrdered(item.marker)) return item.marker;
+  const above = value.substring(0, Math.max(0, lineStart - 1)).split("\n");
+  for (let i = above.length - 1; i >= 0; i--) {
+    const prev = _parseListItem(above[i]);
+    if (!prev || prev.indent.length < indent.length) break;
+    if (prev.indent.length === indent.length && _isOrdered(prev.marker)) {
+      return _nextMarker(prev.marker);
+    }
+  }
+  return "1.";
+};
+
+export const handleListEnter = (
   textarea: HTMLTextAreaElement
 ): string | null => {
-  const { start } = getTextareaSelection(textarea);
+  const { start, end } = getTextareaSelection(textarea);
+  if (start !== end) return null;
   const { lineContent, lineStart } = _getLineAtPosition(textarea.value, start);
 
-  const match = lineContent.match(/^(\s*)(-\s+)(.*)/);
-  if (!match) return null;
+  const item = _parseListItem(lineContent);
+  if (!item || start - lineStart < _listPrefix(item).length) return null;
 
-  const [, indent, bullet, content] = match;
-  if (!content.trim()) {
+  if (!item.content.trim()) {
     const newVal =
       textarea.value.substring(0, lineStart) +
       textarea.value.substring(lineStart + lineContent.length);
     return _updateEditor(textarea, newVal, lineStart, lineStart);
   }
 
-  return insertTextAtCursor(textarea, "\n" + indent + bullet, "", "", 0);
+  const task = item.task ? EMPTY_TASK : "";
+  const prefix = item.indent + _nextMarker(item.marker) + item.spacing + task;
+  return insertTextAtCursor(textarea, "\n" + prefix, "", "", 0);
+};
+
+export const indentListItem = (
+  textarea: HTMLTextAreaElement
+): string | null => {
+  const { start, end } = getTextareaSelection(textarea);
+  if (start !== end) return null;
+  const value = textarea.value;
+  const { lineContent, lineStart, lineEnd } = _getLineAtPosition(value, start);
+
+  const item = _parseListItem(lineContent);
+  if (!item) return null;
+
+  const indent = item.indent + LIST_INDENT;
+  const marker = _nestedMarker(value, lineStart, item, indent);
+  const newLine = _listPrefix({ ...item, indent, marker }) + item.content;
+  const newVal = value.substring(0, lineStart) + newLine + value.substring(lineEnd);
+  const cursor = start + newLine.length - lineContent.length;
+  return _updateEditor(textarea, newVal, cursor, cursor);
 };
 
 export const indentLines = (textarea: HTMLTextAreaElement): string => {
@@ -460,27 +521,6 @@ export const outdentLines = (textarea: HTMLTextAreaElement): string => {
   const pos = textarea.selectionEnd;
   textarea.setSelectionRange(pos, pos);
   return result;
-};
-
-export const handleOrderedListEnter = (
-  textarea: HTMLTextAreaElement
-): string | null => {
-  const { start } = getTextareaSelection(textarea);
-  const { lineContent, lineStart } = _getLineAtPosition(textarea.value, start);
-
-  const match = lineContent.match(/^(\s*)(\d+)\.(\s+)(.*)/);
-  if (!match) return null;
-
-  const [, indent, numStr, spacing, content] = match;
-  if (!content.trim()) {
-    const newVal =
-      textarea.value.substring(0, lineStart) +
-      textarea.value.substring(lineStart + lineContent.length);
-    return _updateEditor(textarea, newVal, lineStart, lineStart);
-  }
-
-  const nextNum = parseInt(numStr, 10) + 1;
-  return insertTextAtCursor(textarea, `\n${indent}${nextNum}.${spacing}`, "", "", 0);
 };
 
 export const autolinkPastedContent = (

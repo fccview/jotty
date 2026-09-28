@@ -1,15 +1,13 @@
-# Custom Manifest
+# Customisations
 
-You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more.
+Themes and custom emojis live in the admin panel under **Admin > Styling**. This page is for the one thing that doesn't, which is overriding the PWA manifest by hand.
 
-**Note**: Custom themes and emojis can now be managed through the admin UI under **Admin → Styling**. The manifest customization below is for advanced PWA configuration.
+## Custom manifest
 
-### Custom manifest
+The manifest controls how Jotty looks when someone installs it as an app: name, description, icons, colours, shortcuts.
 
-You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more.
-
-1. Create a file called `site.webmanifest` in your `config/` directory
-2. Add your custom manifest configuration:
+1. Create a file called `site.webmanifest` in your `config/` directory.
+2. Put your manifest in it:
 
 ```json
 {
@@ -51,18 +49,20 @@ You can completely customize your PWA by creating an override manifest file. Thi
 }
 ```
 
-3. Save the file and refresh your PWA
-4. The changes will take effect immediately
+3. Save the file and refresh your PWA. Jotty reads the file on every request, so there's nothing to restart.
 
-Learn more about how the PWA works visiting [howto/PWA.md](howto/PWA.md)
+If this file exists, Jotty serves it as is and ignores the app name, description and icons set in the admin settings. If the file isn't valid JSON, Jotty ignores it and serves its own manifest instead.
 
-**Note**: The override manifest takes precedence over any settings configured through the admin UI. Use this for complete customization control.
+More on how the PWA works in [PWA.md](PWA.md).
 
-### Configuration Validation
+## Config folder permissions
 
-The app validates your configuration files and will show warnings in the console if there are any format errors. Invalid configs will be ignored and the app will continue working with built-in themes and emojis.
+Jotty checks `themes.json` and `emojis.json` in `config/` when it loads them. If one is malformed, it logs a warning in the server console and carries on with the built-in themes and emojis.
 
-**Important:** If you want to use custom themes and emojis, make sure your local `config/` directory has the correct permissions:
+> [!WARNING]
+> The admin panel saves custom themes and emojis into `config/`, so Jotty needs to be able to write there. A read-only mount breaks saving them.
+
+Set the folder up like this:
 
 ```bash
 mkdir -p config

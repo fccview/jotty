@@ -1,10 +1,12 @@
 "use server";
 
-import { USERS_FILE } from "@/app/_consts/files";
-import { readJsonFile } from "../file";
+import { randomBytes } from "crypto";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getCurrentUserRecord, mutateUsers } from "@/app/_server/actions/users/records";
 import { Result, User } from "@/app/_types";
+
+const API_KEY_PREFIX = "ck_";
+const API_KEY_BYTES = 16;
 
 export const generateApiKey = async (): Promise<Result<string>> => {
   try {
@@ -20,11 +22,7 @@ export const generateApiKey = async (): Promise<Result<string>> => {
 
       if (userIndex === -1) return null;
 
-      const prefix = "ck_";
-      const randomBytes = Array.from({ length: 32 }, () =>
-        Math.floor(Math.random() * 16).toString(16)
-      ).join("");
-      const apiKey = prefix + randomBytes;
+      const apiKey = `${API_KEY_PREFIX}${randomBytes(API_KEY_BYTES).toString("hex")}`;
 
       users[userIndex].apiKey = apiKey;
 
@@ -53,23 +51,5 @@ export const getApiKey = async (): Promise<Result<string | null>> => {
   } catch (error) {
     console.error("Error getting API key:", error);
     return { success: false, error: "Failed to get API key" };
-  }
-};
-
-export const authenticateApiKey = async (
-  apiKey: string
-): Promise<User | null> => {
-  try {
-    if (!apiKey) {
-      return null;
-    }
-
-    const users = await readJsonFile(USERS_FILE);
-    const user = users.find((u: User) => u.apiKey === apiKey);
-
-    return user || null;
-  } catch (error) {
-    console.error("Error authenticating API key:", error);
-    return null;
   }
 };

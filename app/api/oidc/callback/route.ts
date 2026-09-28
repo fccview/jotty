@@ -5,9 +5,9 @@ import path from "path";
 import { getEnvOrFile } from "@/app/_server/actions/file";
 import { lock, unlock } from "proper-lockfile";
 import { getAuthMode } from "@/app/_utils/env-utils";
-import { ensureUser } from "@/app/_server/actions/users";
+import { ensureUser } from "@/app/_server/actions/users/ensure-user";
 import { jwtVerify, createRemoteJWKSet, decodeJwt } from "jose";
-import { createSession } from "@/app/_server/actions/session";
+import { createSession } from "@/app/_server/actions/session/store";
 import {
   ensureCorDirsAndFiles,
   readJsonFile,

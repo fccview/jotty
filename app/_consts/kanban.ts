@@ -27,3 +27,8 @@ export const DEFAULT_KANBAN_STATUSES: KanbanStatus[] = [
     autoComplete: false,
   },
 ];
+
+export const UNKNOWN_STATUS = "Status not found on this board";
+
+export const boardColumns = (statuses?: KanbanStatus[]): KanbanStatus[] =>
+  statuses?.length ? statuses : DEFAULT_KANBAN_STATUSES;

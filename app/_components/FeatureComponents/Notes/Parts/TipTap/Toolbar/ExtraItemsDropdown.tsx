@@ -134,11 +134,12 @@ export const ExtraItemsDropdown = ({
           if (isMarkdownMode) {
             handleMarkdownInsert(MarkdownUtils.insertHighlight);
           } else {
-            editor.chain().focus().toggleMark("mark").run();
+            editor.chain().focus().toggleHighlight().run();
           }
         },
-        isActive: editor && editor.isActive("mark"),
+        isActive: editor && editor.isActive("highlight"),
         shortcut: { code: "KeyH", modKey: true, shiftKey: true },
+        textareaOwnsKey: true,
       },
       {
         icon: <TextSubscriptIcon className="h-4 w-4" />,
@@ -186,11 +187,13 @@ export const ExtraItemsDropdown = ({
 
   const shortcuts = useMemo(
     () =>
-      items.map((item) => ({
-        ...item.shortcut,
-        handler: item.command,
-      })),
-    [items]
+      items
+        .filter((item) => !(isMarkdownMode && item.textareaOwnsKey))
+        .map((item) => ({
+          ...item.shortcut,
+          handler: item.command,
+        })),
+    [items, isMarkdownMode]
   );
 
   useShortcuts(shortcuts);

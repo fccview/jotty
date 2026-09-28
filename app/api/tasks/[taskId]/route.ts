@@ -1,154 +1,107 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import {
-  getListById,
-  updateList,
-  deleteList,
-} from "@/app/_server/actions/checklist";
-import { isKanbanType } from "@/app/_types/enums";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { dropList, editList } from "@/app/_server/actions/checklist/editor";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, envelope, okSchema } from "@/app/_schemas/api/common";
+import { taskParams, taskSchema, taskUpdateBody } from "@/app/_schemas/api/tasks";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { toApiItem } from "@/app/_utils/api-item";
+import { fetchTask, toApiTask } from "@/app/_utils/api-task";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  request: NextRequest,
-  props: { params: Promise<{ taskId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const uuid = await listUuid(request, params.taskId, user.username);
-      const task = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
+export const GET = defineRoute(
+  {
+    id: "getTask",
+    method: HttpMethod.GET,
+    path: "/tasks/{taskId}",
+    tag: ApiTag.TASKS,
+    summary: "Get a task",
+    params: taskParams,
+    responses: {
+      200: { description: "The task", schema: z.object({ task: taskSchema }) },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params }) => {
+    const found = await fetchTask(request, params.taskId, user.username);
+    if ("refusal" in found) return found.refusal;
+    const { task } = found;
 
-      if (!isKanbanType(task.type)) {
-        return NextResponse.json(
-          { error: "Not a task checklist" },
-          { status: 400 },
-        );
-      }
-
-      const transformedTask = {
-        id: task.uuid,
-        title: task.title,
-        category: task.category || "Uncategorized",
-        statuses: task.statuses || [
-          { id: "todo", name: "To Do", order: 0 },
-          { id: "in_progress", name: "In Progress", order: 1 },
-          { id: "completed", name: "Completed", order: 2 },
-        ],
+    return NextResponse.json({
+      task: {
+        ...toApiTask(task),
         items: task.items.map((item, index) => toApiItem(item, index, true)),
-        createdAt: task.createdAt,
-        updatedAt: task.updatedAt,
-      };
+      },
+    });
+  },
+);
 
-      return NextResponse.json({ task: transformedTask });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+export const PUT = defineRoute(
+  {
+    id: "updateTask",
+    method: HttpMethod.PUT,
+    path: "/tasks/{taskId}",
+    tag: ApiTag.TASKS,
+    summary: "Update a task",
+    description: "Changes the title, the category or both. Fields left out keep their current value.",
+    params: taskParams,
+    body: taskUpdateBody,
+    responses: {
+      200: { description: "Updated task, without items", schema: envelope(taskSchema) },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const found = await fetchTask(request, params.taskId, user.username);
+    if ("refusal" in found) return found.refusal;
+    const { task } = found;
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ taskId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { title, category } = body;
+    const formData = new FormData();
+    formData.append("uuid", task.uuid!);
+    formData.append("title", body.title ?? task.title);
+    formData.append("category", body.category ?? task.category ?? UNCATEGORIZED);
 
-      const uuid = await listUuid(request, params.taskId, user.username);
-      const task = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
+    const result = await editList(user, formData);
+    if (result.error) return refuse(result.error, 400);
 
-      if (!isKanbanType(task.type)) {
-        return NextResponse.json(
-          { error: "Not a task checklist" },
-          { status: 400 },
-        );
-      }
+    return NextResponse.json({ success: true, data: toApiTask(result.data) });
+  },
+);
 
-      const formData = new FormData();
-      formData.append("uuid", task.uuid!);
-      formData.append("title", title ?? task.title);
-      formData.append("category", category ?? task.category ?? "Uncategorized");
-      formData.append("apiUser", JSON.stringify(user));
+export const DELETE = defineRoute(
+  {
+    id: "deleteTask",
+    method: HttpMethod.DELETE,
+    path: "/tasks/{taskId}",
+    tag: ApiTag.TASKS,
+    summary: "Delete a task",
+    params: taskParams,
+    responses: {
+      200: { description: "Deleted", schema: okSchema },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params }) => {
+    const found = await fetchTask(request, params.taskId, user.username);
+    if ("refusal" in found) return found.refusal;
 
-      const result = await updateList(formData);
-      if (result.error) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
-      }
+    const formData = new FormData();
+    formData.append("uuid", found.task.uuid!);
 
-      const transformedTask = {
-        id: result.data?.uuid,
-        title: result.data?.title,
-        category: result.data?.category || "Uncategorized",
-        statuses: result.data?.statuses || [
-          { id: "todo", name: "To Do", order: 0 },
-          { id: "in_progress", name: "In Progress", order: 1 },
-          { id: "completed", name: "Completed", order: 2 },
-        ],
-        createdAt: result.data?.createdAt,
-        updatedAt: result.data?.updatedAt,
-      };
+    const result = await dropList(user, formData);
+    if (result.error) return refuse(result.error, 400);
 
-      return NextResponse.json({ success: true, data: transformedTask });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
-
-export async function DELETE(
-  request: NextRequest,
-  props: { params: Promise<{ taskId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const uuid = await listUuid(request, params.taskId, user.username);
-      const task = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
-
-      if (!isKanbanType(task.type)) {
-        return NextResponse.json(
-          { error: "Not a task checklist" },
-          { status: 400 },
-        );
-      }
-
-      const formData = new FormData();
-      formData.append("uuid", task.uuid!);
-      formData.append("apiUser", JSON.stringify(user));
-
-      const result = await deleteList(formData);
-      if (result.error) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
-      }
-
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+    return NextResponse.json({ success: true });
+  },
+);

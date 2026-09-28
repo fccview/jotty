@@ -13,6 +13,8 @@ import {
   generateYamlFrontmatter,
   generateUuid,
   strayMeta,
+  createdAtOf,
+  OwnedMetaKeys,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
@@ -79,6 +81,9 @@ export const getCompletionRate = (
   return Math.round((completed / total) * 100);
 };
 
+const _flatDescription = (text: string): string =>
+  text.replace(/\r?\n/g, "\\n").replace(/\|/g, "∣");
+
 export const parseMarkdown = (
   content: string,
   id: string,
@@ -90,7 +95,7 @@ export const parseMarkdown = (
 ): Checklist => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
-  let title = extractTitle(
+  const title = extractTitle(
     content,
     fileName ? path.basename(fileName, ".md") : undefined,
   );
@@ -345,9 +350,7 @@ export const parseMarkdown = (
     type: checklistType,
     category,
     items,
-    createdAt: fileStats
-      ? fileStats.birthtime.toISOString()
-      : new Date().toISOString(),
+    createdAt: createdAtOf(metadata, fileStats?.birthtime ?? new Date()),
     updatedAt: fileStats
       ? fileStats.mtime.toISOString()
       : new Date().toISOString(),
@@ -421,7 +424,7 @@ const generateItemMarkdown = (
     }
 
     if (item.description) {
-      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+      metadata.push(`description:${_flatDescription(item.description)}`);
     }
 
     if (item.recurrence) {
@@ -504,7 +507,7 @@ const generateItemMarkdown = (
     const metadata: string[] = [];
 
     if (item.description) {
-      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+      metadata.push(`description:${_flatDescription(item.description)}`);
     }
 
     if (Object.keys(itemMetadata).length > 0) {
@@ -532,7 +535,10 @@ const generateItemMarkdown = (
 };
 
 export const listToMarkdown = (list: Checklist): string => {
-  const metadata: Record<string, unknown> = { ...(list.extraMetadata || {}) };
+  const metadata: Record<string, unknown> = {
+    ...(list.createdAt && { [OwnedMetaKeys.CREATED_AT]: list.createdAt }),
+    ...(list.extraMetadata || {}),
+  };
   metadata.uuid = list.uuid || generateUuid();
   metadata.title = list.title || "Untitled Checklist";
   if (list.type === ChecklistsTypes.KANBAN) metadata.checklistType = "kanban";

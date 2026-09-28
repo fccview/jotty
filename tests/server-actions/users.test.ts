@@ -7,16 +7,22 @@ const mockGetSessionId = vi.fn()
 const mockReadSessions = vi.fn()
 const mockLogUserEvent = vi.fn()
 const mockLogAudit = vi.fn()
+const mockRevokeGrants = vi.fn()
 
 vi.mock('@/app/_server/actions/file', () => ({
   readJsonFile: (...args: any[]) => mockReadJsonFile(...args),
   writeJsonFile: (...args: any[]) => mockWriteJsonFile(...args),
 }))
 
-vi.mock('@/app/_server/actions/session', () => ({
+vi.mock('@/app/_server/actions/session/store', () => ({
   getSessionId: (...args: any[]) => mockGetSessionId(...args),
   readSessions: (...args: any[]) => mockReadSessions(...args),
   removeAllSessionsForUser: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('@/app/_server/actions/share/rename', () => ({
+  revokeGrants: (...args: any[]) => mockRevokeGrants(...args),
+  renameGrants: vi.fn(),
 }))
 
 vi.mock('@/app/_server/actions/log', () => ({
@@ -35,8 +41,8 @@ import {
   getUsers,
   getUsersForAdmin,
   updateUserSettings,
-  ensureUser,
 } from '@/app/_server/actions/users'
+import { ensureUser } from '@/app/_server/actions/users/ensure-user'
 import { getCurrentUserRecord } from '@/app/_server/actions/users/records'
 import { createHash } from 'crypto'
 
@@ -52,6 +58,7 @@ describe('Users Actions', () => {
     mockReadSessions.mockResolvedValue({ 'session-123': 'testuser' })
     mockLogUserEvent.mockResolvedValue(undefined)
     mockLogAudit.mockResolvedValue(undefined)
+    mockRevokeGrants.mockResolvedValue(0)
     mockFs.rm.mockResolvedValue(undefined)
   })
 
@@ -342,6 +349,7 @@ describe('Users Actions', () => {
 
       expect(result.success).toBe(true)
       expect(mockWriteJsonFile).toHaveBeenCalled()
+      expect(mockRevokeGrants).toHaveBeenCalledWith('testuser')
     })
   })
 
@@ -382,7 +390,19 @@ describe('Users Actions', () => {
       expect(result).toEqual([])
     })
 
+    it('should return nothing without a session', async () => {
+      mockGetSessionId.mockResolvedValue('')
+      mockReadSessions.mockResolvedValue({})
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'user1', passwordHash: 'secret', isAdmin: true },
+      ])
+
+      expect(await getUsers()).toEqual([])
+    })
+
     it('should return users without password hash', async () => {
+      mockGetSessionId.mockResolvedValue('sid')
+      mockReadSessions.mockResolvedValue({ sid: 'user1' })
       mockReadJsonFile.mockResolvedValue([
         { username: 'user1', passwordHash: 'secret', isAdmin: true, isSuperAdmin: false, avatarUrl: '/avatar.png' },
         { username: 'user2', passwordHash: 'secret2', isAdmin: false, isSuperAdmin: false },
@@ -496,6 +516,24 @@ describe('Users Actions', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Cannot delete the super admin (system owner)')
+      expect(mockRevokeGrants).not.toHaveBeenCalled()
+    })
+
+    it('should revoke every share granted to the deleted user and drop their record', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'adminuser', passwordHash: 'hash', isAdmin: true },
+        { username: 'leaver', passwordHash: 'hash', isAdmin: false },
+      ])
+      mockReadSessions.mockResolvedValue({ 'session-123': 'adminuser' })
+
+      const result = await deleteUser(createFormData({ username: 'leaver' }))
+
+      expect(result.success).toBe(true)
+      expect(mockRevokeGrants).toHaveBeenCalledWith('leaver')
+      expect(mockLock).toHaveBeenCalled()
+
+      const [written] = mockWriteJsonFile.mock.calls.at(-1)!
+      expect(written.map((user: { username: string }) => user.username)).toEqual(['adminuser'])
     })
   })
 
@@ -601,6 +639,17 @@ describe('Users Actions', () => {
         action: 'user_settings_updated',
         success: true,
       }))
+    })
+
+    it('should save where new checklist items go', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, newItemInsertion: 'top' },
+      ])
+
+      const result = await updateUserSettings({ newItemInsertion: 'bottom' })
+
+      expect(result.success).toBe(true)
+      expect(result.data?.user.newItemInsertion).toBe('bottom')
     })
 
     it('should return the updated user without credentials or mfa secrets', async () => {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Modes } from "@/app/_types/enums";
+import { SearchModes } from "@/app/_consts/search";
 
 export const userSettingsSchema = z.object({
   preferredTheme: z.string().min(1, "Theme is required"),
@@ -74,6 +75,9 @@ export const checklistSettingsSchema = z.object({
   checklistItemClickAction: z.enum(["toggle", "edit"], {
     message: "Checklist item click action must be either 'toggle' or 'edit'",
   }),
+  newItemInsertion: z.enum(["top", "bottom"], {
+    message: "New item insertion must be either 'top' or 'bottom'",
+  }),
 });
 
 export const kanbanSettingsSchema = z.object({
@@ -131,6 +135,11 @@ export const generalSettingsSchema = z.object({
   hideConnectionIndicator: z
     .enum(["enable", "disable"], {
       message: "Hide connection indicator must be either 'enable' or 'disable'",
+    })
+    .optional(),
+  searchMode: z
+    .enum(SearchModes, {
+      message: "Search mode must be 'smart', 'ranked' or 'substring'",
     })
     .optional(),
 });

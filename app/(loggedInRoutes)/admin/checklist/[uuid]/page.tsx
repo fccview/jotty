@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import {
   getListById,
   getUserChecklists,
-} from "@/app/_server/actions/checklist";
+} from "@/app/_server/actions/checklist/queries";
 import { getCategories } from "@/app/_server/actions/category";
 import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/Parts/ChecklistClient";
@@ -11,6 +11,8 @@ import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 
 interface AdminChecklistPageProps {
   params: Promise<{
@@ -26,6 +28,10 @@ export async function generateMetadata(props: AdminChecklistPageProps): Promise<
   return getMedatadaTitle(Modes.CHECKLISTS, uuid);
 }
 
+/**
+ * Render a checklist with metadata and relations for a user with access to all content.
+ * Redirect home when access is denied or the checklist cannot be loaded.
+ */
 export default async function AdminChecklistPage(props: AdminChecklistPageProps) {
   const params = await props.params;
   const { uuid } = params;
@@ -67,14 +73,18 @@ export default async function AdminChecklistPage(props: AdminChecklistPageProps)
     type: "checklist" as const,
   };
 
+  const relations = await getItemRelations(checklist.uuid || "");
+
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={checklist}>
-        <ChecklistClient
-          checklist={checklist}
-          categories={categories}
-          user={user}
-        />
+        <RelationsProvider relations={relations}>
+          <ChecklistClient
+            checklist={checklist}
+            categories={categories}
+            user={user}
+          />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );

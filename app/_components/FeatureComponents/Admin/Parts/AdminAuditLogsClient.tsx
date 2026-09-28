@@ -14,12 +14,8 @@ import {
 } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
-import {
-  getAuditLogs,
-  exportAuditLogs,
-  cleanupOldLogs,
-  deleteAllLogs,
-} from "@/app/_server/actions/log";
+import { getAuditLogs, exportAuditLogs } from "@/app/_server/actions/log/readers";
+import { cleanupOldLogs, deleteAllLogs } from "@/app/_server/actions/log/cleanup";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { DeleteAllLogsModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/DeleteAllLogsModal";
 

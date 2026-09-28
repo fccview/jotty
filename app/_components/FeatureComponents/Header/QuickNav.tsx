@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { AppMode, User, SanitisedUser } from "@/app/_types";
-import { Modes } from "@/app/_types/enums";
+import { BottomBarSpaces, Modes } from "@/app/_types/enums";
 import { cn, handleScroll } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
@@ -21,6 +21,9 @@ import { NotificationBell } from "../Notifications/NotificationBell";
 import { logout } from "@/app/_server/actions/auth";
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useBottomBarSpace } from "@/app/_hooks/useBottomBarSpace";
+
+const FLOATING_GAP = "2.5rem";
 
 interface QuickNavProps {
   showSidebarToggle?: boolean;
@@ -48,7 +51,10 @@ export const QuickNav = ({
   const showTagsTab = tagsEnabled && totalTags > 0;
   const t = useTranslations();
   const [isScrolled, setIsScrolled] = useState(true);
+  const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
+  const navRef = useRef<HTMLElement>(null);
+
 
   const handleLogout = async () => {
     await logout();
@@ -58,6 +64,10 @@ export const QuickNav = ({
   useEffect(() => {
     const handleGlobalScroll = (e: Event) => {
       handleScroll(e, "jotty-scrollable-content", setIsScrolled, lastScrollY);
+      const target = e.target as HTMLElement;
+      if (target.classList?.contains("jotty-scrollable-content")) {
+        setIsAtTop(target.scrollTop <= 0);
+      }
     };
 
     window.addEventListener("scroll", handleGlobalScroll, true);
@@ -67,20 +77,31 @@ export const QuickNav = ({
     };
   }, []);
 
+  const isDocked = isAtTop && !isEditorInEditMode;
+
+  useBottomBarSpace(navRef, BottomBarSpaces.QUICK_NAV, {
+    enabled: !isEditorInEditMode,
+    offset: FLOATING_GAP,
+  });
+
   const mobileClasses =
     "max-w-[80%] w-full rounded-jotty left-[10%] border bg-muted text-muted-foreground";
+  const dockedClasses =
+    "bottom-0 left-0 max-w-full rounded-none border-x-0 border-b-0 pb-[max(0.5rem,env(safe-area-inset-bottom))]";
   const desktopClasses =
     "lg:max-w-full lg:left-auto lg:rounded-none lg:border-none lg:bg-background";
 
   return (
     <header className="lg:border-b lg:border-border no-print">
       <nav
+        ref={navRef}
         className={cn(
-          "jotty-quick-nav fixed z-30 flex items-center justify-between p-2 lg:justify-around transition-[bottom] duration-300 ease-in-out",
+          "jotty-quick-nav fixed z-30 flex items-center justify-between p-2 lg:justify-around transition-[bottom,left,max-width,border-radius,padding] duration-300 ease-in-out",
           "lg:relative lg:bottom-auto lg:h-auto lg:justify-end lg:px-6 lg:py-5",
           mobileClasses,
           desktopClasses,
           isScrolled && !isEditorInEditMode ? "bottom-10" : "-bottom-20",
+          isDocked && dockedClasses,
           isEditorInEditMode && "lg:relative lg:bottom-auto",
         )}
       >
@@ -151,7 +172,7 @@ export const QuickNav = ({
               onClick={() =>
                 checkNavigation(() => {
                   onModeChange?.(modeOption);
-                  router.push("/");
+                  router.push(`/?mode=${modeOption}`);
                 })
               }
             />

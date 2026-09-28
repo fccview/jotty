@@ -1,6 +1,6 @@
-"use server";
-
-import { USERS_FILE, NOTES_DIR, CHECKLISTS_DIR } from "@/app/_consts/files";
+import path from "path";
+import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
+import { modeFor } from "@/app/_utils/sharing-utils";
 import { readJsonFile } from "../file";
 import { Result, ItemType, User, PublicUserInfo } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
@@ -13,12 +13,15 @@ export const getUserIndex = async (username: string): Promise<number> => {
   return allUsers.findIndex((user: User) => user.username === username);
 };
 
-const findUuidInDirectory = async (
-  dir: string,
-  targetUuid: string
-): Promise<boolean> => {
+const _ownerOnDisk = async (
+  uuid: string,
+  itemType: ItemType
+): Promise<string | null> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
-  return (await grepFindFileByUuid(dir, targetUuid)) !== null;
+  const modeDir = path.join(process.cwd(), DATA_DIR, modeFor(itemType));
+  const found = await grepFindFileByUuid(modeDir, uuid);
+
+  return found ? path.relative(modeDir, found.filePath).split(path.sep)[0] : null;
 };
 
 export const getUserByItemUuid = async (
@@ -26,30 +29,22 @@ export const getUserByItemUuid = async (
   itemType: ItemType
 ): Promise<Result<PublicUserInfo>> => {
   try {
-    const users = await readJsonFile(USERS_FILE);
+    const owner = await _ownerOnDisk(uuid, itemType);
+    const users: User[] = owner ? await readJsonFile(USERS_FILE) : [];
+    const user = users.find((candidate) => candidate.username === owner);
 
-    for (const user of users) {
-      try {
-        const userDir =
-          itemType === ItemTypes.NOTE
-            ? NOTES_DIR(user.username)
-            : CHECKLISTS_DIR(user.username);
+    if (user) {
+      return { success: true, data: toPublicUser(user)! };
+    }
 
-        const found = await findUuidInDirectory(userDir, uuid);
-        if (found) {
-          return { success: true, data: toPublicUser(user)! };
-        }
-      } catch (error) {
-        await logAudit({
-          level: "DEBUG",
-          action: "user_item_check",
-          category: "user",
-          success: false,
-          errorMessage: `Error checking items for user: ${user.username}`,
-          metadata: { error: String(error) }
-        });
-        continue;
-      }
+    if (owner) {
+      await logAudit({
+        level: "DEBUG",
+        action: "user_item_check",
+        category: "user",
+        success: false,
+        errorMessage: `Item folder has no matching user: ${owner}`,
+      });
     }
 
     return {

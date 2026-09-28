@@ -162,9 +162,21 @@ describe("User & Summary API", () => {
       expect(data.summary.items.total).toBeGreaterThan(0)
     })
 
+    it("answers 404 when an admin asks for a user that does not exist", async () => {
+      mockAuthenticateApiKey.mockResolvedValue({ ...mockUser, isAdmin: true })
+      mockFindUserRecord.mockResolvedValue(null)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/summary?username=nobody")
+      const response = await GET_SUMMARY(request)
+
+      expect(response.status).toBe(404)
+      expect(mockGetUserNotes).not.toHaveBeenCalled()
+    })
+
     it("should return summary for specific user when admin", async () => {
       const adminUser = { ...mockUser, isAdmin: true }
       mockAuthenticateApiKey.mockResolvedValue(adminUser)
+      mockFindUserRecord.mockResolvedValue({ username: "otheruser" })
 
       const mockNotes = [{ id: "1", title: "Note 1", category: "Work", owner: "otheruser" }]
       const mockChecklists = [

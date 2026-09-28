@@ -1,54 +1,50 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
-import {
-  generateICS,
-  parseItemsForCalendar,
-} from "@/app/_utils/kanban/calendar-utils";
-import { isKanbanType } from "@/app/_types/enums";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { defineRoute } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod, MediaType } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { boardParams, calendarEventSchema } from "@/app/_schemas/api/kanban";
+import { generateICS, parseItemsForCalendar } from "@/app/_utils/kanban/calendar-utils";
+import { boardFor } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
+const _icsName = (title?: string) => encodeURIComponent(`${title || "board"}.ics`);
 
-      if (!isKanbanType(board.type)) {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
+export const GET = defineRoute(
+  {
+    id: "getBoardCalendar",
+    method: HttpMethod.GET,
+    path: "/kanban/{boardId}/calendar",
+    tag: ApiTag.KANBAN,
+    summary: "Get a board's cards as calendar events",
+    description: "Top-level, unarchived cards with a target date. Send `Accept: text/calendar` to download an .ics file instead of JSON.",
+    params: boardParams,
+    responses: {
+      200: {
+        description: "Calendar events, or an iCalendar file when Accept asks for text/calendar",
+        schema: z.object({ events: z.array(calendarEventSchema) }),
+        alternatives: [{ mediaType: MediaType.CALENDAR }],
+      },
+      400: { description: "Not a kanban board", schema: ERRORS[400].schema },
+      401: ERRORS[401],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username);
+    if (refused) return refused;
 
-      const accept = request.headers.get("accept") || "";
-
-      if (accept.includes("text/calendar")) {
-        const ics = generateICS(board.items, board.title || "Kanban");
-        return new NextResponse(ics, {
-          headers: {
-            "Content-Type": "text/calendar; charset=utf-8",
-            "Content-Disposition": `attachment; filename="${board.title || "board"}.ics"`,
-          },
-        });
-      }
-
-      const events = parseItemsForCalendar(board.items);
-      return NextResponse.json({ events });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+    if ((request.headers.get("accept") || "").includes(MediaType.CALENDAR)) {
+      return new NextResponse(generateICS(board.items, board.title || "Kanban"), {
+        headers: {
+          "Content-Type": `${MediaType.CALENDAR}; charset=utf-8`,
+          "Content-Disposition": `attachment; filename="board.ics"; filename*=UTF-8''${_icsName(board.title)}`,
+        },
+      });
     }
-  });
-}
+
+    return NextResponse.json({ events: parseItemsForCalendar(board.items) });
+  },
+);

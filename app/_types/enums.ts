@@ -90,3 +90,13 @@ export enum ProfileTabs {
   USER_PREFERENCES = "userPreferences",
   AUDIT_LOGS = "audit_logs",
 }
+
+export enum BottomBarSpaces {
+  QUICK_NAV = "--jotty-quick-nav-space",
+  NOTE_BAR = "--jotty-note-bar-space",
+}
+
+export enum DropPosition {
+  BEFORE = "before",
+  AFTER = "after",
+}

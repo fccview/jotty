@@ -1,8 +1,8 @@
-# Docker Compose Configuration Guide
+# Docker Compose configuration
 
-This guide explains every configuration value in the `docker-compose.yml` file for jotty·page.
+What each value in the jotty·page `docker-compose.yml` does.
 
-## Basic docker-compose.yml Example
+## Basic docker-compose.yml
 
 ```yaml
 services:
@@ -22,52 +22,53 @@ services:
     # platform: linux/arm64
 ```
 
-**note**: Scroll down if you are running this with podman or via rootless docker
+> [!NOTE]
+> Running with Podman or rootless Docker? There's an extra option for you further down.
 
-## Container Configuration
+## Container
 
 ```yaml
 image: ghcr.io/fccview/jotty:latest
 ```
 
-Specifies the Docker image to use. This pulls the latest stable version of jotty·page from GitHub Container Registry. You can use `latest`, `main`, `develop` _(for beta features when available)_ and the specific tag numbers for amd/arm specifically.
+The image to pull from GitHub Container Registry. `latest` is the current stable release. You can also use `main`, `develop` _(beta features, when there are any)_ or a specific version tag for amd or arm.
 
 ```yaml
 container_name: jotty
 ```
 
-Sets a custom name for the running container. This makes it easier to manage with docker commands.
+A fixed name for the container, so `docker logs jotty` and friends work without looking up an ID.
 
 ```yaml
 user: "1000:1000"
 ```
 
-Runs the container with the specified user and group ID. This should match your host system user for proper file permissions. **Alternatively**, you can use the `PUID` and `PGID` environment variables instead of the `user:` directive. If neither is set, defaults to `1000:1000`. The `user:` directive takes precedence if both are used. This is particularly useful when running on NAS systems like Unraid.
+The user and group ID the container runs as. Match it to the user on your host that owns the mounted folders, or you'll get permission errors. You can use the `PUID` and `PGID` environment variables instead, which tends to be easier on NAS systems like Unraid. If you set neither, it runs as `1000:1000`. If you set both, `user:` wins.
 
 ```yaml
 userns_mode: keep-id
 ```
 
-**Required for Podman and rootless Docker environments.** This option preserves the user namespace when mounting volumes, ensuring the container user (1000:1000) can properly access mounted directories.
+Required for Podman and rootless Docker. It keeps the user namespace when mounting volumes, so the container user (1000:1000) can read and write the mounted directories.
 
-**When you need this option:**
+You need it if:
 
-- Running with Podman instead of Docker
-- Running Docker in rootless mode
-- Getting permission denied errors when writing to mounted volumes (e.g., `EACCES: permission denied, open '/app/data/users/session-data.json'`)
+- you run Podman instead of Docker
+- you run Docker in rootless mode
+- you get permission denied errors writing to mounted volumes, e.g. `EACCES: permission denied, open '/app/data/users/session-data.json'`
 
-**Why it's needed:** In rootless environments, the container user cannot become root to access mounted volumes. The `userns_mode: keep-id` option maps the container user's UID/GID directly to the host's UID/GID, allowing proper file access. More info [here](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md#using-volumes)
+In a rootless setup the container user can't become root to reach the mounted volumes. `userns_mode: keep-id` maps the container user's UID/GID straight to the host's UID/GID, which fixes that. The [Podman rootless tutorial](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md#using-volumes) has the details.
 
-## Network Configuration
+## Ports
 
 ```yaml
 ports:
   - "1122:3000"
 ```
 
-Maps host port 1122 to container port 3000. You can change `1122` to any available port on your host system.
+Maps port 1122 on the host to port 3000 in the container. Change `1122` to any free port on your host. Leave `3000` alone.
 
-## Storage Configuration
+## Volumes
 
 ```yaml
 volumes:
@@ -76,21 +77,21 @@ volumes:
   - ./cache:/app/.next/cache:rw
 ```
 
-Mounts host directories into the container for persistent data storage. Here's some detials:
+Host folders mounted into the container, so your data survives the container being replaced.
 
-- `- ./data:/app/data:rw` Mounts your local `data` directory to `/app/data` inside the container with read-write permissions. This stores your checklists, notes, users, and settings.
-- `- ./config:/app/config:ro` Mounts your local `config` directory to `/app/config` as read-only. This contains custom themes and configuration files.
-- `- ./cache:/app/.next/cache:rw` Optional mount for Next.js build cache. Improves performance by persisting cache between container restarts.
+- `- ./data:/app/data:rw` is your local `data` folder, mounted read-write at `/app/data`. Your checklists, notes, users and settings live here. Back it up.
+- `- ./config:/app/config:rw` is your local `config` folder, mounted read-write at `/app/config`. Custom themes and config files go here, and the admin panel saves to it.
+- `- ./cache:/app/.next/cache:rw` is optional. It keeps the Next.js build cache between container restarts, so the app is faster after a restart.
 
-## Runtime Configuration
+## Restart policy
 
 ```yaml
 restart: unless-stopped
 ```
 
-Automatically restarts the container unless it was explicitly stopped. Ensures your app stays running.
+Docker restarts the container after a crash or a reboot, unless you stopped it yourself.
 
-## Environment Variables
+## Environment variables
 
 ```yaml
 environment:
@@ -111,44 +112,52 @@ environment:
   - OIDC_ADMIN_GROUPS=admins
 ```
 
-- `- NODE_ENV=production` Sets the Node.js environment to production mode for optimal performance and security.
-- `- PUID=1000` Optional. Process User ID that the container will run as. Defaults to `1000` if not set. Set this to match your host system's user ID (find it with `id -u` on Linux). Particularly useful on NAS systems like Unraid. **Note:** The `user:` directive in docker-compose takes precedence over PUID/PGID.
-- `- PGID=1000` Optional. Process Group ID that the container will run as. Defaults to `1000` if not set. Set this to match your host system's group ID (find it with `id -g` on Linux). **Note:** The `user:` directive in docker-compose takes precedence over PUID/PGID.
-- `- UMASK=002` Optional. Sets the default file creation mask. Defaults to `002` if not set. Controls default permissions for newly created files and directories.
-- `- HTTPS=true` Optional. Enables HTTPS mode for secure connections.
-- `- APP_URL=https://your-jotty-domain.com` Base URL of your jotty·page instance. Required for secure session (https) and SSO.
-- `- SERVE_PUBLIC_IMAGES=yes` Optional. Allows public access to uploaded images via direct URLs.
-- `- SERVE_PUBLIC_FILES=yes` Optional. Allows public access to uploaded files via direct URLs.
-- `- STOP_CHECK_UPDATES=no` Optional. If set to yes stops the github api call and won't give you a toast when a new update is available.
-- `- DISABLE_BRUTEFORCE_PROTECTION=true` Optional. Disables brute force protection for local login authentication. By default, accounts are temporarily locked after 3 failed login attempts with exponential delays (10s, 30s, 60s, etc.). Set to `true` to completely disable this security feature.
+- `- NODE_ENV=production` runs Node.js in production mode. Always set this on a real instance.
+- `- PUID=1000` Optional. The user ID the container runs as. Defaults to `1000`. Set it to your host user's ID, which `id -u` prints on Linux. Handy on NAS systems like Unraid. The `user:` directive in docker-compose takes precedence over PUID/PGID.
+- `- PGID=1000` Optional. The group ID the container runs as. Defaults to `1000`. Set it to your host group's ID, which `id -g` prints on Linux. The `user:` directive in docker-compose takes precedence over PUID/PGID.
+- `- UMASK=002` Optional. The file creation mask, which sets the default permissions on new files and folders. Defaults to `002`.
+- `- HTTPS=true` Optional. Turns on HTTPS mode, which marks session cookies as secure.
+- `- APP_URL=https://your-jotty-domain.com` The base URL of your jotty·page instance. Required for secure (https) sessions and for SSO.
+- `- SERVE_PUBLIC_IMAGES=yes` Optional. Lets anyone open uploaded images by their direct URL, without logging in.
+- `- SERVE_PUBLIC_FILES=yes` Optional. Same as above, for uploaded files.
+- `- STOP_CHECK_UPDATES=no` Optional. Set it to yes and jotty stops calling the GitHub API to check for updates, so you won't get the "new version available" toast.
+- `- DISABLE_BRUTEFORCE_PROTECTION=true` Optional. Turns off brute force protection for local login. By default an account locks for a while after 3 failed login attempts, with growing delays (10s, 30s, 60s, etc.). Set it to `true` to switch that off entirely.
 
-### SSO Configuration (Optional)
+### SSO (optional)
 
-- `- AUTH_MODE=oidc` Enables OIDC (OpenID Connect) single sign-on authentication. (Previously `SSO_MODE`, which still works as a fallback.)
-- `- OIDC_ISSUER=<YOUR_SSO_ISSUER>` URL of your OIDC provider (e.g., Authentik, Auth0, Keycloak).
-- `- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>` Client ID from your OIDC provider configuration.
-- `- OIDC_CLIENT_SECRET=your_client_secret` Optional. Client secret for confidential OIDC client authentication.
-- `- OIDC_CLIENT_ID_FILE=/run/secrets/oidc_client_id` Optional. Path to file containing the OIDC client ID. If set, takes priority over `OIDC_CLIENT_ID`. Useful for Docker Secrets.
-- `- OIDC_CLIENT_SECRET_FILE=/run/secrets/oidc_client_secret` Optional. Path to file containing the OIDC client secret. If set, takes priority over `OIDC_CLIENT_SECRET`. Useful for Docker Secrets.
-- `- SSO_FALLBACK_LOCAL=yes` Optional. Allows both SSO and local authentication methods.
-- `- OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated list of OIDC groups that should have admin privileges.
-- `- OIDC_ADMIN_ROLES=admin` Optional. Comma-separated list of OIDC roles that should have admin privileges.
-- `- OIDC_USER_GROUPS=jotty_users,app_users` Optional. Comma-separated list of OIDC groups allowed to access the application. If set, only users in these groups (or admins) can log in.
-- `- OIDC_USER_ROLES=user,member` Optional. Comma-separated list of OIDC roles allowed to access the application. If set, only users with these roles (or admins) can log in.
+- `- AUTH_MODE=oidc` turns on OIDC (OpenID Connect) single sign-on. The old name, `SSO_MODE`, still works as a fallback.
+- `- OIDC_ISSUER=<YOUR_SSO_ISSUER>` The URL of your OIDC provider (e.g. Authentik, Auth0, Keycloak).
+- `- OIDC_CLIENT_ID=<YOUR_SSO_CLIENT_ID>` The client ID from your OIDC provider.
+- `- OIDC_CLIENT_SECRET=your_client_secret` Optional. The client secret, if your provider uses a confidential client.
+- `- OIDC_CLIENT_ID_FILE=/run/secrets/oidc_client_id` Optional. A file that holds the OIDC client ID. If set, it wins over `OIDC_CLIENT_ID`. Use it with Docker Secrets.
+- `- OIDC_CLIENT_SECRET_FILE=/run/secrets/oidc_client_secret` Optional. A file that holds the OIDC client secret. If set, it wins over `OIDC_CLIENT_SECRET`. Use it with Docker Secrets.
+- `- SSO_FALLBACK_LOCAL=yes` Optional. Keeps local username and password login available next to SSO.
+- `- OIDC_ADMIN_GROUPS=admins` Optional. Comma-separated OIDC groups whose members become admins.
+- `- OIDC_ADMIN_ROLES=admin` Optional. Comma-separated OIDC roles that make a user an admin.
+- `- OIDC_USER_GROUPS=jotty_users,app_users` Optional. Comma-separated OIDC groups allowed to log in. If set, only members of these groups (and admins) get in.
+- `- OIDC_USER_ROLES=user,member` Optional. Comma-separated OIDC roles allowed to log in. If set, only users with one of these roles (and admins) get in.
 
-## API Documentation Service
+## MCP server
 
-jotty includes an optional API documentation service that provides interactive documentation for all API endpoints using ReDoc.
+`docker-compose.mcp.yml` in the repo root runs jotty and the [MCP server](../mcp-server/README.md) on one network, so assistants such as Claude or Cursor can work with your notes and lists:
 
-### Basic Setup
+```bash
+docker compose -f docker-compose.mcp.yml up -d
+```
 
-1. **Enable API Docs**: Add `ENABLE_API_DOCS=true` to your jotty environment variables
-2. **Start the Service**: Run `docker-compose --profile api-docs up -d`
-3. **Access**: Visit `http://localhost:8080` (or your configured `API_DOCS_PORT`)
+## API docs service
 
-### Health Checks
+jotty can run a separate ReDoc container that serves interactive docs for every API endpoint. It's optional: the same docs, with a way to send requests, are already inside jotty under **How to > API**. ReDoc is for reading them outside the app.
 
-To keep the image as small as possible I try to not install many extra dependencies if they are not needed by the main app. For health checks we will simply use node to make an http request to the health endpoint.
+### Setup
+
+1. Add `ENABLE_API_DOCS=true` to the jotty environment variables.
+2. Run `docker-compose --profile api-docs up -d`.
+3. Open `http://localhost:8080`, or whatever you set `API_DOCS_PORT` to.
+
+### Health checks
+
+I try to keep the image small, so it doesn't ship curl or wget just for health checks. Node is already there, so the health check uses it to call the health endpoint.
 
 ```yaml
 healthcheck:
@@ -159,7 +168,7 @@ healthcheck:
     retries: 3
 ```
 
-### Service Configuration
+### Service
 
 ```yaml
 api-docs:
@@ -175,21 +184,23 @@ api-docs:
     - api-docs
 ```
 
-## Platform Configuration
+## Platform
 
 ```yaml
 platform: linux/arm64
 ```
 
-Optional. Specifies the target platform. Uncomment this line if running on ARM64 systems (like Apple Silicon Macs or Raspberry Pi).
+Optional. The target platform. Uncomment it on ARM64 machines, like Apple Silicon Macs or a Raspberry Pi.
 
-## Podman Rootless via Quadlet
+## Podman rootless via Quadlet
 
-If you are running via [podman-quadlet](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html) you will need to set the options above for
- - PUID & PGID
- - userns_mode
+If you run jotty with [podman-quadlet](https://docs.podman.io/en/latest/markdown/podman-quadlet.1.html), set these from above:
 
-A complete Container unit looks like
+- PUID and PGID
+- userns_mode
+
+A complete Container unit looks like this:
+
 ```
 [Container]
 AutoUpdate=registry

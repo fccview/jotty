@@ -29,6 +29,7 @@ import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Part
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
 import { CalloutExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
+import { BoldItalicInput } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/BoldItalicInput";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { getContrastColor } from "@/app/_utils/color-utils";
 
@@ -76,7 +77,11 @@ export const createEditorExtensions = (
       listItem: false,
       bulletList: false,
       hardBreak: false,
+      code: {
+        HTMLAttributes: { spellcheck: "false" },
+      },
     }),
+    BoldItalicInput,
     ...generateCustomHtmlExtensions(),
     DetailsExtension,
     CalloutExtension,
@@ -92,6 +97,9 @@ export const createEditorExtensions = (
     Highlight.configure({
       multicolor: true,
     }).extend({
+      addKeyboardShortcuts() {
+        return {};
+      },
       addAttributes() {
         return {
           color: {

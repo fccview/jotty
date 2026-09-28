@@ -1,4 +1,4 @@
-import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { KanbanPageClient } from "@/app/_components/FeatureComponents/Kanban/KanbanPageClient";
 import { Checklist } from "@/app/_types";

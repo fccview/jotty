@@ -1,9 +1,6 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
-import { promisify } from "util";
-import { exec } from "child_process";
+import { boxedShell } from "@/app/_utils/shell-utils";
 import { Checklist } from "@/app/_types";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 import {
@@ -14,10 +11,10 @@ import {
 } from "@/app/_server/actions/file";
 import { parseMarkdown } from "@/app/_utils/checklist-utils";
 import {
+  createdAtOf,
   extractYamlMetadata,
   generateUuid,
   toIso,
-  updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
@@ -26,31 +23,12 @@ import { orderByUuids } from "@/app/_utils/order-utils";
 import { getChecklistType } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { isKanbanType } from "@/app/_types/enums";
-import { singleFlight } from "@/app/_server/actions/lib/concurrency";
-
-const execAsync = promisify(exec);
+import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { titleFromFile } from "@/app/_server/actions/lib/file-title";
+import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
+import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
 
 const debugCrud = isDebugFlag("crud");
-
-const _stampUuid = async (filePath: string): Promise<string | undefined> =>
-  singleFlight(`stamp:${filePath}`, async () => {
-    try {
-      const content = await serverReadFile(filePath);
-      if (!content) return undefined;
-
-      const { metadata } = extractYamlMetadata(content);
-      if (typeof metadata.uuid === "string" && metadata.uuid) {
-        return metadata.uuid;
-      }
-
-      const uuid = generateUuid();
-      await serverWriteFile(filePath, updateYamlMetadata(content, { uuid }));
-      return uuid;
-    } catch (error) {
-      console.warn("Failed to stamp UUID on checklist:", filePath, error);
-      return undefined;
-    }
-  });
 
 export type ChecklistReadResult =
   | Partial<Checklist>
@@ -74,17 +52,17 @@ export const readListsRecursively = async (
       const excludeStr = allowArchived
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
-      const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType):|^[[:space:]]+- |^---$" "${dir}"`;
+      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
+      const metaCmd = metaGrep(["title", "uuid", "tags", "checklistType", "createdAt", SHARED_WITH_KEY]);
       const [statsOut, metaOut] = await Promise.all([
-        execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
-        execAsync(metaCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
+        boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
+          () => "",
+        ),
+        boxedShell(metaCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
+          () => "",
+        ),
       ]);
-      statsOut.stdout.split("\n").forEach((line) => {
+      statsOut.split("\n").forEach((line) => {
         const [p, b, m] = line.split("|");
         if (p && b && m)
           statsCache!.set(p, {
@@ -92,75 +70,14 @@ export const readListsRecursively = async (
             mtime: new Date(parseFloat(m) * 1000),
           });
       });
-      const metaLines = metaOut.stdout.split("\n").filter(Boolean);
+      const metaLines = metaOut.split("\n").filter(Boolean);
       if (debugCrud && metaLines.length) {
         console.warn(
           "[tags grep] sample (first 40 lines):",
           metaLines.slice(0, 40),
         );
       }
-      const inFrontmatter = new Map<string, boolean>();
-      let inTagsFile = "";
-      for (const line of metaLines) {
-        const colonIdx = line.indexOf(":");
-        if (colonIdx === -1) continue;
-        const filePath = line.slice(0, colonIdx);
-        const rest = line.slice(colonIdx + 1);
-        if (rest.trim() === "---") {
-          inFrontmatter.set(filePath, !inFrontmatter.get(filePath));
-          if (debugCrud)
-            console.warn(
-              "[tags grep] --- seen, filePath:",
-              filePath,
-              "inFrontmatter:",
-              inFrontmatter.get(filePath),
-            );
-          continue;
-        }
-        if (!inFrontmatter.get(filePath)) continue;
-        if (/^\s+-\s/.test(rest)) {
-          if (inTagsFile === filePath) {
-            const tag = rest.replace(/^\s+-\s+/, "").trim();
-            if (tag) {
-              if (debugCrud)
-                console.warn(
-                  "[tags grep] adding tag:",
-                  JSON.stringify(tag.slice(0, 50)),
-                  "filePath:",
-                  filePath,
-                );
-              if (!metadataCache!.has(filePath))
-                metadataCache!.set(filePath, {});
-              const entry = metadataCache!.get(filePath)!;
-              if (!Array.isArray(entry.tags)) entry.tags = [];
-              (entry.tags as string[]).push(tag);
-            }
-          }
-          continue;
-        }
-        inTagsFile = "";
-        const innerColon = rest.indexOf(":");
-        if (innerColon === -1) continue;
-        const key = rest.slice(0, innerColon);
-        const val = rest.slice(innerColon + 1);
-        if (!metadataCache!.has(filePath)) metadataCache!.set(filePath, {});
-        const entry = metadataCache!.get(filePath)!;
-        if (key === "tags") {
-          const trimmed = val.trim();
-          if (trimmed === "") {
-            entry.tags = [];
-            inTagsFile = filePath;
-          } else {
-            entry.tags = trimmed
-              .replace(/^\[|\]$/g, "")
-              .split(",")
-              .map((t: string) => t.trim())
-              .filter(Boolean);
-          }
-        } else {
-          entry[key] = val.trim().replace(/^["']|["']$/g, "");
-        }
-      }
+      scanFrontmatter(metaOut, metadataCache!);
     } catch (e) {
       console.warn("Optimization failed, falling back to standard mode", e);
     }
@@ -222,14 +139,14 @@ export const readListsRecursively = async (
               uuid:
                 typeof metadata?.uuid === "string"
                   ? metadata.uuid
-                  : await _stampUuid(filePath),
-              title: typeof metadata?.title === "string" ? metadata.title : id,
+                  : await stampUuid(filePath),
+              title: await titleFromFile(metadata, filePath, id),
               type: isKanbanType(metadata?.checklistType as string)
                 ? "kanban"
                 : "simple",
               category: categoryPath,
               items: [],
-              createdAt: toIso(stats.birthtime),
+              createdAt: createdAtOf(metadata, stats.birthtime),
               updatedAt: toIso(stats.mtime),
               owner,
               isShared: false,
@@ -241,16 +158,8 @@ export const readListsRecursively = async (
           if (isRaw) {
             const { metadata } = extractYamlMetadata(content);
             const type = getChecklistType(content);
-            let uuid = metadata.uuid;
-            if (!uuid) {
-              uuid = generateUuid();
-              try {
-                const updatedContent = updateYamlMetadata(content, { uuid });
-                await serverWriteFile(filePath, updatedContent);
-              } catch (error) {
-                console.warn("Failed to save UUID to checklist file:", error);
-              }
-            }
+            const uuid =
+              metadata.uuid || (await stampUuid(filePath)) || generateUuid();
             return {
               id,
               title: id,
@@ -258,7 +167,7 @@ export const readListsRecursively = async (
               type,
               category: categoryPath,
               items: [],
-              createdAt: toIso(stats.birthtime),
+              createdAt: createdAtOf(metadata, stats.birthtime),
               updatedAt: toIso(stats.mtime),
               owner,
               isShared: false,
@@ -266,7 +175,7 @@ export const readListsRecursively = async (
               rawContent: content,
             };
           }
-          return parseMarkdown(
+          const list = parseMarkdown(
             content,
             id,
             categoryPath,
@@ -278,6 +187,8 @@ export const readListsRecursively = async (
             },
             fileName,
           );
+          if (!lacksUuid(content)) return list;
+          return { ...list, uuid: (await stampUuid(filePath)) || list.uuid };
         } catch {
           return null;
         }

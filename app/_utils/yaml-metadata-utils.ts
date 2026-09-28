@@ -1,6 +1,7 @@
 import yaml from "js-yaml";
 import { v4 as uuidv4 } from "uuid";
 import { ChecklistsTypes, isKanbanType } from "../_types/enums";
+import { titleOf } from "./title-utils";
 
 export const toIso = (d: Date | string | number | undefined | null): string => {
   if (d == null) return new Date(0).toISOString();
@@ -8,6 +9,16 @@ export const toIso = (d: Date | string | number | undefined | null): string => {
   return Number.isFinite(date.getTime())
     ? date.toISOString()
     : new Date(0).toISOString();
+};
+
+export const createdAtOf = (
+  metadata: Record<string, unknown> | null | undefined,
+  birthtime: Date,
+): string => {
+  const stamped = metadata?.[OwnedMetaKeys.CREATED_AT];
+  return stamped instanceof Date || typeof stamped === "string"
+    ? toIso(stamped)
+    : toIso(birthtime);
 };
 
 export interface DocumentMetadata {
@@ -131,22 +142,7 @@ export const updateYamlMetadata = (
 
 export const extractTitle = (content: string, filename?: string): string => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
-
-  if (metadata.title) {
-    return metadata.title;
-  }
-
-  const lines = contentWithoutMetadata.split("\n");
-  const titleLine = lines.find((line) => line.startsWith("# "));
-  if (titleLine) {
-    return titleLine.replace(/^#\s*/, "").trim();
-  }
-
-  if (filename) {
-    return filename.replace(/-/g, " ");
-  }
-
-  return "Untitled";
+  return titleOf(metadata, contentWithoutMetadata, filename);
 };
 
 export const extractChecklistType = (content: string): "kanban" | "simple" => {
@@ -229,6 +225,13 @@ export const migrateToYamlMetadata = (
   }
 
   return frontmatter + cleanedContent;
+};
+
+const FRONTMATTER_BLOCK = /^\uFEFF?---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/;
+
+export const splitFrontmatter = (raw: string): { prefix: string; body: string } => {
+  const prefix = raw.match(FRONTMATTER_BLOCK)?.[0] ?? "";
+  return { prefix, body: raw.slice(prefix.length) };
 };
 
 export const extractUuid = (content: string): string | undefined => {

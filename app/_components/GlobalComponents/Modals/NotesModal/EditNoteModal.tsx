@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
-import { getNoteById, updateNote } from "@/app/_server/actions/note";
+import { viewNote, updateNote } from "@/app/_server/actions/note";
 import { Note, Category } from "@/app/_types";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { itemHref } from "@/app/_utils/global-utils";
@@ -48,7 +48,7 @@ export const EditNoteModal = ({
     const fetchNote = async () => {
       if (!user?.username || !initialNote.uuid) return;
 
-      const fetchedNote = await getNoteById(initialNote.uuid, user.username);
+      const fetchedNote = await viewNote(initialNote.uuid);
 
       if (!fetchedNote) {
         setIsMissing(true);

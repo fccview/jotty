@@ -1,152 +1,85 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { createItem } from "@/app/_server/actions/checklist-item";
-import { getListById } from "@/app/_server/actions/checklist";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { serverWriteFile } from "@/app/_server/actions/file";
-import { isKanbanType, TaskStatus } from "@/app/_types/enums";
-import path from "path";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { addItem } from "@/app/_server/actions/checklist-item/editor";
+import { graftItem } from "@/app/_server/actions/checklist-item/grafter";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, okSchema } from "@/app/_schemas/api/common";
+import { taskItemCreateBody, taskParams } from "@/app/_schemas/api/tasks";
+import { PermissionTypes, TaskStatus } from "@/app/_types/enums";
+import { turnAway } from "@/app/_utils/api-utils";
+import { fetchTask } from "@/app/_utils/api-task";
+import { itemAtIndex } from "@/app/_utils/api-list-utils";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
-  request: NextRequest,
-  props: { params: Promise<{ taskId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { text, status, parentIndex } = body;
+const PARENT_NOT_FOUND = "Parent item not found";
 
-      if (!text) {
-        return NextResponse.json(
-          { error: "Text is required" },
-          { status: 400 },
-        );
+export const POST = defineRoute(
+  {
+    id: "createTaskItem",
+    method: HttpMethod.POST,
+    path: "/tasks/{taskId}/items",
+    tag: ApiTag.TASKS,
+    summary: "Add a task item",
+    description: "Adds a top-level item, or a sub-item under parentIndex. The response for a sub-item has no data field.",
+    params: taskParams,
+    body: taskItemCreateBody,
+    responses: {
+      200: {
+        description: "Created",
+        schema: z.union([
+          z.object({
+            success: z.literal(true),
+            data: z.object({ id: z.string().describe("Id of the new item inside the task") }),
+          }),
+          okSchema,
+        ]),
+      },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const found = await fetchTask(request, params.taskId, user.username);
+    if ("refusal" in found) return found.refusal;
+    const { task } = found;
+
+    const refused = await turnAway(user.username, task.uuid!, PermissionTypes.EDIT);
+    if (refused) return refused;
+
+    const status = body.status || TaskStatus.TODO;
+
+    if (body.parentIndex !== undefined) {
+      const parent = itemAtIndex(task.items, String(body.parentIndex));
+      if (!parent) return refuse(PARENT_NOT_FOUND, 404);
+
+      const graft = new FormData();
+      graft.append("uuid", task.uuid!);
+      graft.append("parentId", parent.item.id);
+      graft.append("text", body.text);
+      graft.append("status", status);
+
+      const grafted = await graftItem(user, graft);
+      if (!grafted.success) {
+        return refuse(grafted.error || "Failed to add sub-item", 500);
       }
 
-      const uuid = await listUuid(request, params.taskId, user.username);
-      const task = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
-
-      if (!isKanbanType(task.type)) {
-        return NextResponse.json(
-          { error: "Not a task checklist" },
-          { status: 400 },
-        );
-      }
-
-      if (parentIndex !== undefined) {
-        const indexPath = parentIndex
-          .toString()
-          .split(".")
-          .map((i: string) => parseInt(i));
-        let parentItem: any = null;
-        let currentItems = task.items;
-
-        for (const idx of indexPath) {
-          if (idx >= currentItems.length) {
-            return NextResponse.json(
-              { error: "Parent item not found" },
-              { status: 404 },
-            );
-          }
-          parentItem = currentItems[idx];
-          currentItems = parentItem.children || [];
-        }
-
-        if (!parentItem) {
-          return NextResponse.json(
-            { error: "Parent item not found" },
-            { status: 404 },
-          );
-        }
-
-        const newSubItem: any = {
-          id: `${task.id}-sub-${Date.now()}`,
-          text,
-          status: status || TaskStatus.TODO,
-          completed: false,
-          order: 0,
-        };
-
-        const addSubItemToParent = (
-          items: any[],
-          parentId: string,
-        ): boolean => {
-          for (let item of items) {
-            if (item.id === parentId) {
-              if (!item.children) {
-                item.children = [];
-              }
-              item.children.push(newSubItem);
-              return true;
-            }
-            if (item.children && addSubItemToParent(item.children, parentId)) {
-              return true;
-            }
-          }
-          return false;
-        };
-
-        const updatedItems = JSON.parse(JSON.stringify(task.items));
-        if (!addSubItemToParent(updatedItems, parentItem.id)) {
-          return NextResponse.json(
-            { error: "Failed to add sub-item" },
-            { status: 500 },
-          );
-        }
-
-        const updatedTask = {
-          ...task,
-          items: updatedItems,
-          updatedAt: new Date().toISOString(),
-        };
-
-        const ownerDir = path.join(
-          process.cwd(),
-          "data",
-          CHECKLISTS_FOLDER,
-          task.owner!,
-        );
-        const filePath = path.join(
-          ownerDir,
-          task.category || "Uncategorized",
-          `${task.id}.md`,
-        );
-
-        await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
-
-        return NextResponse.json({ success: true });
-      }
-
-      const formData = new FormData();
-      formData.append("text", text);
-      formData.append("status", status || TaskStatus.TODO);
-
-      const result = await createItem(task, formData, user.username, true);
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to create item" },
-          { status: 500 },
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: { id: result.data?.id },
-      });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: true });
     }
-  });
-}
+
+    const formData = new FormData();
+    formData.append("text", body.text);
+    formData.append("status", status);
+
+    const result = await addItem(user, task, formData, true);
+    if (!result.success) {
+      return refuse(result.error || "Failed to create item", 500);
+    }
+
+    return NextResponse.json({ success: true, data: { id: result.data?.id } });
+  },
+);

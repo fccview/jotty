@@ -2,7 +2,6 @@ import { Note } from "./note";
 import { Checklist } from "./checklist";
 import { User, SanitisedUser } from "./user";
 import { AppSettings } from "./config";
-import { LinkIndex } from "./links";
 import { AllSharedItems, UserSharedItems } from "./sharing";
 import { TagsIndex } from "./tags";
 
@@ -28,7 +27,6 @@ export interface AppModeContextType {
   appVersion: string;
   appSettings: AppSettings | null;
   usersPublicData: Partial<User>[];
-  linkIndex: LinkIndex | null;
   notes: Partial<Note>[];
   checklists: Partial<Checklist>[];
   allSharedItems: AllSharedItems | null;

@@ -8,7 +8,7 @@ import {
   updateItemStatus,
   createBulkItems,
 } from "@/app/_server/actions/checklist-item";
-import { getListById } from "@/app/_server/actions/checklist";
+import { viewList } from "@/app/_server/actions/checklist";
 import { getUsername } from "@/app/_server/actions/users";
 import { getColumnItems } from "@/app/_utils/kanban/board-utils";
 import { useDragStore } from "@/app/_utils/dnd/drag-store";
@@ -67,10 +67,7 @@ export const useKanbanBoard = ({
   }, [dragPhase, localChecklist.uuid, localChecklist.updatedAt]);
 
   const refreshChecklist = useCallback(async () => {
-    const updatedChecklist = await getListById(
-      localChecklist.uuid || "",
-      localChecklist.owner,
-    );
+    const updatedChecklist = await viewList(localChecklist.uuid || "");
     if (updatedChecklist) {
       setLocalChecklist(updatedChecklist);
       onUpdate(updatedChecklist);
@@ -121,10 +118,7 @@ export const useKanbanBoard = ({
       username,
     );
 
-    const updatedList = await getListById(
-      localChecklist.uuid || "",
-      localChecklist.owner || username,
-    );
+    const updatedList = await viewList(localChecklist.uuid || "");
     if (updatedList) {
       setLocalChecklist(updatedList);
       onUpdate(updatedList);

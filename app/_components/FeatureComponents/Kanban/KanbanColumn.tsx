@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, memo, useState, useRef, useEffect } from "react";
+import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
+import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
 import { useDropList } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanCard } from "./KanbanCard";
@@ -42,12 +44,14 @@ const InlineAddInput = ({
 }: InlineAddInputProps) => {
   const [text, setText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const linkSuggestions = useItemLinkSuggestions(text, setText, inputRef);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (linkSuggestions.handleKeyDown(e)) return;
     if (e.key === "Enter") {
       e.preventDefault();
       if (text.trim()) onSubmit(text.trim());
@@ -58,18 +62,22 @@ const InlineAddInput = ({
   };
 
   return (
-    <Input
-      id="inline-add-input"
-      type="text"
-      value={text}
-      onChange={(e) => setText(e.target.value)}
-      onKeyDown={handleKeyDown}
-      onBlur={() => {
-        if (!text.trim()) onCancel();
-      }}
-      placeholder={placeholder}
-      disabled={isLoading}
-    />
+    <>
+      <Input
+        id="inline-add-input"
+        ref={inputRef}
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={() => {
+          if (!text.trim()) onCancel();
+        }}
+        placeholder={placeholder}
+        disabled={isLoading}
+      />
+      <ItemLinkPopup suggestions={linkSuggestions} />
+    </>
   );
 };
 

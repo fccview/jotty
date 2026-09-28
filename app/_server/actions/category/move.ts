@@ -6,15 +6,17 @@ import {
   ensureDir,
   getUserModeDir,
   readOrderFile,
+  serverRenamePath,
+  serverWriteFile,
   writeOrderFile,
 } from "@/app/_server/actions/file";
 import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
-import { rebuildLinkIndexInternal } from "@/app/_server/actions/link";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
+import { freeFilename } from "@/app/_utils/filename-utils";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 import {
   catUuid,
@@ -119,10 +121,9 @@ const _restamp = async (
     );
     const content = await fs.readFile(filePath, "utf-8");
 
-    await fs.writeFile(
+    await serverWriteFile(
       filePath,
       updateYamlMetadata(content, { owner, category }),
-      "utf-8",
     );
   } catch (error) {
     console.error(`Failed to restamp ${filePath}:`, error);
@@ -379,10 +380,12 @@ export const moveNode = async (formData: FormData) => {
       await ensureDir(newParentDir);
 
       const fileName = activeType === "item" ? `${activeName}.md` : activeName;
+      const landingName =
+        activeType === "item" ? await freeFilename(newParentDir, activeName) : activeName;
       const oldPath = path.join(oldParentDir, fileName);
-      const newPath = path.join(newParentDir, fileName);
+      const newPath = path.join(newParentDir, landingName);
 
-      await fs.rename(oldPath, newPath);
+      await serverRenamePath(oldPath, newPath);
 
       if (activeType === "item") {
         await _restamp(newPath, destLoc.owner, destLoc.category);
@@ -407,14 +410,14 @@ export const moveNode = async (formData: FormData) => {
 
       if (activeType === "item" && mode === Modes.NOTES) {
         try {
-          const { commitNote } = await import("@/app/_server/actions/history");
+          const { commitNote } = await import("@/app/_server/actions/history/repo");
           const fileContent = await fs.readFile(newPath, "utf-8");
           const titleMatch = fileContent.match(/^title:\s*(.+)$/m);
           const title = titleMatch ? titleMatch[1] : activeName;
 
           await commitNote(
             destLoc.owner,
-            path.join(destLoc.category || "Uncategorized", `${activeName}.md`),
+            path.join(destLoc.category || "Uncategorized", landingName),
             "move",
             title,
             {
@@ -429,16 +432,6 @@ export const moveNode = async (formData: FormData) => {
         } catch (error) {
           console.warn("Failed to commit note move to git history:", error);
         }
-      }
-
-      try {
-        await rebuildLinkIndexInternal(sourceLoc.owner);
-
-        if (destLoc.owner !== sourceLoc.owner) {
-          await rebuildLinkIndexInternal(destLoc.owner);
-        }
-      } catch (error) {
-        console.warn("Failed to update link index:", error);
       }
     }
 

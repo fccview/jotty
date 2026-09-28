@@ -2,6 +2,11 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { resetAllMocks, createFormData } from "../setup";
 
 const mockLogAudit = vi.fn();
+const mockGetCurrentUser = vi.fn();
+
+vi.mock("@/app/_server/actions/users", () => ({
+  getCurrentUser: () => mockGetCurrentUser(),
+}));
 
 vi.mock("@/app/_server/actions/log", () => ({
   logAudit: (...args: any[]) => mockLogAudit(...args),
@@ -44,8 +49,19 @@ vi.mock("libsodium-wrappers-sumo", () => ({
 import { encryptXChaCha, decryptXChaCha } from "@/app/_server/actions/xchacha";
 
 describe("XChaCha Actions", () => {
+  it("should refuse to run without a session", async () => {
+    mockGetCurrentUser.mockResolvedValue(null);
+
+    const encrypted = await encryptXChaCha(createFormData({ content: "x", passphrase: "p" }));
+    const decrypted = await decryptXChaCha(createFormData({ encryptedContent: "{}", passphrase: "p" }));
+
+    expect(encrypted).toEqual({ success: false, error: "Not authenticated" });
+    expect(decrypted).toEqual({ success: false, error: "Not authenticated" });
+  });
+
   beforeEach(() => {
     resetAllMocks();
+    mockGetCurrentUser.mockResolvedValue({ username: "alice" });
     mockLogAudit.mockResolvedValue(undefined);
   });
 

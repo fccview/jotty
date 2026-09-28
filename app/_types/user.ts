@@ -1,5 +1,6 @@
 import { Modes } from "./enums";
 import { EncryptionSettings } from "./encryption";
+import type { SearchModes } from "@/app/_consts/search";
 
 export type EnableRecurrence = "enable" | "disable";
 export type ShowCompletedSuggestions = "enable" | "disable";
@@ -44,6 +45,7 @@ export type HideMobileStatusDropdown = "enable" | "disable";
 export type HideTimeTrackingOnCards = "enable" | "disable";
 export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
+export type NewItemInsertion = "top" | "bottom";
 
 export interface User {
   username: string;
@@ -84,6 +86,8 @@ export interface User {
   hideMobileStatusDropdown?: HideMobileStatusDropdown;
   hideTimeTrackingOnCards?: HideTimeTrackingOnCards;
   codeBlockStyle?: CodeBlockStyle;
+  newItemInsertion?: NewItemInsertion;
+  searchMode?: SearchModes;
   mfaEnabled?: boolean;
   mfaSecret?: string;
   mfaRecoveryCode?: string;

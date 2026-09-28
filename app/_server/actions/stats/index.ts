@@ -1,8 +1,8 @@
 "use server";
 
-import { getUserNotes } from "@/app/_server/actions/note";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
+import { canAccessAllContent, getCurrentUser } from "@/app/_server/actions/users";
 import { isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
 
@@ -42,6 +42,10 @@ export const getUserStats = async (
     }
 
     const targetUsername = username || currentUser.username;
+
+    if (targetUsername !== currentUser.username && !(await canAccessAllContent())) {
+      return { success: false, error: "Permission denied" };
+    }
 
     const notesResult = await getUserNotes({ username: targetUsername });
     if (!notesResult.success || !notesResult.data) {

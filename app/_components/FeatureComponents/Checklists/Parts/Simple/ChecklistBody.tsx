@@ -13,7 +13,6 @@ import { Checklist, Item } from "@/app/_types";
 import { DropIndicator } from "./DropIndicator";
 import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
 import { useMemo, useState } from "react";
-import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 import { useTranslations } from "next-intl";
@@ -51,23 +50,12 @@ export const ChecklistBody = ({
   isDeletingItem,
 }: ChecklistBodyProps) => {
   const t = useTranslations();
-  const { linkIndex, notes, checklists, appSettings } = useAppMode();
   const { isDragging, setIsDragging } = useUIStore();
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [overItem, setOverItem] = useState<{
     id: string;
     position: "before" | "after";
   } | null>(null);
-
-  const referencingItems = useMemo(() => {
-    return getReferences(
-      linkIndex,
-      localList.uuid,
-      ItemTypes.CHECKLIST,
-      notes,
-      checklists
-    );
-  }, [linkIndex, localList.uuid, notes, checklists]);
 
   const onDragStart = (event: DragStartEvent) => {
     const findItem = (items: Item[], id: string): Item | undefined => {
@@ -127,12 +115,7 @@ export const ChecklistBody = ({
           </p>
         </div>
 
-        {referencingItems.length > 0 &&
-          appSettings?.editor?.enableBilateralLinks && (
-            <div className="p-4">
-              <ReferencedBySection referencingItems={referencingItems} />
-            </div>
-          )}
+        <ReferencedBySection className="p-4" />
       </>
     );
   }
@@ -142,7 +125,7 @@ export const ChecklistBody = ({
       {localList.items.length > 0 && (
         <ChecklistProgress checklist={localList} />
       )}
-      <div className="flex-1 overflow-y-auto jotty-scrollable-content p-4">
+      <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter p-4">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -151,7 +134,7 @@ export const ChecklistBody = ({
           onDragCancel={onDragCancel}
           onDragOver={onDragOver}
         >
-          <div className="w-full min-h-[200px] space-y-4 overflow-hidden checklist-todo-container">
+          <div className="w-full min-h-[200px] space-y-4 overflow-x-clip checklist-todo-container">
             {incompleteItems.length > 0 && (
               <ChecklistItemsWrapper
                 title={TaskStatusLabels.TODO}
@@ -293,10 +276,7 @@ export const ChecklistBody = ({
           </div>
         </DndContext>
 
-        {referencingItems.length > 0 &&
-          appSettings?.editor?.enableBilateralLinks && (
-            <ReferencedBySection referencingItems={referencingItems} />
-          )}
+        <ReferencedBySection />
       </div>
     </>
   );

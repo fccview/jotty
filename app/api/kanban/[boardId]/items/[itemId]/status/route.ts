@@ -1,63 +1,44 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
-import { updateItemStatus } from "@/app/_server/actions/checklist-item";
-import { isKanbanType } from "@/app/_types/enums";
+import { PermissionTypes } from "@/app/_types/enums";
+import { stampStatus } from "@/app/_server/actions/checklist-item/stamper";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, cardParams, cardStatusBody, cardChangedSchema } from "@/app/_schemas/api/kanban";
+import { boardFor, cardChanged } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string; itemId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { status } = body;
+export const PUT = defineRoute(
+  {
+    id: "moveBoardItem",
+    method: HttpMethod.PUT,
+    path: "/kanban/{boardId}/items/{itemId}/status",
+    tag: ApiTag.KANBAN,
+    summary: "Move a card to another column",
+    description: "Records the change in the card's history. Moving into a column with autoComplete marks the card completed. Needs edit permission.",
+    params: cardParams,
+    body: cardStatusBody,
+    responses: {
+      200: { description: "The board after the change", schema: cardChangedSchema },
+      400: BOARD_REFUSED,
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    if (refused) return refused;
 
-      if (!status) {
-        return NextResponse.json(
-          { error: "Status is required" },
-          { status: 400 },
-        );
-      }
+    const formData = new FormData();
+    formData.append("uuid", board.uuid);
+    formData.append("itemId", params.itemId);
+    formData.append("status", body.status);
 
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
+    const result = await stampStatus(user, formData);
+    if (!result.success) return refuse(result.error || "Failed to update status", 400);
 
-      if (!isKanbanType(board.type)) {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
-
-      const formData = new FormData();
-      formData.append("uuid", board.uuid!);
-      formData.append("itemId", params.itemId);
-      formData.append("status", status);
-      formData.append("username", user.username);
-
-      const result = await updateItemStatus(formData, user.username);
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to update status" },
-          { status: 400 },
-        );
-      }
-
-      return NextResponse.json({ success: true, data: result.data });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+    return cardChanged(result.data, params.itemId);
+  },
+);

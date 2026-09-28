@@ -1,47 +1,50 @@
-# Unraid Deployment Guide
+# Unraid
 
-jotty·page can be installed on Unraid through the Community Applications store.
-You can find the template **[here](https://github.com/fccview/unraid-templates/raw/main/templates/jotty.xml)**
+You can install jotty·page on Unraid from a template. It's on its way to the Community Applications store, and until then you can grab it **[here](https://github.com/fccview/unraid-templates/raw/main/templates/jotty.xml)**.
 
 ## Installation
 
-### Via Community Applications (Coming soon)
+### From Community Applications (coming soon)
 
-1. Go to the **Apps** tab in Unraid
-2. Search for "jotty"
-3. Click **Install** on the jotty·page template
-4. Configure settings (see below)
-5. Click **Apply**
+1. Open the **Apps** tab in Unraid.
+2. Search for "jotty".
+3. Click **Install** on the jotty·page template.
+4. Fill in the settings below.
+5. Click **Apply**.
 
 ## Configuration
 
-### Port Settings
-- **Host Port**: `1122` (default, change to any available port)
-- **Container Port**: `3000` (do not change)
+### Ports
 
-Access at: `http://[UNRAID-IP]:1122`
+- Host port `1122` is the default. Change it to any free port.
+- Container port `3000` stays as it is.
 
-### Storage Paths
+Then open `http://[UNRAID-IP]:1122`.
 
-Default location: `/mnt/user/appdata/jotty/`
+### Storage paths
 
-- **`/data`**: Checklists, notes, users, encryption keys (**back this up!**)
-- **`/config`**: Custom themes and configuration
-- **`/cache`**: Next.js cache (optional, can be removed to save space)
+The default location is `/mnt/user/appdata/jotty/`.
 
-### User/Group
+- `/data` holds checklists, notes, users and encryption keys.
+- `/config` holds custom themes and configuration.
+- `/cache` is the Next.js cache. It's optional, and you can remove it to save space.
 
-- **PUID**: `99` (Unraid nobody user)
-- **PGID**: `100` (Unraid users group)
-- **Extra Parameters**: `--user 99:100`
+> [!IMPORTANT]
+> Back up `/data`. Everything your users wrote lives there, and nothing else can bring it back.
 
-To use different user/group, remove `--user 99:100` from Extra Parameters and update PUID/PGID.
+### User and group
 
-### Environment Variables
+- PUID `99` is Unraid's nobody user.
+- PGID `100` is Unraid's users group.
+- Extra Parameters is set to `--user 99:100`.
 
-See [ENV-VARIABLES.md](ENV-VARIABLES.md) for full list.
+To run as a different user or group, remove `--user 99:100` from Extra Parameters and change PUID and PGID.
 
-## Image Tags
+### Environment variables
 
-- **`latest`**: Stable release (recommended)
-- **`develop`**: Development branch (beta pre-release)
+The full list is in [ENV-VARIABLES.md](ENV-VARIABLES.md).
+
+## Image tags
+
+- `latest` is the stable release. Use this one.
+- `develop` is the development branch, a beta pre-release.

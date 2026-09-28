@@ -140,7 +140,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
 
         <div className="mt-12 pt-8 border-t border-border text-center no-print">
           <p className="text-md lg:text-sm text-muted-foreground">
-            This note is shared publicly by {note.owner}
+            {t("notes.sharedPubliclyBy", { owner: note.owner ?? "" })}
           </p>
         </div>
       </div>

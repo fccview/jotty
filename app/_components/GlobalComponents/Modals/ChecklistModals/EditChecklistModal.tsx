@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getListById, updateList } from "@/app/_server/actions/checklist";
+import { viewList, updateList } from "@/app/_server/actions/checklist";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
@@ -44,10 +44,7 @@ export const EditChecklistModal = ({
     const fetchChecklist = async () => {
       if (!user?.username || !initialChecklist.uuid) return;
 
-      const fetchedChecklist = await getListById(
-        initialChecklist.uuid,
-        user.username,
-      );
+      const fetchedChecklist = await viewList(initialChecklist.uuid);
 
       if (!fetchedChecklist) {
         setIsMissing(true);

@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import { randomUUID } from "crypto";
@@ -14,6 +12,12 @@ import {
   grepExtractFrontmatter,
 } from "@/app/_utils/grep-utils";
 import { runQueued } from "@/app/_server/actions/lib/concurrency";
+import {
+  isReadOnlyError,
+  isWritable,
+  pathUuid,
+  warnReadOnly,
+} from "@/app/_server/actions/lib/read-only";
 
 const _abs = (dirPath: string): string =>
   path.isAbsolute(dirPath) ? dirPath : path.join(process.cwd(), dirPath);
@@ -72,7 +76,11 @@ export const writeCatInfo = async (
     await fs.rename(tmpPath, finalPath);
     return true;
   } catch (error) {
-    console.error(`Error writing ${CATEGORY_INFO_FILE} in ${dirPath}:`, error);
+    if (isReadOnlyError(error)) {
+      warnReadOnly(dirPath);
+    } else {
+      console.error(`Error writing ${CATEGORY_INFO_FILE} in ${dirPath}:`, error);
+    }
     try {
       await fs.unlink(tmpPath);
     } catch {}
@@ -92,14 +100,28 @@ export const patchCatInfo = async (
     return next;
   });
 
+export const mutateCatInfo = async (
+  dirPath: string,
+  mutator: (info: CategoryInfo) => CategoryInfo | null,
+): Promise<boolean> =>
+  runQueued(_lane(dirPath), async () => {
+    const next = mutator(await readCatInfo(dirPath));
+    return next ? writeCatInfo(dirPath, next) : false;
+  });
+
 export const catUuid = async (dirPath: string): Promise<string> =>
   runQueued(_lane(dirPath), async () => {
     const info = await readCatInfo(dirPath);
     if (info.uuid) return info.uuid;
 
+    if (!(await isWritable(_abs(dirPath)))) {
+      warnReadOnly(dirPath);
+      return pathUuid(_abs(dirPath));
+    }
+
     const uuid = randomUUID();
-    await writeCatInfo(dirPath, { ...info, uuid });
-    return uuid;
+    const saved = await writeCatInfo(dirPath, { ...info, uuid });
+    return saved ? uuid : pathUuid(_abs(dirPath));
   });
 
 export const catDirByUuid = async (

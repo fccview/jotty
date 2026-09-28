@@ -33,9 +33,11 @@ export const useSearch = ({
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [settledQuery, setSettledQuery] = useState("");
+  const [isIndexing, setIsIndexing] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const latestSearch = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleSelectResult = useCallback(
@@ -60,14 +62,20 @@ export const useSearch = ({
 
   useEffect(() => {
     const performSearch = async (searchQuery: string) => {
+      const ticket = ++latestSearch.current;
+      const isLatest = () => ticket === latestSearch.current;
+
       if (!searchQuery.trim() || searchQuery.length < 2) {
         setResults([]);
+        setIsIndexing(false);
+        setSettledQuery(searchQuery);
         return;
       }
 
-      setIsSearching(true);
       try {
         const result = await search(searchQuery);
+        if (!isLatest()) return;
+        setIsIndexing(Boolean(result.indexing));
         if (result.success && result.data) {
           const formatted = result.data.map((item) => ({
             id: item.id,
@@ -86,13 +94,15 @@ export const useSearch = ({
       } catch (error) {
         console.error("Search failed:", error);
       } finally {
-        setIsSearching(false);
+        if (isLatest()) setSettledQuery(searchQuery);
       }
     };
 
     const debounceTimeout = setTimeout(() => performSearch(query), 300);
     return () => clearTimeout(debounceTimeout);
   }, [query, appSettings]);
+
+  const isSearching = query.trim().length >= 2 && settledQuery !== query;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -155,5 +165,6 @@ export const useSearch = ({
     inputRef,
     containerRef,
     isSearching,
+    isIndexing,
   };
 };

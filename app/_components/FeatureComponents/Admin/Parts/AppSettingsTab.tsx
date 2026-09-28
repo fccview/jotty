@@ -63,7 +63,12 @@ export const AppSettingsTab = () => {
     try {
       const formData = new FormData();
       Object.entries(settings).forEach(([key, value]) =>
-        formData.append(key, value)
+        formData.append(
+          key,
+          typeof value === "object" && value !== null
+            ? JSON.stringify(value)
+            : String(value)
+        )
       );
 
       const result = await updateAppSettings(formData);

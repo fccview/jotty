@@ -1,5 +1,3 @@
-"use server";
-
 import { Category } from "../_types";
 import { serverReadDir, readOrderFile } from "../_server/actions/file";
 import path from "path";

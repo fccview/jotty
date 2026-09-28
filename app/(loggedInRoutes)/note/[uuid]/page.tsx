@@ -1,8 +1,6 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import {
-  CheckForNeedsMigration,
-  getNoteById,
-} from "@/app/_server/actions/note";
+import { CheckForNeedsMigration } from "@/app/_server/actions/note";
+import { getNoteById } from "@/app/_server/actions/note/queries";
 import {
   getCurrentUser,
   canAccessAllContent,
@@ -16,6 +14,8 @@ import { isUuid } from "@/app/_consts/identity";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface NotePageProps {
@@ -31,6 +31,10 @@ export async function generateMetadata(props: NotePageProps): Promise<Metadata> 
   return getMedatadaTitle(Modes.NOTES, params.uuid);
 }
 
+/**
+ * Resolve a note for the signed-in user and load its categories and relations.
+ * Migrate legacy notes, redirect old slugs to UUID URLs, and redirect home if unavailable.
+ */
 export default async function NotePage(props: NotePageProps) {
   const params = await props.params;
   const { uuid } = params;
@@ -90,10 +94,14 @@ export default async function NotePage(props: NotePageProps) {
     type: "note" as const,
   };
 
+  const relations = await getItemRelations(note.uuid || "");
+
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={note}>
-        <NoteClient note={note} categories={docsCategories} />
+        <RelationsProvider relations={relations}>
+          <NoteClient note={note} categories={docsCategories} />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );
