@@ -1,6 +1,8 @@
 import { Item, Checklist } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { ListView } from "@/app/_schemas/api/common";
 
 interface TransformedItem {
   id: string;
@@ -38,12 +40,21 @@ export const transformItem = (item: Item, index: number): TransformedItem => {
   return baseItem;
 };
 
-export const transformBoard = (list: Checklist) => ({
+const _statusCounts = (items: Item[]) =>
+  items.reduce<Record<string, number>>((counts, item) => {
+    const status = item.status || TaskStatus.TODO;
+    counts[status] = (counts[status] ?? 0) + 1;
+    return counts;
+  }, {});
+
+export const transformBoard = (list: Checklist, view: ListView = ListView.FULL) => ({
   id: list.uuid,
   title: list.title,
-  category: list.category || "Uncategorized",
+  category: list.category || UNCATEGORIZED,
   statuses: list.statuses || DEFAULT_KANBAN_STATUSES,
-  items: list.items.map((item, index) => transformItem(item, index)),
+  ...(view === ListView.SUMMARY
+    ? { itemCount: list.items.length, statusCounts: _statusCounts(list.items) }
+    : { items: list.items.map((item, index) => transformItem(item, index)) }),
   createdAt: list.createdAt,
   updatedAt: list.updatedAt,
 });

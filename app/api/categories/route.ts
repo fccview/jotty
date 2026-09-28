@@ -1,55 +1,47 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { NextResponse } from "next/server";
 import { getCategories } from "@/app/_server/actions/category";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { categoriesSchema } from "@/app/_schemas/api/discovery";
+import { Category } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  return withApiAuth(request, async (user) => {
-    try {
-      const notesResult = await getCategories(Modes.NOTES, user.username);
-      const checklistsResult = await getCategories(
-        Modes.CHECKLISTS,
-        user.username,
-      );
+const _visible = (categories: Category[]) =>
+  categories
+    .filter((category) => !category.path.includes(ARCHIVED_DIR_NAME))
+    .map(({ name, path, count, level }) => ({ name, path, count, level }));
 
-      if (!notesResult.success || !checklistsResult.success) {
-        return NextResponse.json(
-          {
-            error:
-              notesResult.error ||
-              checklistsResult.error ||
-              "Failed to fetch categories",
-          },
-          { status: 500 },
-        );
-      }
+export const GET = defineRoute(
+  {
+    id: "listCategories",
+    method: HttpMethod.GET,
+    path: "/categories",
+    tag: ApiTag.DISCOVERY,
+    summary: "List categories",
+    description: "Your note and checklist categories, including shared ones. Archived categories are left out.",
+    responses: {
+      200: { description: "Categories per mode", schema: categoriesSchema },
+      401: ERRORS[401],
+      500: ERRORS[500],
+    },
+  },
+  async ({ user }) => {
+    const notes = await getCategories(Modes.NOTES, user.username);
+    const checklists = await getCategories(Modes.CHECKLISTS, user.username);
 
-      const filterArchived = (categories: any[]) => {
-        return categories
-          .filter((cat) => !cat.path.includes(ARCHIVED_DIR_NAME))
-          .map((cat) => ({
-            name: cat.name,
-            path: cat.path,
-            count: cat.count,
-            level: cat.level,
-          }));
-      };
-
-      const categories = {
-        notes: filterArchived(notesResult.data || []),
-        checklists: filterArchived(checklistsResult.data || []),
-      };
-
-      return NextResponse.json({ categories });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+    if (!notes.success || !checklists.success) {
+      return refuse(notes.error || checklists.error || "Failed to fetch categories", 500);
     }
-  });
-}
+
+    return NextResponse.json({
+      categories: {
+        notes: _visible(notes.data || []),
+        checklists: _visible(checklists.data || []),
+      },
+    });
+  },
+);

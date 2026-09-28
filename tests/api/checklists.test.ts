@@ -246,6 +246,44 @@ describe("Checklists API", () => {
       expect(data.error).toBe("Type must be 'simple' or 'kanban'");
     });
 
+    it("accepts the legacy 'task' type", async () => {
+      mockMakeList.mockResolvedValue({
+        success: true,
+        data: { uuid: "task-uuid", title: "Board", category: "Work", type: "task" },
+      });
+
+      const response = await POST(
+        createMockRequest("POST", "http://localhost:3000/api/checklists", {
+          title: "Board",
+          category: "Work",
+          type: "task",
+        }),
+      );
+
+      expect(response.status).toBe(200);
+      const formData = mockMakeList.mock.calls[0][1] as FormData;
+      expect(formData.get("type")).toBe("task");
+    });
+
+    it("defaults category and type", async () => {
+      mockMakeList.mockResolvedValue({
+        success: true,
+        data: { uuid: "u", title: "Plain", type: "simple" },
+      });
+
+      const response = await POST(
+        createMockRequest("POST", "http://localhost:3000/api/checklists", { title: "Plain" }),
+      );
+      const data = await getResponseJson(response);
+
+      expect(response.status).toBe(200);
+      const formData = mockMakeList.mock.calls[0][1] as FormData;
+      expect(formData.get("category")).toBe("Uncategorized");
+      expect(formData.get("type")).toBe("simple");
+      expect(data.data.category).toBe("Uncategorized");
+      expect(data.data.items).toEqual([]);
+    });
+
     it("should return 401 for unauthorized requests", async () => {
       mockAuthenticateApiKey.mockResolvedValue(null);
 
@@ -300,6 +338,30 @@ describe("Checklists API", () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.data.title).toBe("Updated Test Checklist - API");
+    });
+
+    it("keeps title and category when the body is empty", async () => {
+      const existingList = {
+        id: "list-1",
+        uuid: "uuid-1",
+        title: "Keep Me",
+        category: "Work",
+        type: "simple",
+        items: [],
+        owner: "testuser",
+      };
+      mockGetListById.mockResolvedValue(existingList);
+      mockEditList.mockResolvedValue({ success: true, data: existingList });
+
+      const response = await PUT(
+        createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1"),
+        { params: Promise.resolve({ listId: "uuid-1" }) },
+      );
+
+      expect(response.status).toBe(200);
+      const formData = mockEditList.mock.calls[0][1] as FormData;
+      expect(formData.get("title")).toBe("Keep Me");
+      expect(formData.get("category")).toBe("Work");
     });
 
     it("should return 404 for non-existent checklist", async () => {

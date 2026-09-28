@@ -8,3 +8,8 @@ export const IMPLICIT_MOUNT_PREFIX = "shared-by:";
 export const SHARE_CODE_SEPARATOR = ":";
 export const SHARED_WITH_KEY = "sharedWith";
 export const SHARED_WITH_NONE = "none";
+
+export enum ShareDirections {
+  WITH_ME = "withMe",
+  BY_ME = "byMe",
+}

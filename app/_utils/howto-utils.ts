@@ -1,6 +1,8 @@
 import { HOWTO_DIR } from "@/app/_consts/files";
 import path from "path";
 
+export const API_GUIDE_ID = "api";
+
 export interface HowtoGuide {
   id: string;
   name: string;
@@ -32,11 +34,18 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.brain",
   },
   {
-    id: "api",
+    id: API_GUIDE_ID,
     name: t("common.api"),
     filename: "API.md",
     icon: "code",
     translationKey: "common.api",
+  },
+  {
+    id: "mcp",
+    name: t("help.mcp"),
+    filename: "MCP.md",
+    icon: "robot",
+    translationKey: "help.mcp",
   },
   {
     id: "customisations",

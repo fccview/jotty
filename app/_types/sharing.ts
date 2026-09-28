@@ -1,5 +1,6 @@
 import { SharingPermissions } from "./core";
-import { Modes } from "./enums";
+import { ItemTypes, Modes } from "./enums";
+import type { ShareDirections } from "@/app/_consts/sharing";
 
 export interface CategorySharing {
   users: Record<string, SharingPermissions>;
@@ -134,4 +135,15 @@ export interface UserSharedItem {
 export interface UserSharedItems {
   notes: UserSharedItem[];
   checklists: UserSharedItem[];
+}
+
+export interface ShareListing {
+  uuid: string;
+  type: ItemTypes;
+  owner: string;
+  direction: ShareDirections;
+  viaCategory?: string;
+  permissions?: SharingPermissions;
+  isPublic?: boolean;
+  people?: [string, SharingPermissions][];
 }

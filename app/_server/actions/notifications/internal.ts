@@ -1,13 +1,17 @@
 import path from "path";
 import { AppNotification, AppNotificationData } from "@/app/_types";
 import { NOTIFICATIONS_FILE } from "@/app/_consts/files";
+import { validateNoPathTraversal } from "@/app/_utils/path-utils";
 import { readJsonFile, writeJsonFile, ensureDir } from "@/app/_server/actions/file";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const DEDUP_WINDOW_MS = 60 * 60 * 1000;
 
-const _getPath = (username: string): string => NOTIFICATIONS_FILE(username);
+const _getPath = (username: string): string => {
+  if (!validateNoPathTraversal(username)) throw new Error(`Invalid notification recipient: ${username}`);
+  return NOTIFICATIONS_FILE(username);
+};
 
 const _lane = (username: string): string => `notifications:${username}`;
 

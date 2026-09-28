@@ -1,5 +1,5 @@
 export const RELATIONS_DB_NAME = ".relations.db";
-export const RELATIONS_SCHEMA_VERSION = 2;
+export const RELATIONS_SCHEMA_VERSION = 4;
 export const LEGACY_LINK_PREFIX = "/jotty/";
 export const WIKILINK_REGEX =
   /\[\[([^\[\]|#^\n]+)(?:[#^][^\[\]|\n]*)?(?:\|([^\[\]\n]*))?\]\]/g;
@@ -35,6 +35,16 @@ export const MENTION_SNIPPET_CHARS = 60;
 export const SUGGESTIONS_PER_ITEM = 3;
 export const SUGGESTIONS_MAX = 250;
 export const SUGGESTION_HUB_LIMIT = 80;
+
+export enum LinkStyles {
+  APPEND = "append",
+  MENTION = "mention",
+}
+
+export const BRAIN_DEPTH_DEFAULT = 2;
+export const BRAIN_DEPTH_MAX = 3;
+export const BRAIN_NODES_DEFAULT = 60;
+export const BRAIN_NODES_MAX = 200;
 
 export const BRAIN_PATH = "/brain";
 export const BRAIN_FOCUS_PARAM = "focus";

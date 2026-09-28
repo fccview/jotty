@@ -1,147 +1,113 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid, turnAway } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist/queries";
+import { NextResponse } from "next/server";
 import { restatus } from "@/app/_server/actions/checklist/restatus";
-import { isKanbanType, PermissionTypes } from "@/app/_types/enums";
-import { API_FALLBACK_STATUSES } from "@/app/_consts/kanban";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, envelope, okSchema } from "@/app/_schemas/api/common";
+import { kanbanStatusSchema } from "@/app/_schemas/api/items";
+import { statusUpdateBody, taskStatusParams } from "@/app/_schemas/api/tasks";
+import { PermissionTypes } from "@/app/_types/enums";
+import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { turnAway } from "@/app/_utils/api-utils";
+import { fetchTask } from "@/app/_utils/api-task";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ taskId: string; statusId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { label, color, order } = body;
+const STATUS_NOT_FOUND = "Status not found";
 
-      const uuid = await listUuid(request, params.taskId, user.username);
-      const task = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
+export const PUT = defineRoute(
+  {
+    id: "updateTaskStatus",
+    method: HttpMethod.PUT,
+    path: "/tasks/{taskId}/statuses/{statusId}",
+    tag: ApiTag.TASKS,
+    summary: "Update a task status",
+    description: "Fields left out keep their current value. Needs the edit grant on a shared task.",
+    params: taskStatusParams,
+    body: statusUpdateBody,
+    responses: {
+      200: { description: "Updated status", schema: envelope(kanbanStatusSchema) },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const found = await fetchTask(request, params.taskId, user.username);
+    if ("refusal" in found) return found.refusal;
+    const { task } = found;
 
-      if (!isKanbanType(task.type)) {
-        return NextResponse.json(
-          { error: "Not a task checklist" },
-          { status: 400 },
-        );
-      }
-
-      const currentStatuses = task.statuses || API_FALLBACK_STATUSES;
-
-      const statusIndex = currentStatuses.findIndex(
-        (s) => s.id === params.statusId,
-      );
-      if (statusIndex === -1) {
-        return NextResponse.json(
-          { error: "Status not found" },
-          { status: 404 },
-        );
-      }
-
-      const refused = await turnAway(
-        user.username,
-        task.uuid!,
-        PermissionTypes.EDIT,
-      );
-      if (refused) return refused;
-
-      const result = await restatus(user, task.uuid!, (latest) =>
-        (latest || API_FALLBACK_STATUSES).map((s) =>
-          s.id === params.statusId
-            ? {
-                ...s,
-                label: label ?? s.label,
-                color: color !== undefined ? color : s.color,
-                order: order !== undefined ? order : s.order,
-              }
-            : s,
-        ),
-      );
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to update status" },
-          { status: 500 },
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: result.data?.statuses?.find((s) => s.id === params.statusId),
-      });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+    const current = task.statuses || DEFAULT_KANBAN_STATUSES;
+    if (!current.some((status) => status.id === params.statusId)) {
+      return refuse(STATUS_NOT_FOUND, 404);
     }
-  });
-}
 
-export async function DELETE(
-  request: NextRequest,
-  props: { params: Promise<{ taskId: string; statusId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const uuid = await listUuid(request, params.taskId, user.username);
-      const task = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
+    const refused = await turnAway(user.username, task.uuid!, PermissionTypes.EDIT);
+    if (refused) return refused;
 
-      if (task.type !== "kanban" && task.type !== "task") {
-        return NextResponse.json(
-          { error: "Not a task checklist" },
-          { status: 400 },
-        );
-      }
-
-      const currentStatuses = task.statuses || API_FALLBACK_STATUSES;
-
-      const statusIndex = currentStatuses.findIndex(
-        (s) => s.id === params.statusId,
-      );
-      if (statusIndex === -1) {
-        return NextResponse.json(
-          { error: "Status not found" },
-          { status: 404 },
-        );
-      }
-
-      const refused = await turnAway(
-        user.username,
-        task.uuid!,
-        PermissionTypes.EDIT,
-      );
-      if (refused) return refused;
-
-      const result = await restatus(user, task.uuid!, (latest) =>
-        (latest || API_FALLBACK_STATUSES).filter(
-          (s) => s.id !== params.statusId,
-        ),
-      );
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to delete status" },
-          { status: 500 },
-        );
-      }
-
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+    const result = await restatus(user, task.uuid!, (latest) =>
+      (latest || DEFAULT_KANBAN_STATUSES).map((status) =>
+        status.id === params.statusId
+          ? {
+              ...status,
+              label: body.label ?? status.label,
+              color: body.color === undefined ? status.color : body.color ?? undefined,
+              order: body.order ?? status.order,
+              autoComplete: body.autoComplete ?? status.autoComplete,
+            }
+          : status,
+      ),
+    );
+    if (!result.success) {
+      return refuse(result.error || "Failed to update status", 500);
     }
-  });
-}
+
+    return NextResponse.json({
+      success: true,
+      data: result.data?.statuses?.find((status) => status.id === params.statusId),
+    });
+  },
+);
+
+export const DELETE = defineRoute(
+  {
+    id: "deleteTaskStatus",
+    method: HttpMethod.DELETE,
+    path: "/tasks/{taskId}/statuses/{statusId}",
+    tag: ApiTag.TASKS,
+    summary: "Delete a task status",
+    description: "Items in the deleted column, sub-items included, move to the remaining status with the lowest order and get a history entry. Needs the edit grant on a shared task.",
+    params: taskStatusParams,
+    responses: {
+      200: { description: "Deleted", schema: okSchema },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params }) => {
+    const found = await fetchTask(request, params.taskId, user.username);
+    if ("refusal" in found) return found.refusal;
+    const { task } = found;
+
+    const current = task.statuses || DEFAULT_KANBAN_STATUSES;
+    if (!current.some((status) => status.id === params.statusId)) {
+      return refuse(STATUS_NOT_FOUND, 404);
+    }
+
+    const refused = await turnAway(user.username, task.uuid!, PermissionTypes.EDIT);
+    if (refused) return refused;
+
+    const result = await restatus(user, task.uuid!, (latest) =>
+      (latest || DEFAULT_KANBAN_STATUSES).filter((status) => status.id !== params.statusId),
+    );
+    if (!result.success) {
+      return refuse(result.error || "Failed to delete status", 500);
+    }
+
+    return NextResponse.json({ success: true });
+  },
+);

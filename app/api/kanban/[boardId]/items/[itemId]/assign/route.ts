@@ -1,52 +1,39 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist/queries";
 import { assignItem } from "@/app/_server/actions/kanban/tweaker";
-import { isKanbanType } from "@/app/_types/enums";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, cardAssignBody, cardParams, cardChangedSchema } from "@/app/_schemas/api/kanban";
+import { boardFor, cardChanged } from "@/app/_utils/kanban/api-board";
+import { PermissionTypes } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string; itemId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { assignee } = body;
+export const PUT = defineRoute(
+  {
+    id: "assignBoardItem",
+    method: HttpMethod.PUT,
+    path: "/kanban/{boardId}/items/{itemId}/assign",
+    tag: ApiTag.KANBAN,
+    summary: "Assign a card",
+    description: "The assignee has to be a user who can see the board. Assigning someone other than the key owner sends them a notification. An empty or missing assignee clears it. Needs edit permission.",
+    params: cardParams,
+    body: cardAssignBody,
+    responses: {
+      200: { description: "The board after the change", schema: cardChangedSchema },
+      400: BOARD_REFUSED,
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    if (refused) return refused;
 
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
+    const result = await assignItem(user, board.uuid, params.itemId, body.assignee || "");
+    if (result.error) return refuse(result.error, 400);
 
-      if (!isKanbanType(board.type)) {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
-
-      const result = await assignItem(
-        user,
-        board.uuid!,
-        params.itemId,
-        assignee || "",
-      );
-
-      if (result.error) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
-      }
-
-      return NextResponse.json({ success: true, data: result.data });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+    return cardChanged(result.data, params.itemId);
+  },
+);

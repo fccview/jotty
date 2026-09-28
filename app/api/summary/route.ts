@@ -1,149 +1,115 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { summaryQuery, summarySchema } from "@/app/_schemas/api/discovery";
 import { Checklist, Result } from "@/app/_types";
-import { isKanbanType, TaskStatus } from "@/app/_types/enums";
+import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  return withApiAuth(request, async (user) => {
-    try {
-      const { searchParams } = new URL(request.url);
-      const requestedUsername = searchParams.get("username");
+const NO_SUCH_USER = "User not found";
 
-      if (requestedUsername && requestedUsername !== user.username) {
-        if (!user.isAdmin) {
-          return NextResponse.json(
-            {
-              error: "Only administrators can query other users' summary data",
-            },
-            { status: 403 },
-          );
-        }
-      }
+const _tally = <T>(things: T[], keyOf: (thing: T) => string) =>
+  things.reduce<Record<string, number>>((acc, thing) => {
+    const key = keyOf(thing);
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 
-      const username = requestedUsername || user.username;
+const _rate = (done: number, total: number) =>
+  total > 0 ? Math.round((done / total) * 100) : 0;
 
-      const notesResult = await getUserNotes({ username });
-      if (!notesResult.success || !notesResult.data) {
-        return NextResponse.json(
-          { error: notesResult.error || "Failed to fetch notes" },
-          { status: 500 },
-        );
-      }
+const _countItems = (lists: Checklist[]) => {
+  const counts = { total: 0, completed: 0, tasks: 0, tasksDone: 0, inProgress: 0, todo: 0 };
 
-      const userNotes = notesResult.data.filter(
-        (note) => note.owner === username,
-      );
+  lists.forEach((list) => {
+    counts.total += list.items.length;
+    list.items.forEach((item) => {
+      if (item.completed) counts.completed++;
+      if (!isKanbanType(list.type) || !item.status) return;
+      counts.tasks++;
+      if (item.status === TaskStatus.COMPLETED) counts.tasksDone++;
+      if (item.status === TaskStatus.IN_PROGRESS) counts.inProgress++;
+      if (item.status === TaskStatus.TODO) counts.todo++;
+    });
+  });
 
-      const listsResult = (await getUserChecklists({ username })) as Result<
-        Checklist[]
-      >;
-      if (!listsResult.success || !listsResult.data) {
-        return NextResponse.json(
-          { error: listsResult.error || "Failed to fetch checklists" },
-          { status: 500 },
-        );
-      }
+  return counts;
+};
 
-      const userLists = listsResult.data.filter(
-        (list) => list.owner === username,
-      );
+export const GET = defineRoute(
+  {
+    id: "getSummary",
+    method: HttpMethod.GET,
+    path: "/summary",
+    tag: ApiTag.DISCOVERY,
+    summary: "Get usage summary",
+    description: "Counts of notes, checklists, items and Kanban tasks owned by a user. Shared items are not counted. Admins can ask for anybody's.",
+    query: summaryQuery,
+    responses: {
+      200: { description: "Summary", schema: z.object({ summary: summarySchema }) },
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: { description: "No user with that username", schema: ERRORS[404].schema },
+      500: ERRORS[500],
+    },
+  },
+  async ({ user, query }) => {
+    if (query.username && query.username !== user.username && !user.isAdmin) {
+      return refuse("Only administrators can query other users' summary data", 403);
+    }
 
-      let totalItems = 0;
-      let completedItems = 0;
-      let totalTasks = 0;
-      let completedTasks = 0;
-      let inProgressTasks = 0;
-      let todoTasks = 0;
+    const username = query.username || user.username;
+    if (username !== user.username && !(await findUserRecord(username))) {
+      return refuse(NO_SUCH_USER, 404);
+    }
 
-      userLists.forEach((list) => {
-        totalItems += list.items.length;
+    const notesResult = await getUserNotes({ username });
+    if (!notesResult.success || !notesResult.data) {
+      return refuse(notesResult.error || "Failed to fetch notes", 500);
+    }
 
-        list.items.forEach((item) => {
-          if (item.completed) {
-            completedItems++;
-          }
+    const listsResult = (await getUserChecklists({ username })) as Result<Checklist[]>;
+    if (!listsResult.success || !listsResult.data) {
+      return refuse(listsResult.error || "Failed to fetch checklists", 500);
+    }
 
-          if (isKanbanType(list.type) && item.status) {
-            totalTasks++;
-            switch (item.status) {
-              case TaskStatus.COMPLETED:
-                completedTasks++;
-                break;
-              case TaskStatus.IN_PROGRESS:
-                inProgressTasks++;
-                break;
-              case TaskStatus.TODO:
-                todoTasks++;
-                break;
-            }
-          }
-        });
-      });
+    const notes = notesResult.data.filter((note) => note.owner === username);
+    const lists = listsResult.data.filter((list) => list.owner === username);
+    const counts = _countItems(lists);
 
-      const summary = {
+    return NextResponse.json({
+      summary: {
         username,
         notes: {
-          total: userNotes.length,
-          categories: userNotes.reduce(
-            (acc, note) => {
-              const category = note.category || "Uncategorized";
-              acc[category] = (acc[category] || 0) + 1;
-              return acc;
-            },
-            {} as Record<string, number>,
-          ),
+          total: notes.length,
+          categories: _tally(notes, (note) => note.category || UNCATEGORIZED),
         },
         checklists: {
-          total: userLists.length,
-          categories: userLists.reduce(
-            (acc, list) => {
-              const category = list.category || "Uncategorized";
-              acc[category] = (acc[category] || 0) + 1;
-              return acc;
-            },
-            {} as Record<string, number>,
-          ),
-          types: userLists.reduce(
-            (acc, list) => {
-              const type = list.type || "simple";
-              acc[type] = (acc[type] || 0) + 1;
-              return acc;
-            },
-            {} as Record<string, number>,
-          ),
+          total: lists.length,
+          categories: _tally(lists, (list) => list.category || UNCATEGORIZED),
+          types: _tally(lists, (list) => list.type || ChecklistsTypes.SIMPLE),
         },
         items: {
-          total: totalItems,
-          completed: completedItems,
-          pending: totalItems - completedItems,
-          completionRate:
-            totalItems > 0
-              ? Math.round((completedItems / totalItems) * 100)
-              : 0,
+          total: counts.total,
+          completed: counts.completed,
+          pending: counts.total - counts.completed,
+          completionRate: _rate(counts.completed, counts.total),
         },
         tasks: {
-          total: totalTasks,
-          completed: completedTasks,
-          inProgress: inProgressTasks,
-          todo: todoTasks,
-          completionRate:
-            totalTasks > 0
-              ? Math.round((completedTasks / totalTasks) * 100)
-              : 0,
+          total: counts.tasks,
+          completed: counts.tasksDone,
+          inProgress: counts.inProgress,
+          todo: counts.todo,
+          completionRate: _rate(counts.tasksDone, counts.tasks),
         },
-      };
-
-      return NextResponse.json({ summary });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+      },
+    });
+  },
+);

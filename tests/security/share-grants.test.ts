@@ -59,7 +59,7 @@ vi.mock('@/app/_server/actions/users', () => ({
 }))
 
 vi.mock('@/app/_server/actions/users/records', () => ({
-  findUserRecord: vi.fn().mockResolvedValue(null),
+  findUserRecord: vi.fn(async (username: string) => (username ? { username } : null)),
 }))
 
 vi.mock('@/app/_server/actions/file', () => ({
@@ -272,9 +272,9 @@ describe('Security: share grants hold on every board read and mutation', () => {
         const response = await call()
         const body = await response.json()
 
-        expect({ name, status: response.status }).toEqual({ name, status: 400 })
+        expect({ name, status: response.status }).toEqual({ name, status: 403 })
         expect(body.success).toBeUndefined()
-        expect(body.error).toBeTruthy()
+        expect(body.error).toBe('Forbidden')
       }
 
       expect(mockWrite).not.toHaveBeenCalled()

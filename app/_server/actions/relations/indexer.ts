@@ -2,7 +2,6 @@ import fs from "fs/promises";
 import path from "path";
 import type { DatabaseSync } from "node:sqlite";
 import { LinkKinds, RelationsStatus } from "@/app/_consts/relations";
-import { ItemTypes } from "@/app/_types/enums";
 import { isUuid } from "@/app/_consts/identity";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
@@ -12,6 +11,7 @@ import { getAllFileStats } from "@/app/_server/actions/file";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { readLinks, titleKey } from "./parser";
 import { itemFileInfo, itemTreeRoots } from "./paths";
+import { searchableOf } from "./searchable";
 import {
   inTransaction,
   relationsDb,
@@ -142,9 +142,13 @@ export const indexItemFile = (
       : path.basename(absPath, ".md");
   const key = titleKey(title);
   const encrypted = metadata.encrypted === true || isEncrypted(contentWithoutMetadata);
+  const origins = _origins();
   const parsed = encrypted
-    ? { targets: [], wikis: [], text: "" }
-    : readLinks(contentWithoutMetadata, _origins());
+    ? { targets: [], wikis: [], text: "", readable: "" }
+    : readLinks(contentWithoutMetadata, origins);
+  const searchable = encrypted
+    ? null
+    : searchableOf(info.type, parsed, content, absPath, metadata, origins);
 
   const mentions = _tally(
     parsed.targets
@@ -193,8 +197,14 @@ export const indexItemFile = (
     _adoptOrphans(db, info.owner, uuid, key);
 
     db.prepare("DELETE FROM texts WHERE uuid = ?").run(uuid);
-    if (parsed.text && info.type === ItemTypes.NOTE) {
-      db.prepare("INSERT INTO texts (uuid, body) VALUES (?, ?)").run(uuid, parsed.text);
+    if (searchable) {
+      db.prepare("INSERT INTO texts (uuid, title, body, prose, extra) VALUES (?, ?, ?, ?, ?)").run(
+        uuid,
+        title,
+        searchable.body,
+        searchable.prose,
+        searchable.extra,
+      );
     }
   });
 
@@ -226,13 +236,20 @@ export const forgetItemTree = (dir: string) => {
   _forgetWhere("instr(path, ?) = 1", prefix);
 };
 
-const _indexFromDisk = async (filePath: string, mtime?: number) => {
+const _changedSince = async (filePath: string, mtime: number): Promise<boolean> => {
+  const now = await fs.stat(filePath).catch(() => null);
+  return !now || Math.floor(now.mtimeMs) !== mtime;
+};
+
+const _indexFromDisk = async (filePath: string, mtime?: number, recheck = false) => {
   try {
     const [content, stats] = await Promise.all([
       fs.readFile(filePath, "utf-8"),
       mtime === undefined ? fs.stat(filePath) : Promise.resolve(null),
     ]);
-    indexItemFile(filePath, content, mtime ?? Math.floor(stats!.mtimeMs));
+    const stamp = mtime ?? Math.floor(stats!.mtimeMs);
+    if (recheck && (await _changedSince(filePath, stamp))) return;
+    indexItemFile(filePath, content, stamp);
   } catch (error) {
     console.error(`Relations could not index ${filePath}:`, error);
   }
@@ -312,7 +329,7 @@ const _refreshPath = async (target: string, indexed: Map<string, number>): Promi
   if (!itemFileInfo(absPath)) return false;
   const mtime = Math.floor(stats.mtimeMs);
   if (indexed.get(absPath) === mtime) return false;
-  await _indexFromDisk(absPath, mtime);
+  await _indexFromDisk(absPath, mtime, true);
   return true;
 };
 

@@ -1,5 +1,6 @@
 import { Modes } from "./enums";
 import { EncryptionSettings } from "./encryption";
+import type { SearchModes } from "@/app/_consts/search";
 
 export type EnableRecurrence = "enable" | "disable";
 export type ShowCompletedSuggestions = "enable" | "disable";
@@ -86,6 +87,7 @@ export interface User {
   hideTimeTrackingOnCards?: HideTimeTrackingOnCards;
   codeBlockStyle?: CodeBlockStyle;
   newItemInsertion?: NewItemInsertion;
+  searchMode?: SearchModes;
   mfaEnabled?: boolean;
   mfaSecret?: string;
   mfaRecoveryCode?: string;

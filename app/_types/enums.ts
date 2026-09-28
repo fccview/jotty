@@ -95,3 +95,8 @@ export enum BottomBarSpaces {
   QUICK_NAV = "--jotty-quick-nav-space",
   NOTE_BAR = "--jotty-note-bar-space",
 }
+
+export enum DropPosition {
+  BEFORE = "before",
+  AFTER = "after",
+}

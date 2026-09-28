@@ -305,16 +305,27 @@ export interface GrepSearchResult extends GrepFileResult {
   matchLine: string;
 }
 
+const _bodyMatch = async (filePath: string, text: string): Promise<string> => {
+  try {
+    const needle = text.toLowerCase();
+    const { contentWithoutMetadata } = extractYamlMetadata(await fs.readFile(filePath, "utf-8"));
+    return contentWithoutMetadata.split(LINE_BREAK).find((line) => line.toLowerCase().includes(needle))?.trim() ?? "";
+  } catch (error) {
+    console.error("Search match-line failed:", filePath, error);
+    return "";
+  }
+};
+
 export const grepSearchContent = async (
   dir: string,
-  pattern: string,
+  text: string,
 ): Promise<GrepSearchResult[]> => {
   try {
     const { stdout } = await execFileAsync("grep", [
-      "-rli",
+      "-rliF",
       "--include=*.md",
       "--",
-      pattern,
+      text,
       dir,
     ]);
 
@@ -328,21 +339,7 @@ export const grepSearchContent = async (
         const id = path.basename(filename, ".md");
         const category = parts.join("/");
 
-        let matchLine = "";
-        try {
-          const { stdout: matchOut } = await execFileAsync("grep", [
-            "-im1",
-            "--",
-            pattern,
-            filePath,
-          ]);
-          matchLine = matchOut.trim();
-        } catch (error) {
-          if (!_isNoMatch(error)) {
-            console.error("grep match-line failed:", error);
-          }
-        }
-
+        const matchLine = await _bodyMatch(filePath, text);
         return { filePath, id, category, matchLine };
       }),
     );

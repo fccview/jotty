@@ -50,6 +50,7 @@ export const mockRestatus = vi.fn();
 export const mockAssignItem = vi.fn();
 export const mockRemindItem = vi.fn();
 export const mockCanReach = vi.fn();
+export const mockSharesInvolving = vi.fn();
 
 vi.mock("@/app/_server/actions/api", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
@@ -118,6 +119,7 @@ vi.mock("@/app/_server/actions/kanban/tweaker", () => ({
 
 vi.mock("@/app/_server/actions/share/queries", () => ({
   canReach: (...args: any[]) => mockCanReach(...args),
+  sharesInvolving: (...args: any[]) => mockSharesInvolving(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item/stamper", () => ({
@@ -160,6 +162,15 @@ vi.mock("@/app/_server/actions/export", () => ({
 
 vi.mock("@/app/_server/actions/config", () => ({
   getAppSettings: (...args: any[]) => mockGetAppSettings(...args),
+  getSettings: async () => (await mockGetAppSettings())?.data ?? {},
+}));
+
+vi.mock("@/app/_server/actions/export/builders", () => ({
+  buildAllContent: (...args: any[]) => mockExportAllChecklistsNotes(...args),
+  buildUserContent: (...args: any[]) => mockExportUserChecklistsNotes(...args),
+  buildAllUsers: (...args: any[]) => mockExportAllUsersData(...args),
+  buildWholeData: (...args: any[]) => mockExportWholeDataFolder(...args),
+  readExportProgress: (...args: any[]) => mockGetExportProgress(...args),
 }));
 
 vi.mock("@/app/_server/actions/lib/legacy-lookup", () => ({
@@ -221,6 +232,8 @@ export function resetApiMocks() {
   mockRemindItem.mockReset();
   mockCanReach.mockReset();
   mockCanReach.mockResolvedValue(true);
+  mockSharesInvolving.mockReset();
+  mockSharesInvolving.mockResolvedValue([]);
 }
 
 export function createMockRequest(

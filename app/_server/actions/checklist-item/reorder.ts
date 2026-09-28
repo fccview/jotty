@@ -1,174 +1,34 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import path from "path";
-import {
-  serverWriteFile,
-  ensureDir,
-} from "@/app/_server/actions/file";
-import { getListById } from "@/app/_server/actions/checklist/queries";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
-import { canReach } from "@/app/_server/actions/share/queries";
-import { diskPath } from "@/app/_server/actions/share/target";
-import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
-import { broadcast } from "@/app/_server/actions/ws/broadcast";
-import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
+import { DropPosition } from "@/app/_types/enums";
+import { Rearranged, rearrangeItems } from "./rearrange";
 
-const _reorderItems = async (formData: FormData) => {
+const FAILED = "Failed to reorder items";
+
+const DONE = new Set([Rearranged.MOVED, Rearranged.UNCHANGED]);
+
+export const reorderItems = async (formData: FormData) => {
+  const uuid = formData.get("uuid") as string;
+  const activeItemId = formData.get("activeItemId") as string;
+
+  if (!uuid || !activeItemId) {
+    return { success: false, error: "List uuid and item ID are required" };
+  }
+
   try {
-    const uuid = formData.get("uuid") as string;
-    const activeItemId = formData.get("activeItemId") as string;
-    const overItemId = formData.get("overItemId") as string;
-    const isDropInto = formData.get("isDropInto") === "true";
-    const position = (formData.get("position") as string) || "before";
-
-    const currentUser = await getUsername();
-
-    if (!uuid || !activeItemId) {
-      return { success: false, error: "List uuid and item ID are required" };
-    }
-
-    const list = await getListById(uuid, currentUser);
-    if (!list) {
-      throw new Error("List not found");
-    }
-
-    const canEdit = await canReach(
-      list.uuid!,
-      ItemTypes.CHECKLIST,
-      currentUser,
-      PermissionTypes.EDIT
-    );
-
-    if (!canEdit) {
-      throw new Error("Permission denied");
-    }
-
-    const findItemWithParent = (
-      items: any[],
-      targetId: string,
-      parent: any = null
-    ): { item: any; parent: any; siblings: any[]; index: number } | null => {
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.id === targetId) {
-          return { item, parent, siblings: items, index: i };
-        }
-        if (item.children) {
-          const found = findItemWithParent(item.children, targetId, item);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-
-    const cloneItems = (items: any[]): any[] => {
-      return items.map((item) => ({
-        ...item,
-        children: item.children ? cloneItems(item.children) : undefined,
-      }));
-    };
-
-    const isDescendantOf = (
-      ancestorId: string,
-      descendantId: string,
-      items: any[]
-    ): boolean => {
-      const findItem = (items: any[], id: string): any | null => {
-        for (const item of items) {
-          if (item.id === id) return item;
-          if (item.children) {
-            const found = findItem(item.children, id);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-
-      const checkDescendant = (item: any, targetId: string): boolean => {
-        if (!item.children) return false;
-        for (const child of item.children) {
-          if (child.id === targetId) return true;
-          if (checkDescendant(child, targetId)) return true;
-        }
-        return false;
-      };
-
-      const ancestor = findItem(items, ancestorId);
-      return ancestor ? checkDescendant(ancestor, descendantId) : false;
-    };
-
-    if (isDescendantOf(activeItemId, overItemId, list.items || [])) {
-      return { success: true };
-    }
-
-    const newItems = cloneItems(list.items || []);
-
-    const activeInfo = findItemWithParent(newItems, activeItemId);
-    const overInfo = findItemWithParent(newItems, overItemId);
-
-    if (!activeInfo || !overInfo) {
-      throw new Error("Item not found in hierarchy");
-    }
-
-    activeInfo.siblings.splice(activeInfo.index, 1);
-
-    if (isDropInto) {
-      if (!overInfo.item.children) {
-        overInfo.item.children = [];
-      }
-      overInfo.item.children.push(activeInfo.item);
-    } else {
-      const targetSiblings = overInfo.siblings;
-      let newIndex = targetSiblings.findIndex((item) => item.id === overItemId);
-      if (position === "after") {
-        newIndex = newIndex + 1;
-      }
-      targetSiblings.splice(newIndex, 0, activeInfo.item);
-    }
-
-    const updateOrder = (items: any[]) => {
-      items.forEach((item, idx) => {
-        item.order = idx;
-        if (item.children) updateOrder(item.children);
-      });
-    };
-    updateOrder(newItems);
-
-    const updatedList = {
-      ...list,
-      items: newItems,
-      updatedAt: new Date().toISOString(),
-    };
-
-    const filePath = await diskPath(Modes.CHECKLISTS, currentUser, list);
-    await ensureDir(path.dirname(filePath));
-
-    const markdownContent = listToMarkdown(updatedList as any);
-
-    await serverWriteFile(filePath, markdownContent);
-
-    try {
-      revalidatePath("/");
-      revalidatePath(`/checklist/${list.uuid}`);
-    } catch (error) {
-      console.warn(
-        "Cache revalidation failed, but data was saved successfully:",
-        error
-      );
-    }
-
-    await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
-
-    return { success: true };
+    const outcome = await rearrangeItems(await getUsername(), {
+      listUuid: uuid,
+      activeItemId,
+      overItemId: formData.get("overItemId") as string,
+      isDropInto: formData.get("isDropInto") === "true",
+      position: formData.get("position") === DropPosition.AFTER ? DropPosition.AFTER : DropPosition.BEFORE,
+    });
+    if (DONE.has(outcome)) return { success: true };
+    console.error(`Error reordering items: ${outcome}`);
+    return { success: false, error: FAILED };
   } catch (error) {
     console.error("Error reordering items:", error);
-    return { success: false, error: "Failed to reorder items" };
+    return { success: false, error: FAILED };
   }
 };
-
-export const reorderItems = async (formData: FormData) =>
-  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
-    _reorderItems(formData),
-  );

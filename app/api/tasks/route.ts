@@ -1,137 +1,100 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { makeList } from "@/app/_server/actions/checklist/creator";
-import { isKanbanType } from "@/app/_types/enums";
-import { Checklist, Result } from "@/app/_types";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, envelope, page, totalField } from "@/app/_schemas/api/common";
+import { taskCreateBody, taskListQuery, taskSchema } from "@/app/_schemas/api/tasks";
+import { ChecklistsTypes, isKanbanType } from "@/app/_types/enums";
+import { Checklist, KanbanStatus, Result } from "@/app/_types";
 import { toApiItem } from "@/app/_utils/api-item";
+import { toApiTask } from "@/app/_utils/api-task";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  return withApiAuth(request, async (user) => {
-    try {
-      const { searchParams } = new URL(request.url);
-      const category = searchParams.get("category");
-      const status = searchParams.get("status");
-      const search = searchParams.get("q");
+type NewColumn = NonNullable<z.output<typeof taskCreateBody>["statuses"]>[number];
 
-      const lists = (await getUserChecklists({
-        username: user.username,
-      })) as Result<Checklist[]>;
-      if (!lists.success || !lists.data) {
-        return NextResponse.json(
-          { error: lists.error || "Failed to fetch tasks" },
-          { status: 500 },
-        );
-      }
+const _toStatus = (column: NewColumn, position: number): KanbanStatus => ({
+  id: column.id,
+  label: column.label || column.name || column.id,
+  ...(column.color !== undefined && { color: column.color }),
+  order: column.order ?? position,
+  ...(column.autoComplete !== undefined && { autoComplete: column.autoComplete }),
+});
 
-      let userTasks = lists.data.filter(
-        (list) => list.owner === user.username && isKanbanType(list.type),
-      );
+export const GET = defineRoute(
+  {
+    id: "listTasks",
+    method: HttpMethod.GET,
+    path: "/tasks",
+    tag: ApiTag.TASKS,
+    summary: "List tasks",
+    description: "Task checklists the API key owner owns. Tasks shared with them are left out.",
+    query: taskListQuery,
+    responses: {
+      200: { description: "Tasks", schema: z.object({ tasks: z.array(taskSchema), total: totalField }) },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      500: ERRORS[500],
+    },
+  },
+  async ({ user, query }) => {
+    const lists = (await getUserChecklists({ username: user.username })) as Result<Checklist[]>;
+    if (!lists.success || !lists.data) {
+      return refuse(lists.error || "Failed to fetch tasks", 500);
+    }
 
-      if (category) {
-        userTasks = userTasks.filter((list) => list.category === category);
-      }
-      if (status) {
-        userTasks = userTasks.filter((list) =>
-          list.items.some((item) => item.status === status),
-        );
-      }
-      if (search) {
-        const searchLower = search.toLowerCase();
-        userTasks = userTasks.filter(
-          (list) =>
-            list.title?.toLowerCase().includes(searchLower) ||
-            list.items.some((item) =>
-              item.text.toLowerCase().includes(searchLower),
-            ),
-        );
-      }
+    const needle = query.q?.toLowerCase();
+    const matches = lists.data.filter(
+      (list) =>
+        list.owner === user.username &&
+        isKanbanType(list.type) &&
+        (!query.category || list.category === query.category) &&
+        (!query.status || list.items.some((item) => item.status === query.status)) &&
+        (!needle ||
+          list.title?.toLowerCase().includes(needle) ||
+          list.items.some((item) => item.text.toLowerCase().includes(needle))),
+    );
 
-      const tasks = userTasks.map((list) => ({
-        id: list.uuid,
-        title: list.title,
-        category: list.category || "Uncategorized",
-        statuses: list.statuses || [
-          { id: "todo", name: "To Do", order: 0 },
-          { id: "in_progress", name: "In Progress", order: 1 },
-          { id: "completed", name: "Completed", order: 2 },
-        ],
+    return NextResponse.json({
+      tasks: page(matches, query).map((list) => ({
+        ...toApiTask(list),
         items: list.items.map((item, index) => toApiItem(item, index, true)),
-        createdAt: list.createdAt,
-        updatedAt: list.updatedAt,
-      }));
+      })),
+      total: matches.length,
+    });
+  },
+);
 
-      return NextResponse.json({ tasks });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          error:
-            error instanceof Error ? error.message : "Failed to fetch tasks",
-        },
-        { status: 500 },
-      );
+export const POST = defineRoute(
+  {
+    id: "createTask",
+    method: HttpMethod.POST,
+    path: "/tasks",
+    tag: ApiTag.TASKS,
+    summary: "Create a task",
+    description: "Creates a Kanban task checklist owned by the API key owner. Send statuses to pick your own columns.",
+    body: taskCreateBody,
+    responses: {
+      200: { description: "Created task", schema: envelope(taskSchema) },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      500: ERRORS[500],
+    },
+  },
+  async ({ user, body }) => {
+    const formData = new FormData();
+    formData.append("title", body.title);
+    formData.append("category", body.category);
+    formData.append("type", ChecklistsTypes.KANBAN);
+
+    const result = await makeList(user, formData, body.statuses?.map(_toStatus));
+    if (result.error || !result.data) {
+      console.error("Create task error:", result.error);
+      return refuse(result.error || "Failed to create task", 400);
     }
-  });
-}
 
-export async function POST(request: NextRequest) {
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { title, category = "Uncategorized", statuses } = body;
-
-      if (!title) {
-        return NextResponse.json(
-          { error: "Title is required" },
-          { status: 400 },
-        );
-      }
-
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("category", category);
-      formData.append("type", "kanban");
-
-      if (statuses) {
-        formData.append("statuses", JSON.stringify(statuses));
-      }
-
-      const result = await makeList(user, formData);
-
-      if (result.error || !result.data) {
-        console.error("Create task error:", result.error);
-        return NextResponse.json(
-          { error: result.error || "Failed to create task" },
-          { status: 400 },
-        );
-      }
-
-      const transformedTask = {
-        id: result.data?.uuid,
-        title: result.data?.title,
-        category: result.data?.category || "Uncategorized",
-        statuses: result.data?.statuses || [
-          { id: "todo", name: "To Do", order: 0 },
-          { id: "in_progress", name: "In Progress", order: 1 },
-          { id: "completed", name: "Completed", order: 2 },
-        ],
-        items: [],
-        createdAt: result.data?.createdAt,
-        updatedAt: result.data?.updatedAt,
-      };
-
-      return NextResponse.json({ success: true, data: transformedTask });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        {
-          error:
-            error instanceof Error ? error.message : "Internal server error",
-        },
-        { status: 500 },
-      );
-    }
-  });
-}
+    return NextResponse.json({ success: true, data: { ...toApiTask(result.data), items: [] } });
+  },
+);

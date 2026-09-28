@@ -119,3 +119,20 @@ describe("completeParent", () => {
     expect(result).toBe(items);
   });
 });
+
+describe("boards without stored columns", () => {
+  it("auto-completes a card moved into the default Completed column", () => {
+    const items = [makeItem("a", TaskStatus.TODO)];
+    const result = applyStatus(items, "a", TaskStatus.COMPLETED, undefined, USER, NOW);
+    expect(result[0].completed).toBe(true);
+  });
+
+  it("completes the parent once every child is done", () => {
+    const items = [
+      makeItem("p", TaskStatus.IN_PROGRESS, { children: [makeItem("c", TaskStatus.TODO, { completed: true })] }),
+    ];
+    const result = completeParent(items, "c", [], USER, NOW);
+    expect(result[0].completed).toBe(true);
+    expect(result[0].status).toBe(TaskStatus.COMPLETED);
+  });
+});
