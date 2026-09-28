@@ -28,6 +28,7 @@ import { isKanbanType } from "@/app/_types/enums";
 import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
+import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
 
 const debugCrud = isDebugFlag("crud");
 
@@ -54,7 +55,7 @@ export const readListsRecursively = async (
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
       const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType|createdAt|${SHARED_WITH_KEY}):|^[[:space:]]+- |^---$" "$1"`;
+      const metaCmd = metaGrep(["title", "uuid", "tags", "checklistType", "createdAt", SHARED_WITH_KEY]);
       const [statsOut, metaOut] = await Promise.all([
         boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
           () => "",
@@ -78,74 +79,7 @@ export const readListsRecursively = async (
           metaLines.slice(0, 40),
         );
       }
-      const inFrontmatter = new Map<string, boolean>();
-      let listFile = "";
-      let listKey = "";
-      for (const line of metaLines) {
-        const colonIdx = line.indexOf(":");
-        if (colonIdx === -1) continue;
-        const filePath = line.slice(0, colonIdx);
-        const rest = line.slice(colonIdx + 1);
-        if (rest.trim() === "---") {
-          inFrontmatter.set(filePath, !inFrontmatter.get(filePath));
-          if (debugCrud)
-            console.warn(
-              "[tags grep] --- seen, filePath:",
-              filePath,
-              "inFrontmatter:",
-              inFrontmatter.get(filePath),
-            );
-          continue;
-        }
-        if (!inFrontmatter.get(filePath)) continue;
-        if (/^\s+-\s/.test(rest)) {
-          if (listFile === filePath) {
-            const tag = rest.replace(/^\s+-\s+/, "").trim();
-            if (tag) {
-              if (debugCrud)
-                console.warn(
-                  "[tags grep] adding tag:",
-                  JSON.stringify(tag.slice(0, 50)),
-                  "filePath:",
-                  filePath,
-                );
-              if (!metadataCache!.has(filePath))
-                metadataCache!.set(filePath, {});
-              const entry = metadataCache!.get(filePath)!;
-              if (!Array.isArray(entry[listKey])) entry[listKey] = [];
-              (entry[listKey] as string[]).push(tag);
-            }
-          }
-          continue;
-        }
-        listFile = "";
-        const innerColon = rest.indexOf(":");
-        if (innerColon === -1) continue;
-        const key = rest.slice(0, innerColon);
-        const val = rest.slice(innerColon + 1);
-        if (!metadataCache!.has(filePath)) metadataCache!.set(filePath, {});
-        const entry = metadataCache!.get(filePath)!;
-        if (key === "tags") {
-          const trimmed = val.trim();
-          if (trimmed === "") {
-            entry.tags = [];
-            listFile = filePath;
-            listKey = key;
-          } else {
-            entry.tags = trimmed
-              .replace(/^\[|\]$/g, "")
-              .split(",")
-              .map((t: string) => t.trim())
-              .filter(Boolean);
-          }
-        } else if (key === SHARED_WITH_KEY && val.trim() === "") {
-          entry[key] = [];
-          listFile = filePath;
-          listKey = key;
-        } else {
-          entry[key] = val.trim().replace(/^["']|["']$/g, "");
-        }
-      }
+      scanFrontmatter(metaOut, metadataCache!);
     } catch (e) {
       console.warn("Optimization failed, falling back to standard mode", e);
     }
