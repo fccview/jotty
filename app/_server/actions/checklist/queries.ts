@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import { Checklist, User, GetChecklistsOptions } from "@/app/_types";
@@ -12,7 +10,9 @@ import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import {
+  createdAtOf,
   extractChecklistType,
+  extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
 import { readListsRecursively, type ChecklistReadResult } from "./readers";
@@ -338,7 +338,7 @@ export const getListById = async (
     type: checklistType as Checklist["type"],
     items: parsedData.items,
     category: listCategory,
-    createdAt: toIso(stats.birthtime),
+    createdAt: createdAtOf(extractYamlMetadata(rawContent).metadata, stats.birthtime),
     updatedAt: toIso(stats.mtime),
     owner: ownerUsername,
     isShared,
@@ -389,16 +389,4 @@ export const getAllLists = async (
     console.error("Error in getAllLists:", error);
     return { success: false, error: "Failed to fetch all lists" };
   }
-};
-
-export const getChecklistsForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
-  limit: number = 20,
-  offset: number = 0,
-) => {
-  return getUserChecklists({
-    filter: filter || undefined,
-    limit,
-    offset: filter ? offset : undefined,
-  });
 };

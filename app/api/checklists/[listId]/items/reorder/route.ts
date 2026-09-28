@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
 import { canReach } from "@/app/_server/actions/share/queries";
@@ -11,6 +11,7 @@ import path from "path";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
 export const dynamic = "force-dynamic";
 
@@ -77,78 +78,84 @@ export async function PUT(
         request.nextUrl.searchParams.get("category"),
         user.username,
       );
-      const list = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!list) {
+      if (!uuid) {
         return NextResponse.json({ error: "List not found" }, { status: 404 });
       }
 
-      const canEdit = await canReach(
-        list.uuid!,
-        ItemTypes.CHECKLIST,
-        user.username,
-        PermissionTypes.EDIT,
-      );
+      return runQueued(itemLane(Modes.CHECKLISTS, uuid), async () => {
+        const list = await getListById(uuid, user.username);
+        if (!list) {
+          return NextResponse.json({ error: "List not found" }, { status: 404 });
+        }
 
-      if (!canEdit) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
+        const canEdit = await canReach(
+          list.uuid!,
+          ItemTypes.CHECKLIST,
+          user.username,
+          PermissionTypes.EDIT,
+        );
 
-      const items = cloneTree(list.items as unknown as TreeItem[]);
+        if (!canEdit) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
 
-      if (isDescendant(activeItemId, overItemId, items)) {
+        const items = cloneTree(list.items as unknown as TreeItem[]);
+
+        if (isDescendant(activeItemId, overItemId, items)) {
+          return NextResponse.json({ success: true });
+        }
+
+        const activeInfo = findInTree(items, activeItemId);
+        const overInfo = findInTree(items, overItemId);
+
+        if (!activeInfo || !overInfo) {
+          return NextResponse.json({ error: "Item not found" }, { status: 404 });
+        }
+
+        if (activeItemId === overItemId) {
+          return NextResponse.json({ success: true });
+        }
+
+        activeInfo.siblings.splice(activeInfo.index, 1);
+
+        if (isDropInto) {
+          if (!overInfo.item.children) overInfo.item.children = [];
+          overInfo.item.children.push(activeInfo.item);
+        } else {
+          let insertAt = overInfo.siblings.findIndex((i) => i.id === overItemId);
+          if (position === "after") insertAt += 1;
+          overInfo.siblings.splice(insertAt, 0, activeInfo.item);
+        }
+
+        stampOrder(items);
+
+        const updatedList = { ...list, items, updatedAt: new Date().toISOString() };
+
+        const ownerDir = path.join(process.cwd(), "data", CHECKLISTS_FOLDER, list.owner!);
+        const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
+        await ensureDir(categoryDir);
+        await serverWriteFile(path.join(categoryDir, `${list.id}.md`), listToMarkdown(updatedList as any));
+
+        try {
+          revalidatePath("/");
+          revalidatePath(`/checklist/${list.uuid}`);
+        } catch (error) {
+          console.warn("Cache revalidation failed, but data was saved successfully:", error);
+        }
+
+        try {
+          await broadcast({
+            type: "checklist",
+            action: "updated",
+            entityId: list.uuid,
+            username: user.username,
+          });
+        } catch (error) {
+          console.warn("Broadcast failed, but data was saved successfully:", error);
+        }
+
         return NextResponse.json({ success: true });
-      }
-
-      const activeInfo = findInTree(items, activeItemId);
-      const overInfo = findInTree(items, overItemId);
-
-      if (!activeInfo || !overInfo) {
-        return NextResponse.json({ error: "Item not found" }, { status: 404 });
-      }
-
-      if (activeItemId === overItemId) {
-        return NextResponse.json({ success: true });
-      }
-
-      activeInfo.siblings.splice(activeInfo.index, 1);
-
-      if (isDropInto) {
-        if (!overInfo.item.children) overInfo.item.children = [];
-        overInfo.item.children.push(activeInfo.item);
-      } else {
-        let insertAt = overInfo.siblings.findIndex((i) => i.id === overItemId);
-        if (position === "after") insertAt += 1;
-        overInfo.siblings.splice(insertAt, 0, activeInfo.item);
-      }
-
-      stampOrder(items);
-
-      const updatedList = { ...list, items, updatedAt: new Date().toISOString() };
-
-      const ownerDir = path.join(process.cwd(), "data", CHECKLISTS_FOLDER, list.owner!);
-      const categoryDir = path.join(ownerDir, list.category || UNCATEGORIZED);
-      await ensureDir(categoryDir);
-      await serverWriteFile(path.join(categoryDir, `${list.id}.md`), listToMarkdown(updatedList as any));
-
-      try {
-        revalidatePath("/");
-        revalidatePath(`/checklist/${list.uuid}`);
-      } catch (error) {
-        console.warn("Cache revalidation failed, but data was saved successfully:", error);
-      }
-
-      try {
-        await broadcast({
-          type: "checklist",
-          action: "updated",
-          entityId: list.uuid,
-          username: user.username,
-        });
-      } catch (error) {
-        console.warn("Broadcast failed, but data was saved successfully:", error);
-      }
-
-      return NextResponse.json({ success: true });
+      });
     } catch (error) {
       console.error("API Error:", error);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });

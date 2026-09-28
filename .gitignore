@@ -46,7 +46,6 @@ next-env.d.ts
 /data_bak
 
 *.test.yml
-.claude
 
 # serwist (auto-generated service worker)
 public/sw*

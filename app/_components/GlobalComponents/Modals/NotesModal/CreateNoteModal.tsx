@@ -14,6 +14,7 @@ import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { PGPEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/PGPEncryptionModal";
 import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modals/EncryptionModals/XChaChaEncryptionModal";
 import { useTranslations } from "next-intl";
+import { useToast } from "@/app/_providers/ToastProvider";
 
 const ENCRYPTION_PLACEHOLDER_CONTENT = "Note placeholder";
 
@@ -32,6 +33,7 @@ export const CreateNoteModal = ({
 }: CreateNoteModalProps) => {
   const t = useTranslations();
   const { user } = useAppMode();
+  const { showToast } = useToast();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
@@ -47,7 +49,16 @@ export const CreateNoteModal = ({
     titleInputRef.current?.focus();
   }, []);
 
-  const _resolveCategoryPath = async (): Promise<string> => {
+  const _complain = (message: string, error?: string) => {
+    console.warn("Note creation refused:", error || message);
+    showToast({
+      type: "error",
+      title: t("common.error"),
+      message: error || message,
+    });
+  };
+
+  const _resolveCategoryPath = async (): Promise<string | null> => {
     if (showNewCategory && newCategory.trim()) {
       const newCatTrimmed = newCategory.trim();
       const categoryFormData = new FormData();
@@ -56,7 +67,11 @@ export const CreateNoteModal = ({
       if (category) {
         categoryFormData.append("parent", category);
       }
-      await createCategory(categoryFormData);
+      const made = await createCategory(categoryFormData);
+      if (!made.success) {
+        _complain(t("notes.createCategoryFailed"), made.error);
+        return null;
+      }
       return category ? `${category}/${newCatTrimmed}` : newCatTrimmed;
     }
     return category;
@@ -64,17 +79,22 @@ export const CreateNoteModal = ({
 
   const _finalizeCreate = async (rawContent: string, isEncrypted = false) => {
     const finalCategoryPath = await _resolveCategoryPath();
+    if (finalCategoryPath === null) return;
+
     const formData = new FormData();
     formData.append("title", title.trim());
     formData.append("category", finalCategoryPath);
     formData.append("rawContent", rawContent);
     const result = await createNote(formData);
-    if (result.success) {
-      const doc = result.data && isEncrypted
-        ? { ...result.data, encrypted: true }
-        : result.data;
-      onCreated(doc);
+    if (!result.success) {
+      _complain(t("notes.createNoteFailed"), result.error);
+      return;
     }
+
+    const doc = result.data && isEncrypted
+      ? { ...result.data, encrypted: true }
+      : result.data;
+    onCreated(doc);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

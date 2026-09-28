@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import { Note, User, GetNotesOptions } from "@/app/_types";
@@ -10,7 +8,11 @@ import { getCurrentUser } from "@/app/_server/actions/users";
 import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
-import { toIso } from "@/app/_utils/yaml-metadata-utils";
+import {
+  createdAtOf,
+  extractYamlMetadata,
+  toIso,
+} from "@/app/_utils/yaml-metadata-utils";
 import { readNotesRecursively } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
@@ -123,13 +125,16 @@ export const getNoteById = async (
     title: parsedData.title,
     content: parsedData.content,
     category: noteCategory,
-    createdAt: toIso(stats.birthtime),
+    createdAt: createdAtOf(extractYamlMetadata(rawContent).metadata, stats.birthtime),
     updatedAt: toIso(stats.mtime),
     owner: ownerUsername,
     isShared,
     encrypted: parsedData.encrypted || false,
     encryptionMethod: parsedData.encryptionMethod,
     tags: parsedData.tags || [],
+    ...(parsedData.sharedWith !== undefined && {
+      sharedWith: parsedData.sharedWith,
+    }),
     ...(parsedData.extraMetadata && {
       extraMetadata: parsedData.extraMetadata,
     }),
@@ -349,16 +354,4 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     console.error("Error in getNotesUnified:", error);
     return { success: false, error: "Failed to fetch notes" };
   }
-};
-
-export const getNotesForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
-  limit: number = 20,
-  offset: number = 0,
-) => {
-  return getUserNotes({
-    filter: filter || undefined,
-    limit,
-    offset: filter ? offset : undefined,
-  });
 };

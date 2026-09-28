@@ -14,8 +14,7 @@ vi.mock('@/app/_server/actions/session', () => ({
   readSessionData: vi.fn().mockResolvedValue({}),
   readSessions: vi.fn().mockResolvedValue({}),
   removeSession: vi.fn().mockResolvedValue(undefined),
-  writeSessionData: vi.fn().mockResolvedValue(undefined),
-  writeSessions: vi.fn().mockResolvedValue(undefined),
+  swapSession: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/app/_server/actions/file', () => ({
@@ -40,14 +39,13 @@ vi.mock('@/app/_server/actions/auth/ldap', () => ({
 
 import { register, login, logout } from '@/app/_server/actions/auth'
 import { readJsonFile, writeJsonFile } from '@/app/_server/actions/file'
-import { readSessions, writeSessions, createSession } from '@/app/_server/actions/session'
+import { readSessions, createSession } from '@/app/_server/actions/session'
 import { ensureUser } from '@/app/_server/actions/users'
 import { ldapLogin } from '@/app/_server/actions/auth/ldap'
 
 const mockReadJsonFile = readJsonFile as ReturnType<typeof vi.fn>
 const mockWriteJsonFile = writeJsonFile as ReturnType<typeof vi.fn>
 const mockReadSessions = readSessions as ReturnType<typeof vi.fn>
-const mockWriteSessions = writeSessions as ReturnType<typeof vi.fn>
 const mockCreateSession = createSession as ReturnType<typeof vi.fn>
 const mockEnsureUser = ensureUser as ReturnType<typeof vi.fn>
 const mockLdapLogin = ldapLogin as ReturnType<typeof vi.fn>
@@ -87,7 +85,7 @@ describe('Auth Actions', () => {
       expect(result).toEqual({ error: 'Passwords do not match' })
     })
 
-    it('should return error when username already exists', async () => {
+    it('should reject registration when users already exist', async () => {
       mockReadJsonFile.mockResolvedValue([
         { username: 'testuser', passwordHash: 'hash', isAdmin: true },
       ])
@@ -100,7 +98,7 @@ describe('Auth Actions', () => {
 
       const result = await register(formData)
 
-      expect(result).toEqual({ error: 'Username already exists' })
+      expect(result).toEqual({ error: 'Registration is closed. Contact an administrator to create an account.' })
     })
 
     it('should create first user as admin and super admin', async () => {
@@ -131,11 +129,10 @@ describe('Auth Actions', () => {
       )
     })
 
-    it('should create subsequent users as non-admin', async () => {
+    it('should reject registration when users already exist (non-duplicate username)', async () => {
       mockReadJsonFile.mockResolvedValue([
         { username: 'existinguser', passwordHash: 'hash', isAdmin: true },
       ])
-      mockFs.mkdir.mockResolvedValue(undefined)
 
       const formData = createFormData({
         username: 'newuser',
@@ -143,21 +140,9 @@ describe('Auth Actions', () => {
         confirmPassword: 'password123',
       })
 
-      try {
-        await register(formData)
-      } catch (e: any) {
-        expect(e.message).toContain('REDIRECT:/')
-      }
+      const result = await register(formData)
 
-      expect(mockWriteJsonFile).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            username: 'newuser',
-            isAdmin: false,
-          }),
-        ]),
-        expect.any(String)
-      )
+      expect(result).toEqual({ error: 'Registration is closed. Contact an administrator to create an account.' })
     })
 
     it('should set session cookie on successful registration', async () => {

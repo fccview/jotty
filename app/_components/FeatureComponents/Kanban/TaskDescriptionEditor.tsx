@@ -11,18 +11,10 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 
 interface TaskDescriptionEditorProps {
-  /** Current description content (markdown text, already unsanitized). */
   content: string;
-  /** Called with the latest markdown content whenever the editor changes. */
   onContentChange: (markdownContent: string) => void;
 }
 
-/**
- * Renders the task description editor surface, reusing the same editor
- * stack as notes (Tiptap rich editor, or the minimal-mode editor when the
- * user has disabled the rich editor). Emits markdown text via onContentChange
- * so callers can persist it in the existing checklist description format.
- */
 export const TaskDescriptionEditor = ({
   content,
   onContentChange,
@@ -41,10 +33,7 @@ export const TaskDescriptionEditor = ({
     }
   }, [notes, checklists, user?.username, isMinimalMode]);
 
-  const handleEditorContentChange = (
-    next: string,
-    isMarkdownMode: boolean,
-  ) => {
+  const handleEditorContentChange = (next: string, isMarkdownMode: boolean) => {
     if (isMarkdownMode) {
       onContentChange(next);
       return;

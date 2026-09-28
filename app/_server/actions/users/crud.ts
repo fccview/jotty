@@ -5,17 +5,23 @@ import {
   NOTES_DIR,
   USERS_FILE,
 } from "@/app/_consts/files";
-import { readJsonFile, writeJsonFile } from "../file";
-import { Result, User } from "@/app/_types";
+import {
+  readJsonFile,
+  serverDeleteDir,
+  serverRenamePath,
+  writeJsonFile,
+} from "../file";
+import { Result, SanitisedUser, User } from "@/app/_types";
+import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { removeAllSessionsForUser } from "../session";
-import fs from "fs/promises";
 import { createHash } from "crypto";
 import { ItemTypes } from "@/app/_types/enums";
 import { DEFAULT_WEEK_START } from "@/app/_consts/calendar";
 import { getFormData } from "@/app/_utils/global-utils";
 import { logUserEvent } from "@/app/_server/actions/log";
 import { getUserIndex } from "./helpers";
-import { getUserByUsername, getCurrentUser } from "./queries";
+import { getCurrentUser } from "./queries";
+import { findUserRecord, mutateUsers } from "./records";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -48,10 +54,8 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
   await removeAllSessionsForUser(username);
 
   try {
-    await fs.rm(CHECKLISTS_DIR(username), { recursive: true, force: true });
-
-    const docsDir = NOTES_DIR(username);
-    await fs.rm(docsDir, { recursive: true, force: true });
+    await serverDeleteDir(CHECKLISTS_DIR(username));
+    await serverDeleteDir(NOTES_DIR(username));
   } catch (error) {
     console.warn(
       `Warning: Could not clean up data files for ${username}:`,
@@ -59,8 +63,23 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
     );
   }
 
-  allUsers.splice(userIndex, 1);
-  await writeJsonFile(allUsers, USERS_FILE);
+  try {
+    const { revokeGrants } = await import("@/app/_server/actions/share/rename");
+
+    await revokeGrants(username);
+  } catch (error) {
+    console.error(`Could not revoke shares granted to ${username}:`, error);
+  }
+
+  const removed = await mutateUsers((users) => {
+    const index = users.findIndex((user: User) => user.username === username);
+    if (index === -1) return null;
+
+    users.splice(index, 1);
+    return true;
+  });
+
+  if (!removed) return { success: false, error: "Failed to delete user" };
 
   return { success: true, data: null };
 }
@@ -68,7 +87,7 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
 export async function _updateUserCore(
   targetUsername: string,
   updates: UserUpdatePayload
-): Promise<Result<Omit<User, "passwordHash">>> {
+): Promise<Result<SanitisedUser>> {
   if (Object.keys(updates).length === 0) {
     return { success: false, error: "No updates provided." };
   }
@@ -87,7 +106,7 @@ export async function _updateUserCore(
     try {
       const oldChecklistsPath = CHECKLISTS_DIR(targetUsername);
       const newChecklistsPath = CHECKLISTS_DIR(updates.username);
-      await fs.rename(oldChecklistsPath, newChecklistsPath);
+      await serverRenamePath(oldChecklistsPath, newChecklistsPath);
     } catch (error) {
       console.warn(
         `Could not rename checklists directory for ${targetUsername}:`,
@@ -98,7 +117,7 @@ export async function _updateUserCore(
     try {
       const oldNotesPath = NOTES_DIR(targetUsername);
       const newNotesPath = NOTES_DIR(updates.username);
-      await fs.rename(oldNotesPath, newNotesPath);
+      await serverRenamePath(oldNotesPath, newNotesPath);
     } catch (error) {
       console.warn(
         `Could not rename notes directory for ${targetUsername}:`,
@@ -128,8 +147,7 @@ export async function _updateUserCore(
   allUsers[userIndex] = updatedUser;
   await writeJsonFile(allUsers, USERS_FILE);
 
-  const { passwordHash: _, ...userWithoutPassword } = updatedUser;
-  return { success: true, data: userWithoutPassword };
+  return { success: true, data: sanitizeUserForClient(updatedUser)! };
 }
 
 export const createUser = async (
@@ -138,6 +156,11 @@ export const createUser = async (
   const username = formData.get("username") as string;
 
   try {
+    const adminUser = await getCurrentUser();
+    if (!adminUser?.isAdmin) {
+      return { success: false, error: "Unauthorized: Admin access required" };
+    }
+
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
     const isAdmin = formData.get("isAdmin") === "true";
@@ -171,7 +194,7 @@ export const createUser = async (
     }
 
     const existingUsers = await readJsonFile(USERS_FILE);
-    const userExists = await getUserByUsername(username);
+    const userExists = await findUserRecord(username);
 
     if (userExists) {
       return {
@@ -258,7 +281,7 @@ export const deleteAccount = async (
       return { success: false, error: "Password confirmation is required" };
     }
 
-    const userRecord = await getUserByUsername(currentUser.username);
+    const userRecord = await findUserRecord(currentUser.username);
 
     if (!userRecord) {
       return { success: false, error: "User not found" };
@@ -318,7 +341,7 @@ export const updateProfile = async (
         };
       }
 
-      const userRecord = await getUserByUsername(currentUser.username);
+      const userRecord = await findUserRecord(currentUser.username);
 
       if (userRecord?.passwordHash) {
         if (!currentPassword) {

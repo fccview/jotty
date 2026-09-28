@@ -2,28 +2,31 @@
 
 import path from "path";
 import fs from "fs/promises";
-import { exec } from "child_process";
-import { promisify } from "util";
 import { Item } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
-import { ChecklistsTypes, NotificationTargets } from "@/app/_types/enums";
+import { ChecklistsTypes, Modes, NotificationTargets } from "@/app/_types/enums";
 import { parseMarkdown, listToMarkdown } from "@/app/_utils/checklist-utils";
+import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { serverWriteFile } from "@/app/_server/actions/file";
 import { updateItem } from "@/app/_utils/item-tree-utils";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
+import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { usersWithAccess } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
-
-const _execAsync = promisify(exec);
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
+import { grepExtractField } from "@/app/_utils/grep-utils";
+import { boxedShell } from "@/app/_utils/shell-utils";
 
 let _isRunning = false;
 
 const _findFilesWithReminders = async (rootDir: string): Promise<string[]> => {
   try {
-    const { stdout } = await _execAsync(
-      `grep -rl "reminder:" "${rootDir}" --include="*.md" 2>/dev/null || true`,
+    const stdout = await boxedShell(
+      'grep -rl --include="*.md" -e "reminder:" -- "$1" 2>/dev/null || true',
+      [rootDir],
     );
     return stdout.trim().split("\n").filter(Boolean);
-  } catch {
+  } catch (error) {
+    console.error("Failed to scan for reminders:", error);
     return [];
   }
 };
@@ -45,6 +48,95 @@ const _collectDueItems = (items: Item[], now: number): Item[] => {
   };
   walk(items);
   return due;
+};
+
+const _remindFile = async (
+  filePath: string,
+  checklistsRoot: string,
+  now: number,
+): Promise<void> => {
+  const uuid = await grepExtractField(filePath, "uuid");
+  if (!uuid) {
+    console.warn(`[reminders] skipping list without uuid: ${filePath}`);
+    return;
+  }
+
+  await runQueued(itemLane(Modes.CHECKLISTS, uuid), async () => {
+    const relPath = path.relative(checklistsRoot, filePath);
+    const parts = relPath.split(path.sep);
+    if (parts.length < 2) return;
+
+    const owner = parts[0];
+    const filename = parts[parts.length - 1];
+    const listId = filename.replace(/\.md$/, "");
+    const category = parts.slice(1, -1).join("/") || "Uncategorized";
+
+    const content = await fs.readFile(filePath, "utf-8");
+    if (extractYamlMetadata(content).metadata.uuid !== uuid) return;
+
+    const stats = await fs.stat(filePath);
+    const list = parseMarkdown(
+      content,
+      listId,
+      category,
+      owner,
+      false,
+      { birthtime: stats.birthtime, mtime: stats.mtime },
+      filePath,
+    );
+
+    if (list.type !== ChecklistsTypes.KANBAN) return;
+
+    const dueItems = _collectDueItems(list.items, now);
+    if (dueItems.length === 0) return;
+
+    const sharees = await usersWithAccess(uuid);
+    const recipients = Array.from(new Set([owner, ...sharees]));
+
+    let updatedItems = list.items;
+    for (const item of dueItems) {
+      for (const username of recipients) {
+        await notifyUser(username, {
+          type: "reminder",
+          title: "",
+          message: "",
+          titleKey: "reminderTitle",
+          messageKey: "reminderMessage",
+          messageVars: {
+            task: item.text,
+            board: list.title,
+          },
+          data: {
+            itemId: list.uuid,
+            itemType: NotificationTargets.CHECKLIST,
+            taskId: item.id,
+          },
+        });
+      }
+
+      updatedItems = updateItem(updatedItems, item.id, (it) => ({
+        ...it,
+        reminder: it.reminder
+          ? { ...it.reminder, notified: true }
+          : undefined,
+      }));
+    }
+
+    const updatedList = {
+      ...list,
+      items: updatedItems,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await serverWriteFile(filePath, listToMarkdown(updatedList));
+
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: updatedList.uuid,
+      username: owner,
+    });
+  });
 };
 
 export const scanReminders = async (): Promise<void> => {
@@ -71,85 +163,7 @@ export const scanReminders = async (): Promise<void> => {
 
     for (const filePath of files) {
       try {
-        const relPath = path.relative(checklistsRoot, filePath);
-        const parts = relPath.split(path.sep);
-        if (parts.length < 2) continue;
-
-        const owner = parts[0];
-        const filename = parts[parts.length - 1];
-        const listId = filename.replace(/\.md$/, "");
-        const category = parts.slice(1, -1).join("/") || "Uncategorized";
-
-        const content = await fs.readFile(filePath, "utf-8");
-        const stats = await fs.stat(filePath);
-        const list = parseMarkdown(
-          content,
-          listId,
-          category,
-          owner,
-          false,
-          { birthtime: stats.birthtime, mtime: stats.mtime },
-          filePath,
-        );
-
-        if (list.type !== ChecklistsTypes.KANBAN) continue;
-
-        const dueItems = _collectDueItems(list.items, now);
-        if (dueItems.length === 0) continue;
-
-        if (!list.uuid) {
-          console.warn(
-            `[reminders] skipping list without uuid: ${filePath}`,
-          );
-          continue;
-        }
-
-        const sharees = await usersWithAccess(list.uuid);
-        const recipients = Array.from(new Set([owner, ...sharees]));
-
-        let updatedItems = list.items;
-        for (const item of dueItems) {
-          for (const username of recipients) {
-            await createNotificationForUser(username, {
-              type: "reminder",
-              title: "",
-              message: "",
-              titleKey: "reminderTitle",
-              messageKey: "reminderMessage",
-              messageVars: {
-                task: item.text,
-                board: list.title,
-              },
-              data: {
-                itemId: list.uuid,
-                itemType: NotificationTargets.CHECKLIST,
-                taskId: item.id,
-              },
-            });
-          }
-
-          updatedItems = updateItem(updatedItems, item.id, (it) => ({
-            ...it,
-            reminder: it.reminder
-              ? { ...it.reminder, notified: true }
-              : undefined,
-          }));
-        }
-
-        const updatedList = {
-          ...list,
-          items: updatedItems,
-          updatedAt: new Date().toISOString(),
-        };
-
-        await fs.writeFile(filePath, listToMarkdown(updatedList), "utf-8");
-
-        await broadcast({
-          type: "checklist",
-          action: "updated",
-          entityId: updatedList.uuid,
-          username: owner,
-        });
+        await _remindFile(filePath, checklistsRoot, now);
       } catch (err) {
         console.error(`[reminders] failed to process ${filePath}:`, err);
       }

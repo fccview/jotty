@@ -8,8 +8,8 @@ import {
   updateItemStatus,
   createBulkItems,
 } from "@/app/_server/actions/checklist-item";
-import { getListById } from "@/app/_server/actions/checklist";
-import { getCurrentUser } from "@/app/_server/actions/users";
+import { viewList } from "@/app/_server/actions/checklist";
+import { getUsername } from "@/app/_server/actions/users";
 import { getColumnItems } from "@/app/_utils/kanban/board-utils";
 import { useDragStore } from "@/app/_utils/dnd/drag-store";
 
@@ -67,10 +67,7 @@ export const useKanbanBoard = ({
   }, [dragPhase, localChecklist.uuid, localChecklist.updatedAt]);
 
   const refreshChecklist = useCallback(async () => {
-    const updatedChecklist = await getListById(
-      localChecklist.uuid || "",
-      localChecklist.owner,
-    );
+    const updatedChecklist = await viewList(localChecklist.uuid || "");
     if (updatedChecklist) {
       setLocalChecklist(updatedChecklist);
       onUpdate(updatedChecklist);
@@ -105,7 +102,7 @@ export const useKanbanBoard = ({
     formData.append("uuid", localChecklist.uuid || "");
     formData.append("text", text);
 
-    const currentUser = await getCurrentUser();
+    const username = (await getUsername()) || undefined;
 
     if (recurrence) {
       formData.append("recurrence", JSON.stringify(recurrence));
@@ -118,13 +115,10 @@ export const useKanbanBoard = ({
     const result = await createItem(
       localChecklist,
       formData,
-      currentUser?.username,
+      username,
     );
 
-    const updatedList = await getListById(
-      localChecklist.uuid || "",
-      localChecklist.owner || currentUser?.username,
-    );
+    const updatedList = await viewList(localChecklist.uuid || "");
     if (updatedList) {
       setLocalChecklist(updatedList);
       onUpdate(updatedList);

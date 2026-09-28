@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist";
-import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { serverWriteFile } from "@/app/_server/actions/file";
-import path from "path";
+import { withApiAuth, listUuid, turnAway } from "@/app/_utils/api-utils";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { restatus } from "@/app/_server/actions/checklist/restatus";
 import { KanbanStatus } from "@/app/_types";
-import { isKanbanType } from "@/app/_types/enums";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
+import { isKanbanType, PermissionTypes } from "@/app/_types/enums";
+import { API_FALLBACK_STATUSES } from "@/app/_consts/kanban";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +28,7 @@ export async function GET(
         );
       }
 
-      const statuses = task.statuses || [
-        { id: "todo", label: "To Do", order: 0 },
-        { id: "in_progress", label: "In Progress", order: 1 },
-        { id: "completed", label: "Completed", order: 2 },
-      ];
+      const statuses = task.statuses || API_FALLBACK_STATUSES;
 
       return NextResponse.json({ statuses });
     } catch (error) {
@@ -77,11 +71,7 @@ export async function POST(
         );
       }
 
-      const currentStatuses = task.statuses || [
-        { id: "todo", label: "To Do", order: 0 },
-        { id: "in_progress", label: "In Progress", order: 1 },
-        { id: "completed", label: "Completed", order: 2 },
-      ];
+      const currentStatuses = task.statuses || API_FALLBACK_STATUSES;
 
       if (currentStatuses.some((s) => s.id === id)) {
         return NextResponse.json(
@@ -98,27 +88,24 @@ export async function POST(
         autoComplete: autoComplete ?? false,
       };
 
-      const updatedStatuses = [...currentStatuses, newStatus];
-
-      const updatedTask = {
-        ...task,
-        statuses: updatedStatuses,
-        updatedAt: new Date().toISOString(),
-      };
-
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        task.owner!,
+      const refused = await turnAway(
+        user.username,
+        task.uuid!,
+        PermissionTypes.EDIT,
       );
-      const filePath = path.join(
-        ownerDir,
-        task.category || "Uncategorized",
-        `${task.id}.md`,
-      );
+      if (refused) return refused;
 
-      await serverWriteFile(filePath, listToMarkdown(updatedTask as any));
+      const result = await restatus(user, task.uuid!, (latest) => {
+        const fresh = latest || API_FALLBACK_STATUSES;
+        return fresh.some((s) => s.id === id) ? fresh : [...fresh, newStatus];
+      });
+
+      if (!result.success) {
+        return NextResponse.json(
+          { error: result.error || "Failed to create status" },
+          { status: 500 },
+        );
+      }
 
       return NextResponse.json({ success: true, data: newStatus });
     } catch (error) {

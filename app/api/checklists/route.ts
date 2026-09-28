@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth } from "@/app/_utils/api-utils";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { makeList } from "@/app/_server/actions/checklist/creator";
 import { ChecklistsTypes, isKanbanType } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";

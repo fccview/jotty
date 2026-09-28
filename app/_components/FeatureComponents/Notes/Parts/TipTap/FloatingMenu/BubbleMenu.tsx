@@ -14,8 +14,23 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ColorPicker } from "../ColorPicker/ColorPicker";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { MenuBox, menuBounds } from "@/app/_utils/menu-placement-utils";
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
 import { useTranslations } from "next-intl";
+
+const MENU_GAP = 8;
+const MOBILE_MENU_GAP = 20;
+const VIEWPORT_MARGIN = 8;
+const MOBILE_BREAKPOINT = 768;
+const MOBILE_AGENT = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+
+const selectionBounds = (editor: Editor, pos: number): MenuBox => {
+  const { node } = editor.view.domAtPos(pos);
+  const element = node instanceof HTMLElement ? node : node.parentElement;
+  if (element) return menuBounds(element);
+  return { top: 0, left: 0, right: window.innerWidth, bottom: window.innerHeight };
+};
 
 interface BubbleMenuProps {
   editor: Editor;
@@ -40,48 +55,45 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
     if (!isVisible || !menuRef.current) return;
 
     const updatePosition = () => {
-      if (menuRef.current) {
-        const { from, to } = editor.state.selection;
-        if (from === to) return;
+      const menu = menuRef.current;
+      if (!menu) return;
+      const { from, to, empty } = editor.state.selection;
+      if (empty) return;
 
-        const startCoords = editor.view.coordsAtPos(from);
-        const endCoords = editor.view.coordsAtPos(to);
-        const menuRect = menuRef.current.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                         window.innerWidth < 768;
+      const start = editor.view.coordsAtPos(from);
+      const end = editor.view.coordsAtPos(to);
+      const { width, height } = menu.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const bounds = selectionBounds(editor, from);
+      const isMobile =
+        MOBILE_AGENT.test(navigator.userAgent) ||
+        viewportWidth < MOBILE_BREAKPOINT;
 
-        let top: number;
-        let left: number;
+      const above = Math.min(start.top, end.top) - height - MENU_GAP;
+      const below =
+        Math.max(start.bottom, end.bottom) +
+        (isMobile ? MOBILE_MENU_GAP : MENU_GAP);
+      const fitsAbove = above >= bounds.top + VIEWPORT_MARGIN;
+      const fitsBelow = below + height <= bounds.bottom - VIEWPORT_MARGIN;
+      const placeBelow = isMobile
+        ? fitsBelow || !fitsAbove
+        : !fitsAbove && fitsBelow;
 
-        if (isMobile) {
-          top = endCoords.bottom + 20;
-          left = endCoords.left;
-        } else {
-          top = startCoords.top - menuRect.height - 8;
-          left = startCoords.left;
-          if (top < 0) {
-            top = startCoords.bottom + 8;
-          }
-        }
+      const top = placeBelow ? below : above;
+      const anchorLeft = isMobile ? end.left : start.left;
+      const left = Math.max(
+        VIEWPORT_MARGIN,
+        Math.min(anchorLeft, viewportWidth - width - VIEWPORT_MARGIN),
+      );
 
-        if (left + menuRect.width > viewportWidth) {
-          left = viewportWidth - menuRect.width - 8;
-        }
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
 
-        if (left < 0) {
-          left = 8;
-        }
-
-        menuRef.current.style.left = `${left}px`;
-        menuRef.current.style.top = `${top}px`;
-
-        setColorPickerPosition({
-          x: left,
-          y: top - 10,
-        });
-        setTargetElement(menuRef.current);
-      }
+      setColorPickerPosition({
+        x: left,
+        y: top - 10,
+      });
+      setTargetElement(menu);
     };
 
     updatePosition();
@@ -91,10 +103,12 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
 
     window.addEventListener("scroll", handleScroll, true);
     window.addEventListener("resize", handleResize);
+    editor.on("selectionUpdate", updatePosition);
 
     return () => {
       window.removeEventListener("scroll", handleScroll, true);
       window.removeEventListener("resize", handleResize);
+      editor.off("selectionUpdate", updatePosition);
     };
   }, [isVisible, editor]);
 
@@ -138,9 +152,9 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
     return editor.getAttributes("highlight").color || "";
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <>
       <div
         ref={menuRef}
@@ -254,6 +268,7 @@ export const BubbleMenu = ({ editor, isVisible, onClose }: BubbleMenuProps) => {
         defaultValue={previousUrl}
         confirmText={t("common.confirm")}
       />
-    </>
+    </>,
+    document.body,
   );
 };

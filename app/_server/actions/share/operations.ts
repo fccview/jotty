@@ -16,14 +16,14 @@ import {
 import { toSharedWith } from "@/app/_utils/sharing-utils";
 import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { getTranslations } from "next-intl/server";
-import { createNotificationForUser } from "@/app/_server/actions/notifications";
+import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import {
   getUserByNoteUuid,
   getUserByChecklistUuid,
   getUsername,
   isAdmin,
 } from "@/app/_server/actions/users";
-import { readCatInfo, writeCatInfo, catDirByUuid } from "./category-info";
+import { catDirByUuid, mutateCatInfo } from "./category-info";
 import { dropMounts } from "./mounts";
 import { resolveAccess, catAccess } from "./access";
 
@@ -140,7 +140,7 @@ const _tell = async (
     const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
     const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
 
-    await createNotificationForUser(receiver, {
+    await notifyUser(receiver, {
       type: "sharing",
       title: t("notifications.sharingTitle", { user: sharer, type: label }),
       message: t("notifications.sharingMessage", { type: label }),
@@ -165,7 +165,7 @@ const _tellFolder = async (
     const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
     const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
 
-    await createNotificationForUser(receiver, {
+    await notifyUser(receiver, {
       type: "sharing",
       title: t("notifications.sharingFolderTitle", {
         user: sharer,
@@ -378,14 +378,14 @@ export const shareFolder = async (
     const dir = await _catDir(mode, owner, categoryUuid);
     if (!dir) return { success: false, error: "Category not found" };
 
-    const info = await readCatInfo(dir);
-    const users = { ...(info.sharing?.users || {}), [receiver]: permissions };
-
-    const written = await writeCatInfo(dir, {
+    const written = await mutateCatInfo(dir, (info) => ({
       ...info,
       uuid: categoryUuid,
-      sharing: { users, inherit: info.sharing?.inherit !== false },
-    });
+      sharing: {
+        users: { ...(info.sharing?.users || {}), [receiver]: permissions },
+        inherit: info.sharing?.inherit !== false,
+      },
+    }));
 
     if (!written) return { success: false, error: "Failed to share folder" };
 
@@ -433,13 +433,10 @@ export const unshareFolder = async (
 
     if (!dir) return { success: false, error: "Category not found" };
 
-    const info = await readCatInfo(dir);
-    const users = { ...(info.sharing?.users || {}) };
-    delete users[receiver];
-
-    const written = await writeCatInfo(dir, {
-      ...info,
-      sharing: { users, inherit: info.sharing?.inherit !== false },
+    const written = await mutateCatInfo(dir, (info) => {
+      const users = { ...(info.sharing?.users || {}) };
+      delete users[receiver];
+      return { ...info, sharing: { users, inherit: info.sharing?.inherit !== false } };
     });
 
     if (!written) return { success: false, error: "Failed to unshare folder" };
@@ -476,13 +473,11 @@ export const setFolderInherit = async (
     const dir = await _catDir(mode, owner, categoryUuid);
     if (!dir) return { success: false, error: "Category not found" };
 
-    const info = await readCatInfo(dir);
-
-    const written = await writeCatInfo(dir, {
+    const written = await mutateCatInfo(dir, (info) => ({
       ...info,
       uuid: categoryUuid,
       sharing: { users: info.sharing?.users || {}, inherit },
-    });
+    }));
 
     if (!written) return { success: false, error: "Failed to update folder" };
 
@@ -601,23 +596,22 @@ export const leaveFolder = async (
       return { success: false, error: "Not shared with you" };
     }
 
-    const info = await readCatInfo(dir);
     const fromAbove = await catAccess(mode, path.dirname(dir));
     const isInherited = Boolean(fromAbove?.users[caller]);
 
-    const users = isInherited
-      ? { ...access.users }
-      : { ...(info.sharing?.users || {}) };
-
-    delete users[caller];
-
-    const written = await writeCatInfo(dir, {
-      ...info,
-      uuid: info.uuid || categoryUuid,
-      sharing: {
-        users,
-        inherit: isInherited ? false : info.sharing?.inherit !== false,
-      },
+    const written = await mutateCatInfo(dir, (info) => {
+      const users = isInherited
+        ? { ...access.users }
+        : { ...(info.sharing?.users || {}) };
+      delete users[caller];
+      return {
+        ...info,
+        uuid: info.uuid || categoryUuid,
+        sharing: {
+          users,
+          inherit: isInherited ? false : info.sharing?.inherit !== false,
+        },
+      };
     });
 
     if (!written) return { success: false, error: "Failed to leave share" };

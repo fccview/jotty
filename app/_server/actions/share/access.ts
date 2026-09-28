@@ -66,6 +66,16 @@ const _merge = (
   });
 };
 
+const _narrowest = (
+  a: SharingPermissions,
+  b: SharingPermissions,
+): SharingPermissions => ({
+  canRead: a.canRead && b.canRead,
+  canEdit: a.canEdit && b.canEdit,
+  canDelete: a.canDelete && b.canDelete,
+  canCreate: Boolean(a.canCreate && b.canCreate),
+});
+
 const _chainGrants = async (
   userDir: string,
   startDir: string,
@@ -163,6 +173,9 @@ export const canReachFile = async (
   return granted(access.users[username], permission);
 };
 
+const _isInside = (dir: string, target: string): boolean =>
+  target === dir || target.startsWith(`${dir}${path.sep}`);
+
 export const sharedFiles = async (
   mode: Modes,
   username: string,
@@ -170,7 +183,7 @@ export const sharedFiles = async (
   const matches = await grepFilesByText(_modeDir(mode), username, "*.md");
   const ownDir = path.join(_modeDir(mode), username);
 
-  return matches.filter((filePath) => !filePath.startsWith(ownDir));
+  return matches.filter((filePath) => !_isInside(ownDir, filePath));
 };
 
 const _topMost = (dirs: string[]): string[] =>
@@ -230,6 +243,7 @@ export const listMounts = async (
     const existing = loose.get(access.owner);
     if (existing) {
       existing.uuids.push(uuid);
+      existing.perms = _narrowest(existing.perms, perms);
     } else {
       loose.set(access.owner, { uuids: [uuid], perms });
     }
@@ -272,5 +286,5 @@ export const sharedCats = async (
 
   return matches
     .map((filePath) => path.dirname(filePath))
-    .filter((dirPath) => !dirPath.startsWith(ownDir));
+    .filter((dirPath) => !_isInside(ownDir, dirPath));
 };

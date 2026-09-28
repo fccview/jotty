@@ -30,9 +30,6 @@ export const InternalLink = Node.create({
       itemId: {
         default: null,
       },
-      convertToBidirectional: {
-        default: false,
-      },
     };
   },
 
@@ -49,7 +46,6 @@ export const InternalLink = Node.create({
             category: element.getAttribute("data-category"),
             uuid: element.getAttribute("data-uuid"),
             itemId: element.getAttribute("data-item-id"),
-            convertToBidirectional: element.getAttribute("data-convert-to-bidirectional") === "true",
           };
         },
       },
@@ -57,7 +53,7 @@ export const InternalLink = Node.create({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const { href, title, type, category, uuid, itemId, convertToBidirectional } = node.attrs;
+    const { href, title, type, category, uuid, itemId } = node.attrs;
 
     const children: DOMOutputSpec[] = [];
 
@@ -78,7 +74,6 @@ export const InternalLink = Node.create({
         "data-category": category || "",
         "data-uuid": uuid || "",
         "data-item-id": itemId || "",
-        "data-convert-to-bidirectional": convertToBidirectional ? "true" : "false",
         ...HTMLAttributes,
       },
       ...children,

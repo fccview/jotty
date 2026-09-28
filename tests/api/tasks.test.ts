@@ -5,11 +5,11 @@ import {
   mockGetUserChecklists,
   mockCreateList,
   mockMakeList,
-  mockUpdateList,
-  mockDeleteList,
+  mockEditList,
+  mockDropList,
   mockGetListById,
-  mockCreateItem,
-  mockUpdateItemStatus,
+  mockAddItem,
+  mockStampStatus,
   mockServerWriteFile,
   resetApiMocks,
   createMockRequest,
@@ -223,7 +223,7 @@ describe("Tasks API", () => {
     it("should update a task", async () => {
       const updatedTask = { ...mockTask, title: "Updated Task Board", category: "Work" }
       mockGetListById.mockResolvedValue(mockTask)
-      mockUpdateList.mockResolvedValue({ success: true, data: updatedTask })
+      mockEditList.mockResolvedValue({ success: true, data: updatedTask })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1", {
         title: "Updated Task Board",
@@ -267,7 +267,7 @@ describe("Tasks API", () => {
   describe("DELETE /api/tasks/:taskId", () => {
     it("should delete a task", async () => {
       mockGetListById.mockResolvedValue(mockTask)
-      mockDeleteList.mockResolvedValue({ success: true })
+      mockDropList.mockResolvedValue({ success: true })
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1")
       const response = await DELETE_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
@@ -484,7 +484,7 @@ describe("Tasks API", () => {
   describe("POST /api/tasks/:taskId/items", () => {
     it("should create a task item", async () => {
       mockGetListById.mockResolvedValue(mockTask)
-      mockCreateItem.mockResolvedValue({ success: true, data: { id: "new-item" } })
+      mockAddItem.mockResolvedValue({ success: true, data: { id: "new-item" } })
 
       const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/items", {
         text: "Implement feature X",
@@ -542,7 +542,7 @@ describe("Tasks API", () => {
   describe("PUT /api/tasks/:taskId/items/:itemIndex/status", () => {
     it("should update item status", async () => {
       mockGetListById.mockResolvedValue(mockTask)
-      mockUpdateItemStatus.mockResolvedValue({ success: true })
+      mockStampStatus.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/items/0/status", {
         status: "in_progress",
@@ -556,7 +556,7 @@ describe("Tasks API", () => {
 
     it("should update nested item status", async () => {
       mockGetListById.mockResolvedValue(mockTask)
-      mockUpdateItemStatus.mockResolvedValue({ success: true })
+      mockStampStatus.mockResolvedValue({ success: true })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/items/0.0/status", {
         status: "in_progress",

@@ -36,6 +36,21 @@ export const getColumnItems = (
   });
 };
 
+export const boardColumns = (
+  checklist: Checklist,
+): { status: KanbanStatus; items: Item[] }[] => {
+  const statuses = checklist.statuses?.length
+    ? checklist.statuses
+    : DEFAULT_KANBAN_STATUSES;
+
+  return [...statuses]
+    .sort((a, b) => a.order - b.order)
+    .map((status) => ({
+      status,
+      items: getColumnItems(checklist.items, status.id, statuses),
+    }));
+};
+
 export const visToColIndex = (
   visibleItems: Item[],
   columnItems: Item[],

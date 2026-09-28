@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
+import { SvgFrame } from "@/app/_components/FeatureComponents/Notes/Parts/SvgFrame";
 
 interface DrawioRendererProps {
   svgData: string;
@@ -57,8 +58,9 @@ export const DrawioRenderer = ({
               ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)"
               : "none",
         }}
-        dangerouslySetInnerHTML={{ __html: svgData }}
-      />
+      >
+        <SvgFrame svg={svgData} alt={t("editor.drawioDiagram")} />
+      </div>
     </div>
   );
 };

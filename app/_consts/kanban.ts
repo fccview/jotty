@@ -27,3 +27,9 @@ export const DEFAULT_KANBAN_STATUSES: KanbanStatus[] = [
     autoComplete: false,
   },
 ];
+
+export const API_FALLBACK_STATUSES: KanbanStatus[] = [
+  { id: TaskStatus.TODO, label: TaskStatusLabels.TODO, order: 0 },
+  { id: TaskStatus.IN_PROGRESS, label: TaskStatusLabels.IN_PROGRESS, order: 1 },
+  { id: TaskStatus.COMPLETED, label: TaskStatusLabels.COMPLETED, order: 2 },
+];

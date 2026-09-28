@@ -21,8 +21,18 @@ vi.mock("@/app/_server/actions/lib/migration-check", () => ({
 vi.mock("@/app/_server/actions/share/category-info", () => ({
   readCatInfo: (...args: any[]) => mockReadCatInfo(...args),
   writeCatInfo: (...args: any[]) => mockWriteCatInfo(...args),
+  mutateCatInfo: async (dir: string, mutate: (info: unknown) => unknown) => {
+    const next = mutate(await mockReadCatInfo(dir));
+    return next ? mockWriteCatInfo(dir, next) : false;
+  },
   catUuid: (...args: any[]) => mockCatUuid(...args),
   dirUuids: (...args: any[]) => mockDirUuids(...args),
+}));
+
+vi.mock("@/app/_server/actions/relations/tracking", () => ({
+  trackItemWrite: vi.fn().mockResolvedValue(undefined),
+  trackItemDelete: vi.fn().mockResolvedValue(undefined),
+  trackMove: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/app/_utils/grep-utils", () => ({
@@ -177,5 +187,49 @@ describe("share migration ordering", () => {
     expect(mockFs.unlink).not.toHaveBeenCalledWith(
       path.join(WORK_DIR, ".order.json"),
     );
+  });
+
+  describe("uuid stamping", () => {
+    const BLANK = path.join(OWNER_DIR, "blank.md");
+    const BARE = path.join(OWNER_DIR, "bare.md");
+
+    beforeEach(() => {
+      mockFs.rename.mockResolvedValue(undefined);
+      mockFs.readdir.mockImplementation(async (dir: string) => {
+        if (dir === NOTES_DIR) return [dirEntry("alice")];
+        if (dir === OWNER_DIR) {
+          return [fileEntry("blank.md"), fileEntry("bare.md")];
+        }
+        return [];
+      });
+      mockFs.readFile.mockImplementation(async (target: string) => {
+        if (target === ORDER_FILE) return JSON.stringify(legacyOrder);
+        if (target === BLANK) return "  \n";
+        if (target === BARE) return "# Bare\n\nBody";
+        throw new Error("ENOENT");
+      });
+    });
+
+    const writesTo = (target: string) =>
+      mockFs.writeFile.mock.calls.filter(([written]) =>
+        String(written).includes(path.basename(target)),
+      );
+
+    it("should never write a stub over an empty read", async () => {
+      await migrateToInlineSharing();
+
+      expect(writesTo(BLANK)).toEqual([]);
+      expect(mockFs.rename).not.toHaveBeenCalledWith(expect.anything(), BLANK);
+    });
+
+    it("should stamp a bare item through a temp file and rename", async () => {
+      await migrateToInlineSharing();
+
+      const [tmpPath, written] = writesTo(BARE)[0];
+      expect(tmpPath).not.toBe(BARE);
+      expect(written).toMatch(/^uuid: \S+$/m);
+      expect(written).toContain("# Bare\n\nBody");
+      expect(mockFs.rename).toHaveBeenCalledWith(tmpPath, BARE);
+    });
   });
 });

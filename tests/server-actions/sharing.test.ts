@@ -24,6 +24,10 @@ const mockOwnerOfList = vi.fn();
 vi.mock("@/app/_server/actions/share/category-info", () => ({
   readCatInfo: (...args: unknown[]) => mockReadCatInfo(...args),
   writeCatInfo: (...args: unknown[]) => mockWriteCatInfo(...args),
+  mutateCatInfo: async (dir: string, mutate: (info: unknown) => unknown) => {
+    const next = mutate(await mockReadCatInfo(dir));
+    return next ? mockWriteCatInfo(dir, next) : false;
+  },
   catDirByUuid: (...args: unknown[]) => mockCatDirByUuid(...args),
   catUuid: (...args: unknown[]) => mockCatUuid(...args),
 }));
@@ -41,8 +45,8 @@ vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: unknown[]) => mockBroadcast(...args),
 }));
 
-vi.mock("@/app/_server/actions/notifications", () => ({
-  createNotificationForUser: (...args: unknown[]) => mockNotifyUser(...args),
+vi.mock("@/app/_server/actions/notifications/internal", () => ({
+  notifyUser: (...args: unknown[]) => mockNotifyUser(...args),
 }));
 
 vi.mock("next-intl/server", () => ({

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { BRAIN_PATH } from "@/app/_consts/relations";
 import {
     UserIcon,
     Tv02Icon,
@@ -87,7 +88,7 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
                     id: "connections",
                     label: t("profile.connectionsTab"),
                     icon: SharedWifiIcon,
-                    path: "/settings/connections",
+                    path: BRAIN_PATH,
                 },
             ]
             : []),

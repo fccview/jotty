@@ -186,4 +186,125 @@ describe("note frontmatter preservation", () => {
     ).toEqual({ publish: true, weight: 1 });
     expect(keptMeta(undefined, undefined)).toBeUndefined();
   });
+
+  describe("sharedWith preservation (issue #601)", () => {
+    const SHARED_NOTE = [
+      "---",
+      "uuid: shared-uuid-1",
+      "title: Shared Note",
+      "sharedWith:",
+      "  - alice",
+      "  - bob",
+      "tags:",
+      "  - work",
+      "---",
+      "",
+      "Body of the shared note.",
+    ].join("\n");
+
+    it("parseMarkdownNote surfaces sharedWith on the parsed note", () => {
+      const note = parseMarkdownNote(
+        SHARED_NOTE,
+        "shared-note",
+        "Uncategorized",
+        "fccview",
+      );
+
+      expect(note.sharedWith).toEqual(["alice", "bob"]);
+    });
+
+    it("noteToMarkdown writes sharedWith back into the frontmatter", () => {
+      const note = parseMarkdownNote(
+        SHARED_NOTE,
+        "shared-note",
+        "Uncategorized",
+        "fccview",
+      );
+
+      const markdown = noteToMarkdown(note);
+      const metadata = metaOf(markdown);
+
+      expect(metadata.sharedWith).toEqual(["alice", "bob"]);
+    });
+
+    it("survives a parse, save, reparse round-trip with sharedWith intact", () => {
+      const first = parseMarkdownNote(
+        SHARED_NOTE,
+        "shared-note",
+        "Uncategorized",
+        "fccview",
+      );
+
+      const second = parseMarkdownNote(
+        noteToMarkdown(first),
+        "shared-note",
+        "Uncategorized",
+        "fccview",
+      );
+
+      expect(second.sharedWith).toEqual(first.sharedWith);
+      expect(second.sharedWith).toEqual(["alice", "bob"]);
+    });
+
+    it("parseNoteContent (the edit path) surfaces sharedWith", () => {
+      const parsed = parseNoteContent(SHARED_NOTE, "shared-note");
+
+      expect(parsed.extraMetadata ?? {}).not.toHaveProperty("sharedWith");
+      expect(parsed.sharedWith).toEqual(["alice", "bob"]);
+    });
+
+    it("does not drop sharedWith when the note body is edited", () => {
+      const parsed = parseNoteContent(SHARED_NOTE, "shared-note");
+
+      const editedNote = {
+        id: "shared-note",
+        uuid: parsed.uuid || "shared-uuid-1",
+        title: "Shared Note",
+        content: "Edited body text.",
+        category: "Uncategorized",
+        createdAt: "",
+        updatedAt: "",
+        sharedWith: parsed.sharedWith,
+        tags: parsed.tags,
+        extraMetadata: keptMeta(parsed.extraMetadata, undefined),
+      };
+
+      const markdown = noteToMarkdown(editedNote);
+      const metadata = metaOf(markdown);
+
+      expect(metadata.sharedWith).toEqual(["alice", "bob"]);
+      expect(markdown).toContain("Edited body text.");
+    });
+
+    it("supports a single (string) sharedWith value", () => {
+      const single = [
+        "---",
+        "uuid: single-share",
+        "title: Single Share",
+        "sharedWith: alice",
+        "---",
+        "",
+        "Body.",
+      ].join("\n");
+
+      const note = parseMarkdownNote(single, "single", "Uncategorized", "u1");
+      expect(note.sharedWith).toBe("alice");
+
+      const metadata = metaOf(noteToMarkdown(note));
+      expect(metadata.sharedWith).toBe("alice");
+    });
+
+    it("omits sharedWith from frontmatter when it was never set", () => {
+      const plain = ["---", "uuid: plain-2", "title: Plain", "---", "Body"].join(
+        "\n",
+      );
+
+      const note = parseMarkdownNote(plain, "plain", "Uncategorized", "u1");
+      expect(note.sharedWith).toBeUndefined();
+
+      const markdown = noteToMarkdown(note);
+      const metadata = metaOf(markdown);
+      expect(metadata).not.toHaveProperty("sharedWith");
+    });
+  });
 });

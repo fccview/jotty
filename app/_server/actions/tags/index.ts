@@ -2,6 +2,7 @@
 
 import { join } from "path";
 import fs from "fs/promises";
+import { serverWriteFile } from "@/app/_server/actions/file";
 import { Result } from "@/app/_types";
 import { exportWholeDataFolder } from "../export";
 import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
@@ -10,6 +11,7 @@ import {
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { Modes } from "@/app/_types/enums";
+import { canAccessAllContent } from "@/app/_server/actions/users";
 
 const findMarkdownFiles = async (dirPath: string): Promise<string[]> => {
   const markdownFiles: string[] = [];
@@ -75,7 +77,7 @@ const processDirectory = async (
           { tags: mergedTags },
           true,
         );
-        await fs.writeFile(filePath, updatedContent, "utf-8");
+        await serverWriteFile(filePath, updatedContent);
         updated++;
       }
 
@@ -95,6 +97,13 @@ export const updateTagsFromContent = async (): Promise<
     changes: string[];
   }>
 > => {
+  if (!(await canAccessAllContent())) {
+    return {
+      success: false,
+      error: "Forbidden: Admin access with content permissions required",
+    };
+  }
+
   try {
     const changes: string[] = [];
 

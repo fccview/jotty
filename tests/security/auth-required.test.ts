@@ -15,7 +15,7 @@ vi.mock('@/app/_server/actions/users', async (importOriginal) => {
     getUsername: () => mockGetUsername(),
     isAuthenticated: () => mockIsAuthenticated(),
     isAdmin: vi.fn().mockResolvedValue(false),
-    getUserByUsername: vi.fn().mockResolvedValue(null),
+    getPublicUser: vi.fn().mockResolvedValue(null),
     getUserByNote: vi.fn().mockResolvedValue({ success: false }),
     getUserByChecklist: vi.fn().mockResolvedValue({ success: false }),
     getUserByNoteUuid: vi.fn().mockResolvedValue({ success: false }),
@@ -54,10 +54,8 @@ vi.mock('@/app/_server/actions/log', () => ({
   logUserEvent: vi.fn(),
 }))
 
-vi.mock('@/app/_server/actions/link', () => ({
-  parseInternalLinks: vi.fn().mockResolvedValue([]),
-  updateIndexForItem: vi.fn(),
-  removeItemFromIndex: vi.fn(),
+vi.mock('@/app/_server/actions/ws/broadcast', () => ({
+  broadcast: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/app/_server/actions/history', () => ({
@@ -108,7 +106,7 @@ describe('Security: Authentication Required', () => {
     })
 
     it('getUserNotes should reject unauthenticated requests', async () => {
-      const { getUserNotes } = await import('@/app/_server/actions/note')
+      const { getUserNotes } = await import('@/app/_server/actions/note/queries')
 
       const result = await getUserNotes()
 
@@ -145,7 +143,7 @@ describe('Security: Authentication Required', () => {
     })
 
     it('getUserChecklists should reject unauthenticated requests', async () => {
-      const { getUserChecklists } = await import('@/app/_server/actions/checklist')
+      const { getUserChecklists } = await import('@/app/_server/actions/checklist/queries')
 
       const result = await getUserChecklists()
 
@@ -216,6 +214,103 @@ describe('Security: Authentication Required', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Not authenticated')
+    })
+
+    it('createUser should reject non-admin requests', async () => {
+      mockGetCurrentUser.mockResolvedValue({ username: 'regularuser', isAdmin: false })
+
+      const { createUser } = await import('@/app/_server/actions/users')
+
+      const formData = createFormData({
+        username: 'newuser',
+        password: 'password123',
+        confirmPassword: 'password123',
+      })
+
+      const result = await createUser(formData)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('Unauthorized: Admin access required')
+    })
+
+    it('register should reject when users already exist', async () => {
+      const { readJsonFile } = await import('@/app/_server/actions/file')
+      ;(readJsonFile as any).mockResolvedValue([
+        { username: 'existing', passwordHash: 'hash', isAdmin: true },
+      ])
+
+      const { register } = await import('@/app/_server/actions/auth')
+
+      const formData = createFormData({
+        username: 'newuser',
+        password: 'password123',
+        confirmPassword: 'password123',
+      })
+
+      const result = await register(formData)
+
+      expect(result).toEqual({ error: 'Registration is closed. Contact an administrator to create an account.' })
+    })
+
+    it('createNotificationForUser should reject unauthenticated requests', async () => {
+      const { createNotificationForUser } = await import('@/app/_server/actions/notifications')
+
+      const result = await createNotificationForUser('anyuser', {
+        type: 'mention',
+        data: { itemId: 'test', commentId: 'test' },
+      } as any)
+
+      expect(result).toEqual({ success: false })
+    })
+    it('createNotificationForUser should reject cross-user notifications from non-admin callers (IDOR)', async () => {
+      const { createNotificationForUser } = await import('@/app/_server/actions/notifications')
+
+      mockGetCurrentUser.mockResolvedValue({ username: 'attacker', isAdmin: false })
+
+      const result = await createNotificationForUser('victim', {
+        type: 'mention',
+        data: { itemId: 'test', commentId: 'test' },
+      } as any)
+
+      expect(result).toEqual({ success: false })
+    })
+
+    it('createNotificationForUser should allow self-notifications', async () => {
+      const { createNotificationForUser } = await import('@/app/_server/actions/notifications')
+
+      mockGetCurrentUser.mockResolvedValue({ username: 'selfuser', isAdmin: false })
+
+      const result = await createNotificationForUser('selfuser', {
+        type: 'mention',
+        data: { itemId: 'test', commentId: 'test' },
+      } as any)
+
+      expect(result).toEqual({ success: true })
+    })
+
+    it('reindexRelations should reject unauthenticated requests', async () => {
+      const { reindexRelations } = await import('@/app/_server/actions/relations')
+
+      await expect(reindexRelations('anyuser')).resolves.toEqual({
+        success: false,
+        error: 'Not authenticated',
+      })
+    })
+
+    it('getBrain should reject unauthenticated requests', async () => {
+      const { getBrain } = await import('@/app/_server/actions/relations')
+
+      await expect(getBrain('anyuser')).resolves.toEqual({
+        success: false,
+        error: 'Not authenticated',
+      })
+    })
+
+    it('getItemRelations should return nothing to unauthenticated requests', async () => {
+      const { getItemRelations } = await import('@/app/_server/actions/relations')
+
+      const result = await getItemRelations('3f2a1b4c-1111-4222-8333-944455556666')
+      expect(result.backlinks).toEqual([])
     })
   })
 

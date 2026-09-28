@@ -20,6 +20,7 @@ export type {
   User,
   Session,
   SanitisedUser,
+  PublicUserInfo,
   EnableRecurrence,
   ShowCompletedSuggestions,
   ShowChecklistEmojis,
@@ -45,6 +46,7 @@ export type {
   HideTimeTrackingOnCards,
   CodeBlockStyle,
   ChecklistItemClickAction,
+  NewItemInsertion,
 } from "./user";
 
 export type {
@@ -61,7 +63,6 @@ export type {
 
 export type { Category } from "./category";
 
-export type { ItemLinks, LinkIndex } from "./links";
 
 export type { TagInfo, TagsIndex } from "./tags";
 

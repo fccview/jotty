@@ -33,6 +33,7 @@ export interface NoteEditorViewModel {
   setCategory: (category: string) => void;
   editorContent: string;
   isEditing: boolean;
+  isEditorVisible: boolean;
   setIsEditing: (isEditing: boolean) => void;
   status: {
     isSaving: boolean;

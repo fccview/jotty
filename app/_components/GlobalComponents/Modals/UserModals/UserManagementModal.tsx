@@ -12,7 +12,7 @@ import {
   FileSecurityIcon,
 } from "hugeicons-react";
 import { useUserManagementModal } from "@/app/_hooks/useUserManagementModal";
-import { User as UserType } from "@/app/_types";
+import { SanitisedUser as UserType } from "@/app/_types";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
@@ -30,7 +30,7 @@ interface UserManagementModalProps {
 export const UserManagementModal = (props: UserManagementModalProps) => {
   const t = useTranslations();
   const { isOpen, onClose, mode, user } = props;
-  const { state, setters, handlers, DeleteModal } = useUserManagementModal(props);
+  const { state, setters, handlers, deleteModal } = useUserManagementModal(props);
 
   if (!isOpen) return null;
 
@@ -176,7 +176,7 @@ export const UserManagementModal = (props: UserManagementModalProps) => {
           </div>
         </div>
       </form>
-      <DeleteModal />
+      {deleteModal}
     </Modal>
   );
 };

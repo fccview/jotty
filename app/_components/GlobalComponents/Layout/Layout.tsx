@@ -11,6 +11,7 @@ import { isMobileDevice } from "@/app/_utils/global-utils";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { usePathname } from "next/navigation";
 import { useUIStore } from "@/app/_utils/ui-store";
+import { useTrackReturnPath } from "@/app/_hooks/useReturnPath";
 
 interface LayoutProps {
   categories: Category[];
@@ -48,6 +49,8 @@ export const Layout = ({
   const pathname = usePathname();
 
   const isSettingsPage = pathname?.startsWith("/settings");
+
+  useTrackReturnPath();
 
   useSidebarGesture({
     isOpen: sidebarOpen,
@@ -100,7 +103,7 @@ export const Layout = ({
           isEditorInEditMode={isEditorInEditMode}
         />
 
-        <div className="jotty-layout-content flex-1 overflow-hidden">
+        <div className="jotty-layout-content flex-1 overflow-hidden max-lg:flex max-lg:flex-col">
           {children}
         </div>
       </main>

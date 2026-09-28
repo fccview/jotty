@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { getDeterministicColor } from "@/app/_utils/color-utils";
-import { getUserByUsername } from "@/app/_server/actions/users";
+import { getPublicUser } from "@/app/_server/actions/users";
 
 interface UserAvatarProps {
   username: string;
@@ -52,7 +52,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
       cachedAvatar === undefined
     ) {
       const fetchAvatarUrl = async () => {
-        const user = await getUserByUsername(username);
+        const user = await getPublicUser(username);
         return user?.avatarUrl || "";
       };
 

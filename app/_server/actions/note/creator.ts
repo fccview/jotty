@@ -1,5 +1,6 @@
 import path from "path";
-import { Note, User } from "@/app/_types";
+import { getTranslations } from "next-intl/server";
+import { Note, SanitisedUser } from "@/app/_types";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { ensureDir, serverWriteFile } from "@/app/_server/actions/file";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
@@ -11,7 +12,7 @@ import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
 import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { updateIndexForItem, parseInternalLinks } from "@/app/_server/actions/link";
+import { tidyItemLinks } from "@/app/_server/actions/relations/tidy";
 import {
   extractYamlMetadata as stripYaml,
   generateUuid,
@@ -22,14 +23,10 @@ import { commitNote } from "@/app/_server/actions/history";
 import { targetDir, bouncer } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { noteToMarkdown } from "./parsers";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
-/**
- * Server-only note creation. The acting principal is passed in already
- * authenticated (cookie session or API key); nothing about identity is ever
- * read from the FormData.
- */
 export const makeNote = async (
-  actor: User,
+  actor: SanitisedUser,
   formData: FormData,
 ): Promise<{ success?: boolean; data?: Note; error?: string }> => {
   try {
@@ -41,11 +38,21 @@ export const makeNote = async (
 
     const sanitizedContent = sanitizeMarkdown(rawContent);
     const { metadata, contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const content = contentWithoutMetadata;
-    const encryptionMethod = detectEncryptionMethod(content) || undefined;
-    const encrypted = isEncrypted(content);
+    const encryptionMethod =
+      detectEncryptionMethod(contentWithoutMetadata) || undefined;
+    const encrypted = isEncrypted(contentWithoutMetadata);
 
     const target = await targetDir(Modes.NOTES, actor.username, category);
+
+    if (category && !target.isMount && target.category !== category) {
+      console.warn("Refusing note outside its owner's folder:", category);
+      const t = await getTranslations("errors");
+      return { error: t("categoryOutOfBounds") };
+    }
+
+    const content = encrypted
+      ? contentWithoutMetadata
+      : await tidyItemLinks(contentWithoutMetadata, target.owner);
 
     const verdict = await bouncer(
       target,
@@ -95,18 +102,7 @@ export const makeNote = async (
     );
 
     if (!isEncrypted(content)) {
-      commitNote(target.owner, relativePath, "create", title).catch(() => { });
-    }
-
-    try {
-      const links = (await parseInternalLinks(newDoc.content)) || [];
-      await updateIndexForItem(target.owner, "note", newDoc.uuid!, links);
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for new note:",
-        newDoc.id,
-        error,
-      );
+      commitNote(target.owner, relativePath, "create", title).catch(() => {});
     }
 
     await logContentEvent(
@@ -129,7 +125,13 @@ export const makeNote = async (
   } catch (error) {
     const { title } = getFormData(formData, ["title"]);
     console.error("Error creating note:", error);
-    await logContentEvent("note_created", "note", "", title || "unknown", false);
-    return { error: "Failed to create note" };
+    await logContentEvent(
+      "note_created",
+      "note",
+      "",
+      title || "unknown",
+      false,
+    );
+    return { error: await failedWith(error, "Failed to create note") };
   }
 };

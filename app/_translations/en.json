@@ -402,6 +402,7 @@
     "enterNoteTitle": "Enter note title...",
     "byType": "By type",
     "publiclySharedNote": "Publicly shared",
+    "sharedPubliclyBy": "This note is shared publicly by {owner}",
     "copyRawContent": "Copy markdown",
     "quickSave": "Quick Save",
     "noteNotFound": "Note not found",
@@ -415,9 +416,12 @@
     "readingTime": "{count, plural, one {# minute read} other {# minutes read}}",
     "tags": "Tags",
     "noTagsFound": "No tags found",
-    "searchTags": "Search tags..."
+    "searchTags": "Search tags...",
+    "createNoteFailed": "Could not create the note",
+    "createCategoryFailed": "Could not create the category, the note was not created"
   },
   "checklists": {
+    "sharedPubliclyBy": "This checklist is shared publicly by {owner}",
     "title": "Checklists",
     "allChecklists": "All Checklists",
     "completed": "Completed",
@@ -948,6 +952,11 @@
     "checklistItemClickActionDescription": "Choose what happens when you click a task's text. \"Mark as complete\" toggles the checkbox  (default); \"Edit task name\" opens the task for inline editing — you'll still need to click the checkbox itself to complete it.",
     "checklistItemClickActionToggle": "Mark as complete/incomplete",
     "checklistItemClickActionEdit": "Edit list item",
+    "newItemInsertion": "New item insertion",
+    "selectNewItemInsertion": "Select where new items are added",
+    "newItemInsertionDescription": "Choose whether new items are added to the top (default) or the bottom of a checklist.",
+    "newItemInsertionTop": "Top of the list",
+    "newItemInsertionBottom": "Bottom of the list",
     "selectShowChecklistEmojis": "Select emoji visibility",
     "showChecklistEmojisDescription": "Show an automatic emoji next to checklist items based on their text."
   },
@@ -1049,9 +1058,7 @@
     "enableBubbleMenuDescription": "Enable the floating toolbar that appears when text is selected",
     "enableTableToolbarDescription": "Enable the toolbar that appears when editing tables",
     "bilateralLinks": "Bilateral Links",
-    "experimental": "(Experimental)",
     "bilateralLinksDescription": "Enable the ability to link to notes and checklists in the same document.",
-    "bilateralLinksWarning": "This feature is experimental and may not work as expected. It may also end up being removed/deprecated in the future.",
     "historyEnabled": "Note History",
     "historyDescription": "Track version history for notes. Allows restoring previous versions. Only manual saves create history points (not autosave).",
     "disableHistory": "Disable History",
@@ -1154,6 +1161,9 @@
     "tryAgain": "Try again",
     "contactSupport": "Contact support",
     "invalidInput": "Invalid input",
+    "invalidEditorSettings": "Editor settings must be an object, nothing was saved",
+    "invalidEditorSetting": "Editor setting {field} has the wrong type, nothing was saved",
+    "categoryOutOfBounds": "That category is outside your notes, so nothing was created",
     "requiredField": "This field is required",
     "emailInvalid": "Please enter a valid email",
     "passwordTooShort": "Password must be at least 8 characters",
@@ -1193,7 +1203,8 @@
     "anErrorOccurred": "An error occurred.",
     "deleteUserConfirmation": "Delete user \"{username}\"? This cannot be undone.",
     "userDeletedSuccessfully": "User deleted successfully!",
-    "failedToDeleteUser": "Failed to delete user"
+    "failedToDeleteUser": "Failed to delete user",
+    "readOnlyFolder": "This folder is read-only on the server, so the change could not be saved."
   },
   "pwa": {
     "installPromptTitle": "Install App",
@@ -1255,6 +1266,7 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Toggle rich editor mode",
     "toggleMarkdownMode": "Toggle markdown mode",
+    "quickControls": "Editor controls",
     "toggleBold": "Toggle bold",
     "toggleItalic": "Toggle italic",
     "toggleUnderline": "Toggle underline",
@@ -1740,6 +1752,7 @@
     "howTo": "How to",
     "shortcuts": "Shortcuts",
     "markdownGuide": "Markdown Guide",
+    "brain": "Links & Brain",
     "customisations": "Customisations",
     "docker": "Docker",
     "envVariables": "Env Variables",
@@ -1747,6 +1760,7 @@
     "pwa": "PWA",
     "encryption": "Encryption",
     "sso": "SSO",
+    "ldap": "LDAP",
     "translations": "Translations",
     "unraid": "Unraid",
     "patches": "Patches"
@@ -1774,5 +1788,71 @@
     "sharingFolderMessage": "Open to view “{folder}”",
     "mentionTitle": "{user} mentioned you in a comment",
     "mentionMessage": "“{board}”"
+  },
+  "relations": {
+    "indexing": "Indexing relationships...",
+    "unreachable": "not reachable",
+    "createFromWikilink": "Create a note called \"{title}\"",
+    "mentionedIn": "Mentioned in",
+    "mentionedInHint": "These notes use this title as plain text. Link one to connect it.",
+    "linkMention": "Link",
+    "linked": "Linked the mention in {title}",
+    "linkFailed": "Couldn't link that mention",
+    "kind": {
+      "mention": "Link",
+      "wiki": "Wikilink"
+    }
+  },
+  "brain": {
+    "title": "Brain",
+    "openBrain": "Open in brain",
+    "search": "Find something in your brain...",
+    "dimension": "View",
+    "dimensions": {
+      "3d": "3D",
+      "2d": "2D"
+    },
+    "local": "Around this item",
+    "global": "Everything",
+    "depth": "Depth {depth}",
+    "colourBy": "Colour by",
+    "colourModes": {
+      "type": "Type",
+      "category": "Category"
+    },
+    "filters": {
+      "notes": "Notes",
+      "checklists": "Checklists",
+      "tags": "Tags",
+      "ghosts": "Not written yet",
+      "suggestions": "Suggestions",
+      "orphans": "Loners"
+    },
+    "kind": {
+      "note": "Note",
+      "checklist": "Checklist",
+      "ghost": "Not written yet",
+      "tag": "Tag"
+    },
+    "edges": {
+      "mention": "Link",
+      "wiki": "Wikilink",
+      "suggested": "Suggested",
+      "tag": "Tag"
+    },
+    "linksTo": "Links to",
+    "linkedFrom": "Linked from",
+    "suggested": "Might be related",
+    "promote": "Link to {title}",
+    "lonely": "Nothing connects here yet. Mention it with @ or [[ from another note.",
+    "open": "Open",
+    "createGhost": "Write this note",
+    "openTag": "Show everything tagged",
+    "createFailed": "Could not create that note",
+    "connectFailed": "Could not link those two",
+    "connected": "Linked {source} to {target}",
+    "empty": "Your brain is quiet. Link notes and checklists with @ or [[ and they will show up here.",
+    "viewingOwner": "Viewing {owner}'s brain",
+    "summary": "{items} items, {links} links, {shown} shown"
   }
 }

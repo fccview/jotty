@@ -112,7 +112,9 @@ export const mountedItems = async <T extends MountableItem>(
         category: _mountedPath(mount, category),
         isShared: true,
         sharedFrom: mount.owner,
-        permissions: mount.permissions,
+        permissions:
+          parseSharedWith(item.sharedWith)?.users[username] ||
+          mount.permissions,
         isLoose: true,
       });
       continue;

@@ -2,10 +2,11 @@
 
 import { USERS_FILE, NOTES_DIR, CHECKLISTS_DIR } from "@/app/_consts/files";
 import { readJsonFile } from "../file";
-import { Result, ItemType, User } from "@/app/_types";
+import { Result, ItemType, User, PublicUserInfo } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { capitalize } from "lodash";
 import { logAudit } from "@/app/_server/actions/log";
+import { toPublicUser } from "@/app/_utils/user-sanitize-utils";
 
 export const getUserIndex = async (username: string): Promise<number> => {
   const allUsers = await readJsonFile(USERS_FILE);
@@ -23,7 +24,7 @@ const findUuidInDirectory = async (
 export const getUserByItemUuid = async (
   uuid: string,
   itemType: ItemType
-): Promise<Result<User>> => {
+): Promise<Result<PublicUserInfo>> => {
   try {
     const users = await readJsonFile(USERS_FILE);
 
@@ -36,7 +37,7 @@ export const getUserByItemUuid = async (
 
         const found = await findUuidInDirectory(userDir, uuid);
         if (found) {
-          return { success: true, data: user };
+          return { success: true, data: toPublicUser(user)! };
         }
       } catch (error) {
         await logAudit({

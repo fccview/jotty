@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { seesAllContent, withApiAuth } from "@/app/_utils/api-utils";
 import {
   exportAllChecklistsNotes,
   exportUserChecklistsNotes,
@@ -8,21 +8,9 @@ import {
   getExportProgress,
 } from "@/app/_server/actions/export";
 import { getAppSettings } from "@/app/_server/actions/config";
-import { ExportType, User } from "@/app/_types";
+import { ExportType } from "@/app/_types";
 
 export const dynamic = "force-dynamic";
-
-const canAccessOtherUsersContent = async (user: User): Promise<boolean> => {
-  if (user.isSuperAdmin) return true;
-  if (!user.isAdmin) return false;
-
-  const settingsResult = await getAppSettings();
-  if (!settingsResult.success || !settingsResult.data) {
-    return true;
-  }
-
-  return settingsResult.data.adminContentAccess !== "no";
-};
 
 export async function POST(
   request: NextRequest,
@@ -40,7 +28,7 @@ export async function POST(
         );
       }
 
-      const hasContentAccess = await canAccessOtherUsersContent(user);
+      const hasContentAccess = await seesAllContent(user);
 
       let result;
       switch (type as ExportType) {

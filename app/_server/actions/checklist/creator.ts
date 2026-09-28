@@ -1,16 +1,16 @@
 import path from "path";
-import { Checklist, ChecklistType, User } from "@/app/_types";
+import { Checklist, ChecklistType, SanitisedUser } from "@/app/_types";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { ensureDir, serverWriteFile } from "@/app/_server/actions/file";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { updateIndexForItem, parseInternalLinks } from "@/app/_server/actions/link";
 import { targetDir, bouncer } from "@/app/_server/actions/share/target";
 import { generateUuid } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getFormData } from "@/app/_utils/global-utils";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
 /**
  * Server-only checklist creation. The acting principal is passed in already
@@ -18,7 +18,7 @@ import { getFormData } from "@/app/_utils/global-utils";
  * read from the FormData.
  */
 export const makeList = async (
-  actor: User,
+  actor: SanitisedUser,
   formData: FormData,
 ): Promise<{ success?: boolean; data?: Checklist; error?: string }> => {
   try {
@@ -64,26 +64,6 @@ export const makeList = async (
 
     await serverWriteFile(filePath, listToMarkdown(newList));
 
-    try {
-      const content = newList.items.map((i) => i.text).join("\n");
-      const links = await parseInternalLinks(content);
-      const indexUsername = target.owner;
-      if (indexUsername) {
-        await updateIndexForItem(
-          indexUsername,
-          ItemTypes.CHECKLIST,
-          newList.uuid!,
-          links,
-        );
-      }
-    } catch (error) {
-      console.warn(
-        "Failed to update link index for new checklist:",
-        newList.id,
-        error,
-      );
-    }
-
     await logContentEvent(
       "checklist_created",
       "checklist",
@@ -111,6 +91,6 @@ export const makeList = async (
       false,
     );
     console.error("Error creating list:", error);
-    return { error: "Failed to create list" };
+    return { error: await failedWith(error, "Failed to create list") };
   }
 };

@@ -1,4 +1,4 @@
-import { CustomThemeConfig, CustomEmojiConfig } from "@/app/_types";
+import { AppSettings, CustomThemeConfig, CustomEmojiConfig } from "@/app/_types";
 
 export const validateThemeConfig = (config: any): config is CustomThemeConfig => {
   if (!config || typeof config !== "object") return false;
@@ -30,4 +30,38 @@ export const validateEmojiConfig = (config: any): config is CustomEmojiConfig =>
   }
 
   return true;
+};
+
+type EditorSettings = AppSettings["editor"];
+
+const EDITOR_FIELD_TYPES: Record<keyof EditorSettings, "boolean" | "string"> = {
+  enableSlashCommands: "boolean",
+  enableBubbleMenu: "boolean",
+  enableTableToolbar: "boolean",
+  enableBilateralLinks: "boolean",
+  enableTags: "boolean",
+  drawioUrl: "string",
+  drawioProxyEnabled: "boolean",
+  historyEnabled: "boolean",
+};
+
+export type EditorVerdict =
+  | { patch: Partial<EditorSettings> }
+  | { badField: string | null };
+
+export const checkEditor = (raw: unknown): EditorVerdict => {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return { badField: null };
+  }
+
+  const incoming = raw as Record<string, unknown>;
+  const patch: Record<string, unknown> = {};
+
+  for (const [field, kind] of Object.entries(EDITOR_FIELD_TYPES)) {
+    if (!(field in incoming)) continue;
+    if (typeof incoming[field] !== kind) return { badField: field };
+    patch[field] = incoming[field];
+  }
+
+  return { patch: patch as Partial<EditorSettings> };
 };

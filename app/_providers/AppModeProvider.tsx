@@ -21,7 +21,6 @@ import {
   SanitisedUser,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { LinkIndex } from "../_types";
 import { buildTagsIndex } from "../_utils/tag-utils";
 import { useSidebarStore } from "../_utils/sidebar-store";
 
@@ -36,7 +35,6 @@ export const AppModeProvider = ({
   pathname,
   appVersion,
   initialSettings,
-  linkIndex,
   notes,
   checklists,
   allSharedItems,
@@ -52,7 +50,6 @@ export const AppModeProvider = ({
   pathname?: string;
   appVersion?: string;
   initialSettings?: AppSettings;
-  linkIndex?: LinkIndex | null;
   notes?: Partial<Note>[];
   checklists?: Partial<Checklist>[];
   allSharedItems?: AllSharedItems | null;
@@ -175,7 +172,6 @@ export const AppModeProvider = ({
       appSettings,
       appVersion: appVersion || "",
       usersPublicData,
-      linkIndex: linkIndex || null,
       notes: notes || [],
       checklists: checklists || [],
       allSharedItems: allSharedItems || null,
@@ -198,7 +194,6 @@ export const AppModeProvider = ({
       appSettings,
       appVersion,
       usersPublicData,
-      linkIndex,
       notes,
       checklists,
       allSharedItems,

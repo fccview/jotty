@@ -93,6 +93,55 @@ interface Locatable {
   id?: string;
 }
 
+export interface Place {
+  owner: string;
+  category: string;
+}
+
+export interface MovePlan {
+  home: Place;
+  destination: Place;
+  target: TargetLocation;
+  isMoving: boolean;
+}
+
+const _samePlace = (a: string, b: string): boolean =>
+  (a || UNCATEGORIZED) === (b || UNCATEGORIZED);
+
+export const movePlan = async (
+  mode: Modes,
+  username: string,
+  item: Locatable,
+  requested: string,
+): Promise<MovePlan> => {
+  const home: Place = {
+    owner: item.owner || username,
+    category: item.category || "",
+  };
+
+  const target = await targetDir(mode, username, requested);
+  const shown = await shownAs(mode, username, home.owner, home.category);
+
+  if (_samePlace(requested, shown)) {
+    return { home, target, destination: home, isMoving: false };
+  }
+
+  const anchored = target.isImplicit && target.owner === home.owner;
+
+  const destination: Place = anchored
+    ? home
+    : { owner: target.owner, category: target.category };
+
+  return {
+    home,
+    target,
+    destination,
+    isMoving:
+      destination.owner !== home.owner ||
+      destination.category !== home.category,
+  };
+};
+
 export const diskPath = async (
   mode: Modes,
   username: string,

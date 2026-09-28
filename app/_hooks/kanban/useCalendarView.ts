@@ -33,7 +33,7 @@ export const useCalendarView = (checklist: Checklist) => {
   );
 
   const unscheduledItems = useMemo(
-    () => checklist.items.filter((item) => !item.targetDate && !item.isArchived),
+    () => checklist.items.filter((item) => !item.targetDate && !item.completed && !item.isArchived),
     [checklist.items],
   );
 

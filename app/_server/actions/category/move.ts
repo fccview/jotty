@@ -6,12 +6,13 @@ import {
   ensureDir,
   getUserModeDir,
   readOrderFile,
+  serverRenamePath,
+  serverWriteFile,
   writeOrderFile,
 } from "@/app/_server/actions/file";
 import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
-import { rebuildLinkIndex } from "@/app/_server/actions/link";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
@@ -119,10 +120,9 @@ const _restamp = async (
     );
     const content = await fs.readFile(filePath, "utf-8");
 
-    await fs.writeFile(
+    await serverWriteFile(
       filePath,
       updateYamlMetadata(content, { owner, category }),
-      "utf-8",
     );
   } catch (error) {
     console.error(`Failed to restamp ${filePath}:`, error);
@@ -382,7 +382,7 @@ export const moveNode = async (formData: FormData) => {
       const oldPath = path.join(oldParentDir, fileName);
       const newPath = path.join(newParentDir, fileName);
 
-      await fs.rename(oldPath, newPath);
+      await serverRenamePath(oldPath, newPath);
 
       if (activeType === "item") {
         await _restamp(newPath, destLoc.owner, destLoc.category);
@@ -429,16 +429,6 @@ export const moveNode = async (formData: FormData) => {
         } catch (error) {
           console.warn("Failed to commit note move to git history:", error);
         }
-      }
-
-      try {
-        await rebuildLinkIndex(sourceLoc.owner);
-
-        if (destLoc.owner !== sourceLoc.owner) {
-          await rebuildLinkIndex(destLoc.owner);
-        }
-      } catch (error) {
-        console.warn("Failed to update link index:", error);
       }
     }
 

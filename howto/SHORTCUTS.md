@@ -1,39 +1,39 @@
 # Shortcuts
 
-jotty·page supports a wide range of keyboard shortcuts to help you navigate and edit more efficiently without leaving the keyboard. They are divided into two main categories: global shortcuts that work anywhere in the app, and editor-specific shortcuts that work when you are writing a note.
+Global shortcuts work anywhere in the app. Editor and table shortcuts only work while you're writing a note.
 
-### Global App Shortcuts
+> [!NOTE]
+> The tables use Mac keys. On Windows and Linux, use `Ctrl` instead of `⌘ Cmd` and `Alt` instead of `⌥ Option`.
 
-These shortcuts are for managing the application, such as opening modals, switching between modes, and navigating to key pages.
+### Global shortcuts
 
 | Shortcut                                                                 | Action                                                         |
 | :----------------------------------------------------------------------- | :------------------------------------------------------------- |
 | <kbd>⌘ Cmd</kbd> + <kbd>K</kbd>                                          | Open the search palette                                        |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>N</kbd> | Create a new Note or Checklist (depending on the current mode) |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>C</kbd> | Create a new Category                                          |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>                       | Open the How To guides                                         |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>S</kbd> | Open the Settings modal                                        |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>←</kbd> | Switch to Checklists mode                                      |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>→</kbd> | Switch to Notes mode                                           |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>P</kbd> | Go to your Profile page                                        |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>A</kbd> | Go to the Admin page (Admins only)                             |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>N</kbd> | Create a new note or checklist, depending on the current mode  |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>C</kbd> | Create a new category                                          |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>                       | Open the How to guides (outside the editor, where it highlights) |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>S</kbd> | Open settings                                                 |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>Left</kbd> | Switch to checklists mode                                   |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>Right</kbd> | Switch to notes mode                                       |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>P</kbd> | Go to your profile page                                        |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>A</kbd> | Go to the admin page (admins only)                             |
 | <kbd>Esc</kbd>                                                           | Close any open modal                                           |
 
-**\*Note:** For Windows/Linux, use `Ctrl` instead of `⌘ Cmd` and `Alt` instead of `⌥ Option`.\*
+### Editor shortcuts
 
-### Editor Shortcuts
-
-These shortcuts are available when the note editor is focused. They allow you to format text and content on the fly.
+These work when the note editor has focus.
 
 | Shortcut                                                                 | Action                         |
 | :----------------------------------------------------------------------- | :----------------------------- |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>                       | Saves the document             |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>                       | Enter/Exit edit mode           |
-| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>M</kbd> | Enter/Exit markdown mode       |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>                       | Save the note                  |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd>                       | Enter or exit edit mode        |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>⌥ Option</kbd> + <kbd>M</kbd> | Enter or exit Markdown mode    |
 | <kbd>⌘ Cmd</kbd> + <kbd>B</kbd>                                          | Toggle **Bold**                |
 | <kbd>⌘ Cmd</kbd> + <kbd>I</kbd>                                          | Toggle _Italic_                |
 | <kbd>⌘ Cmd</kbd> + <kbd>U</kbd>                                          | Toggle <u>Underline</u>        |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd>                       | Toggle ~~Strikethrough~~       |
+| <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>                       | Toggle highlight               |
 | <kbd>⌘ Cmd</kbd> + <kbd>E</kbd>                                          | Toggle `inline code`           |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>K</kbd>                       | Add or edit a link             |
 | <kbd>⌘ Cmd</kbd> + <kbd>⌥ Option</kbd> + <kbd>1</kbd>                    | Apply Heading 1 style          |
@@ -45,11 +45,9 @@ These shortcuts are available when the note editor is focused. They allow you to
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>9</kbd>                       | Toggle a task list (checklist) |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>                       | Toggle a blockquote            |
 
-**\*Note:** For Windows/Linux, use `Ctrl` instead of `⌘ Cmd` and `Alt` instead of `⌥ Option`.\*
+### Table shortcuts
 
-### Table Shortcuts
-
-These shortcuts are available when working with tables in the editor.
+These work when your cursor is inside a table in the editor.
 
 | Shortcut                                                   | Action                |
 | :--------------------------------------------------------- | :-------------------- |
@@ -58,5 +56,3 @@ These shortcuts are available when working with tables in the editor.
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>         | Add column right      |
 | <kbd>⌘ Cmd</kbd> + <kbd>Backspace</kbd>                    | Delete current row    |
 | <kbd>⌘ Cmd</kbd> + <kbd>Shift</kbd> + <kbd>Backspace</kbd> | Delete current column |
-
-**\*Note:** For Windows/Linux, use `Ctrl` instead of `⌘ Cmd` and `Alt` instead of `⌥ Option`.\*

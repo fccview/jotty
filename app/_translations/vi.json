@@ -946,7 +946,12 @@
     "selectChecklistItemClickAction": "Chọn hành động nhấp vào mục danh sách kiểm tra",
     "checklistItemClickActionDescription": "Chọn điều gì sẽ xảy ra khi bạn nhấp vào văn bản của nhiệm vụ. \"Đánh dấu là hoàn thành\" chuyển đổi hộp kiểm (mặc định); \"Chỉnh sửa tên tác vụ\" sẽ mở tác vụ để chỉnh sửa nội tuyến — bạn vẫn cần phải nhấp vào hộp kiểm để hoàn thành tác vụ đó.",
     "checklistItemClickActionToggle": "Đánh dấu là hoàn thành/chưa hoàn thành",
-    "checklistItemClickActionEdit": "Chỉnh sửa mục danh sách"
+    "checklistItemClickActionEdit": "Chỉnh sửa mục danh sách",
+    "newItemInsertion": "Vị trí thêm mục mới",
+    "selectNewItemInsertion": "Chọn nơi thêm mục mới",
+    "newItemInsertionDescription": "Chọn xem các mục mới được thêm vào đầu (mặc định) hay cuối danh sách kiểm tra.",
+    "newItemInsertionTop": "Đầu danh sách",
+    "newItemInsertionBottom": "Cuối danh sách"
   },
   "admin": {
     "title": "Quản trị viên",
@@ -1046,9 +1051,7 @@
     "enableBubbleMenuDescription": "Bật thanh công cụ nổi xuất hiện khi văn bản được chọn",
     "enableTableToolbarDescription": "Kích hoạt thanh công cụ xuất hiện khi chỉnh sửa bảng",
     "bilateralLinks": "Liên kết song phương",
-    "experimental": "(Thử nghiệm)",
     "bilateralLinksDescription": "Cho phép khả năng liên kết đến ghi chú và danh sách kiểm tra trong cùng một tài liệu.",
-    "bilateralLinksWarning": "Tính năng này đang thử nghiệm và có thể không hoạt động như mong đợi. Nó cũng có thể bị xóa/không được dùng nữa trong tương lai.",
     "historyEnabled": "Lịch sử ghi chú",
     "historyDescription": "Theo dõi lịch sử phiên bản để ghi chú. Cho phép khôi phục các phiên bản trước đó. Chỉ lưu thủ công mới tạo điểm lịch sử (không lưu tự động).",
     "disableHistory": "Tắt lịch sử",

@@ -19,7 +19,6 @@ import { getCategories } from "@/app/_server/actions/category";
 import { Modes } from "./_types/enums";
 import { getCurrentUser, getUsers } from "./_server/actions/users";
 import { readPackageVersion } from "@/app/_server/actions/config";
-import { readLinkIndex } from "@/app/_server/actions/link";
 import { headers } from "next/headers";
 import {
   themeInitScript,
@@ -27,8 +26,8 @@ import {
   rgbToHex,
 } from "./_consts/themes";
 import { loadCustomThemes } from "./_server/actions/config";
-import { getUserChecklists } from "./_server/actions/checklist";
-import { getUserNotes } from "./_server/actions/note";
+import { getUserChecklists } from "./_server/actions/checklist/queries";
+import { getUserNotes } from "./_server/actions/note/queries";
 
 import SuppressWarnings from "./_components/GlobalComponents/Layout/SuppressWarnings";
 import {
@@ -42,7 +41,6 @@ import path from "path";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
-import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
 import { WebSocketProvider } from "./_providers/WebSocketProvider";
 import { isEnvEnabled } from "./_utils/env-utils";
@@ -150,6 +148,10 @@ export async function generateViewport(): Promise<Viewport> {
   };
 }
 
+/**
+ * Load session, settings and initial item data for the application providers.
+ * Render the shared document shell while omitting private item lists on public routes.
+ */
 export default async function RootLayout({
   children,
 }: {
@@ -160,18 +162,18 @@ export default async function RootLayout({
   const settings = await getSettings();
   const appName =
     settings?.appName || (settings?.isRwMarkable ? "rwMarkable" : "jotty·page");
-  const noteCategories = await getCategories(Modes.NOTES);
-  const checklistCategories = await getCategories(Modes.CHECKLISTS);
-  const userRecord = await getCurrentUser();
+  const user = await getCurrentUser();
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES;
-  const users = isPublicRoute || !userRecord ? [] : await getUsers();
-  const linkIndex = userRecord?.username
-    ? await readLinkIndex(userRecord.username)
-    : null;
+  const users = isPublicRoute || !user ? [] : await getUsers();
+  const noteCategories = user
+    ? await getCategories(Modes.NOTES)
+    : { success: false, data: [] };
+  const checklistCategories = user
+    ? await getCategories(Modes.CHECKLISTS)
+    : { success: false, data: [] };
   const messages = await getMessages();
-  const user = sanitizeUserForClient(userRecord);
 
   const [
     notesResult,
@@ -262,7 +264,6 @@ export default async function RootLayout({
             pathname={pathname || ""}
             initialSettings={settings}
             usersPublicData={users}
-            linkIndex={linkIndex}
             notes={notes}
             checklists={checklists}
             allSharedItems={allSharedItems}

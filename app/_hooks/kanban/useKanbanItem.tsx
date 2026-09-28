@@ -367,7 +367,7 @@ export const useKanbanItem = ({
     handleReminderSet,
     handleDelete: () => setShowDeleteModal(true),
     handleArchive,
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

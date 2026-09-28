@@ -6,6 +6,7 @@ import {
   useEffect,
   useCallback,
   useMemo,
+  useRef,
 } from "react";
 import { Checklist, Category, Note, AppMode, SanitisedUser } from "../_types";
 import { ItemTypes, Modes } from "../_types/enums";
@@ -55,6 +56,7 @@ export const useSidebar = (props: SidebarProps) => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   const [pendingMode, setPendingMode] = useState<AppMode | null>(null);
+  const pendingFromUrl = useRef<string | null>(null);
 
   const collapsedCategoriesForMode = useMemo(() => {
     return new Set(collapsedCategories[mode] || []);
@@ -136,20 +138,24 @@ export const useSidebar = (props: SidebarProps) => {
     [storeToggleTag]
   );
 
+  const urlKey = pathname + "?" + searchParams.toString();
+
   const handleModeSwitch = (newMode: AppMode) =>
     checkNavigation(() => {
       setMode(newMode);
       setPendingMode(newMode);
+      pendingFromUrl.current = urlKey;
       router.push("/?mode=" + newMode);
     });
 
   useEffect(() => {
     if (pendingMode == null) return;
     const urlMode = searchParams.get("mode") as AppMode | null;
-    if (urlMode === pendingMode) {
+    if (urlMode === pendingMode || urlKey !== pendingFromUrl.current) {
       setPendingMode(null);
+      pendingFromUrl.current = null;
     }
-  }, [searchParams, pendingMode]);
+  }, [urlKey, searchParams, pendingMode]);
 
   const isHomePage = pathname === "/" || pathname === "";
 

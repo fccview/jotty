@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import {
-  getListById,
-  updateList,
-  deleteList,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { dropList, editList } from "@/app/_server/actions/checklist/editor";
 import { isKanbanType } from "@/app/_types/enums";
 import { toApiItem } from "@/app/_utils/api-item";
 
@@ -82,9 +79,7 @@ export async function PUT(
       formData.append("uuid", task.uuid!);
       formData.append("title", title ?? task.title);
       formData.append("category", category ?? task.category ?? "Uncategorized");
-      formData.append("apiUser", JSON.stringify(user));
-
-      const result = await updateList(formData);
+      const result = await editList(user, formData);
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }
@@ -135,9 +130,7 @@ export async function DELETE(
 
       const formData = new FormData();
       formData.append("uuid", task.uuid!);
-      formData.append("apiUser", JSON.stringify(user));
-
-      const result = await deleteList(formData);
+      const result = await dropList(user, formData);
       if (result.error) {
         return NextResponse.json({ error: result.error }, { status: 400 });
       }

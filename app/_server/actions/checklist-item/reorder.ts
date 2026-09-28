@@ -6,15 +6,16 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
-export const reorderItems = async (formData: FormData) => {
+const _reorderItems = async (formData: FormData) => {
   try {
     const uuid = formData.get("uuid") as string;
     const activeItemId = formData.get("activeItemId") as string;
@@ -160,11 +161,14 @@ export const reorderItems = async (formData: FormData) => {
 
     await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username: currentUser });
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
     return { success: true };
   } catch (error) {
     console.error("Error reordering items:", error);
     return { success: false, error: "Failed to reorder items" };
   }
 };
+
+export const reorderItems = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _reorderItems(formData),
+  );

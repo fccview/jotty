@@ -1,5 +1,5 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { getCategories } from "@/app/_server/actions/category";
 import { getCurrentUser, canAccessAllContent } from "@/app/_server/actions/users";
 import { ChecklistClient } from "@/app/_components/FeatureComponents/Checklists/Parts/ChecklistClient";
@@ -10,8 +10,9 @@ import { isUuid } from "@/app/_consts/identity";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
+import { RelationsProvider } from "@/app/_providers/RelationsProvider";
+import { getItemRelations } from "@/app/_server/actions/relations";
 import { decodeSegment } from "@/app/_utils/global-utils";
-import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 
 interface ChecklistPageProps {
   params: Promise<{
@@ -26,17 +27,21 @@ export async function generateMetadata(props: ChecklistPageProps): Promise<Metad
   return getMedatadaTitle(Modes.CHECKLISTS, params.uuid);
 }
 
+/**
+ * Resolve a checklist for the signed-in user and load its categories and relations.
+ * Redirect legacy slugs to UUID URLs and unavailable checklists to the home page.
+ */
 export default async function ChecklistPage(props: ChecklistPageProps) {
   const params = await props.params;
   const { uuid } = params;
 
-  const userRecord = await getCurrentUser();
+  const user = await getCurrentUser();
 
-  if (!userRecord?.username) {
+  if (!user?.username) {
     redirect("/");
   }
 
-  const username = userRecord.username;
+  const username = user.username;
   const hasContentAccess = await canAccessAllContent();
 
   if (!isUuid(uuid)) {
@@ -83,16 +88,18 @@ export default async function ChecklistPage(props: ChecklistPageProps) {
     type: "checklist" as const,
   };
 
-  const user = sanitizeUserForClient(userRecord);
+  const relations = await getItemRelations(checklist.uuid || "");
 
   return (
     <MetadataProvider metadata={metadata}>
       <PermissionsProvider item={checklist}>
-        <ChecklistClient
-          checklist={checklist}
-          categories={categories}
-          user={user}
-        />
+        <RelationsProvider relations={relations}>
+          <ChecklistClient
+            checklist={checklist}
+            categories={categories}
+            user={user}
+          />
+        </RelationsProvider>
       </PermissionsProvider>
     </MetadataProvider>
   );

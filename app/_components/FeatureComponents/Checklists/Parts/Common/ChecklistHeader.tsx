@@ -14,6 +14,7 @@ import {
   Copy01Icon,
   Copy02Icon,
 } from "hugeicons-react";
+import { BrainButton } from "@/app/_components/FeatureComponents/Brain/Parts/BrainButton";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
@@ -146,6 +147,8 @@ export const ChecklistHeader = ({
               </Button>
             )}
           </div>
+
+          <BrainButton uuid={checklist.uuid} className="h-10 w-10" />
 
           {(permissions?.canEdit || permissions?.canDelete) && (
             <div

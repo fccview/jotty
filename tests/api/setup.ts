@@ -9,6 +9,13 @@ export const mockUser = {
 };
 
 export const mockAuthenticateApiKey = vi.fn();
+export const mockEditNote = vi.fn();
+export const mockDropNote = vi.fn();
+export const mockEditList = vi.fn();
+export const mockDropList = vi.fn();
+export const mockAddItem = vi.fn();
+export const mockEditItem = vi.fn();
+export const mockStampStatus = vi.fn();
 export const mockGetUserNotes = vi.fn();
 export const mockCreateNote = vi.fn();
 export const mockUpdateNote = vi.fn();
@@ -26,8 +33,9 @@ export const mockDeleteItem = vi.fn();
 export const mockUpdateItemStatus = vi.fn();
 export const mockGetCategories = vi.fn();
 export const mockIsAdmin = vi.fn();
+export const mockGetCurrentUser = vi.fn();
 export const mockServerWriteFile = vi.fn();
-export const mockGetUserByUsername = vi.fn();
+export const mockFindUserRecord = vi.fn();
 export const mockExportAllChecklistsNotes = vi.fn();
 export const mockExportUserChecklistsNotes = vi.fn();
 export const mockExportAllUsersData = vi.fn();
@@ -36,24 +44,36 @@ export const mockGetExportProgress = vi.fn();
 export const mockGetAppSettings = vi.fn();
 export const mockResolveApiId = vi.fn();
 export const mockLegacyResolve = vi.fn();
+export const mockRemoveItem = vi.fn();
+export const mockGraftItem = vi.fn();
+export const mockRestatus = vi.fn();
+export const mockAssignItem = vi.fn();
+export const mockRemindItem = vi.fn();
+export const mockCanReach = vi.fn();
 
 vi.mock("@/app/_server/actions/api", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
 }));
 
-vi.mock("@/app/_server/actions/note", () => ({
+vi.mock("@/app/_server/actions/note/queries", () => ({
   getUserNotes: (...args: any[]) => mockGetUserNotes(...args),
+}));
+
+vi.mock("@/app/_server/actions/note", () => ({
   createNote: (...args: any[]) => mockCreateNote(...args),
   updateNote: (...args: any[]) => mockUpdateNote(...args),
   deleteNote: (...args: any[]) => mockDeleteNote(...args),
 }));
 
-vi.mock("@/app/_server/actions/checklist", () => ({
+vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getUserChecklists: (...args: any[]) => mockGetUserChecklists(...args),
+  getListById: (...args: any[]) => mockGetListById(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist", () => ({
   createList: (...args: any[]) => mockCreateList(...args),
   updateList: (...args: any[]) => mockUpdateList(...args),
   deleteList: (...args: any[]) => mockDeleteList(...args),
-  getListById: (...args: any[]) => mockGetListById(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist/creator", () => ({
@@ -62,6 +82,46 @@ vi.mock("@/app/_server/actions/checklist/creator", () => ({
 
 vi.mock("@/app/_server/actions/note/creator", () => ({
   makeNote: (...args: any[]) => mockMakeNote(...args),
+}));
+
+vi.mock("@/app/_server/actions/note/editor", () => ({
+  editNote: (...args: any[]) => mockEditNote(...args),
+  dropNote: (...args: any[]) => mockDropNote(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist/editor", () => ({
+  editList: (...args: any[]) => mockEditList(...args),
+  dropList: (...args: any[]) => mockDropList(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist-item/editor", () => ({
+  addItem: (...args: any[]) => mockAddItem(...args),
+  editItem: (...args: any[]) => mockEditItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist-item/remover", () => ({
+  removeItem: (...args: any[]) => mockRemoveItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist-item/grafter", () => ({
+  graftItem: (...args: any[]) => mockGraftItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist/restatus", () => ({
+  restatus: (...args: any[]) => mockRestatus(...args),
+}));
+
+vi.mock("@/app/_server/actions/kanban/tweaker", () => ({
+  assignItem: (...args: any[]) => mockAssignItem(...args),
+  remindItem: (...args: any[]) => mockRemindItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/share/queries", () => ({
+  canReach: (...args: any[]) => mockCanReach(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist-item/stamper", () => ({
+  stampStatus: (...args: any[]) => mockStampStatus(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item", () => ({
@@ -77,7 +137,11 @@ vi.mock("@/app/_server/actions/category", () => ({
 
 vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
-  getUserByUsername: (...args: any[]) => mockGetUserByUsername(...args),
+  getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
+}));
+
+vi.mock("@/app/_server/actions/users/records", () => ({
+  findUserRecord: (...args: any[]) => mockFindUserRecord(...args),
 }));
 
 vi.mock("@/app/_server/actions/file", () => ({
@@ -106,6 +170,14 @@ vi.mock("@/app/_server/actions/lib/legacy-lookup", () => ({
 export function resetApiMocks() {
   vi.clearAllMocks();
   mockAuthenticateApiKey.mockReset();
+  mockGetCurrentUser.mockReset();
+  mockEditNote.mockReset();
+  mockDropNote.mockReset();
+  mockEditList.mockReset();
+  mockDropList.mockReset();
+  mockAddItem.mockReset();
+  mockEditItem.mockReset();
+  mockStampStatus.mockReset();
   mockGetUserNotes.mockReset();
   mockCreateNote.mockReset();
   mockUpdateNote.mockReset();
@@ -124,7 +196,7 @@ export function resetApiMocks() {
   mockGetCategories.mockReset();
   mockIsAdmin.mockReset();
   mockServerWriteFile.mockReset();
-  mockGetUserByUsername.mockReset();
+  mockFindUserRecord.mockReset();
   mockExportAllChecklistsNotes.mockReset();
   mockExportUserChecklistsNotes.mockReset();
   mockExportAllUsersData.mockReset();
@@ -134,6 +206,21 @@ export function resetApiMocks() {
   mockLegacyResolve.mockReset();
   mockResolveApiId.mockReset();
   mockResolveApiId.mockImplementation(async (_mode: Modes, param: string) => param);
+  mockRemoveItem.mockReset();
+  mockRemoveItem.mockResolvedValue({ success: true });
+  mockGraftItem.mockReset();
+  mockGraftItem.mockResolvedValue({ success: true });
+  mockRestatus.mockReset();
+  mockRestatus.mockImplementation(
+    async (_user: any, _uuid: string, reshape: (current?: any[]) => any[]) => ({
+      success: true,
+      data: { statuses: reshape(undefined) },
+    }),
+  );
+  mockAssignItem.mockReset();
+  mockRemindItem.mockReset();
+  mockCanReach.mockReset();
+  mockCanReach.mockResolvedValue(true);
 }
 
 export function createMockRequest(

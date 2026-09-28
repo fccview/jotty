@@ -28,7 +28,7 @@ vi.mock("@/app/_server/actions/share/queries", () => ({
   canReach: (...args: any[]) => mockCanReach(...args),
 }));
 
-vi.mock("@/app/_server/actions/checklist", () => ({
+vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getListById: (...args: any[]) => mockGetListById(...args),
 }));
 
@@ -36,9 +36,8 @@ vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: any[]) => mockBroadcast(...args),
 }));
 
-vi.mock("@/app/_server/actions/notifications", () => ({
-  createNotificationForUser: (...args: any[]) =>
-    mockCreateNotificationForUser(...args),
+vi.mock("@/app/_server/actions/notifications/internal", () => ({
+  notifyUser: (...args: any[]) => mockCreateNotificationForUser(...args),
 }));
 
 import {
@@ -239,6 +238,27 @@ describe("Comments Actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Permission denied");
+    });
+
+    it("fails when the item does not belong to the board", async () => {
+      const result = await addComment(
+        createFormData({ uuid: BOARD_UUID, itemId: "not-on-this-board", text: "hi" }),
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Item not found on this board");
+      expect(mockWriteJsonFile).not.toHaveBeenCalled();
+    });
+
+    it("still succeeds when the broadcast blows up", async () => {
+      mockBroadcast.mockRejectedValue(new Error("socket gone"));
+
+      const result = await addComment(
+        createFormData({ uuid: BOARD_UUID, itemId: ITEM_ID, text: "hi" }),
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockWriteJsonFile).toHaveBeenCalled();
     });
 
     it("revalidates the checklist path after adding", async () => {

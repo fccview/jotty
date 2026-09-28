@@ -5,8 +5,8 @@ import {
   mockGetUserNotes,
   mockCreateNote,
   mockMakeNote,
-  mockUpdateNote,
-  mockDeleteNote,
+  mockEditNote,
+  mockDropNote,
   resetApiMocks,
   createMockRequest,
   getResponseJson,
@@ -145,7 +145,7 @@ describe("Notes API", () => {
       }
 
       mockGetUserNotes.mockResolvedValue({ success: true, data: [existingNote] })
-      mockUpdateNote.mockResolvedValue({ success: true, data: updatedNote })
+      mockEditNote.mockResolvedValue({ success: true, data: updatedNote })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/uuid-1", {
         title: "Updated Test Note - API",
@@ -175,7 +175,7 @@ describe("Notes API", () => {
       }
 
       mockGetUserNotes.mockResolvedValue({ success: true, data: [existingNote] })
-      mockUpdateNote.mockResolvedValue({ success: true, data: updatedNote })
+      mockEditNote.mockResolvedValue({ success: true, data: updatedNote })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/uuid-1", {
         content: "Updated content only",
@@ -226,7 +226,7 @@ describe("Notes API", () => {
       }
 
       mockGetUserNotes.mockResolvedValue({ success: true, data: [existingNote] })
-      mockDeleteNote.mockResolvedValue({ success: true })
+      mockDropNote.mockResolvedValue({ success: true })
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/notes/uuid-1")
       const response = await DELETE(request, { params: Promise.resolve({ noteId: "uuid-1" }) })

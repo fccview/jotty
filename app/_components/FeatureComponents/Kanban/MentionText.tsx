@@ -11,7 +11,7 @@ interface MentionTextProps {
 export const MentionText: React.FC<MentionTextProps> = ({ text, className }) => {
   const parts = React.useMemo(() => {
     const regex = /(^|\s)@([\w.-]+)/g;
-    const result: { type: "text" | "mention"; value: string; prefix?: string }[] = [];
+    const result: { type: "text" | "mention"; value: string }[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
@@ -24,11 +24,7 @@ export const MentionText: React.FC<MentionTextProps> = ({ text, className }) => 
         result.push({ type: "text", value: text.substring(lastIndex, matchStart) });
       }
 
-      result.push({
-        type: "mention",
-        value: username,
-        prefix: prefix || undefined,
-      });
+      result.push({ type: "mention", value: username });
 
       lastIndex = match.index + match[0].length;
     }
@@ -51,7 +47,6 @@ export const MentionText: React.FC<MentionTextProps> = ({ text, className }) => 
               className,
             )}
           >
-            {part.prefix}
             @{part.value}
           </span>
         ) : (
