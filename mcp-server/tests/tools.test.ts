@@ -174,4 +174,21 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url, "wrong"), BuiltinTool.Health, {});
     expect(structured(result)).toMatchObject({ apiKey: "rejected", operations: 0 });
   });
+
+  describe("on a Jotty without the OpenAPI route", () => {
+    const old = serveJotty(null);
+    afterAll(() => old.stop());
+
+    it("health names the version problem instead of blaming the key", async () => {
+      const result = await runBuiltin(makeCtx(old.url), BuiltinTool.Health, {});
+      expect(structured(result)).toMatchObject({ apiKey: "unchecked", upstream: { version: "1.27.0" } });
+      expect(text(result)).toContain("needs Jotty 1.28.0 or newer");
+    });
+
+    it("call_operation says to update Jotty", async () => {
+      const result = await runBuiltin(makeCtx(old.url), BuiltinTool.CallOperation, { operationId: "listNotes" });
+      expect(structured(result).error).toMatchObject({ kind: "unsupported" });
+      expect(text(result)).toContain("Update Jotty to 1.28.0 or newer");
+    });
+  });
 });

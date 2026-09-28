@@ -5,7 +5,7 @@ The MCP server lets an AI assistant such as Claude, Cursor or anything else that
 > [!CAUTION]
 > The assistant can do anything your API key can, deleting included. Give it a key from an account that only holds what you're happy for it to touch.
 
-You need an API key before anything else. [The API guide](API.md) explains how to generate one.
+You need Jotty 1.28.0 or newer and an API key. [The API guide](API.md) explains how to generate one.
 
 ## How it knows what Jotty can do
 

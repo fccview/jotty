@@ -1,5 +1,6 @@
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { Spec } from "../jotty/spec.ts";
+import { JottyError } from "../jotty/client.ts";
+import { SpecMissingError, type Spec } from "../jotty/spec.ts";
 import { logger } from "../utils/logger.ts";
 import { CURATED_OPERATIONS, toolNameOf } from "./catalog.ts";
 import { BuiltinTool, type ToolContext } from "./context.ts";
@@ -90,21 +91,35 @@ const _call = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>, sign
   return runOperation(ctx, spec, op, inner, { signal });
 };
 
+const REJECTED = new Set([401, 403]);
+
+const _keyStatus = (ctx: ToolContext, spec: Spec | null, problem: unknown): string => {
+  if (!ctx.client.hasApiKey) return "missing";
+  if (spec) return "accepted";
+  return problem instanceof JottyError && REJECTED.has(problem.status) ? "rejected" : "unchecked";
+};
+
 const _health = async (ctx: ToolContext, signal?: AbortSignal): Promise<ToolResult> => {
   try {
     const health = await ctx.client.send({ method: "get", path: HEALTH_PATH, signal });
-    const spec = await ctx.specs.load(ctx.client, signal).catch((err: unknown) => {
+    let spec: Spec | null = null;
+    let problem: unknown = null;
+    try {
+      spec = await ctx.specs.load(ctx.client, signal);
+    } catch (err) {
       logger.warn(LOG_NS, "spec unavailable during health check", err);
-      return null;
-    });
+      problem = err;
+    }
     const report = {
       jotty: ctx.client.baseUrl,
       upstream: health.data,
-      apiKey: !ctx.client.hasApiKey ? "missing" : spec ? "accepted" : "rejected",
+      apiKey: _keyStatus(ctx, spec, problem),
       operations: spec?.operations.size ?? 0,
       uptimeSec: Math.round((Date.now() - ctx.startedAt) / 1000),
+      ...(problem instanceof SpecMissingError && { problem: problem.message }),
     };
-    return toolResult(`Jotty at ${report.jotty} is up, API key ${report.apiKey}.`, report);
+    const summary = `Jotty at ${report.jotty} is up, API key ${report.apiKey}.`;
+    return toolResult(report.problem ? `${summary} ${report.problem}` : summary, report);
   } catch (err) {
     return fromError(err);
   }

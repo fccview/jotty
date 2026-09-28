@@ -154,7 +154,7 @@ export const FAKE_SPEC: OpenApiDocument = {
 
 const _json = (data: unknown, status = 200) => Response.json(data, { status });
 
-export const serveJotty = (spec: OpenApiDocument = FAKE_SPEC): FakeJotty => {
+export const serveJotty = (spec: OpenApiDocument | null = FAKE_SPEC): FakeJotty => {
   const hits: Hit[] = [];
   const server = Bun.serve({
     port: 0,
@@ -164,9 +164,9 @@ export const serveJotty = (spec: OpenApiDocument = FAKE_SPEC): FakeJotty => {
       const text = request.method === "GET" ? "" : await request.text();
       hits.push({ method: request.method, path: `${url.pathname}${url.search}`, apiKey, body: text ? JSON.parse(text) : undefined });
 
-      if (url.pathname === "/api/health") return _json({ status: "healthy", version: spec.info.version });
+      if (url.pathname === "/api/health") return _json({ status: "healthy", version: spec?.info.version ?? "1.27.0" });
       if (apiKey !== API_KEY) return _json({ error: "Unauthorized" }, 401);
-      if (url.pathname === "/api/openapi.json") return _json(spec);
+      if (url.pathname === "/api/openapi.json") return spec ? _json(spec) : _json({ error: "Not found" }, 404);
       if (url.pathname === "/api/notes" && url.searchParams.get("q") === "many") {
         return _json({ notes: MANY_NOTES, total: MANY_NOTES.length });
       }
