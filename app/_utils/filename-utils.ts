@@ -70,3 +70,18 @@ export const generateUniqueFilename = async (
 
   return filename;
 };
+
+export const freeFilename = async (
+  directory: string,
+  id: string,
+  extension: string = ".md"
+): Promise<string> => {
+  for (let counter = 0; ; counter++) {
+    const filename = counter ? `${id}-${counter}${extension}` : `${id}${extension}`;
+    try {
+      await fs.access(path.join(directory, filename));
+    } catch {
+      return filename;
+    }
+  }
+};

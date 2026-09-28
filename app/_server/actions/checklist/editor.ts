@@ -8,7 +8,7 @@ import {
   serverDeleteFile,
 } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
-import { generateUniqueFilename, sanitizeFilename } from "@/app/_utils/filename-utils";
+import { freeFilename, generateUniqueFilename, sanitizeFilename } from "@/app/_utils/filename-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
@@ -133,6 +133,9 @@ const _editList = async (actingUser: SanitisedUser, formData: FormData) => {
         ".md",
         fileRenameMode
       );
+      newId = path.basename(newFilename, ".md");
+    } else if (isMoving) {
+      newFilename = await freeFilename(categoryDir, currentId);
       newId = path.basename(newFilename, ".md");
     } else {
       newFilename = `${currentId}.md`;

@@ -16,6 +16,7 @@ import { getUsername } from "@/app/_server/actions/users";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
+import { freeFilename } from "@/app/_utils/filename-utils";
 import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
 import {
   catUuid,
@@ -379,8 +380,10 @@ export const moveNode = async (formData: FormData) => {
       await ensureDir(newParentDir);
 
       const fileName = activeType === "item" ? `${activeName}.md` : activeName;
+      const landingName =
+        activeType === "item" ? await freeFilename(newParentDir, activeName) : activeName;
       const oldPath = path.join(oldParentDir, fileName);
-      const newPath = path.join(newParentDir, fileName);
+      const newPath = path.join(newParentDir, landingName);
 
       await serverRenamePath(oldPath, newPath);
 
@@ -414,7 +417,7 @@ export const moveNode = async (formData: FormData) => {
 
           await commitNote(
             destLoc.owner,
-            path.join(destLoc.category || "Uncategorized", `${activeName}.md`),
+            path.join(destLoc.category || "Uncategorized", landingName),
             "move",
             title,
             {

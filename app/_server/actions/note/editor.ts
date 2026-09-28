@@ -1,6 +1,6 @@
 import path from "path";
 import { SanitisedUser } from "@/app/_types";
-import { generateUniqueFilename } from "@/app/_utils/filename-utils";
+import { freeFilename, generateUniqueFilename } from "@/app/_utils/filename-utils";
 import {
   detectEncryptionMethod,
   isEncrypted,
@@ -169,6 +169,9 @@ const _editNote = async (
         fileRenameMode,
       );
       newId = path.basename(newFilename, ".md");
+    } else if (isMoving) {
+      newFilename = await freeFilename(categoryDir, currentId);
+      newId = path.basename(newFilename, ".md");
     } else {
       newFilename = `${currentId}.md`;
     }
@@ -299,7 +302,6 @@ export const rewriteNote = async (
     const formData = new FormData();
     formData.append("uuid", note.uuid || uuid);
     formData.append("title", note.title);
-    formData.append("category", "");
     formData.append("content", content);
     return _editNote(actor, formData, false);
   });
