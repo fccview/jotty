@@ -45,8 +45,8 @@ const _storedTags = (metadata: Record<string, unknown>): string[] =>
 const _retagged = (metadata: Record<string, unknown>, before: string, after: string): string[] | null => {
   const was = _tagSet(before);
   const now = _tagSet(after);
-  const added = [...now].filter((tag) => !was.has(tag));
-  const dropped = new Set([...was].filter((tag) => !now.has(tag)));
+  const added = Array.from(now).filter((tag) => !was.has(tag));
+  const dropped = new Set(Array.from(was).filter((tag) => !now.has(tag)));
   if (!added.length && !dropped.size) return null;
   const kept = _storedTags(metadata).filter((tag) => !dropped.has(tag));
   return Array.from(new Set([...kept, ...added])).sort();

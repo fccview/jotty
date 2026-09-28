@@ -8,7 +8,7 @@ import type { BrainGraph, ItemRelations } from "@/app/_types/relations";
 import { backlinksFor, graphFor, visibleItems } from "./queries";
 import { rebuildOwnerRelations, rebuildRelations } from "./indexer";
 import { relationsDb } from "./store";
-import { linkItems, linksEnabled } from "./explore";
+import { linkItems, linksEnabled, type LinkWrite } from "./explore";
 
 const EMPTY_RELATIONS: ItemRelations = { uuid: "", status: RelationsStatus.READY, backlinks: [], mentions: [], wikis: {} };
 
@@ -71,16 +71,16 @@ export const reindexRelations = async (username?: string): Promise<Result<number
   }
 };
 
-const _asActor = async (
-  work: (actor: SanitisedUser) => Promise<Result<null>>,
-): Promise<Result<null>> => {
+const _asActor = async <T>(
+  work: (actor: SanitisedUser) => Promise<Result<T>>,
+): Promise<Result<T>> => {
   const user = await getCurrentUser();
   if (!user?.username) return { success: false, error: "Not authenticated" };
   return work(user);
 };
 
-export const connectItems = async (sourceUuid: string, targetUuid: string): Promise<Result<null>> =>
+export const connectItems = async (sourceUuid: string, targetUuid: string): Promise<Result<LinkWrite>> =>
   _asActor((actor) => linkItems(actor, sourceUuid, targetUuid, LinkStyles.APPEND));
 
-export const linkMention = async (sourceUuid: string, targetUuid: string): Promise<Result<null>> =>
+export const linkMention = async (sourceUuid: string, targetUuid: string): Promise<Result<LinkWrite>> =>
   _asActor((actor) => linkItems(actor, sourceUuid, targetUuid, LinkStyles.MENTION));
