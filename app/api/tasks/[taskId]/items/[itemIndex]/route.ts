@@ -38,7 +38,7 @@ export const GET = defineRoute(
     const hit = itemAtIndex(found.task.items, params.itemIndex);
     if (!hit) return refuse(OUT_OF_RANGE, 400);
 
-    return NextResponse.json({ item: toApiItem(hit.item, hit.index, true) });
+    return NextResponse.json({ item: toApiItem(hit.item, hit.index, true, hit.parent) });
   },
 );
 

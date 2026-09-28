@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
-import { categoryField, required, searchQuery, timestamp, uuidParam } from "./common";
+import { categoryField, pageFields, required, searchQuery, timestamp, uuidParam } from "./common";
 import { apiItemSchema, itemIndexParam, kanbanStatusSchema } from "./items";
 
 const STATUS_FIELDS_REQUIRED = "Status id and label are required";
@@ -35,6 +35,7 @@ export const taskListQuery = z.object({
   category: z.string().optional().describe("Only tasks in this folder"),
   status: z.string().optional().describe("Only tasks with at least one top-level item in this status id"),
   q: searchQuery,
+  ...pageFields,
 });
 
 const newColumn = z

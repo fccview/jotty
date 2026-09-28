@@ -47,6 +47,7 @@ export const reminderSchema = z
 type ApiItemShape = {
   id: string;
   index: number;
+  itemIndex: string;
   text: string;
   completed: boolean;
   status?: string;
@@ -69,6 +70,7 @@ export const apiItemSchema: z.ZodType<ApiItemShape> = z
   .object({
     id: z.string().describe("Item id inside its list"),
     index: z.number().describe("Position among its siblings"),
+    itemIndex: z.string().describe("Tree index to pass as {itemIndex}, e.g. 0 or 2.1"),
     text: z.string(),
     completed: z.boolean(),
     status: z.string().optional().describe("Kanban lists only, a status id"),

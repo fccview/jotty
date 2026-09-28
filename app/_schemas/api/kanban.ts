@@ -1,7 +1,17 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
-import { categoryField, envelope, errorSchema, required, searchQuery, timestamp, uuidParam } from "./common";
+import {
+  ListView,
+  categoryField,
+  envelope,
+  errorSchema,
+  pageFields,
+  required,
+  searchQuery,
+  timestamp,
+  uuidParam,
+} from "./common";
 import {
   checklistTypeSchema,
   kanbanStatusSchema,
@@ -49,7 +59,12 @@ export const boardSchema = z
     statuses: z
       .array(kanbanStatusSchema)
       .describe("The board's columns, or the default columns when the board never changed them"),
-    items: z.array(kanbanCardSchema),
+    items: z.array(kanbanCardSchema).optional().describe("Left out in the summary view"),
+    itemCount: z.number().optional().describe("Top-level cards, in the summary view"),
+    statusCounts: z
+      .record(z.string(), z.number())
+      .optional()
+      .describe("Top-level cards per status id, in the summary view"),
     createdAt: timestamp,
     updatedAt: timestamp,
   })
@@ -148,6 +163,11 @@ export const boardListQuery = z.object({
   category: z.string().optional().describe("Only boards in this folder"),
   status: z.string().optional().describe("Only boards with at least one top-level card in this status id"),
   q: searchQuery.describe("Case-insensitive match on the board title or any top-level card text"),
+  view: z
+    .enum(ListView)
+    .default(ListView.FULL)
+    .describe("full returns every card, summary returns card counts per status instead"),
+  ...pageFields,
 });
 
 export const boardCreateBody = z.object({

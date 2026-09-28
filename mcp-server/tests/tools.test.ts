@@ -52,6 +52,33 @@ describe("runOperation", () => {
     expect(data.trimmed).toMatchObject({ field: "notes", of: 30 });
   });
 
+  it("says which offset reads the next rows", async () => {
+    const ctx = makeCtx(jotty.url);
+    ctx.config.output.maxTextChars = 1_000;
+    const result = await runOperation(ctx, spec, op("listNotes"), { q: "many", offset: 5 });
+    const trimmed = structured(result).trimmed as { shown: number; hint: string };
+    expect(trimmed.hint).toContain(`offset=${5 + trimmed.shown}`);
+  });
+
+  it("doesn't suggest offset to an operation that can't page", async () => {
+    const ctx = makeCtx(jotty.url);
+    ctx.config.output.maxTextChars = 1_000;
+    const result = await runOperation(ctx, spec, op("listTasks"), {});
+    const trimmed = structured(result).trimmed as { hint: string };
+    expect(trimmed.hint).not.toContain("offset");
+    expect(trimmed.hint).toContain("category");
+  });
+
+  it("leaves out the catalog's omitted row fields", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("search"), { q: "milk" }, { curated: true });
+    expect(structured(result).results).toEqual([{ uuid: "u-1", slug: "milk", title: "Milk" }]);
+  });
+
+  it("points a bad item index at get_checklist", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("checkChecklistItem"), { listId: "l-1", itemIndex: "9" }, { curated: true });
+    expect(text(result)).toContain("get_checklist");
+  });
+
   it("cuts an oversized single record and leaves out the structured copy", async () => {
     const ctx = makeCtx(jotty.url);
     ctx.config.output.maxTextChars = 20;
@@ -98,8 +125,23 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
     const data = structured(result);
     expect(data.version).toBe("9.9.9");
-    expect(data.tools).toEqual(["list_notes", "get_note", "create_note", "delete_note", "update_board_item"]);
+    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item"]);
     expect(data.unavailableTools).toContain("list_boards");
+  });
+
+  it("discover leaves out the operations dedicated tools cover", async () => {
+    const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
+    const ids = (structured(result).operations as { operationId: string }[]).map((entry) => entry.operationId);
+    expect(ids).toEqual(expect.arrayContaining(["listTasks", "downloadExport", "createTaskStatus"]));
+    expect(ids).not.toContain("listNotes");
+  });
+
+  it("call_operation input errors point at discover", async () => {
+    const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.CallOperation, {
+      operationId: "createTaskStatus",
+      arguments: { taskId: "bad", body: { label: "x" } },
+    });
+    expect(text(result)).toContain("Call discover with operationId createTaskStatus");
   });
 
   it("discover returns one operation's input schema", async () => {

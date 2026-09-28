@@ -37,6 +37,7 @@ export const FAKE_SPEC: OpenApiDocument = {
           { name: "q", in: "query" as never, required: false, schema: { type: "string" } },
           { name: "view", in: "query" as never, required: false, schema: { type: "string", default: "full" } },
           { name: "limit", in: "query" as never, required: false, schema: { type: "integer" } },
+          { name: "offset", in: "query" as never, required: false, schema: { type: "integer" } },
         ],
       },
       post: {
@@ -64,6 +65,33 @@ export const FAKE_SPEC: OpenApiDocument = {
         summary: "Delete a note",
         tags: ["Notes"],
         parameters: [{ name: "noteId", in: "path" as never, required: true, schema: { type: "string" } }],
+      },
+    },
+    "/search": {
+      get: {
+        operationId: "search",
+        summary: "Search",
+        tags: ["Discovery"],
+        parameters: [{ name: "q", in: "query" as never, required: true, schema: { type: "string" } }],
+      },
+    },
+    "/tasks": {
+      get: {
+        operationId: "listTasks",
+        summary: "List tasks",
+        tags: ["Tasks"],
+        parameters: [{ name: "category", in: "query" as never, required: false, schema: { type: "string" } }],
+      },
+    },
+    "/checklists/{listId}/items/{itemIndex}/check": {
+      put: {
+        operationId: "checkChecklistItem",
+        summary: "Check an item",
+        tags: ["Checklist items"],
+        parameters: [
+          { name: "listId", in: "path" as never, required: true, schema: { type: "string" } },
+          { name: "itemIndex", in: "path" as never, required: true, schema: { type: "string" } },
+        ],
       },
     },
     "/exports/{filename}": {
@@ -124,6 +152,12 @@ export const serveJotty = (spec: OpenApiDocument = FAKE_SPEC): FakeJotty => {
       if (url.pathname === "/api/notes" && url.searchParams.get("q") === "many") {
         return _json({ notes: MANY_NOTES, total: MANY_NOTES.length });
       }
+      if (url.pathname === "/api/search") {
+        return _json({ results: [{ uuid: "u-1", slug: "milk", id: "milk", title: "Milk" }], total: 1 });
+      }
+      if (url.pathname === "/api/tasks") return _json({ tasks: MANY_NOTES });
+      if (url.pathname === "/api/tasks/bad/statuses") return _json({ error: "Status id is required" }, 400);
+      if (url.pathname.endsWith("/check")) return _json({ error: "Item index out of range" }, 400);
       if (url.pathname === "/api/notes") return _json(request.method === "GET" ? { notes: [NOTE] } : { success: true, data: NOTE });
       if (url.pathname.startsWith("/api/kanban/")) {
         return _json({ success: true, data: { uuid: "b-1", items: [CARD, { ...CARD, id: "c-2" }] }, item: CARD });

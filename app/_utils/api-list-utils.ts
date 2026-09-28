@@ -43,10 +43,18 @@ export const newcomerIn = (before: Item[], after: Item[]): string | undefined =>
   return _ids(after).find((id) => !known.has(id));
 };
 
-export const itemAtIndex = (items: Item[], raw: string): { item: Item; index: number } | null => {
+interface IndexHit {
+  item: Item;
+  index: number;
+  parent?: string;
+}
+
+export const itemAtIndex = (items: Item[], raw: string): IndexHit | null => {
   const path = indexPath(raw);
   const item = path ? itemAt(items, path) : undefined;
-  return path && item ? { item, index: path[path.length - 1] } : null;
+  if (!path || !item) return null;
+  const parent = path.slice(0, -1).join(".");
+  return { item, index: path[path.length - 1], ...(parent && { parent }) };
 };
 
 export const guard = async (

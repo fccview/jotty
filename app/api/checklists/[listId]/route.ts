@@ -26,7 +26,7 @@ export const GET = defineRoute(
     path: "/checklists/{listId}",
     tag: ApiTag.CHECKLISTS,
     summary: "Get a checklist",
-    description: "One checklist with its items, including ones shared with the API key owner. Each item carries the index the item routes take.",
+    description: "One checklist with its items, including ones shared with the API key owner. Each item carries itemIndex, the tree index the item routes take.",
     params: listParams,
     responses: {
       200: { description: "The checklist", schema: envelope(checklistSchema) },

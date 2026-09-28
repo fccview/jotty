@@ -71,7 +71,7 @@ describe("Discovery, user and export contracts", () => {
       expect(mockGrepSearch).toHaveBeenCalledTimes(1);
       expect(data).toEqual({
         query: "milk",
-        results: [{ id: "milk", uuid: "n-1", type: "note", title: "Milk", category: "Food" }],
+        results: [{ id: "milk", slug: "milk", uuid: "n-1", type: "note", title: "Milk", category: "Food" }],
         total: 1,
       });
     });

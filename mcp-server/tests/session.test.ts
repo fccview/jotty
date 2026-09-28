@@ -47,10 +47,12 @@ describe("http transport", () => {
     const client = await connect({ authorization: `Bearer ${TOKEN}`, "x-api-key": API_KEY });
     const { tools } = await client.listTools();
     expect(tools.map((tool) => tool.name)).toEqual([
+      "search",
       "list_notes",
       "get_note",
       "create_note",
       "delete_note",
+      "check_checklist_item",
       "update_board_item",
       "discover",
       "call_operation",

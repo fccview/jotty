@@ -2,12 +2,13 @@ export interface CatalogEntry {
   id: string;
   defaults?: Record<string, unknown>;
   pick?: string;
+  omit?: string[];
 }
 
 const SUMMARY_PAGE = { view: "summary", limit: 25 };
 
 export const CATALOG: CatalogEntry[] = [
-  { id: "search" },
+  { id: "search", omit: ["id"] },
   { id: "listCategories" },
   { id: "getSummary" },
   { id: "getCurrentUser" },
@@ -26,7 +27,7 @@ export const CATALOG: CatalogEntry[] = [
   { id: "deleteChecklistItem" },
   { id: "checkChecklistItem" },
   { id: "uncheckChecklistItem" },
-  { id: "listBoards" },
+  { id: "listBoards", defaults: SUMMARY_PAGE },
   { id: "getBoard" },
   { id: "createBoard" },
   { id: "createBoardItem" },

@@ -34,13 +34,15 @@ const HINTS: Partial<Record<ToolErrorKind, string>> = {
   [ToolErrorKind.Upstream]: "Try the health tool to see whether Jotty is reachable.",
 };
 
-export const fromError = (err: unknown): ToolResult => {
+export type ErrorHints = Partial<Record<ToolErrorKind, string>>;
+
+export const fromError = (err: unknown, hints: ErrorHints = {}): ToolResult => {
   if (err instanceof TimeoutError) {
     return errorResult(ToolErrorKind.Timeout, err.message, HINTS[ToolErrorKind.Timeout]);
   }
   if (err instanceof JottyError) {
     const kind = KIND_BY_STATUS[err.status] ?? ToolErrorKind.Upstream;
-    return errorResult(kind, err.message, HINTS[kind], err.status);
+    return errorResult(kind, err.message, hints[kind] ?? HINTS[kind], err.status);
   }
   const message = err instanceof Error ? err.message : "Unexpected failure";
   return errorResult(ToolErrorKind.Upstream, message, HINTS[ToolErrorKind.Upstream]);

@@ -4,7 +4,7 @@ import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { makeList } from "@/app/_server/actions/checklist/creator";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, envelope } from "@/app/_schemas/api/common";
+import { ERRORS, envelope, page, totalField } from "@/app/_schemas/api/common";
 import { taskCreateBody, taskListQuery, taskSchema } from "@/app/_schemas/api/tasks";
 import { ChecklistsTypes, isKanbanType } from "@/app/_types/enums";
 import { Checklist, KanbanStatus, Result } from "@/app/_types";
@@ -33,7 +33,7 @@ export const GET = defineRoute(
     description: "Task checklists the API key owner owns. Tasks shared with them are left out.",
     query: taskListQuery,
     responses: {
-      200: { description: "Tasks", schema: z.object({ tasks: z.array(taskSchema) }) },
+      200: { description: "Tasks", schema: z.object({ tasks: z.array(taskSchema), total: totalField }) },
       400: ERRORS[400],
       401: ERRORS[401],
       500: ERRORS[500],
@@ -58,10 +58,11 @@ export const GET = defineRoute(
     );
 
     return NextResponse.json({
-      tasks: matches.map((list) => ({
+      tasks: page(matches, query).map((list) => ({
         ...toApiTask(list),
         items: list.items.map((item, index) => toApiItem(item, index, true)),
       })),
+      total: matches.length,
     });
   },
 );

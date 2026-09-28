@@ -47,8 +47,9 @@ const _toHits = (hits: GrepSearchResult[], type: ItemTypes) =>
       const title = (meta?.title as string) || hit.id;
       const cleaned = _cleanMatch(hit.matchLine);
       return {
-        id: hit.id,
         uuid: meta?.uuid as string | undefined,
+        slug: hit.id,
+        id: hit.id,
         type,
         title,
         category: hit.category || UNCATEGORIZED,

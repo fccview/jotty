@@ -4,6 +4,7 @@ import { authenticateApiKey } from "@/app/_server/actions/api";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { API_KEY_HEADER } from "@/app/_utils/api-utils";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
+import { actAs } from "./caller-scope";
 import {
   AnyContract,
   ApiHandler,
@@ -106,7 +107,9 @@ export const defineRoute = <
       const user = await _caller(request, contract.auth);
       if (!user) return refuse("Unauthorized", 401);
       const input = await _parse(contract, request, context?.params);
-      return handler({ request, user, ...input } as RouteInput<P, Q, B, ApiUser>);
+      return actAs(user, () =>
+        handler({ request, user, ...input } as RouteInput<P, Q, B, ApiUser>),
+      );
     }),
   );
 

@@ -41,6 +41,13 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "common.api",
   },
   {
+    id: "mcp",
+    name: t("help.mcp"),
+    filename: "MCP.md",
+    icon: "robot",
+    translationKey: "help.mcp",
+  },
+  {
     id: "customisations",
     name: t("help.customisations"),
     filename: "CUSTOMISATIONS.md",

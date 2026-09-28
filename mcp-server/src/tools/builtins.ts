@@ -17,7 +17,7 @@ export const BUILTIN_TOOLS: Tool[] = [
   {
     name: BuiltinTool.Discover,
     description:
-      "List every Jotty API operation this instance offers, with its operationId, method, path and summary, plus which dedicated tools are available. Pass operationId to get that operation's input schema for call_operation.",
+      "List the Jotty API operations the dedicated tools don't cover, with their operationId, method, path and summary, plus which dedicated tools are available. Pass operationId to get any operation's input schema for call_operation.",
     inputSchema: {
       type: "object",
       properties: {
@@ -51,7 +51,7 @@ export const BUILTIN_TOOLS: Tool[] = [
 
 const _summaryOf = (spec: Spec) =>
   [...spec.operations.values()]
-    .filter((op) => op.tags?.[0] !== PLUMBING_TAG)
+    .filter((op) => op.tags?.[0] !== PLUMBING_TAG && !CURATED_OPERATIONS.includes(op.operationId))
     .map((op) => ({
       operationId: op.operationId,
       method: op.method.toUpperCase(),

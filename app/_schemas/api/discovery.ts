@@ -37,8 +37,12 @@ export const searchParamsSchema = z.object({
 
 export const searchHitSchema = z
   .object({
-    id: z.string().describe("File name of the match, without extension"),
-    uuid: z.string().optional().describe("Item uuid"),
+    uuid: z.string().optional().describe("Item uuid, the id every other route takes"),
+    slug: z.string().describe("File name of the match, without extension"),
+    id: z
+      .string()
+      .meta({ deprecated: true })
+      .describe("Deprecated, the same value as slug. Use uuid to address the item"),
     type: z.enum(ItemTypes),
     title: z.string(),
     category: z.string(),

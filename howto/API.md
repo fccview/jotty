@@ -44,7 +44,7 @@ Validation errors also carry a `details` array saying which field failed. `401` 
 
 ## The spec
 
-- `GET /api/openapi.json` returns the OpenAPI 3.1 document to anyone with a valid API key. Scripts, code generators and the [MCP server](../mcp-server/README.md) use it to find out what your instance supports.
+- `GET /api/openapi.json` returns the OpenAPI 3.1 document to anyone with a valid API key. Scripts, code generators and the [MCP server](MCP.md) use it to find out what your instance supports.
 - `GET /api/docs` returns the same document without a key, as JSON or as YAML with `?format=yaml`. It only answers when `ENABLE_API_DOCS=true` is set.
 
 ### ReDoc (optional)

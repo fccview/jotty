@@ -4,7 +4,7 @@ import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { makeList } from "@/app/_server/actions/checklist/creator";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, envelope } from "@/app/_schemas/api/common";
+import { ERRORS, envelope, page, totalField } from "@/app/_schemas/api/common";
 import { boardCreateBody, boardListQuery, boardSchema } from "@/app/_schemas/api/kanban";
 import { ChecklistsTypes, isKanbanType } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
@@ -19,10 +19,10 @@ export const GET = defineRoute(
     path: "/kanban",
     tag: ApiTag.KANBAN,
     summary: "List Kanban boards",
-    description: "Boards the API key owner owns. Boards shared with them are left out, but GET /kanban/{boardId} returns them.",
+    description: "Boards the API key owner owns. Boards shared with them are left out, but GET /kanban/{boardId} returns them. Use view=summary with limit and offset to page through them with card counts per status instead of cards.",
     query: boardListQuery,
     responses: {
-      200: { description: "Boards", schema: z.object({ boards: z.array(boardSchema) }) },
+      200: { description: "Boards", schema: z.object({ boards: z.array(boardSchema), total: totalField }) },
       401: ERRORS[401],
       500: ERRORS[500],
     },
@@ -45,7 +45,10 @@ export const GET = defineRoute(
           list.items.some((item) => item.text.toLowerCase().includes(needle))),
     );
 
-    return NextResponse.json({ boards: boards.map((list) => transformBoard(list)) });
+    return NextResponse.json({
+      boards: page(boards, query).map((list) => transformBoard(list, query.view)),
+      total: boards.length,
+    });
   },
 );
 

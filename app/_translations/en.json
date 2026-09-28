@@ -1763,7 +1763,8 @@
     "ldap": "LDAP",
     "translations": "Translations",
     "unraid": "Unraid",
-    "patches": "Patches"
+    "patches": "Patches",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Page Not Found",
