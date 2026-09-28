@@ -4,7 +4,7 @@ import path from "path";
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import { User } from "@/app/_types";
-import { getSessionId, readSessions } from "../session";
+import { getSessionId, readSessions } from "../session/store";
 
 const LOCK_RETRIES = { retries: 10, minTimeout: 50, maxTimeout: 500 };
 

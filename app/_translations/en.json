@@ -1169,6 +1169,7 @@
     "invalidEditorSettings": "Editor settings must be an object, nothing was saved",
     "invalidEditorSetting": "Editor setting {field} has the wrong type, nothing was saved",
     "categoryOutOfBounds": "That category is outside your notes, so nothing was created",
+    "filenameOutOfBounds": "That title would put the file outside its category, so nothing was saved",
     "requiredField": "This field is required",
     "emailInvalid": "Please enter a valid email",
     "passwordTooShort": "Password must be at least 8 characters",

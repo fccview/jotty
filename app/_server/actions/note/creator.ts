@@ -19,11 +19,12 @@ import {
   strayMeta,
 } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
-import { commitNote } from "@/app/_server/actions/history";
+import { commitNote } from "@/app/_server/actions/history/repo";
 import { targetDir, bouncer } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { noteToMarkdown } from "./parsers";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
+import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
 
 export const makeNote = async (
   actor: SanitisedUser,
@@ -74,6 +75,11 @@ export const makeNote = async (
       ".md",
       fileRenameMode,
     );
+    const straying = await fenceFilename(categoryDir, filename);
+    if (straying) {
+      return { error: straying };
+    }
+
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 

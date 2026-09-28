@@ -12,9 +12,12 @@ const mockEveryUsername = vi.fn();
 const mockCleanupOldLogs = vi.fn();
 
 vi.mock("@/app/_server/actions/log", () => ({
-  cleanupOldLogs: (...args: unknown[]) => mockCleanupOldLogs(...args),
   getDailyLogPath: vi.fn(),
   getDateRange: vi.fn(),
+}));
+
+vi.mock("@/app/_server/actions/log/sweep", () => ({
+  sweepOldLogs: (...args: unknown[]) => mockCleanupOldLogs(...args),
 }));
 
 vi.mock("@/app/_server/actions/lib/audit-trail", async (importOriginal) => ({
@@ -157,6 +160,50 @@ describe("Logs API", () => {
     });
   });
 
+  describe("date range", () => {
+    it.each([
+      ["?startDate=0001-01-01", "at most 366 days"],
+      ["?startDate=2026-01-01&endDate=2024-01-01", "must not be after"],
+      ["?startDate=yesterday", "ISO 8601"],
+      ["?startDate=2026-02-31", "ISO 8601"],
+      ["?endDate=2026-13-01", "ISO 8601"],
+      ["?startDate=2024-01-01&endDate=2026-01-01", "at most 366 days"],
+    ])("refuses %s on GET /logs without reading anything", async (query, message) => {
+      const response = await list(query);
+
+      expect(response.status).toBe(400);
+      expect(JSON.stringify(await getResponseJson(response))).toContain(message);
+      expect(mockDigUpLogs).not.toHaveBeenCalled();
+    });
+
+    it("refuses an unbounded range on the export too", async () => {
+      const response = await EXPORT(
+        createMockRequest("POST", "http://localhost:3000/api/logs/export", {
+          format: "json",
+          filters: { startDate: "0001-01-01T00:00:00Z" },
+        }),
+      );
+
+      expect(response.status).toBe(400);
+      expect(mockDigUpLogs).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      "",
+      "?startDate=2026-01-01",
+      "?startDate=2026-01-01&endDate=2026-09-01",
+      "?startDate=2025-09-01T00:00:00Z&endDate=2026-09-01T00:00:00.000Z",
+      "?endDate=2026-09-01T10:00:00%2B02:00",
+    ])("keeps accepting %s", async (query) => {
+      vi.useFakeTimers({ now: new Date("2026-09-28T12:00:00Z"), toFake: ["Date"] });
+      try {
+        expect((await list(query)).status).toBe(200);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
   describe("POST /api/logs/export", () => {
     const exportLogs = (body: unknown) =>
       EXPORT(createMockRequest("POST", "http://localhost:3000/api/logs/export", body));
@@ -201,10 +248,12 @@ describe("Logs API", () => {
 
     it("returns the cleanup result for an admin", async () => {
       mockAuthenticateApiKey.mockResolvedValue(ADMIN);
+      mockCleanupOldLogs.mockResolvedValue({ success: true, deletedFiles: 3 });
 
       const data = await getResponseJson(await cleanup());
 
-      expect(data).toEqual({ success: true, deletedFiles: 0 });
+      expect(data).toEqual({ success: true, deletedFiles: 3 });
+      expect(mockCleanupOldLogs).toHaveBeenCalledWith();
     });
   });
 });

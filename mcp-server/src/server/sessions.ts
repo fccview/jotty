@@ -48,7 +48,15 @@ const readBody = async (request: Request): Promise<unknown> => {
 const isHandshake = (body: unknown): boolean =>
   Array.isArray(body) ? body.some(isInitializeRequest) : isInitializeRequest(body);
 
-export const createSessionPool = (forge: (request: Request) => Server): SessionPool => {
+export interface HostPolicy {
+  allowedHosts: string[];
+  allowedOrigins: string[];
+}
+
+export const createSessionPool = (
+  forge: (request: Request) => Server,
+  policy: HostPolicy = { allowedHosts: [], allowedOrigins: [] },
+): SessionPool => {
   const sessions = new Map<string, Session>();
 
   const dropStale = async (): Promise<void> => {
@@ -69,6 +77,9 @@ export const createSessionPool = (forge: (request: Request) => Server): SessionP
       touchedAt: Date.now(),
       transport: new WebStandardStreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
+        enableDnsRebindingProtection: true,
+        allowedHosts: policy.allowedHosts.length ? policy.allowedHosts : undefined,
+        allowedOrigins: policy.allowedOrigins.length ? policy.allowedOrigins : undefined,
         onsessioninitialized: (id) => {
           sessions.set(id, session);
           logger.debug(LOG_NS, `session opened ${id.slice(0, 8)}`);

@@ -46,6 +46,9 @@ import {
   getSessionId,
   removeAllSessionsForUser,
   clearAllSessions,
+} from "@/app/_server/actions/session/store";
+import {
+  getMySessions,
   terminateSession,
   terminateAllOtherSessions,
 } from "@/app/_server/actions/session";
@@ -291,7 +294,12 @@ describe("Session Actions", () => {
     });
 
     it("should terminate session successfully", async () => {
-      mockReadJsonFile.mockResolvedValue({});
+      mockReadJsonFile.mockResolvedValue({
+        "session-to-terminate": {
+          id: "session-to-terminate",
+          username: "testuser",
+        },
+      });
 
       const formData = createFormData({ sessionId: "session-to-terminate" });
 
@@ -303,6 +311,29 @@ describe("Session Actions", () => {
         "testuser",
         true,
       );
+    });
+  });
+
+  describe("getMySessions", () => {
+    it("should refuse without a session", async () => {
+      mockGetCurrentUser.mockResolvedValue(null);
+
+      expect(await getMySessions()).toBeNull();
+    });
+
+    it("should only list the caller's sessions and flag the current one", async () => {
+      mockReadJsonFile.mockResolvedValue({
+        "session-123": { id: "session-123", username: "testuser" },
+        "session-456": { id: "session-456", username: "testuser" },
+        "session-789": { id: "session-789", username: "victim" },
+      });
+
+      const result = await getMySessions();
+
+      expect(result?.map((s) => [s.id, s.isCurrent])).toEqual([
+        ["session-123", true],
+        ["session-456", false],
+      ]);
     });
   });
 

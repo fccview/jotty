@@ -8,18 +8,34 @@ import { defineRoute } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod, MediaType, RouteAuth } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
 import { exportFileParams, zipFileSchema } from "@/app/_schemas/api/exports";
+import { getCurrentUser } from "@/app/_server/actions/users";
+import {
+  EXPORT_TOKEN_BYTES,
+  SESSION_ONLY_EXPORT_PREFIXES,
+} from "@/app/_server/actions/export/naming";
 
 export const dynamic = "force-dynamic";
 
-const OWN_EXPORT_SUFFIX = /^_content_\d+\.zip$/;
+const OWN_EXPORT_SUFFIX = new RegExp(`^_content_\\d+_[a-f0-9]{${EXPORT_TOKEN_BYTES * 2}}\\.zip$`);
 const NOT_FOUND = "File not found or error during download.";
 
 const ownsExport = (username: string, filename: string): boolean =>
   filename.startsWith(username) &&
   OWN_EXPORT_SUFFIX.test(filename.slice(username.length));
 
-const mayDownload = async (caller: ApiCaller, filename: string): Promise<boolean> =>
-  ownsExport(caller.username, filename) || (await seesAllContent(caller));
+const holdsCredentials = (filename: string): boolean =>
+  SESSION_ONLY_EXPORT_PREFIXES.some((prefix) => filename.startsWith(prefix));
+
+const inBrowser = async (caller: ApiCaller): Promise<boolean> =>
+  (await getCurrentUser())?.username === caller.username;
+
+const mayDownload = async (caller: ApiCaller, filename: string): Promise<boolean> => {
+  if (holdsCredentials(filename)) {
+    return (await seesAllContent(caller)) && (await inBrowser(caller));
+  }
+
+  return ownsExport(caller.username, filename) || (await seesAllContent(caller));
+};
 
 const _notFound = () => new NextResponse(NOT_FOUND, { status: 404 });
 
@@ -42,7 +58,7 @@ export const GET = defineRoute(
     path: "/exports/{filename}",
     tag: ApiTag.EXPORTS,
     summary: "Download an export",
-    description: "Sends the zip once and deletes it. You can download your own user export. Admins with content access can download any. Also accepts the browser session cookie.",
+    description: "Sends the zip once and deletes it. You can download your own user export. Admins with content access can download any, except all_users_data and whole_data_folder, which hold every user's credentials and only download in a logged-in browser. Also accepts the browser session cookie.",
     params: exportFileParams,
     responses: {
       200: { description: "The zip", schema: zipFileSchema, mediaType: MediaType.ZIP },

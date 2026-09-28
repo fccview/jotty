@@ -37,6 +37,8 @@ export const getUsername = async (): Promise<string> => {
 };
 
 export const getUsers = async (): Promise<PublicUserInfo[]> => {
+  if (!(await getCurrentUserRecord())) return [];
+
   const users = (await readJsonFile(USERS_FILE)) || [];
 
   if (!users || !Array.isArray(users)) {

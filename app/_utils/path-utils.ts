@@ -34,6 +34,10 @@ export const resolvePath = (
     return { ok: false, reason: "invalid_encoding" };
   }
 
+  if (decodedInput.includes("\0")) {
+    return { ok: false, reason: "invalid_encoding" };
+  }
+
   const candidatePath = path.resolve(baseDir, decodedInput);
   const isInside =
     candidatePath === baseDir ||

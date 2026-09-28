@@ -5,6 +5,7 @@ import {
   buildUserContent,
   readExportProgress,
 } from "@/app/_server/actions/export/builders";
+import { exportableUser } from "@/app/_server/actions/export/naming";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
@@ -49,6 +50,7 @@ export const POST = defineRoute(
       if (body.username !== user.username && !hasContentAccess) {
         return refuse("Forbidden: You can only export your own data", 403);
       }
+      if (!(await exportableUser(body.username))) return refuse("User not found", 400);
       result = await buildUserContent(body.username);
     } else {
       if (!hasContentAccess) return refuse(ADMIN_ONLY, 403);

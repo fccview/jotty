@@ -1,21 +1,12 @@
 "use server";
 
-import { randomBytes, timingSafeEqual } from "crypto";
-import { USERS_FILE } from "@/app/_consts/files";
-import { readJsonFile } from "../file";
+import { randomBytes } from "crypto";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getCurrentUserRecord, mutateUsers } from "@/app/_server/actions/users/records";
 import { Result, User } from "@/app/_types";
 
 const API_KEY_PREFIX = "ck_";
 const API_KEY_BYTES = 16;
-
-const _sameKey = (stored: string | undefined, given: string): boolean => {
-  if (!stored) return false;
-  const a = Buffer.from(stored);
-  const b = Buffer.from(given);
-  return a.length === b.length && timingSafeEqual(a, b);
-};
 
 export const generateApiKey = async (): Promise<Result<string>> => {
   try {
@@ -60,21 +51,5 @@ export const getApiKey = async (): Promise<Result<string | null>> => {
   } catch (error) {
     console.error("Error getting API key:", error);
     return { success: false, error: "Failed to get API key" };
-  }
-};
-
-export const authenticateApiKey = async (
-  apiKey: string
-): Promise<User | null> => {
-  try {
-    if (!apiKey) {
-      return null;
-    }
-
-    const users: User[] = await readJsonFile(USERS_FILE);
-    return users.find((u) => _sameKey(u.apiKey, apiKey)) || null;
-  } catch (error) {
-    console.error("Error authenticating API key:", error);
-    return null;
   }
 };

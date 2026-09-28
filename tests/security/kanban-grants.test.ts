@@ -82,7 +82,7 @@ vi.mock('@/app/_server/actions/log', () => ({
   logContentEvent: vi.fn(),
 }))
 
-vi.mock('@/app/_server/actions/api', () => ({
+vi.mock('@/app/_server/actions/api/authenticate', () => ({
   authenticateApiKey: (...args: unknown[]) => mockAuthenticateApiKey(...args),
 }))
 

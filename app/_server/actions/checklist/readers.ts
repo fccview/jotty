@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import { boxedShell } from "@/app/_utils/shell-utils";

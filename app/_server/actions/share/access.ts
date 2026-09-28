@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";

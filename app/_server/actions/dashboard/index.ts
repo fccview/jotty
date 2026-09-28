@@ -5,7 +5,8 @@ import { ItemTypes, Modes } from "@/app/_types/enums";
 import { updateList } from "../checklist";
 import { updateNote } from "../note";
 import { getNoteById } from "../note/queries";
-import { getCurrentUser, getUserIndex } from "../users";
+import { getCurrentUser } from "../users";
+import { getUserIndex } from "../users/helpers";
 import { readJsonFile, writeJsonFile } from "../file";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
 import { isPinnedEntry } from "@/app/_utils/global-utils";
@@ -102,7 +103,7 @@ export const toggleArchive = async (
     const noteItem = item as Note;
     let content = noteItem.content;
     if (content === undefined || content === null) {
-      const fullNote = await getNoteById(noteItem.uuid!, noteItem.owner);
+      const fullNote = await getNoteById(noteItem.uuid!);
       content = fullNote?.content || "";
     }
     formData.append("content", content);

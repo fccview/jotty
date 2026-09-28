@@ -1,9 +1,8 @@
-"use server";
-
 import { headers } from "next/headers";
 import path from "path";
 import { AuditLogLevel } from "@/app/_types";
 import { getUserLogsDir } from "@/app/_consts/files";
+import { DAY_MS, LOG_MAX_RANGE_DAYS } from "@/app/_consts/logs";
 
 const getConfiguredLogLevel = async (): Promise<AuditLogLevel> => {
   const level = process.env.LOG_LEVEL?.toUpperCase() || "INFO";
@@ -46,6 +45,10 @@ export const getRequestContext = async () => {
 };
 
 export const getDateRange = async (start: Date, end: Date): Promise<Date[]> => {
+  if (end.getTime() - start.getTime() > LOG_MAX_RANGE_DAYS * DAY_MS) {
+    throw new RangeError(`Log range is longer than ${LOG_MAX_RANGE_DAYS} days`);
+  }
+
   const dates: Date[] = [];
   const current = new Date(start);
 

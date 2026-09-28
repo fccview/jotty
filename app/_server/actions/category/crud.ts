@@ -331,7 +331,7 @@ export const renameCategory = async (formData: FormData) => {
     const username = await getUsername();
     if (mode === Modes.NOTES && username) {
       const { commitCategoryRename } =
-        await import("@/app/_server/actions/history");
+        await import("@/app/_server/actions/history/repo");
       await commitCategoryRename(username, oldPath, newPath);
     }
 

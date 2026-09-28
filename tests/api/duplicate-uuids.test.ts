@@ -11,12 +11,17 @@ import {
 const mockUserIndex = vi.fn();
 const mockFind = vi.fn();
 const mockRepair = vi.fn();
+const mockFindAcross = vi.fn();
 
 vi.mock("@/app/_server/actions/users/helpers", () => ({
   getUserIndex: (...args: unknown[]) => mockUserIndex(...args),
 }));
 vi.mock("@/app/_server/actions/uuid-clash/scan", () => ({
   findClashes: (...args: unknown[]) => mockFind(...args),
+  findCrossUserClashes: (...args: unknown[]) => mockFindAcross(...args),
+}));
+vi.mock("@/app/_server/actions/lib/audit-trail", () => ({
+  everyUsername: async () => ["testuser", "bob"],
 }));
 vi.mock("@/app/_server/actions/uuid-clash/repair", () => ({
   NO_CLASH: "No duplicate for that uuid",
@@ -41,6 +46,29 @@ describe("duplicate uuid routes", () => {
     mockUserIndex.mockResolvedValue(0);
     mockFind.mockResolvedValue([]);
     mockGetAppSettings.mockResolvedValue({ success: true, data: { adminContentAccess: "yes" } });
+  });
+
+  it("keeps the cross-user scan for admins with content access", async () => {
+    mockFindAcross.mockResolvedValue([{ uuid: DUP, owner: "bob", owners: ["bob", "testuser"], files: [] }]);
+
+    expect((await list("?acrossUsers=true")).status).toBe(403);
+    expect(mockFindAcross).not.toHaveBeenCalled();
+
+    mockAuthenticateApiKey.mockResolvedValue(admin);
+    const response = await list("?acrossUsers=true");
+
+    expect(response.status).toBe(200);
+    expect((await getResponseJson(response)).duplicates[0].owners).toEqual(["bob", "testuser"]);
+    expect(mockFindAcross).toHaveBeenCalledWith(["testuser", "bob"]);
+    expect(mockFind).not.toHaveBeenCalled();
+  });
+
+  it("refuses the cross-user scan when admin content access is off", async () => {
+    mockAuthenticateApiKey.mockResolvedValue(admin);
+    mockGetAppSettings.mockResolvedValue({ success: true, data: { adminContentAccess: "no" } });
+
+    expect((await list("?acrossUsers=true")).status).toBe(403);
+    expect(mockFindAcross).not.toHaveBeenCalled();
   });
 
   it("lists the caller's own duplicates", async () => {

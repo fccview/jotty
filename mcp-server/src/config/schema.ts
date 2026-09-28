@@ -14,6 +14,9 @@ export interface ServerConfig {
   port: number;
   host: string;
   authToken: string;
+  allowNoAuth: boolean;
+  allowedHosts: string[];
+  allowedOrigins: string[];
 }
 
 export interface OutputConfig {

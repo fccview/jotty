@@ -118,10 +118,14 @@ export const readFile = async (filePath: string): Promise<string> => {
 
 const getCwd = (): Promise<string> => Promise.resolve(process.cwd());
 
+const KNOWN_MODES = new Set<string>(Object.values(Modes));
+
 export const getUserModeDir = async (
   mode: Modes,
   username?: string,
 ): Promise<string> => {
+  if (!KNOWN_MODES.has(mode)) throw new Error(`Unknown mode: ${mode}`);
+
   const base = await getCwd();
   if (username) {
     return path.join(base, DATA_DIR, mode, username);

@@ -17,6 +17,7 @@ import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { claimedName } from "@/app/_server/actions/lib/actor";
 import { makeList } from "./creator";
 import { dropList, editList } from "./editor";
+import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
 
 export const createList = async (formData: FormData) => {
   const actor = await getCurrentUser();
@@ -43,17 +44,15 @@ export const cloneChecklist = async (formData: FormData) => {
   try {
     const uuid = formData.get("uuid") as string;
     const targetCategory = formData.get("category") as string;
-    const ownerUsername = formData.get("user") as string | null;
-
-    const checklist = await getListById(uuid, ownerUsername || undefined);
-    if (!checklist) {
-      return { error: "Checklist not found" };
-    }
-
     const currentUser = await getCurrentUser();
 
     if (!currentUser?.username) {
       return { error: "Not authenticated" };
+    }
+
+    const checklist = await getListById(uuid);
+    if (!checklist) {
+      return { error: "Checklist not found" };
     }
 
     const canReadSource = await canReach(
@@ -100,6 +99,11 @@ export const cloneChecklist = async (formData: FormData) => {
       ".md",
       fileRenameMode
     );
+    const straying = await fenceFilename(categoryDir, filename);
+    if (straying) {
+      return { error: straying };
+    }
+
     const filePath = path.join(categoryDir, filename);
 
     const cloneUuid = generateUuid();

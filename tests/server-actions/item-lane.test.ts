@@ -57,7 +57,7 @@ vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/app/_server/actions/history", () => ({
+vi.mock("@/app/_server/actions/history/repo", () => ({
   commitNote: vi.fn().mockResolvedValue(undefined),
 }));
 

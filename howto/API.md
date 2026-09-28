@@ -93,6 +93,10 @@ api-docs:
 
 Start it with `docker compose --profile api-docs up -d` and open `http://localhost:40126`. If it says "Failed to load", check `ENABLE_API_DOCS=true` is set and that `SPEC_URL` points at your instance's `/api/docs`.
 
+## Audit log date ranges
+
+`GET /api/logs` and `POST /api/logs/export` take `startDate` and `endDate` as ISO 8601 dates, such as `2024-05-01` or `2024-05-01T09:30:00Z`. When you leave them out you get the last 30 days. A range longer than 366 days, a start after the end, or a date that isn't a real calendar date gets a `400`.
+
 ## Audit log actions
 
 The logs endpoints filter by `action`, a free string. These are the common ones:

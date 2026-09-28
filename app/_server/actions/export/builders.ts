@@ -10,6 +10,7 @@ import { readJsonFile, ensureDir } from "@/app/_server/actions/file";
 import { User } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
+import { exportName, exportableUser } from "./naming";
 
 let exportProgress: ExportProgress = {
   progress: 0,
@@ -75,7 +76,7 @@ export const buildAllContent = async (): Promise<ExportResult> => {
     const tempExportPath = path.join(
       process.cwd(),
       EXPORT_TEMP_DIR,
-      `all_checklists_notes_${Date.now()}.zip`,
+      exportName("all_checklists_notes"),
     );
     const tempContentDir = path.join(
       process.cwd(),
@@ -143,6 +144,10 @@ export const buildAllContent = async (): Promise<ExportResult> => {
 export const buildUserContent = async (
   username: string,
 ): Promise<ExportResult> => {
+  if (!(await exportableUser(username))) {
+    return { success: false, error: "User not found" };
+  }
+
   updateProgress(
     0,
     `Preparing ${username}'s checklists and notes for export...`,
@@ -151,7 +156,7 @@ export const buildUserContent = async (
     const tempExportPath = path.join(
       process.cwd(),
       EXPORT_TEMP_DIR,
-      `${username}_content_${Date.now()}.zip`,
+      exportName(`${username}_content`),
     );
     const tempUserContentDir = path.join(
       process.cwd(),
@@ -228,7 +233,7 @@ export const buildAllUsers = async (): Promise<ExportResult> => {
     const tempExportPath = path.join(
       process.cwd(),
       EXPORT_TEMP_DIR,
-      `all_users_data_${Date.now()}.zip`,
+      exportName("all_users_data"),
     );
     const tempUserDir = path.join(
       process.cwd(),
@@ -270,7 +275,7 @@ export const buildWholeData = async (): Promise<ExportResult> => {
     const tempExportPath = path.join(
       process.cwd(),
       EXPORT_TEMP_DIR,
-      `whole_data_folder_${Date.now()}.zip`,
+      exportName("whole_data_folder"),
     );
 
     await ensureDir(path.join(process.cwd(), EXPORT_TEMP_DIR));

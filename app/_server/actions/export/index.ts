@@ -19,7 +19,8 @@ const OWN_ONLY = "Forbidden: You can only export your own data";
 const _asAdmin = async (build: () => Promise<ExportResult>): Promise<ExportResult> =>
   (await canAccessAllContent()) ? build() : { success: false, error: ADMIN_ONLY };
 
-export const getExportProgress = async (): Promise<ExportProgress> => readExportProgress();
+export const getExportProgress = async (): Promise<ExportProgress> =>
+  (await getCurrentUser()) ? readExportProgress() : { progress: 0, message: "" };
 
 export const exportAllChecklistsNotes = async (): Promise<ExportResult> =>
   _asAdmin(buildAllContent);

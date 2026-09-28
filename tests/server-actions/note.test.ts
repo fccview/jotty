@@ -75,7 +75,7 @@ vi.mock("@/app/_server/actions/relations/tidy", () => ({
   refreshWikilinks: (markdown: string) => markdown,
 }));
 
-vi.mock("@/app/_server/actions/history", () => ({
+vi.mock("@/app/_server/actions/history/repo", () => ({
   commitNote: (...args: any[]) => mockCommitNote(...args),
 }));
 

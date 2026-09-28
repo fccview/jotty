@@ -41,6 +41,7 @@ export const mockServerWriteFile = vi.fn();
 export const mockFindUserRecord = vi.fn();
 export const mockExportAllChecklistsNotes = vi.fn();
 export const mockExportUserChecklistsNotes = vi.fn();
+export const mockExportableUser = vi.fn().mockResolvedValue(true);
 export const mockExportAllUsersData = vi.fn();
 export const mockExportWholeDataFolder = vi.fn();
 export const mockGetExportProgress = vi.fn();
@@ -55,7 +56,7 @@ export const mockRemindItem = vi.fn();
 export const mockCanReach = vi.fn();
 export const mockSharesInvolving = vi.fn();
 
-vi.mock("@/app/_server/actions/api", () => ({
+vi.mock("@/app/_server/actions/api/authenticate", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
 }));
 
@@ -146,6 +147,10 @@ vi.mock("@/app/_server/actions/category", () => ({
   getCategories: (...args: any[]) => mockGetCategories(...args),
 }));
 
+vi.mock("@/app/_server/actions/category/tree", () => ({
+  categoriesFor: (...args: any[]) => mockGetCategories(...args),
+}));
+
 vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: any[]) => mockIsAdmin(...args),
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
@@ -181,6 +186,11 @@ vi.mock("@/app/_server/actions/export/builders", () => ({
   buildAllUsers: (...args: any[]) => mockExportAllUsersData(...args),
   buildWholeData: (...args: any[]) => mockExportWholeDataFolder(...args),
   readExportProgress: (...args: any[]) => mockGetExportProgress(...args),
+}));
+
+vi.mock("@/app/_server/actions/export/naming", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/app/_server/actions/export/naming")>()),
+  exportableUser: (...args: any[]) => mockExportableUser(...args),
 }));
 
 vi.mock("@/app/_server/actions/lib/legacy-lookup", () => ({
@@ -223,6 +233,7 @@ export function resetApiMocks() {
   mockFindUserRecord.mockReset();
   mockExportAllChecklistsNotes.mockReset();
   mockExportUserChecklistsNotes.mockReset();
+  mockExportableUser.mockReset().mockResolvedValue(true);
   mockExportAllUsersData.mockReset();
   mockExportWholeDataFolder.mockReset();
   mockGetExportProgress.mockReset();

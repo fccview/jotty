@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCategories } from "@/app/_server/actions/category";
+import { categoriesFor } from "@/app/_server/actions/category/tree";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
@@ -30,8 +30,8 @@ export const GET = defineRoute(
     },
   },
   async ({ user }) => {
-    const notes = await getCategories(Modes.NOTES, user.username);
-    const checklists = await getCategories(Modes.CHECKLISTS, user.username);
+    const notes = await categoriesFor(Modes.NOTES, user.username);
+    const checklists = await categoriesFor(Modes.CHECKLISTS, user.username);
 
     if (!notes.success || !checklists.success) {
       return refuse(notes.error || checklists.error || "Failed to fetch categories", 500);

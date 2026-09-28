@@ -3,6 +3,7 @@ import { createClient } from "../jotty/client.ts";
 import type { ToolContext } from "../tools/context.ts";
 import { logger } from "../utils/logger.ts";
 import { API_KEY_HEADER, createGuard, deniedResponse } from "./auth.ts";
+import { createOriginCheck, exposureRefusal } from "./exposure.ts";
 import { createMcpServer, SERVER_NAME, SERVER_VERSION } from "./mcp.ts";
 import { createSessionPool, type SessionPool } from "./sessions.ts";
 
@@ -24,11 +25,14 @@ export interface Sidecar {
 
 export const createSidecar = (ctx: ToolContext): Sidecar => {
   const guard = createGuard(ctx.config.server.authToken);
-  const pool = createSessionPool((request) =>
-    createMcpServer({
-      ...ctx,
-      client: createClient(ctx.config.jotty, request.headers.get(API_KEY_HEADER)?.trim() || ctx.config.jotty.apiKey),
-    }),
+  const originCheck = createOriginCheck(ctx.config.server);
+  const pool = createSessionPool(
+    (request) =>
+      createMcpServer({
+        ...ctx,
+        client: createClient(ctx.config.jotty, request.headers.get(API_KEY_HEADER)?.trim() || ctx.config.jotty.apiKey),
+      }),
+    { allowedHosts: ctx.config.server.allowedHosts, allowedOrigins: ctx.config.server.allowedOrigins },
   );
 
   if (!guard.required && ctx.config.jotty.apiKey) {
@@ -41,6 +45,11 @@ export const createSidecar = (ctx: ToolContext): Sidecar => {
       return Response.json({ ok: true, name: SERVER_NAME, version: SERVER_VERSION });
     }
     if (path !== HttpPath.Mcp) return Response.json({ error: "Not found" }, { status: 404 });
+    const misdirected = originCheck(request);
+    if (misdirected) {
+      logger.warn(LOG_NS, `rejected /mcp request: ${misdirected}`);
+      return Response.json({ error: misdirected }, { status: 403 });
+    }
     if (!guard.allows(request)) {
       logger.warn(LOG_NS, "rejected /mcp request without a valid bearer token");
       return deniedResponse();
@@ -52,14 +61,17 @@ export const createSidecar = (ctx: ToolContext): Sidecar => {
 };
 
 export const startHttp = (sidecar: Sidecar, config: McpConfig) => {
+  const refusal = exposureRefusal(config.server);
+  if (refusal) throw new Error(refusal);
+
   const server = Bun.serve({
     port: config.server.port,
-    hostname: config.server.host || undefined,
+    hostname: config.server.host,
     idleTimeout: BUN_MAX_IDLE_SECONDS,
     maxRequestBodySize: MAX_BODY_BYTES,
     fetch: sidecar.fetch,
   });
-  logger.info(LOG_NS, `listening on ${config.server.host || "0.0.0.0"}:${server.port}${HttpPath.Mcp}`);
+  logger.info(LOG_NS, `listening on ${config.server.host}:${server.port}${HttpPath.Mcp}`);
   return {
     port: server.port ?? config.server.port,
     stop: async () => {

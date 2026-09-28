@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { authenticateApiKey } from "@/app/_server/actions/api";
+import { authenticateApiKey } from "@/app/_server/actions/api/authenticate";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { API_KEY_HEADER } from "@/app/_utils/api-utils";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";

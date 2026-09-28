@@ -11,7 +11,7 @@ import {
   optOutItem,
   inheritItem,
 } from "../_server/actions/share/operations";
-import { itemShares } from "../_server/actions/share/queries";
+import { itemShares } from "../_server/actions/share/lookups";
 import { modeFor } from "@/app/_utils/sharing-utils";
 import { SharingPermissions } from "@/app/_types";
 import { getUsername } from "../_server/actions/users";

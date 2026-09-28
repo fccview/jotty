@@ -23,7 +23,7 @@ vi.mock('@/app/_server/actions/users', async (importOriginal) => {
   }
 })
 
-vi.mock('@/app/_server/actions/session', () => ({
+vi.mock('@/app/_server/actions/session/store', () => ({
   getSessionId: () => mockGetSessionId(),
   readSessions: () => mockReadSessions(),
   createSession: vi.fn(),
@@ -58,7 +58,7 @@ vi.mock('@/app/_server/actions/ws/broadcast', () => ({
   broadcast: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('@/app/_server/actions/history', () => ({
+vi.mock('@/app/_server/actions/history/repo', () => ({
   commitNote: vi.fn(),
 }))
 

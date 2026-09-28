@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateApiKey } from "@/app/_server/actions/api";
+import { authenticateApiKey } from "@/app/_server/actions/api/authenticate";
 import { getSettings } from "@/app/_server/actions/config";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";

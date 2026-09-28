@@ -28,6 +28,8 @@ services:
       JOTTY_MCP_TRANSPORT: "http"
       JOTTY_MCP_PORT: "3001"
       JOTTY_MCP_AUTH_TOKEN: "changeme"
+      JOTTY_MCP_ALLOWED_HOSTS: ""
+      JOTTY_MCP_ALLOWED_ORIGINS: ""
       JOTTY_API_KEY: ""
       JOTTY_MCP_MAX_TEXT_CHARS: "12000"
 

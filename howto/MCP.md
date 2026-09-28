@@ -32,7 +32,7 @@ The MCP endpoint is `http://<host>:1133/mcp`, with a health check at `/healthz`.
 The `ghcr.io/fccview/jotty-mcp` image carries the same version tags as Jotty. If you pin Jotty to a version, pin the MCP server to the same one.
 
 > [!IMPORTANT]
-> Change `JOTTY_MCP_AUTH_TOKEN` from `changeme` before you start it. Every `/mcp` request has to send `Authorization: Bearer <token>`. Leaving the token empty opens the endpoint to anyone who can reach the port, which is fine on a private network and a bad idea anywhere else.
+> Change `JOTTY_MCP_AUTH_TOKEN` from `changeme` before you start it. Every `/mcp` request has to send `Authorization: Bearer <token>`. The server refuses to start in HTTP mode with an empty token or `changeme` unless it only listens on `127.0.0.1`. If the port really is only reachable from a network you trust, set `JOTTY_MCP_ALLOW_NO_AUTH=true` to run it without a token anyway.
 
 Adding it to Claude Code:
 
@@ -43,7 +43,15 @@ claude mcp add --transport http jotty http://localhost:1133/mcp \
 ```
 
 > [!WARNING]
-> `JOTTY_API_KEY` on the MCP service is a fallback for clients that can't send `x-api-key`. With it set, anyone who reaches the port with the token acts as that key's owner. The server logs a warning at startup when you set both.
+> `JOTTY_API_KEY` on the MCP service is a fallback for clients that can't send `x-api-key`. With it set, anyone who reaches the port with the token acts as that key's owner. The server logs a warning at startup when `JOTTY_API_KEY` is set and `JOTTY_MCP_AUTH_TOKEN` is not.
+
+### Behind a reverse proxy
+
+The HTTP server checks the `Host` and `Origin` headers to stop a web page from talking to it through DNS rebinding.
+
+- Bound to `127.0.0.1`, it only answers `localhost`, `127.0.0.1` and `[::1]`.
+- Bound to all interfaces (the Docker image default), it answers any host name, and a browser `Origin` has to be loopback or the same host as the request.
+- Behind a proxy, list the public names in `JOTTY_MCP_ALLOWED_HOSTS` and, if a browser-based client connects, its address in `JOTTY_MCP_ALLOWED_ORIGINS`.
 
 ## Running it with Bun
 
@@ -149,8 +157,11 @@ An assistant reads every character a tool sends back, and a long answer pushes t
 | `JOTTY_API_KEY` | | The key to use with Bun, or the fallback for Docker sessions |
 | `JOTTY_MCP_TRANSPORT` | `stdio` | `stdio` when your client starts the server, `http` for a shared one |
 | `JOTTY_MCP_PORT` | `3001` | Port the HTTP server listens on inside the container |
-| `JOTTY_MCP_BIND_HOST` | all interfaces | Address the HTTP server binds to |
-| `JOTTY_MCP_AUTH_TOKEN` | | Bearer token every `/mcp` request must send |
+| `JOTTY_MCP_BIND_HOST` | `127.0.0.1`, `0.0.0.0` in the Docker image | Address the HTTP server binds to |
+| `JOTTY_MCP_AUTH_TOKEN` | | Bearer token every `/mcp` request must send. Required in HTTP mode unless bound to loopback |
+| `JOTTY_MCP_ALLOW_NO_AUTH` | `false` | Start in HTTP mode on a non-loopback address without a real token. Only for trusted networks |
+| `JOTTY_MCP_ALLOWED_HOSTS` | | Comma separated `Host` values to accept, e.g. `mcp.example.com` |
+| `JOTTY_MCP_ALLOWED_ORIGINS` | | Comma separated browser origins to accept, e.g. `https://app.example.com` |
 | `JOTTY_MCP_TIMEOUT_MS` | `30000` | How long to wait for Jotty before giving up |
 | `JOTTY_MCP_MAX_TEXT_CHARS` | `12000` | Longest answer a tool sends back by default, in characters. A tool call can ask for a different size with `maxChars` |
 | `JOTTY_MCP_SPEC_TTL_MS` | `300000` | How long to cache the API description |

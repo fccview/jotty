@@ -28,7 +28,7 @@ import {
   keptMeta,
 } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
-import { commitNote } from "@/app/_server/actions/history";
+import { commitNote } from "@/app/_server/actions/history/repo";
 import { noteToMarkdown } from "./parsers";
 import { getNoteById } from "./queries";
 import {
@@ -45,6 +45,7 @@ import {
 } from "@/app/_server/actions/lib/read-only-message";
 import { isWritable } from "@/app/_server/actions/lib/read-only";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
+import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
 
 const _noteDirFor = (owner: string, category?: string): string =>
   path.join(process.cwd(), NOTES_DIR(owner), category || UNCATEGORIZED);
@@ -178,6 +179,11 @@ const _editNote = async (
 
     if (newId !== currentId) {
       updatedDoc.id = newId;
+    }
+
+    const straying = await fenceFilename(categoryDir, newFilename);
+    if (straying) {
+      return { error: straying };
     }
 
     const filePath = path.join(categoryDir, newFilename);

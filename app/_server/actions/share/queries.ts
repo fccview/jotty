@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import { cache } from "react";
 import { ItemType, SharingPermissions } from "@/app/_types/core";

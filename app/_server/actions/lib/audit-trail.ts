@@ -2,10 +2,8 @@ import fs from "fs/promises";
 import { getDailyLogPath, getDateRange } from "@/app/_server/actions/log";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { USERS_FILE } from "@/app/_consts/files";
-import { LOG_WINDOW_DAYS } from "@/app/_consts/logs";
+import { DAY_MS, LOG_READ_BATCH_DAYS, LOG_WINDOW_DAYS } from "@/app/_consts/logs";
 import { AuditCategory, AuditLogEntry, AuditLogLevel, User } from "@/app/_types";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface LogWindow {
   startDate?: string;
@@ -46,8 +44,11 @@ export const digUpLogs = async (
 
   const logs: AuditLogEntry[] = [];
   for (const username of usernames) {
-    const days = await Promise.all(dates.map((date) => _readDay(username, date)));
-    logs.push(...days.flat());
+    for (let at = 0; at < dates.length; at += LOG_READ_BATCH_DAYS) {
+      const batch = dates.slice(at, at + LOG_READ_BATCH_DAYS);
+      const days = await Promise.all(batch.map((date) => _readDay(username, date)));
+      logs.push(...days.flat());
+    }
   }
   return logs;
 };

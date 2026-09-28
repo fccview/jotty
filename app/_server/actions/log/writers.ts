@@ -1,5 +1,3 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
 import {
@@ -15,11 +13,17 @@ import { generateUuid } from "@/app/_utils/yaml-metadata-utils";
 import { apiCaller } from "@/app/_server/api/caller-scope";
 import { runQueued } from "@/app/_server/actions/lib/concurrency";
 import { shouldLog, getRequestContext, getDailyLogPath } from "./helpers";
+import { validateNoPathTraversal } from "@/app/_utils/path-utils";
 
 const SYSTEM_USER = "system";
 
+const _logBucket = (username: string): string =>
+  username && !username.startsWith(".") && validateNoPathTraversal(username) && !username.includes("\0")
+    ? username
+    : SYSTEM_USER;
+
 const writeToDailyLog = async (entry: AuditLogEntry, username: string): Promise<void> => {
-  const logFilePath = await getDailyLogPath(username);
+  const logFilePath = await getDailyLogPath(_logBucket(username));
   await ensureDir(path.dirname(logFilePath));
 
   await runQueued(logFilePath, async () => {

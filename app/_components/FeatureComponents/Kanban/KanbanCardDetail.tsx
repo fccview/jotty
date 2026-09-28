@@ -14,7 +14,7 @@ import {
   bulkToggleItems,
   updateItemStatus,
 } from "@/app/_server/actions/checklist-item";
-import { usersWithAccess } from "@/app/_server/actions/share/queries";
+import { usersWithAccess } from "@/app/_server/actions/share/lookups";
 import { getUsers } from "@/app/_server/actions/users";
 import { FloppyDiskIcon, MultiplicationSignIcon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";

@@ -19,6 +19,7 @@ import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { claimedName } from "@/app/_server/actions/lib/actor";
 import { makeNote } from "./creator";
 import { dropNote, editNote } from "./editor";
+import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
 
 export const createNote = async (formData: FormData) => {
   const actor = await getCurrentUser();
@@ -44,17 +45,15 @@ export const cloneNote = async (formData: FormData) => {
   try {
     const uuid = formData.get("uuid") as string;
     const targetCategory = formData.get("category") as string;
-    const ownerUsername = formData.get("user") as string | null;
-
-    const note = await getNoteById(uuid, ownerUsername || undefined);
-    if (!note) {
-      return { error: "Note not found" };
-    }
-
     const currentUser = await getCurrentUser();
 
     if (!currentUser?.username) {
       return { error: "Not authenticated" };
+    }
+
+    const note = await getNoteById(uuid);
+    if (!note) {
+      return { error: "Note not found" };
     }
 
     const canReadSource = await canReach(
@@ -101,6 +100,11 @@ export const cloneNote = async (formData: FormData) => {
       ".md",
       fileRenameMode,
     );
+    const straying = await fenceFilename(categoryDir, filename);
+    if (straying) {
+      return { error: straying };
+    }
+
     const filePath = path.join(categoryDir, filename);
 
     const content = note.content || "";

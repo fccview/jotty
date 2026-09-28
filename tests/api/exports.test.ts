@@ -8,6 +8,7 @@ import {
   mockExportWholeDataFolder,
   mockGetExportProgress,
   mockGetAppSettings,
+  mockExportableUser,
   resetApiMocks,
   createMockRequest,
   getResponseJson,
@@ -326,6 +327,22 @@ describe("Exports API", () => {
 
       expect(response.status).toBe(403)
       expect(mockExportAllChecklistsNotes).not.toHaveBeenCalled()
+    })
+
+    it("refuses a username that does not exist or escapes the export folder", async () => {
+      mockAuthenticateApiKey.mockResolvedValue(adminUser)
+      mockGetAppSettings.mockResolvedValue(mockAppSettings)
+      mockExportableUser.mockResolvedValue(false)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
+        type: "user_checklists_notes",
+        username: "../../users",
+      })
+      const response = await POST(request, { params: Promise.resolve({}) })
+
+      expect(response.status).toBe(400)
+      expect(mockExportableUser).toHaveBeenCalledWith("../../users")
+      expect(mockExportUserChecklistsNotes).not.toHaveBeenCalled()
     })
 
     it("refuses an admin key somebody else's export", async () => {

@@ -25,7 +25,7 @@ vi.mock("@/app/_server/actions/users", async (importOriginal) => ({
   canAccessAllContent: async () => false,
 }));
 
-import { getCategories } from "@/app/_server/actions/category/queries";
+import { categoriesFor } from "@/app/_server/actions/category/tree";
 import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { dropMounts, mountsFor } from "@/app/_server/actions/share/mounts";
@@ -102,7 +102,7 @@ describe("Share visibility on disk", () => {
       sharing: { users: { bob: READ_ONLY }, inherit: true },
     });
 
-    const categories = await getCategories(Modes.CHECKLISTS, "bob");
+    const categories = await categoriesFor(Modes.CHECKLISTS, "bob");
     const lists = await getUserChecklists({
       username: "bob",
       metadataOnly: true,
@@ -136,7 +136,7 @@ describe("Share visibility on disk", () => {
       metadataOnly: true,
       preserveOrder: true,
     });
-    const categories = await getCategories(Modes.CHECKLISTS, "bob");
+    const categories = await categoriesFor(Modes.CHECKLISTS, "bob");
 
     expect(permsOf(lists.data || [])).toEqual({
       [LIST_FULL]: FULL,

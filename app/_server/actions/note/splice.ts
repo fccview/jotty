@@ -6,13 +6,11 @@ import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { NOTES_DIR } from "@/app/_consts/files";
 import { UNCATEGORIZED, isManaged } from "@/app/_consts/notes";
 import { serverWriteFile } from "@/app/_server/actions/file";
-import { canReach } from "@/app/_server/actions/share/queries";
+import { reachableFile } from "@/app/_server/actions/share/queries";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
-import { getUserByNoteUuid } from "@/app/_server/actions/users";
-import { commitNote } from "@/app/_server/actions/history";
+import { commitNote } from "@/app/_server/actions/history/repo";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
-import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
 import { extractHashtagsFromContent, normalizeTag } from "@/app/_utils/tag-utils";
 import {
@@ -88,16 +86,23 @@ export interface SpliceOptions {
   untag?: string[];
 }
 
+const _placeOf = (filePath: string) => {
+  const [owner, ...rest] = path
+    .relative(path.join(process.cwd(), NOTES_DIR("")), filePath)
+    .split(path.sep);
+  rest.pop();
+  return { owner, id: path.basename(filePath, ".md"), category: rest.join("/"), filePath };
+};
+
 const _splice = async (
   actor: SanitisedUser,
   uuid: string,
+  filePath: string,
   edit: (body: string) => SpliceEdit,
   { untag = [] }: SpliceOptions,
 ): Promise<Result<Spliced>> => {
-  const owner = await getUserByNoteUuid(uuid);
-  if (!owner.success || !owner.data) return { success: false, error: SPLICE_MISSING };
-  const found = await grepFindFileByUuid(path.join(process.cwd(), NOTES_DIR(owner.data.username)), uuid);
-  if (!found) return { success: false, error: SPLICE_MISSING };
+  const found = _placeOf(filePath);
+  if (!found.owner) return { success: false, error: SPLICE_MISSING };
 
   const raw = await fs.readFile(found.filePath, "utf-8");
   const { prefix, body } = splitFrontmatter(raw);
@@ -119,7 +124,7 @@ const _splice = async (
     tags: retagged ?? _storedTags(metadata),
     managed: isManaged(metadata),
   };
-  await _afterWrite(actor, owner.data.username, found.filePath, spliced);
+  await _afterWrite(actor, found.owner, found.filePath, spliced);
   return { success: true, data: spliced };
 };
 
@@ -129,12 +134,12 @@ export const spliceNote = async (
   edit: (body: string) => SpliceEdit,
   options: SpliceOptions = {},
 ): Promise<Result<Spliced>> => {
-  const allowed = await canReach(uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
-  if (!allowed) return { success: false, error: SPLICE_DENIED };
+  const filePath = await reachableFile(uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
+  if (!filePath) return { success: false, error: SPLICE_DENIED };
 
   return runQueued(itemLane(Modes.NOTES, uuid), async () => {
     try {
-      return await _splice(actor, uuid, edit, options);
+      return await _splice(actor, uuid, filePath, edit, options);
     } catch (error) {
       console.error(`spliceNote failed for ${uuid}:`, error);
       return { success: false, error: "Failed to update note" };

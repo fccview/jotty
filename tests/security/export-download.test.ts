@@ -16,9 +16,13 @@ import { GET } from "@/app/api/exports/[filename]/route";
 const SANDBOX = mkdtempSync(path.join(os.tmpdir(), "jotty-exports-"));
 const EXPORT_DIR = path.resolve(SANDBOX, EXPORT_TEMP_DIR);
 const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue(SANDBOX);
-const OWN = `${mockUser.username}_content_1700000000000.zip`;
-const WHOLE = "whole_data_folder_1700000000000.zip";
-const LOOKALIKE = `${mockUser.username}_content_content_1700000000000.zip`;
+const TOKEN = "0123456789abcdef0123456789abcdef";
+const OWN = `${mockUser.username}_content_1700000000000_${TOKEN}.zip`;
+const WHOLE = `whole_data_folder_1700000000000_${TOKEN}.zip`;
+const USERS = `all_users_data_1700000000000_${TOKEN}.zip`;
+const CONTENT = `all_checklists_notes_1700000000000_${TOKEN}.zip`;
+const LOOKALIKE = `${mockUser.username}_content_content_1700000000000_${TOKEN}.zip`;
+const GUESSABLE = `${mockUser.username}_content_1700000000000.zip`;
 const ADMIN = { ...mockUser, username: "boss", isAdmin: true };
 
 const plant = (name: string) => {
@@ -41,7 +45,7 @@ describe("Security: export downloads", () => {
     resetApiMocks();
     cwdSpy.mockReturnValue(SANDBOX);
     mockGetAppSettings.mockResolvedValue({ success: true, data: { adminContentAccess: "yes" } });
-    [OWN, WHOLE, LOOKALIKE].forEach(plant);
+    [OWN, WHOLE, USERS, CONTENT, LOOKALIKE, GUESSABLE].forEach(plant);
   });
 
   it("refuses somebody with no session and no api key", async () => {
@@ -89,5 +93,26 @@ describe("Security: export downloads", () => {
     mockGetAppSettings.mockResolvedValue({ success: true, data: { adminContentAccess: "no" } });
 
     expect((await fetchExport(WHOLE)).status).toBe(404);
+  });
+
+  it("refuses an old-style export name without its token", async () => {
+    mockGetCurrentUser.mockResolvedValue(mockUser);
+
+    expect((await fetchExport(GUESSABLE)).status).toBe(404);
+  });
+
+  it.each([WHOLE, USERS])("refuses %s to an admin api key", async (name) => {
+    mockGetCurrentUser.mockResolvedValue(null);
+    mockAuthenticateApiKey.mockResolvedValue(ADMIN);
+
+    expect((await fetchExport(name)).status).toBe(404);
+    expect(existsSync(path.join(EXPORT_DIR, name))).toBe(true);
+  });
+
+  it("still serves an admin api key the content-only export", async () => {
+    mockGetCurrentUser.mockResolvedValue(null);
+    mockAuthenticateApiKey.mockResolvedValue(ADMIN);
+
+    expect((await fetchExport(CONTENT)).status).toBe(200);
   });
 });

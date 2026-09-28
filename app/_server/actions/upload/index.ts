@@ -4,7 +4,8 @@ import path from "path";
 import fs from "fs/promises";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
-import { getUserModeDir } from "../file";
+import { getUserModeDir, serverDeleteFile } from "../file";
+import { resolvePath } from "@/app/_utils/path-utils";
 import {
   MAX_FILE_SIZE,
   ALLOWED_IMAGE_TYPES,
@@ -310,7 +311,7 @@ export const deleteFile = async (formData: FormData) => {
     }
 
     const userDir = await getUserModeDir(Modes.NOTES);
-    const targetDir = path.join(
+    const targetDir = path.resolve(
       userDir,
       fileType === "image"
         ? "images"
@@ -318,9 +319,22 @@ export const deleteFile = async (formData: FormData) => {
         ? "videos"
         : "files"
     );
-    const filePath = path.join(targetDir, fileName);
+    const resolved = resolvePath(targetDir, fileName);
 
-    await fs.unlink(filePath);
+    if (
+      !resolved.ok ||
+      /[\\/]/.test(resolved.decodedInput) ||
+      path.dirname(resolved.absolutePath) !== targetDir
+    ) {
+      return { success: false, error: "Invalid file name" };
+    }
+
+    const stats = await fs.stat(resolved.absolutePath);
+    if (!stats.isFile()) {
+      return { success: false, error: "File not found" };
+    }
+
+    await serverDeleteFile(resolved.absolutePath);
     return { success: true, data: null };
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {

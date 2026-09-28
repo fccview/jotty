@@ -39,7 +39,7 @@ vi.mock("@/app/_server/actions/users", async (importOriginal) => ({
   canAccessAllContent: async () => false,
 }));
 
-import { _deleteUserCore } from "@/app/_server/actions/users/crud";
+import { _deleteUserCore } from "@/app/_server/actions/users/core";
 import { revokeGrants } from "@/app/_server/actions/share/rename";
 import { dropMounts, mountsFor } from "@/app/_server/actions/share/mounts";
 import { canReach } from "@/app/_server/actions/share/queries";

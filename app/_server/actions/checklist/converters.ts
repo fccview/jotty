@@ -1,25 +1,21 @@
 "use server";
 
-import path from "path";
 import { Checklist, Item, ChecklistType, KanbanStatus, Result } from "@/app/_types";
-import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import {
   ItemTypes,
-  Modes,
   PermissionTypes,
   TaskStatus,
   isKanbanType,
 } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getUserModeDir, serverWriteFile } from "@/app/_server/actions/file";
+import { serverWriteFile } from "@/app/_server/actions/file";
 import { revalidatePath } from "next/cache";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getFormData } from "@/app/_utils/global-utils";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { canReach } from "@/app/_server/actions/share/queries";
+import { reachableFile } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
-import { getListById, getUserChecklists } from "./queries";
+import { getListById } from "./queries";
 import { restatus } from "./restatus";
 
 export const convertChecklistType = async (formData: FormData) => {
@@ -31,17 +27,18 @@ export const convertChecklistType = async (formData: FormData) => {
       return { error: "UUID and type are required" };
     }
 
-    let list = await getListById(uuid);
+    const actor = await sessionActor();
+    if ("error" in actor) return { error: actor.error };
 
-    if (!list) {
-      const lists = await getUserChecklists();
+    const filePath = await reachableFile(
+      uuid,
+      ItemTypes.CHECKLIST,
+      actor.username,
+      PermissionTypes.EDIT,
+    );
+    if (!filePath) return { error: "Permission denied" };
 
-      if (!lists.success || !lists.data) {
-        throw new Error(lists.error || "Failed to fetch lists");
-      }
-
-      list = lists.data.find((l) => l.uuid === uuid) as Checklist;
-    }
+    const list = await getListById(uuid, actor.username);
 
     if (!list || !list.id || !list.createdAt) {
       throw new Error("List not found or is malformed");
@@ -49,23 +46,6 @@ export const convertChecklistType = async (formData: FormData) => {
 
     if (list.type === newType) {
       return { success: true };
-    }
-
-    let filePath: string;
-    const categoryDir = list.category || UNCATEGORIZED;
-    const filename = `${list.id}.md`;
-
-    if (list.owner) {
-      const ownerDir = path.join(
-        process.cwd(),
-        "data",
-        CHECKLISTS_FOLDER,
-        list.owner,
-      );
-      filePath = path.join(ownerDir, categoryDir, filename);
-    } else {
-      const userDir = await getUserModeDir(Modes.CHECKLISTS);
-      filePath = path.join(userDir, categoryDir, filename);
     }
 
     let convertedItems: any[];
@@ -132,12 +112,11 @@ export const convertChecklistType = async (formData: FormData) => {
         error,
       );
     }
-    const currentUser = await getCurrentUser();
     await broadcast({
       type: "checklist",
       action: "updated",
       entityId: updatedList.uuid,
-      username: currentUser?.username || "",
+      username: actor.username,
     });
     return { success: true, data: updatedList };
   } catch (error) {
@@ -175,7 +154,6 @@ export const updateChecklistStatuses = async (
 export const clearAllChecklistItems = async (formData: FormData) => {
   try {
     const uuid = formData.get("uuid") as string;
-    const ownerUsername = formData.get("user") as string | null;
     const type = formData.get("type") as "completed" | "incomplete";
 
     const actingUser = await getCurrentUser();
@@ -184,21 +162,21 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       return { error: "Not authenticated" };
     }
 
-    const checklist = await getListById(uuid, ownerUsername || undefined);
-
-    if (!checklist) {
-      return { error: "Checklist not found" };
-    }
-
-    const canEdit = await canReach(
-      checklist.uuid!,
+    const filePath = await reachableFile(
+      uuid,
       ItemTypes.CHECKLIST,
       actingUser.username,
       PermissionTypes.EDIT,
     );
 
-    if (!canEdit) {
+    if (!filePath) {
       return { error: "Permission denied" };
+    }
+
+    const checklist = await getListById(uuid);
+
+    if (!checklist) {
+      return { error: "Checklist not found" };
     }
 
     const filteredItems = checklist.items.filter((item) => {
@@ -214,18 +192,6 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       items: filteredItems,
       updatedAt: new Date().toISOString(),
     };
-
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      checklist.owner!,
-    );
-    const categoryDir = path.join(
-      ownerDir,
-      checklist.category || UNCATEGORIZED,
-    );
-    const filePath = path.join(categoryDir, `${checklist.id}.md`);
 
     await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
 

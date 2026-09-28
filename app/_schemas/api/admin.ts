@@ -21,7 +21,14 @@ const clashUser = z
   .optional()
   .describe("Whose files to check, yours when left out. Naming somebody else needs an admin allowed to see other users' content");
 
-export const clashQuery = z.object({ username: clashUser });
+export const clashQuery = z.object({
+  username: clashUser,
+  acrossUsers: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((value) => value === "true")
+    .describe("Report uuids shared by files of different users instead. Needs an admin allowed to see other users' content"),
+});
 
 const clashFileSchema = z.object({
   type: z.enum(ItemTypes),
@@ -29,6 +36,7 @@ const clashFileSchema = z.object({
   title: z.string(),
   createdAt: z.string().optional().describe("From frontmatter. A file without one counts as the newest"),
   keeps: z.boolean().describe("True for the file that owns the uuid now. Gets, links and the brain all open this one"),
+  owner: z.string().optional().describe("Whose folder the file is in. Only set with acrossUsers"),
 });
 
 export const clashListSchema = z.object({
@@ -37,6 +45,7 @@ export const clashListSchema = z.object({
       .object({
         uuid: z.string(),
         owner: z.string(),
+        owners: z.array(z.string()).optional().describe("Every user holding the uuid. Only set with acrossUsers"),
         files: z.array(clashFileSchema).describe("Oldest createdAt first, the first one keeps the uuid"),
       })
       .register(apiNames, { id: "DuplicateUuid" }),

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getUserIndex } from "@/app/_server/actions/users/helpers";
 import { adminPeek } from "@/app/_server/actions/lib/admin-peek";
-import { findClashes } from "@/app/_server/actions/uuid-clash/scan";
+import { findClashes, findCrossUserClashes } from "@/app/_server/actions/uuid-clash/scan";
+import { everyUsername } from "@/app/_server/actions/lib/audit-trail";
 import { NOT_CLAIMANT, NO_CLASH, repairClash } from "@/app/_server/actions/uuid-clash/repair";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
@@ -34,7 +35,7 @@ export const GET = defineRoute(
     tag: ApiTag.ADMIN,
     summary: "Find items that share a uuid",
     description:
-      "Two files with the same uuid in their frontmatter, usually because a script copied one. The file with the oldest createdAt keeps the uuid, so every get, link and brain view opens that one, and the others stay hidden until you repair them. Anybody can check their own files. Naming somebody else needs an admin allowed to see other users' content.",
+      "Two files with the same uuid in their frontmatter, usually because a script copied one. The file with the oldest createdAt keeps the uuid, so every get, link and brain view opens that one, and the others stay hidden until you repair them. Anybody can check their own files. Naming somebody else needs an admin allowed to see other users' content. With acrossUsers an admin allowed to see other users' content gets the uuids that files of different users share, which can make a permission check and a write land on different files until repaired.",
     query: clashQuery,
     responses: {
       200: { description: "Duplicated uuids and the files holding them", schema: clashListSchema },
@@ -44,6 +45,12 @@ export const GET = defineRoute(
     },
   },
   async ({ user, query }) => {
+    if (query.acrossUsers) {
+      if (!(await adminPeek(user))) return refuse(ADMIN_ONLY, 403);
+      const duplicates = await findCrossUserClashes(await everyUsername());
+      return NextResponse.json({ duplicates, total: duplicates.length });
+    }
+
     const owner = await _whose(user, query.username);
     if (typeof owner !== "string") return owner;
     const duplicates = await findClashes(owner);

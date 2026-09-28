@@ -14,7 +14,7 @@ vi.mock('@/app/_server/actions/file', () => ({
   writeJsonFile: (...args: any[]) => mockWriteJsonFile(...args),
 }))
 
-vi.mock('@/app/_server/actions/session', () => ({
+vi.mock('@/app/_server/actions/session/store', () => ({
   getSessionId: (...args: any[]) => mockGetSessionId(...args),
   readSessions: (...args: any[]) => mockReadSessions(...args),
   removeAllSessionsForUser: vi.fn().mockResolvedValue(undefined),
@@ -41,8 +41,8 @@ import {
   getUsers,
   getUsersForAdmin,
   updateUserSettings,
-  ensureUser,
 } from '@/app/_server/actions/users'
+import { ensureUser } from '@/app/_server/actions/users/ensure-user'
 import { getCurrentUserRecord } from '@/app/_server/actions/users/records'
 import { createHash } from 'crypto'
 
@@ -390,7 +390,19 @@ describe('Users Actions', () => {
       expect(result).toEqual([])
     })
 
+    it('should return nothing without a session', async () => {
+      mockGetSessionId.mockResolvedValue('')
+      mockReadSessions.mockResolvedValue({})
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'user1', passwordHash: 'secret', isAdmin: true },
+      ])
+
+      expect(await getUsers()).toEqual([])
+    })
+
     it('should return users without password hash', async () => {
+      mockGetSessionId.mockResolvedValue('sid')
+      mockReadSessions.mockResolvedValue({ sid: 'user1' })
       mockReadJsonFile.mockResolvedValue([
         { username: 'user1', passwordHash: 'secret', isAdmin: true, isSuperAdmin: false, avatarUrl: '/avatar.png' },
         { username: 'user2', passwordHash: 'secret2', isAdmin: false, isSuperAdmin: false },

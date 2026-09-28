@@ -12,7 +12,7 @@ import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
 import { encryptNoteContent } from "@/app/_server/actions/pgp";
 import { encryptXChaCha } from "@/app/_server/actions/xchacha";
-import { logContentEvent, logAudit } from "@/app/_server/actions/log";
+import { logClientAudit } from "@/app/_server/actions/log/client";
 import { itemHref, publicHref } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -224,7 +224,7 @@ export const useNoteEditor = ({
                 encryptFormData.append("signingPassphrase", signingData.signingPassphrase);
               }
             } catch (parseError) {
-              await logAudit({
+              await logClientAudit({
                 level: "DEBUG",
                 action: "note_saved_encrypted",
                 category: "note",
@@ -251,14 +251,16 @@ export const useNoteEditor = ({
             }
           }
 
-          await logContentEvent(
-            "note_saved_encrypted",
-            "note",
-            note.uuid!,
-            title,
-            true,
-            { encryptionMethod: note.encryptionMethod }
-          );
+          await logClientAudit({
+            level: "INFO",
+            action: "note_saved_encrypted",
+            category: "note",
+            resourceType: "note",
+            resourceId: note.uuid!,
+            resourceTitle: title,
+            success: true,
+            metadata: { encryptionMethod: note.encryptionMethod },
+          });
         } catch (error) {
           console.error("Error encrypting note:", error);
           setStatus((prev) => ({ ...prev, isSaving: false }));

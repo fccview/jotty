@@ -410,7 +410,7 @@ export const moveNode = async (formData: FormData) => {
 
       if (activeType === "item" && mode === Modes.NOTES) {
         try {
-          const { commitNote } = await import("@/app/_server/actions/history");
+          const { commitNote } = await import("@/app/_server/actions/history/repo");
           const fileContent = await fs.readFile(newPath, "utf-8");
           const titleMatch = fileContent.match(/^title:\s*(.+)$/m);
           const title = titleMatch ? titleMatch[1] : activeName;

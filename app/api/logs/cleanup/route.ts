@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cleanupOldLogs } from "@/app/_server/actions/log";
+import { sweepOldLogs } from "@/app/_server/actions/log/sweep";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
@@ -24,6 +24,6 @@ export const POST = defineRoute(
   },
   async ({ user }) => {
     if (!user.isAdmin) return refuse("Admin access required", 403);
-    return NextResponse.json(await cleanupOldLogs());
+    return NextResponse.json(await sweepOldLogs());
   },
 );

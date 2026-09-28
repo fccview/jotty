@@ -100,7 +100,7 @@ vi.mock('@/app/_server/actions/ws/broadcast', () => ({
   broadcast: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('@/app/_server/actions/history', () => ({
+vi.mock('@/app/_server/actions/history/repo', () => ({
   commitNote: vi.fn().mockResolvedValue(undefined),
 }))
 
@@ -108,7 +108,7 @@ vi.mock('@/app/_server/actions/notifications/internal', () => ({
   notifyUser: vi.fn(),
 }))
 
-vi.mock('@/app/_server/actions/api', () => ({
+vi.mock('@/app/_server/actions/api/authenticate', () => ({
   authenticateApiKey: (...args: unknown[]) => mockAuthenticateApiKey(...args),
 }))
 

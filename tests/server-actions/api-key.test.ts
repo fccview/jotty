@@ -11,7 +11,7 @@ vi.mock('@/app/_server/actions/file', () => ({
   writeJsonFile: (...args: any[]) => mockWriteJsonFile(...args),
 }))
 
-vi.mock('@/app/_server/actions/session', () => ({
+vi.mock('@/app/_server/actions/session/store', () => ({
   getSessionId: (...args: any[]) => mockGetSessionId(...args),
   readSessions: (...args: any[]) => mockReadSessions(...args),
   removeAllSessionsForUser: vi.fn().mockResolvedValue(undefined),
@@ -23,11 +23,8 @@ vi.mock('@/app/_server/actions/log', () => ({
   logAuthEvent: vi.fn(),
 }))
 
-import {
-  authenticateApiKey,
-  generateApiKey,
-  getApiKey,
-} from '@/app/_server/actions/api'
+import { generateApiKey, getApiKey } from '@/app/_server/actions/api'
+import { authenticateApiKey } from '@/app/_server/actions/api/authenticate'
 
 describe('API key actions', () => {
   const userWithKey = () => ({

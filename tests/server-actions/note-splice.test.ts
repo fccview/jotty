@@ -13,12 +13,10 @@ vi.mock("@/app/_server/actions/ws/broadcast", () => ({
   broadcast: (...args: unknown[]) => mockBroadcast(...args),
 }));
 vi.mock("@/app/_server/actions/share/queries", () => ({
-  canReach: (...args: unknown[]) => mockCanReach(...args),
+  reachableFile: async (...args: unknown[]) =>
+    (await mockCanReach(...args)) ? filePath : null,
 }));
-vi.mock("@/app/_server/actions/users", () => ({
-  getUserByNoteUuid: async () => ({ success: true, data: { username: "alice" } }),
-}));
-vi.mock("@/app/_server/actions/history", () => ({ commitNote: vi.fn().mockResolvedValue({ success: true }) }));
+vi.mock("@/app/_server/actions/history/repo", () => ({ commitNote: vi.fn().mockResolvedValue({ success: true }) }));
 vi.mock("@/app/_server/actions/log", () => ({ logContentEvent: vi.fn() }));
 
 import { SPLICE_DENIED, SPLICE_ENCRYPTED, spliceNote } from "@/app/_server/actions/note/splice";
