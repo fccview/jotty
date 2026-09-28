@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateApiKey } from "@/app/_server/actions/api";
-import { getAppSettings } from "@/app/_server/actions/config";
+import { getSettings } from "@/app/_server/actions/config";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
-import { User } from "@/app/_types";
+import { AppSettings, User } from "@/app/_types";
+import { API_KEY_HEADER } from "@/app/_consts/api";
 
 export type ApiCaller = Pick<User, "username" | "isAdmin" | "isSuperAdmin">;
 
-export const API_KEY_HEADER = "x-api-key";
+export { API_KEY_HEADER };
+
+const CONTENT_ACCESS_DENIED = "no";
 
 /**
  * @deprecated Legacy category+id fallback for checklist-family API routes
@@ -71,10 +74,6 @@ export const seesAllContent = async (user: ApiCaller): Promise<boolean> => {
   if (user.isSuperAdmin) return true;
   if (!user.isAdmin) return false;
 
-  const settingsResult = await getAppSettings();
-  if (!settingsResult.success || !settingsResult.data) {
-    return true;
-  }
-
-  return settingsResult.data.adminContentAccess !== "no";
+  const settings: AppSettings | null = await getSettings();
+  return settings?.adminContentAccess !== CONTENT_ACCESS_DENIED;
 };

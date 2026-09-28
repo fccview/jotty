@@ -1,82 +1,80 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { EXPORT_TEMP_DIR } from "@/app/_consts/files";
 import { resolvePath } from "@/app/_utils/path-utils";
-import {
-  ApiCaller,
-  seesAllContent,
-  whoGoesThere,
-} from "@/app/_utils/api-utils";
+import { ApiCaller, seesAllContent } from "@/app/_utils/api-utils";
+import { defineRoute } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod, MediaType, RouteAuth } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { exportFileParams, zipFileSchema } from "@/app/_schemas/api/exports";
 
 export const dynamic = "force-dynamic";
 
 const OWN_EXPORT_SUFFIX = /^_content_\d+\.zip$/;
+const NOT_FOUND = "File not found or error during download.";
 
 const ownsExport = (username: string, filename: string): boolean =>
   filename.startsWith(username) &&
   OWN_EXPORT_SUFFIX.test(filename.slice(username.length));
 
-const mayDownload = async (
-  caller: ApiCaller,
-  filename: string,
-): Promise<boolean> =>
+const mayDownload = async (caller: ApiCaller, filename: string): Promise<boolean> =>
   ownsExport(caller.username, filename) || (await seesAllContent(caller));
 
-export async function GET(
-  request: NextRequest,
-  props: { params: Promise<{ filename: string }> },
-) {
-  const caller = await whoGoesThere(request);
-  if (!caller) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+const _notFound = () => new NextResponse(NOT_FOUND, { status: 404 });
 
-  const params = await props.params;
-  const filename = params.filename;
-
-  if (!(await mayDownload(caller, filename))) {
-    console.warn(`Export download refused for ${caller.username}: ${filename}`);
-    return new NextResponse("File not found or error during download.", {
-      status: 404,
-    });
-  }
-
-  const baseDir = path.resolve(process.cwd(), EXPORT_TEMP_DIR);
-  const resolved = resolvePath(baseDir, filename);
-  if (!resolved.ok) {
-    return new NextResponse("File not found or error during download.", {
-      status: 404,
-    });
-  }
-
+const _tidyTempDir = async (baseDir: string) => {
   try {
-    const fileBuffer = await fs.readFile(resolved.absolutePath);
-    const headers = new Headers();
-    headers.set("Content-Type", "application/zip");
-    headers.set("Content-Disposition", `attachment; filename="${filename}"`);
+    if ((await fs.readdir(baseDir)).length === 0) await fs.rmdir(baseDir);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      console.log("Temporary export directory already removed or empty.");
+    } else {
+      console.error("Error cleaning up temp export directory:", error);
+    }
+  }
+};
 
-    await fs.unlink(resolved.absolutePath);
-    try {
-      const filesInDir = await fs.readdir(baseDir);
-      if (filesInDir.length === 0) {
-        await fs.rmdir(baseDir);
-      }
-    } catch (dirErr) {
-      if ((dirErr as NodeJS.ErrnoException).code === "ENOENT") {
-        console.log("Temporary export directory already removed or empty.");
-      } else {
-        console.error("Error cleaning up temp export directory:", dirErr);
-      }
+export const GET = defineRoute(
+  {
+    id: "downloadExport",
+    method: HttpMethod.GET,
+    path: "/exports/{filename}",
+    tag: ApiTag.EXPORTS,
+    summary: "Download an export",
+    description: "Sends the zip once and deletes it. You can download your own user export. Admins with content access can download any. Also accepts the browser session cookie.",
+    params: exportFileParams,
+    responses: {
+      200: { description: "The zip", schema: zipFileSchema, mediaType: MediaType.ZIP },
+      401: ERRORS[401],
+      404: { description: "No such export, or not yours to download (plain text body)" },
+    },
+    auth: RouteAuth.SESSION_OR_KEY,
+  },
+  async ({ user: caller, params: { filename } }) => {
+    if (!(await mayDownload(caller, filename))) {
+      console.warn(`Export download refused for ${caller.username}: ${filename}`);
+      return _notFound();
     }
 
-    return new NextResponse(new Blob([new Uint8Array(fileBuffer)]), {
-      headers,
-    });
-  } catch (error) {
-    console.error("Error serving exported file:", error);
-    return new NextResponse("File not found or error during download.", {
-      status: 404,
-    });
-  }
-}
+    const baseDir = path.resolve(process.cwd(), EXPORT_TEMP_DIR);
+    const resolved = resolvePath(baseDir, filename);
+    if (!resolved.ok) return _notFound();
+
+    try {
+      const fileBuffer = await fs.readFile(resolved.absolutePath);
+      await fs.unlink(resolved.absolutePath);
+      await _tidyTempDir(baseDir);
+
+      return new NextResponse(new Blob([new Uint8Array(fileBuffer)]), {
+        headers: {
+          "Content-Type": MediaType.ZIP,
+          "Content-Disposition": `attachment; filename="${filename}"`,
+        },
+      });
+    } catch (error) {
+      console.error("Error serving exported file:", error);
+      return _notFound();
+    }
+  },
+);

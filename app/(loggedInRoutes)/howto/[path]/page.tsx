@@ -4,7 +4,10 @@ import { readFile } from "@/app/_server/actions/file";
 import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { getHowtoGuideById, getHowtoFilePath, isValidHowtoGuide } from "@/app/_utils/howto-utils";
+import { API_GUIDE_ID, getHowtoGuideById, getHowtoFilePath, isValidHowtoGuide } from "@/app/_utils/howto-utils";
+import { getSettings } from "@/app/_server/actions/config";
+import { apiSpec } from "@/app/_server/api/spec";
+import { ApiExplorer } from "@/app/_components/FeatureComponents/Howto/ApiExplorer/ApiExplorer";
 
 interface HowtoPageProps {
   params: Promise<{
@@ -63,9 +66,11 @@ export default async function HowtoPage(props: HowtoPageProps) {
   }
 
   const htmlContent = convertMarkdownToHtml(markdownContent);
+  const showExplorer = guide.id === API_GUIDE_ID && !(await getSettings())?.isDemo;
 
   return (
-    <div>
+    <div className="space-y-10">
+      {showExplorer && <ApiExplorer spec={await apiSpec("")} />}
       <div className="prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert max-w-none">
         <UnifiedMarkdownRenderer content={htmlContent} />
       </div>

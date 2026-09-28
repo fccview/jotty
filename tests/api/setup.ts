@@ -160,6 +160,15 @@ vi.mock("@/app/_server/actions/export", () => ({
 
 vi.mock("@/app/_server/actions/config", () => ({
   getAppSettings: (...args: any[]) => mockGetAppSettings(...args),
+  getSettings: async () => (await mockGetAppSettings())?.data ?? {},
+}));
+
+vi.mock("@/app/_server/actions/export/builders", () => ({
+  buildAllContent: (...args: any[]) => mockExportAllChecklistsNotes(...args),
+  buildUserContent: (...args: any[]) => mockExportUserChecklistsNotes(...args),
+  buildAllUsers: (...args: any[]) => mockExportAllUsersData(...args),
+  buildWholeData: (...args: any[]) => mockExportWholeDataFolder(...args),
+  readExportProgress: (...args: any[]) => mockGetExportProgress(...args),
 }));
 
 vi.mock("@/app/_server/actions/lib/legacy-lookup", () => ({

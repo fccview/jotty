@@ -1,96 +1,69 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist/queries";
+import { NextResponse } from "next/server";
+import { PermissionTypes } from "@/app/_types/enums";
 import { remindItem } from "@/app/_server/actions/kanban/tweaker";
-import { isKanbanType } from "@/app/_types/enums";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, envelope, okSchema } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, cardParams, cardReminderBody, storedBoardSchema } from "@/app/_schemas/api/kanban";
+import { boardFor } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string; itemId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { datetime } = body;
+export const PUT = defineRoute(
+  {
+    id: "setBoardItemReminder",
+    method: HttpMethod.PUT,
+    path: "/kanban/{boardId}/items/{itemId}/reminder",
+    tag: ApiTag.KANBAN,
+    summary: "Set a card reminder",
+    description: "Replaces any existing reminder and re-arms it to fire once at the new time. Needs edit permission.",
+    params: cardParams,
+    body: cardReminderBody,
+    responses: {
+      200: { description: "The board after the change", schema: envelope(storedBoardSchema) },
+      400: BOARD_REFUSED,
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    if (refused) return refused;
 
-      if (!datetime) {
-        return NextResponse.json(
-          { error: "Datetime is required" },
-          { status: 400 },
-        );
-      }
+    const result = await remindItem(user, board.uuid, params.itemId, JSON.stringify({ datetime: body.datetime }));
+    if (result.error) return refuse(result.error, 400);
 
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
+    return NextResponse.json({ success: true, data: result.data });
+  },
+);
 
-      if (!isKanbanType(board.type)) {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
+export const DELETE = defineRoute(
+  {
+    id: "clearBoardItemReminder",
+    method: HttpMethod.DELETE,
+    path: "/kanban/{boardId}/items/{itemId}/reminder",
+    tag: ApiTag.KANBAN,
+    summary: "Clear a card reminder",
+    description: "Needs edit permission.",
+    params: cardParams,
+    responses: {
+      200: { description: "Cleared", schema: okSchema },
+      400: BOARD_REFUSED,
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    if (refused) return refused;
 
-      const result = await remindItem(
-        user,
-        board.uuid!,
-        params.itemId,
-        JSON.stringify({ datetime }),
-      );
+    const result = await remindItem(user, board.uuid, params.itemId, "");
+    if (result.error) return refuse(result.error, 400);
 
-      if (result.error) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
-      }
-
-      return NextResponse.json({ success: true, data: result.data });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
-
-export async function DELETE(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string; itemId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
-
-      if (!isKanbanType(board.type)) {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
-
-      const result = await remindItem(user, board.uuid!, params.itemId, "");
-
-      if (result.error) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
-      }
-
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+    return NextResponse.json({ success: true });
+  },
+);

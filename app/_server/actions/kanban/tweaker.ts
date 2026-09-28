@@ -8,7 +8,8 @@ import {
 } from "@/app/_types/enums";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
-import { reachableFile } from "@/app/_server/actions/share/queries";
+import { canReach, reachableFile } from "@/app/_server/actions/share/queries";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { getListById } from "@/app/_server/actions/checklist/queries";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
@@ -78,6 +79,15 @@ export const tweakItem = async (
     _tweakItem(actor, uuid, itemId, patch),
   );
 
+export const UNKNOWN_ASSIGNEE = "Assignee not found";
+export const BLIND_ASSIGNEE = "Assignee can't see this board";
+
+const _assigneeRefusal = async (assignee: string, uuid: string): Promise<string | null> => {
+  if (!(await findUserRecord(assignee))) return UNKNOWN_ASSIGNEE;
+  const sees = await canReach(uuid, ItemTypes.CHECKLIST, assignee, PermissionTypes.READ);
+  return sees ? null : BLIND_ASSIGNEE;
+};
+
 export const assignItem = async (
   actor: SanitisedUser,
   uuid: string,
@@ -85,6 +95,9 @@ export const assignItem = async (
   assignee: string,
 ): Promise<Result<Checklist>> => {
   try {
+    const refusal = assignee ? await _assigneeRefusal(assignee, uuid) : null;
+    if (refusal) return { success: false, error: refusal };
+
     const result = await tweakItem(actor, uuid, itemId, {
       assignee: assignee || undefined,
     });

@@ -1,44 +1,21 @@
 {
   "name": "jotty-mcp",
-  "version": "1.0.0",
-  "description": "MCP server that exposes a remote jotty·page instance (checklists, notes, kanban boards, and more) over stdio via its REST API.",
+  "version": "0.1.0",
+  "private": true,
   "type": "module",
-  "bin": {
-    "jotty-mcp": "dist/index.js"
-  },
-  "main": "dist/index.js",
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "module": "src/main.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "start": "node dist/index.js",
-    "smoke": "node scripts/smoke.mjs",
-    "integration": "node scripts/integration.mjs",
-    "integration:http": "node scripts/integration-http.mjs",
-    "live": "node scripts/live-lifecycle.mjs"
+    "start": "bun run src/main.ts",
+    "dev": "bun --watch src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "build": "bun build src/main.ts --target=bun --outdir=dist --minify"
   },
-  "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "jotty",
-    "jotty.page",
-    "checklist",
-    "kanban",
-    "notes"
-  ],
-  "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "zod": "^3.25.76"
+    "@modelcontextprotocol/sdk": "1.30.0"
   },
   "devDependencies": {
-    "@types/node": "^20.19.0",
-    "typescript": "^5.9.0"
-  },
-  "engines": {
-    "node": ">=20"
+    "@types/bun": "1.3.14",
+    "typescript": "5.9.3"
   }
 }

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest"
+import { NextRequest } from "next/server"
 import {
   mockUser,
   mockAuthenticateApiKey,
@@ -11,6 +12,10 @@ import {
   mockAddItem,
   mockStampStatus,
   mockServerWriteFile,
+  mockRestatus,
+  mockCanReach,
+  mockGraftItem,
+  mockRemoveItem,
   resetApiMocks,
   createMockRequest,
   getResponseJson,
@@ -721,6 +726,264 @@ describe("Tasks API", () => {
 
       expect(response.status).toBe(401)
       expect(data.error).toBe("Unauthorized")
+    })
+  })
+
+  describe("default statuses", () => {
+    const bareTask = { ...mockTask, statuses: undefined }
+
+    it("sends label alongside the legacy name when a task has no stored statuses", async () => {
+      mockGetListById.mockResolvedValue(bareTask)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1")
+      const response = await GET_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.task.statuses).toEqual([
+        { id: "todo", label: "To Do", name: "To Do", order: 0 },
+        { id: "in_progress", label: "In Progress", name: "In Progress", order: 1 },
+        { id: "completed", label: "Completed", name: "Completed", order: 2 },
+      ])
+    })
+
+    it("does the same on list, create and update", async () => {
+      mockGetUserChecklists.mockResolvedValue({ success: true, data: [bareTask] })
+      mockMakeList.mockResolvedValue({ success: true, data: bareTask })
+      mockGetListById.mockResolvedValue(bareTask)
+      mockEditList.mockResolvedValue({ success: true, data: bareTask })
+
+      const listed = await getResponseJson(await GET_TASKS(createMockRequest("GET", "http://localhost:3000/api/tasks")))
+      const created = await getResponseJson(
+        await POST_TASKS(createMockRequest("POST", "http://localhost:3000/api/tasks", { title: "Board" })),
+      )
+      const updated = await getResponseJson(
+        await PUT_TASK(createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1", { title: "Board" }), {
+          params: Promise.resolve({ taskId: "task-uuid-1" }),
+        }),
+      )
+
+      ;[listed.tasks[0], created.data, updated.data].forEach((task) => {
+        expect(task.statuses[0]).toEqual({ id: "todo", label: "To Do", name: "To Do", order: 0 })
+      })
+      expect(mockRestatus).not.toHaveBeenCalled()
+    })
+
+    it("returns stored statuses untouched", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1")
+      const data = await getResponseJson(await GET_TASK(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) }))
+
+      expect(data.task.statuses).toEqual(mockTask.statuses)
+    })
+  })
+
+  describe("POST /api/tasks with statuses", () => {
+    const created = { ...mockTask, statuses: undefined, uuid: "new-uuid" }
+
+    it("creates the task with the requested columns in one write", async () => {
+      mockMakeList.mockImplementation(async (_user: unknown, _form: FormData, statuses?: unknown[]) => ({
+        success: true,
+        data: { ...created, statuses },
+      }))
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks", {
+        title: "Sprint",
+        statuses: [
+          { id: "todo", label: "To Do", order: 0 },
+          { id: "review", label: "In Review", color: "#3b82f6" },
+          { id: "done", name: "Done", autoComplete: true },
+        ],
+      })
+      const response = await POST_TASKS(request)
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(mockRestatus).not.toHaveBeenCalled()
+      expect(data.data.statuses).toEqual([
+        { id: "todo", label: "To Do", order: 0 },
+        { id: "review", label: "In Review", color: "#3b82f6", order: 1 },
+        { id: "done", label: "Done", order: 2, autoComplete: true },
+      ])
+      expect(data.data.items).toEqual([])
+    })
+
+    it("refuses columns without an id before creating anything", async () => {
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks", {
+        title: "Sprint",
+        statuses: [{ label: "No id" }],
+      })
+      const response = await POST_TASKS(request)
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(400)
+      expect(data.error).toBe("Status id is required")
+      expect(mockMakeList).not.toHaveBeenCalled()
+    })
+
+    it("refuses duplicate column ids", async () => {
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks", {
+        title: "Sprint",
+        statuses: [
+          { id: "todo", label: "To Do" },
+          { id: "todo", label: "Again" },
+        ],
+      })
+      const response = await POST_TASKS(request)
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe("Status ids must be unique")
+      expect(mockMakeList).not.toHaveBeenCalled()
+    })
+
+  })
+
+  describe("input validation", () => {
+    it("returns 400 for a body that is not JSON", async () => {
+      const request = new NextRequest(new URL("http://localhost:3000/api/tasks"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": "test-api-key" },
+        body: "{not json",
+      })
+      const response = await POST_TASKS(request)
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe("Request body must be valid JSON")
+    })
+
+    it("returns 400 for a malformed item index", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1/items/abc")
+      const response = await GET_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "abc" }) })
+
+      expect(response.status).toBe(400)
+    })
+
+    it("returns 400 for a nested item index out of range", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1/items/0.5")
+      const response = await GET_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0.5" }) })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe("Item index out of range")
+    })
+
+    it("returns 404 when the parent index does not exist", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/items", {
+        text: "Orphan",
+        parentIndex: "3",
+      })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
+
+      expect(response.status).toBe(404)
+      expect((await getResponseJson(response)).error).toBe("Parent item not found")
+      expect(mockGraftItem).not.toHaveBeenCalled()
+    })
+
+    it("grafts under a numeric parent index", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/items", {
+        text: "Child",
+        parentIndex: 0,
+      })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
+
+      expect(response.status).toBe(200)
+      const graft = mockGraftItem.mock.calls[0][1] as FormData
+      expect(graft.get("parentId")).toBe("item-1")
+      expect(graft.get("status")).toBe("todo")
+    })
+
+    it("returns 400 for a malformed parent index", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/items", {
+        text: "Child",
+        parentIndex: "zero",
+      })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
+
+      expect(response.status).toBe(400)
+      expect(mockGraftItem).not.toHaveBeenCalled()
+    })
+
+    it("uses the exact message when a status label is missing", async () => {
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/statuses", { id: "review" })
+      const response = await POST_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe("Status id and label are required")
+    })
+  })
+
+  describe("status fields", () => {
+    it("keeps autoComplete on create", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/statuses", {
+        id: "shipped",
+        label: "Shipped",
+        autoComplete: true,
+      })
+      const data = await getResponseJson(
+        await POST_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) }),
+      )
+
+      expect(data.data).toEqual({ id: "shipped", label: "Shipped", order: 3, autoComplete: true })
+    })
+
+    it("updates autoComplete and clears a color sent as null", async () => {
+      const colored = {
+        ...mockTask,
+        statuses: [{ id: "todo", label: "To Do", order: 0, color: "#fff" }],
+      }
+      mockGetListById.mockResolvedValue(colored)
+      mockRestatus.mockImplementation(async (_user: unknown, _uuid: string, reshape: (current?: unknown[]) => unknown[]) => ({
+        success: true,
+        data: { statuses: reshape(colored.statuses) },
+      }))
+
+      const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/statuses/todo", {
+        autoComplete: true,
+        color: null,
+      })
+      const data = await getResponseJson(
+        await PUT_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "todo" }) }),
+      )
+
+      expect(data.data).toEqual({ id: "todo", label: "To Do", order: 0, autoComplete: true })
+    })
+  })
+
+  describe("share grants", () => {
+    it("refuses adding an item without the edit grant", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+      mockCanReach.mockResolvedValue(false)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/tasks/task-uuid-1/items", { text: "Nope" })
+      const response = await POST_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1" }) })
+
+      expect(response.status).toBe(403)
+      expect(mockAddItem).not.toHaveBeenCalled()
+    })
+
+    it("refuses deleting an item without the delete grant", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+      mockCanReach.mockImplementation(async (_uuid: string, _type: string, _user: string, permission: string) =>
+        permission !== "canDelete",
+      )
+
+      const request = createMockRequest("DELETE", "http://localhost:3000/api/tasks/task-uuid-1/items/0")
+      const response = await DELETE_TASK_ITEM(request, { params: Promise.resolve({ taskId: "task-uuid-1", itemIndex: "0" }) })
+
+      expect(response.status).toBe(403)
+      expect(mockRemoveItem).not.toHaveBeenCalled()
     })
   })
 })

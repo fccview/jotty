@@ -1,116 +1,75 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid, turnAway } from "@/app/_utils/api-utils";
+import { NextResponse } from "next/server";
+import { turnAway } from "@/app/_utils/api-utils";
+import { findList, indexPath, isRefusal, itemAt } from "@/app/_utils/api-list-utils";
 import { addItem } from "@/app/_server/actions/checklist-item/editor";
 import { graftItem } from "@/app/_server/actions/checklist-item/grafter";
-import { getListById } from "@/app/_server/actions/checklist/queries";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { itemCreateBody, itemCreatedSchema, listParams } from "@/app/_schemas/api/checklists";
 import { PermissionTypes } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(
-  request: NextRequest,
-  props: { params: Promise<{ listId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { text, status, time, parentIndex } = body;
+const NO_PARENT = "Parent item not found";
 
-      if (!text) {
-        return NextResponse.json(
-          { error: "Text is required" },
-          { status: 400 },
-        );
+export const POST = defineRoute(
+  {
+    id: "createChecklistItem",
+    method: HttpMethod.POST,
+    path: "/checklists/{listId}/items",
+    tag: ApiTag.CHECKLIST_ITEMS,
+    summary: "Add an item to a checklist",
+    description: "Adds a top-level item, or a sub-item when parentIndex is sent. Needs edit permission.",
+    params: listParams,
+    body: itemCreateBody,
+    responses: {
+      200: { description: "Item added", schema: itemCreatedSchema },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: { description: "List or parent item not found", schema: ERRORS[404].schema },
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const found = await findList(request, params.listId, user.username);
+    if (isRefusal(found)) return found.refusal;
+    const { list } = found;
+
+    const refused = await turnAway(user.username, list.uuid!, PermissionTypes.EDIT);
+    if (refused) return refused;
+
+    if (body.parentIndex !== undefined) {
+      const path = indexPath(body.parentIndex.toString());
+      const parent = path ? itemAt(list.items, path) : undefined;
+      if (!parent) return refuse(NO_PARENT, 404);
+
+      const graft = new FormData();
+      graft.append("uuid", list.uuid!);
+      graft.append("parentId", parent.id);
+      graft.append("text", body.text);
+
+      const grafted = await graftItem(user, graft);
+      if (!grafted.success) {
+        return refuse(grafted.error || "Failed to add sub-item", 500);
       }
 
-      const uuid = await listUuid(request, params.listId, user.username);
-      const list = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!list) {
-        return NextResponse.json({ error: "List not found" }, { status: 404 });
-      }
-
-      const refused = await turnAway(
-        user.username,
-        list.uuid!,
-        PermissionTypes.EDIT,
-      );
-      if (refused) return refused;
-
-      const formData = new FormData();
-      formData.append("text", text);
-
-      if (parentIndex !== undefined) {
-        const indexPath = parentIndex
-          .toString()
-          .split(".")
-          .map((i: string) => parseInt(i));
-        let parentItem: any = null;
-        let currentItems = list.items;
-
-        for (const idx of indexPath) {
-          if (idx >= currentItems.length) {
-            return NextResponse.json(
-              { error: "Parent item not found" },
-              { status: 404 },
-            );
-          }
-          parentItem = currentItems[idx];
-          currentItems = parentItem.children || [];
-        }
-
-        if (!parentItem) {
-          return NextResponse.json(
-            { error: "Parent item not found" },
-            { status: 404 },
-          );
-        }
-
-        const graft = new FormData();
-        graft.append("uuid", list.uuid!);
-        graft.append("parentId", parentItem.id);
-        graft.append("text", text);
-
-        const grafted = await graftItem(user, graft);
-
-        if (!grafted.success) {
-          return NextResponse.json(
-            { error: grafted.error || "Failed to add sub-item" },
-            { status: 500 },
-          );
-        }
-
-        return NextResponse.json({ success: true });
-      }
-      if (status) {
-        formData.append("status", status);
-      }
-      if (time !== undefined) {
-        formData.append(
-          "time",
-          typeof time === "string" ? time : JSON.stringify(time),
-        );
-      }
-
-      const result = await addItem(user, list, formData, true);
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to create item" },
-          { status: 500 },
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: { id: result.data?.id },
-      });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: true });
     }
-  });
-}
+
+    const formData = new FormData();
+    formData.append("text", body.text);
+    if (body.status) formData.append("status", body.status);
+    if (body.time !== undefined) {
+      formData.append("time", typeof body.time === "string" ? body.time : JSON.stringify(body.time));
+    }
+
+    const result = await addItem(user, list, formData, true);
+    if (!result.success) {
+      return refuse(result.error || "Failed to create item", 500);
+    }
+
+    return NextResponse.json({ success: true, data: { id: result.data?.id } });
+  },
+);

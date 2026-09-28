@@ -1,91 +1,51 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
-import { getListById } from "@/app/_server/actions/checklist/queries";
+import { NextResponse } from "next/server";
+import { PermissionTypes } from "@/app/_types/enums";
 import { stampStatus } from "@/app/_server/actions/checklist-item/stamper";
-import { isKanbanType } from "@/app/_types/enums";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, okSchema } from "@/app/_schemas/api/common";
+import { itemStatusBody, taskItemParams } from "@/app/_schemas/api/tasks";
+import { fetchTask } from "@/app/_utils/api-task";
+import { OUT_OF_RANGE, itemAtIndex } from "@/app/_utils/api-list-utils";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ taskId: string; itemIndex: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { status } = body;
+export const PUT = defineRoute(
+  {
+    id: "updateTaskItemStatus",
+    method: HttpMethod.PUT,
+    path: "/tasks/{taskId}/items/{itemIndex}/status",
+    tag: ApiTag.TASKS,
+    summary: "Move a task item to another status",
+    params: taskItemParams,
+    body: itemStatusBody,
+    responses: {
+      200: { description: "Moved", schema: okSchema },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const found = await fetchTask(request, params.taskId, user.username, PermissionTypes.EDIT);
+    if ("refusal" in found) return found.refusal;
+    const { task } = found;
 
-      if (!status) {
-        return NextResponse.json(
-          { error: "Status is required" },
-          { status: 400 },
-        );
-      }
+    const hit = itemAtIndex(task.items, params.itemIndex);
+    if (!hit) return refuse(OUT_OF_RANGE, 400);
 
-      const uuid = await listUuid(request, params.taskId, user.username);
-      const task = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-      }
+    const formData = new FormData();
+    formData.append("uuid", task.uuid!);
+    formData.append("itemId", hit.item.id);
+    formData.append("status", body.status);
 
-      if (!isKanbanType(task.type)) {
-        return NextResponse.json(
-          { error: "Not a task checklist" },
-          { status: 400 },
-        );
-      }
-
-      const indexPath = params.itemIndex.split(".").map((i) => parseInt(i));
-
-      for (const idx of indexPath) {
-        if (isNaN(idx) || idx < 0) {
-          return NextResponse.json(
-            { error: "Invalid item index" },
-            { status: 400 },
-          );
-        }
-      }
-
-      let item: any = null;
-      let currentItems = task.items;
-
-      for (const idx of indexPath) {
-        if (idx >= currentItems.length) {
-          return NextResponse.json(
-            { error: "Item index out of range" },
-            { status: 400 },
-          );
-        }
-        item = currentItems[idx];
-        currentItems = item.children || [];
-      }
-
-      if (!item) {
-        return NextResponse.json({ error: "Item not found" }, { status: 404 });
-      }
-
-      const formData = new FormData();
-      formData.append("uuid", task.uuid!);
-      formData.append("itemId", item.id);
-      formData.append("status", status);
-
-      const result = await stampStatus(user, formData);
-
-      if (!result.success) {
-        return NextResponse.json(
-          { error: result.error || "Failed to update item status" },
-          { status: 500 },
-        );
-      }
-
-      return NextResponse.json({ success: true });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
+    const result = await stampStatus(user, formData);
+    if (!result.success) {
+      return refuse(result.error || "Failed to update item status", 500);
     }
-  });
-}
+
+    return NextResponse.json({ success: true });
+  },
+);

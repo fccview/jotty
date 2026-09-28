@@ -1,5 +1,5 @@
 import path from "path";
-import { Checklist, ChecklistType, SanitisedUser } from "@/app/_types";
+import { Checklist, ChecklistType, KanbanStatus, SanitisedUser } from "@/app/_types";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { ensureDir, serverWriteFile } from "@/app/_server/actions/file";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
@@ -20,6 +20,7 @@ import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 export const makeList = async (
   actor: SanitisedUser,
   formData: FormData,
+  statuses?: KanbanStatus[],
 ): Promise<{ success?: boolean; data?: Checklist; error?: string }> => {
   try {
     const title = formData.get("title") as string;
@@ -60,6 +61,7 @@ export const makeList = async (
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       owner: target.owner,
+      ...(statuses?.length ? { statuses } : {}),
     };
 
     await serverWriteFile(filePath, listToMarkdown(newList));

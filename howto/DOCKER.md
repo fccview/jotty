@@ -137,9 +137,17 @@ environment:
 - `- OIDC_USER_GROUPS=jotty_users,app_users` Optional. Comma-separated OIDC groups allowed to log in. If set, only members of these groups (and admins) get in.
 - `- OIDC_USER_ROLES=user,member` Optional. Comma-separated OIDC roles allowed to log in. If set, only users with one of these roles (and admins) get in.
 
+## MCP server
+
+`docker-compose.mcp.yml` in the repo root runs jotty and the [MCP server](../mcp-server/README.md) on one network, so assistants such as Claude or Cursor can work with your notes and lists:
+
+```bash
+docker compose -f docker-compose.mcp.yml up -d --build
+```
+
 ## API docs service
 
-jotty can run a separate ReDoc container that serves interactive docs for every API endpoint. It's optional.
+jotty can run a separate ReDoc container that serves interactive docs for every API endpoint. It's optional: the same docs, with a way to send requests, are already inside jotty under **How to > API**. ReDoc is for reading them outside the app.
 
 ### Setup
 

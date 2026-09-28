@@ -1,0 +1,55 @@
+# Jotty + jotty-mcp on one network.
+# Good for: letting MCP clients (Claude, Cursor, ...) work with your notes,
+# checklists and boards next to the normal web UI. The MCP server reaches
+# Jotty internally at http://jotty:3000, so it never leaves the network.
+#
+# Setup:
+#   mkdir -p ./data ./config ./cache && sudo chown -R 1000:1000 ./data ./config ./cache
+#   docker compose -f docker-compose.mcp.yml up -d --build
+#
+# MCP endpoint: http://localhost:3001/mcp
+# Every client sends its own Jotty API key in the x-api-key header, so each
+# session acts as that user. More in mcp-server/README.md.
+
+services:
+  jotty:
+    image: ghcr.io/fccview/jotty:latest
+    container_name: jotty
+    user: "1000:1000"
+    ports:
+      - "1122:3000"
+    volumes:
+      - ./data:/app/data:rw
+      - ./config:/app/config:rw
+      - ./cache:/app/.next/cache:rw
+    networks: [jotty-net]
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+
+  jotty-mcp:
+    build: ./mcp-server
+    container_name: jotty-mcp
+    depends_on:
+      - jotty
+    ports:
+      - "3001:3001"
+    networks: [jotty-net]
+    restart: unless-stopped
+    environment:
+      JOTTY_URL: "http://jotty:3000"
+      JOTTY_MCP_TRANSPORT: "http"
+      JOTTY_MCP_PORT: "3001"
+      # Clients must send "Authorization: Bearer <token>". Leave it empty only
+      # on a network you trust.
+      JOTTY_MCP_AUTH_TOKEN: "changeme"
+      # Optional fallback key for clients that can't send x-api-key. Anyone who
+      # reaches port 3001 with the token above then acts as this user.
+      JOTTY_API_KEY: ""
+      # Caps the visible text of a result for small context windows. The full
+      # response is always in structuredContent.
+      JOTTY_MCP_MAX_TEXT_CHARS: "12000"
+
+networks:
+  jotty-net:
+    driver: bridge

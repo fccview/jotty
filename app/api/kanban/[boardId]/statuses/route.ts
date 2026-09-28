@@ -1,54 +1,40 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth, listUuid } from "@/app/_utils/api-utils";
+import { NextResponse } from "next/server";
+import { PermissionTypes } from "@/app/_types/enums";
 import { restatus } from "@/app/_server/actions/checklist/restatus";
-import { getListById } from "@/app/_server/actions/checklist/queries";
-import { isKanbanType } from "@/app/_types/enums";
+import { defineRoute, refuse } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, envelope } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, boardParams, statusesBody, storedBoardSchema } from "@/app/_schemas/api/kanban";
+import { boardFor } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-  request: NextRequest,
-  props: { params: Promise<{ boardId: string }> },
-) {
-  const params = await props.params;
-  return withApiAuth(request, async (user) => {
-    try {
-      const body = await request.json();
-      const { statuses } = body;
+export const PUT = defineRoute(
+  {
+    id: "setBoardStatuses",
+    method: HttpMethod.PUT,
+    path: "/kanban/{boardId}/statuses",
+    tag: ApiTag.KANBAN,
+    summary: "Replace a board's columns",
+    description: "Send the whole column list. Cards in a column you leave out move to the lowest-order column and get a history entry. Needs edit permission.",
+    params: boardParams,
+    body: statusesBody,
+    responses: {
+      200: { description: "The board after the change", schema: envelope(storedBoardSchema) },
+      400: BOARD_REFUSED,
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params, body }) => {
+    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT });
+    if (refused) return refused;
 
-      if (!statuses || !Array.isArray(statuses)) {
-        return NextResponse.json(
-          { error: "Statuses array is required" },
-          { status: 400 },
-        );
-      }
+    const result = await restatus(user, board.uuid, () => body.statuses);
+    if (result.error) return refuse(result.error, 400);
 
-      const uuid = await listUuid(request, params.boardId, user.username);
-      const board = uuid ? await getListById(uuid, user.username) : undefined;
-      if (!board) {
-        return NextResponse.json({ error: "Board not found" }, { status: 404 });
-      }
-
-      if (!isKanbanType(board.type)) {
-        return NextResponse.json(
-          { error: "Not a kanban board" },
-          { status: 400 },
-        );
-      }
-
-      const result = await restatus(user, board.uuid!, () => statuses);
-
-      if (result.error) {
-        return NextResponse.json({ error: result.error }, { status: 400 });
-      }
-
-      return NextResponse.json({ success: true, data: result.data });
-    } catch (error) {
-      console.error("API Error:", error);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
-  });
-}
+    return NextResponse.json({ success: true, data: result.data });
+  },
+);
