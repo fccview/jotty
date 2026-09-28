@@ -34,6 +34,7 @@ export const SearchBar = ({
     handleSelectResult,
     inputRef,
     containerRef,
+    isIndexing,
   } = useSearch({ mode, onModeChange, onResultSelect });
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export const SearchBar = ({
             selectedIndex={selectedIndex}
             onSelectResult={handleSelectResult}
             query={query}
+            indexing={isIndexing}
           />
         </div>
       )}

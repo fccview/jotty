@@ -1,8 +1,11 @@
+import { ToolErrorKind, type ErrorHints } from "./errors.ts";
+
 export interface CatalogEntry {
   id: string;
   defaults?: Record<string, unknown>;
   pick?: string;
   omit?: string[];
+  hints?: ErrorHints;
 }
 
 const SUMMARY_PAGE = { view: "summary", limit: 25 };
@@ -33,6 +36,17 @@ export const CATALOG: CatalogEntry[] = [
   { id: "createBoardItem" },
   { id: "updateBoardItem", pick: "item" },
   { id: "moveBoardItem", pick: "item" },
+  { id: "getRelated" },
+  { id: "getBrain" },
+  { id: "listOrphans" },
+  {
+    id: "connectItems",
+    hints: {
+      [ToolErrorKind.Input]:
+        "style=mention only works when the source note already has the target's title as plain text. style=append always works and adds the link at the end.",
+    },
+  },
+  { id: "listShares", defaults: { limit: 25 } },
 ];
 
 export const CURATED_OPERATIONS = CATALOG.map((entry) => entry.id);

@@ -94,6 +94,24 @@ export const FAKE_SPEC: OpenApiDocument = {
         ],
       },
     },
+    "/relations/links": {
+      post: {
+        operationId: "connectItems",
+        summary: "Link a note to another item",
+        tags: ["Relations"],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: { source: { type: "string" }, target: { type: "string" }, style: { type: "string" } },
+                required: ["source", "target"],
+              },
+            },
+          },
+        },
+      },
+    },
     "/exports/{filename}": {
       get: {
         operationId: "downloadExport",
@@ -158,6 +176,7 @@ export const serveJotty = (spec: OpenApiDocument = FAKE_SPEC): FakeJotty => {
       if (url.pathname === "/api/tasks") return _json({ tasks: MANY_NOTES });
       if (url.pathname === "/api/tasks/bad/statuses") return _json({ error: "Status id is required" }, 400);
       if (url.pathname.endsWith("/check")) return _json({ error: "Item index out of range" }, 400);
+      if (url.pathname === "/api/relations/links") return _json({ error: "Mention not found" }, 400);
       if (url.pathname === "/api/notes") return _json(request.method === "GET" ? { notes: [NOTE] } : { success: true, data: NOTE });
       if (url.pathname.startsWith("/api/kanban/")) {
         return _json({ success: true, data: { uuid: "b-1", items: [CARD, { ...CARD, id: "c-2" }] }, item: CARD });

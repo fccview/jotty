@@ -450,6 +450,27 @@ describe("relations", () => {
       expect(mockBroadcast).toHaveBeenCalledWith(expect.objectContaining({ type: "relations" }));
     });
 
+    it("drops a watcher pass whose file was saved again while it was reading", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      write(aPath, note(A, "Alpha", "no links yet"));
+      const stale = note(A, "Alpha", "no links yet");
+      nodeFs.utimesSync(aPath, new Date(), new Date(Date.now() + 5_000));
+
+      const real = await vi.importActual<typeof import("fs/promises")>("fs/promises");
+      mockFs.readFile.mockImplementationOnce(async () => {
+        const fresh = note(A, "Alpha", `now [Beta](/note/${B})`);
+        nodeFs.writeFileSync(aPath, fresh);
+        nodeFs.utimesSync(aPath, new Date(), new Date(Date.now() + 10_000));
+        indexItemFile(aPath, fresh, Math.floor(nodeFs.statSync(aPath).mtimeMs));
+        return stale;
+      });
+      mockFs.readFile.mockImplementation(real.readFile as never);
+
+      await refreshItemPaths([aPath]);
+      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Beta" }]);
+      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
+    });
+
     it("picks up a category folder moved outside Jotty", async () => {
       const from = itemPath("notes", "alice", "Old");
       const to = itemPath("notes", "alice", "New");

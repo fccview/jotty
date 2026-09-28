@@ -54,6 +54,7 @@ describe("http transport", () => {
       "delete_note",
       "check_checklist_item",
       "update_board_item",
+      "connect_items",
       "discover",
       "call_operation",
       "health",

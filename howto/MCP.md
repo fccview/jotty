@@ -81,6 +81,16 @@ claude mcp add jotty -e JOTTY_URL=https://jotty.example.com -e JOTTY_API_KEY=ck_
 
 Each everyday action has its own tool, named after its API operation in snake case, so `listNotes` becomes `list_notes`. They cover search, categories, the usage summary, notes, checklists and their items, and the common board actions.
 
+The assistant can also follow your [links](BRAIN.md) and see what's shared:
+
+| Tool | What it does |
+|---|---|
+| `get_related` | What links to an item and what it links to, as titles. The assistant reads only the ones that matter instead of opening everything |
+| `get_brain` | The items around one item, or your most linked items |
+| `list_orphans` | Items with no links |
+| `connect_items` | Links a note to another item, so notes the assistant writes join the map |
+| `list_shares` | What other people shared with you and what you shared, with who can do what. Read only |
+
 Three more tools reach everything else:
 
 | Tool | What it does |
@@ -100,7 +110,8 @@ An assistant reads every character a tool sends back, and a long answer pushes t
 - `list_notes`, `list_checklists` and `list_boards` return 25 results at a time in a summary view. Notes come with a short excerpt instead of their content, checklists with item counts, and boards with card counts per column. `total` says how many matched, `offset` reads the next page, and `view=full` gets everything.
 - An answer longer than `JOTTY_MCP_MAX_TEXT_CHARS` keeps the rows that fit and adds a `trimmed` field with the `offset` for the next ones. A single record that's still too long gets cut.
 - Updating or moving a card returns that card, not the whole board.
-- Search results give you the `uuid` the other tools take and the file name as `slug`.
+- Search puts the best matches first and gives you the `uuid` the other tools take and the file name as `slug`.
+- `get_brain` returns 60 items at most by default, nearest and most linked first, and says when it left some out.
 - Export downloads aren't fetched. You get the link to download the file yourself.
 
 > [!NOTE]

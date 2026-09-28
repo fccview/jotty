@@ -280,6 +280,30 @@ export const editNote = async (
     _editNote(actor, formData, autosaveNotes),
   );
 
+export const NOTE_UNCHANGED = "Nothing to change";
+export const NOTE_ENCRYPTED = "Encrypted notes stay closed";
+
+export const rewriteNote = async (
+  actor: SanitisedUser,
+  uuid: string,
+  rewrite: (content: string) => string | null,
+) =>
+  runQueued(itemLane(Modes.NOTES, uuid), async () => {
+    const note = await getNoteById(uuid);
+    if (!note) return { error: "Note not found" };
+    if (note.encrypted) return { error: NOTE_ENCRYPTED };
+
+    const content = rewrite(note.content || "");
+    if (content === null) return { error: NOTE_UNCHANGED };
+
+    const formData = new FormData();
+    formData.append("uuid", note.uuid || uuid);
+    formData.append("title", note.title);
+    formData.append("category", "");
+    formData.append("content", content);
+    return _editNote(actor, formData, false);
+  });
+
 const _dropNote = async (
   currentUser: SanitisedUser,
   formData: FormData,

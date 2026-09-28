@@ -87,14 +87,46 @@ Turning off **Bilateral Links** in the admin editor settings hides the brain, Re
 
 ---
 
+## Search
+
+The search bar uses the same index. It finds the words in any order, so "curry weeknight" finds a note called "Weeknight curry", and it puts the best matches first. A title match counts most, then tags and the text itself. Checklist items and link text are searched too.
+
+You can change how it works under **Search** in your preferences:
+
+| Setting | What it does |
+| --- | --- |
+| Best matches first, then exact text | The default. Ranked matches come first, then anything the ranked search missed that contains exactly what you typed. |
+| Best matches only | Only the ranked matches. Part of a word, like "ann" for "planning", won't match. |
+| Exact text only | The characters exactly as you typed them, anywhere in the file, in no particular order. This is how search worked before the index. |
+
+> [!TIP]
+> While Jotty builds the index on first start, the default setting falls back to exact text, so search keeps working. With **Best matches only**, the search box shows "Indexing your notes" until the index is ready.
+
+---
+
 ## The relationships index
 
-Jotty keeps the links in `data/.relations.db`, next to your notes. Your Markdown files are still the source of truth. The index holds the links, the titles, and a searchable copy of each unencrypted note's plain text, which is what **Mentioned in** searches.
+Jotty keeps the links in `data/.relations.db`, next to your notes. Your Markdown files are still the source of truth. The index holds the links, the titles, and a searchable copy of each unencrypted note and checklist, which is what search and **Mentioned in** use.
 
-- Jotty never reads encrypted notes, so their links don't appear anywhere.
+- Jotty never reads encrypted notes, so their links don't appear anywhere and search only finds them by exact text.
 - If the file is missing or damaged, Jotty rebuilds it from your notes on start. While that runs, Referenced By and the brain show "Indexing relationships...".
 - Files changed outside Jotty are picked up within about a minute.
-- Anyone can rebuild their own index with the [rebuild API](API.md#28-rebuild-link-index). Admins can also rebuild another user's, or everyone's from **Admin > Content**.
+- Anyone can rebuild their own index with the rebuild route in the [API](API.md). Admins can also rebuild another user's, or everyone's from **Admin > Content**.
 
 > [!NOTE]
 > A rebuild remembers which note each wikilink first matched. Deleting the file forgets that. Wikilinks whose target you renamed in Jotty, sitting in notes you haven't saved since, go back to matching by title.
+
+---
+
+## From the API and MCP
+
+The same links are available with an API key, so scripts and AI assistants can follow them too:
+
+| Route | What it gives you |
+| --- | --- |
+| `GET /api/relations/{itemId}` | What links to an item, what it links to, unwritten wikilinks, plain mentions and suggestions |
+| `GET /api/brain` | The items around one item with `focus`, or the most linked items without it |
+| `GET /api/relations/orphans` | Notes and checklists with no links at all |
+| `POST /api/relations/links` | Adds a link to a note, at the end or on the first plain mention of the target's title |
+
+They follow the same rules as the brain. You only see items you can open, linking needs edit access to the note, and encrypted notes are refused. With **Bilateral Links** turned off they answer `404`.

@@ -51,3 +51,45 @@ export interface BrainGraph {
   nodes: BrainNode[];
   edges: BrainEdge[];
 }
+
+export interface LinkedItem {
+  uuid: string;
+  type: ItemTypes;
+  title: string;
+  category: string;
+  owner?: string;
+}
+
+export interface SuggestedItem extends LinkedItem {
+  score: number;
+}
+
+export interface RelationsView extends LinkedItem {
+  status: RelationsStatus;
+  tags: string[];
+  backlinks: RelatedItem[];
+  links: RelatedItem[];
+  unwritten: string[];
+  mentions: MentionedIn[];
+  suggestions: SuggestedItem[];
+}
+
+export interface NeighbourNode {
+  id: string;
+  kind: BrainNodeKinds;
+  title: string;
+  category?: string;
+  owner?: string;
+  links: number;
+  distance?: number;
+  tags?: string[];
+}
+
+export interface Neighbourhood {
+  status: RelationsStatus;
+  focus?: string;
+  nodes: NeighbourNode[];
+  edges: BrainEdge[];
+  total: number;
+  truncated: boolean;
+}

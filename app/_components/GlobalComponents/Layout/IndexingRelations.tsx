@@ -3,7 +3,12 @@
 import { useTranslations } from "next-intl";
 import { JottyIcon } from "./CustomIcons/JottyIcon";
 
-export const IndexingRelations = ({ compact = false }: { compact?: boolean }) => {
+interface IndexingRelationsProps {
+  compact?: boolean;
+  label?: string;
+}
+
+export const IndexingRelations = ({ compact = false, label }: IndexingRelationsProps) => {
   const t = useTranslations();
 
   return (
@@ -19,7 +24,7 @@ export const IndexingRelations = ({ compact = false }: { compact?: boolean }) =>
         animated
         slower
       />
-      <span className="text-md lg:text-sm">{t("relations.indexing")}</span>
+      <span className="text-md lg:text-sm">{label || t("relations.indexing")}</span>
     </div>
   );
 };

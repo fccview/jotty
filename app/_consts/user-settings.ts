@@ -30,6 +30,7 @@ export const EDITABLE_SETTING_KEYS: ReadonlyArray<keyof User> = [
   "hideTimeTrackingOnCards",
   "codeBlockStyle",
   "newItemInsertion",
+  "searchMode",
 ] as const;
 
 export const EDITABLE_ENCRYPTION_KEYS = [

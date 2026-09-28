@@ -87,6 +87,7 @@ const _hintsFor = (op: Operation, curated: boolean): ErrorHints => ({
     : curated
       ? "Check the arguments against the tool's input schema."
       : `Call discover with operationId ${op.operationId} to see what it takes.`,
+  ...catalogEntry(op.operationId)?.hints,
 });
 
 const _download = (ctx: ToolContext, path: string, contentType: string): ToolResult => {

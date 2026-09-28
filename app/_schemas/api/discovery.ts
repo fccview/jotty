@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { ItemTypes } from "@/app/_types/enums";
+import { SearchModes } from "@/app/_consts/search";
 
 export const SEARCH_MIN_LEN = 2;
 
@@ -33,6 +34,12 @@ export const searchParamsSchema = z.object({
     .enum(ItemTypes)
     .optional()
     .describe("Only notes or only checklists, both when left out"),
+  match: z
+    .enum(SearchModes)
+    .optional()
+    .describe(
+      "smart ranks the best matches first, words in any order, then adds exact-text matches. ranked returns only the ranked matches. substring returns only the exact-text matches. Uses your search setting when left out, smart by default",
+    ),
 });
 
 export const searchHitSchema = z
@@ -46,7 +53,10 @@ export const searchHitSchema = z
     type: z.enum(ItemTypes),
     title: z.string(),
     category: z.string(),
-    excerpt: z.string().optional().describe("The first matching line, when it is not just the title"),
+    excerpt: z
+      .string()
+      .optional()
+      .describe("The text around the match, when it is not just the title"),
   })
   .register(apiNames, { id: "SearchHit" });
 
@@ -54,6 +64,10 @@ export const searchResultsSchema = z.object({
   query: z.string(),
   results: z.array(searchHitSchema),
   total: z.number(),
+  indexing: z
+    .boolean()
+    .optional()
+    .describe("True while Jotty builds its search index on first start. Ranked searches return nothing until it is done"),
 });
 
 export const summaryQuery = z.object({

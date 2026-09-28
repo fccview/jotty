@@ -1,9 +1,4 @@
 import { NextResponse } from "next/server";
-import {
-  GrepSearchResult,
-  grepExtractFrontmatter,
-  grepSearchContent,
-} from "@/app/_utils/grep-utils";
 import { defineRoute } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
@@ -12,51 +7,10 @@ import {
   searchParamsSchema,
   searchResultsSchema,
 } from "@/app/_schemas/api/discovery";
-import { ItemTypes } from "@/app/_types/enums";
-import { CHECKLISTS_DIR, NOTES_DIR } from "@/app/_consts/files";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { DEFAULT_SEARCH_MODE, SEARCH_HITS_PER_TYPE } from "@/app/_consts/search";
+import { searchItems } from "@/app/_server/actions/search/engine";
 
 export const dynamic = "force-dynamic";
-
-const RESULT_SLICE = 20;
-
-const _cleanMatch = (line: string) =>
-  line
-    .replace(/^---$/, "")
-    .replace(/^- \[[x ]\]\s*/i, "")
-    .replace(/\s*\|.*$/, "")
-    .replace(/^#+\s*/, "")
-    .trim();
-
-const _escape = (query: string) => query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const _grep = async (dir: string, pattern: string, wanted: boolean) => {
-  if (!wanted) return [];
-  try {
-    return await grepSearchContent(dir, pattern);
-  } catch (error) {
-    console.error(`Search grep failed in ${dir}:`, error);
-    return [];
-  }
-};
-
-const _toHits = (hits: GrepSearchResult[], type: ItemTypes) =>
-  Promise.all(
-    hits.slice(0, RESULT_SLICE).map(async (hit) => {
-      const meta = await grepExtractFrontmatter(hit.filePath);
-      const title = (meta?.title as string) || hit.id;
-      const cleaned = _cleanMatch(hit.matchLine);
-      return {
-        uuid: meta?.uuid as string | undefined,
-        slug: hit.id,
-        id: hit.id,
-        type,
-        title,
-        category: hit.category || UNCATEGORIZED,
-        excerpt: cleaned && cleaned.toLowerCase() !== title.toLowerCase() ? cleaned : undefined,
-      };
-    }),
-  );
 
 export const GET = defineRoute(
   {
@@ -65,7 +19,7 @@ export const GET = defineRoute(
     path: "/search",
     tag: ApiTag.DISCOVERY,
     summary: "Search notes and checklists",
-    description: `Full-text search across your own notes and checklists. The query needs at least ${SEARCH_MIN_LEN} characters and each type returns at most ${RESULT_SLICE} hits.`,
+    description: `Full-text search across your own notes and checklists. The query needs at least ${SEARCH_MIN_LEN} characters and each type returns at most ${SEARCH_HITS_PER_TYPE} hits. By default the best matches come first, finding the words in any order, and exact-text matches fill the rest.`,
     query: searchParamsSchema,
     responses: {
       200: { description: "Matches", schema: searchResultsSchema },
@@ -75,22 +29,16 @@ export const GET = defineRoute(
     },
   },
   async ({ user, query }) => {
-    const pattern = _escape(query.q);
-
-    const [rawNotes, rawChecklists] = await Promise.all([
-      _grep(NOTES_DIR(user.username), pattern, query.type !== ItemTypes.CHECKLIST),
-      _grep(CHECKLISTS_DIR(user.username), pattern, query.type !== ItemTypes.NOTE),
-    ]);
-
-    const [notes, checklists] = await Promise.all([
-      _toHits(rawNotes, ItemTypes.NOTE),
-      _toHits(rawChecklists, ItemTypes.CHECKLIST),
-    ]);
+    const { hits, indexing } = await searchItems(user.username, query.q, {
+      type: query.type,
+      mode: query.match || user.searchMode || DEFAULT_SEARCH_MODE,
+    });
 
     return NextResponse.json({
       query: query.q,
-      results: [...notes, ...checklists],
-      total: notes.length + checklists.length,
+      results: hits.map((hit) => ({ ...hit, id: hit.slug })),
+      total: hits.length,
+      ...(indexing && { indexing }),
     });
   },
 );

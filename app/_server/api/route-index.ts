@@ -1,4 +1,5 @@
 import * as adminRebuildIndex from "@/app/api/admin/rebuild-index/route";
+import * as brain from "@/app/api/brain/route";
 import * as categories from "@/app/api/categories/route";
 import * as checklists from "@/app/api/checklists/route";
 import * as checklistsListId from "@/app/api/checklists/[listId]/route";
@@ -27,7 +28,11 @@ import * as logsStats from "@/app/api/logs/stats/route";
 import * as notes from "@/app/api/notes/route";
 import * as notesNoteId from "@/app/api/notes/[noteId]/route";
 import * as openapiJson from "@/app/api/openapi.json/route";
+import * as relationsItemId from "@/app/api/relations/[itemId]/route";
+import * as relationsLinks from "@/app/api/relations/links/route";
+import * as relationsOrphans from "@/app/api/relations/orphans/route";
 import * as search from "@/app/api/search/route";
+import * as shares from "@/app/api/shares/route";
 import * as summary from "@/app/api/summary/route";
 import * as tasks from "@/app/api/tasks/route";
 import * as tasksTaskId from "@/app/api/tasks/[taskId]/route";
@@ -41,6 +46,7 @@ import * as userUsername from "@/app/api/user/[username]/route";
 
 export const ROUTE_MODULES: object[] = [
   adminRebuildIndex,
+  brain,
   categories,
   checklists,
   checklistsListId,
@@ -69,7 +75,11 @@ export const ROUTE_MODULES: object[] = [
   notes,
   notesNoteId,
   openapiJson,
+  relationsItemId,
+  relationsLinks,
+  relationsOrphans,
   search,
+  shares,
   summary,
   tasks,
   tasksTaskId,

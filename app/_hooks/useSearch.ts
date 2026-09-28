@@ -34,6 +34,7 @@ export const useSearch = ({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isIndexing, setIsIndexing] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,12 +63,14 @@ export const useSearch = ({
     const performSearch = async (searchQuery: string) => {
       if (!searchQuery.trim() || searchQuery.length < 2) {
         setResults([]);
+        setIsIndexing(false);
         return;
       }
 
       setIsSearching(true);
       try {
         const result = await search(searchQuery);
+        setIsIndexing(Boolean(result.indexing));
         if (result.success && result.data) {
           const formatted = result.data.map((item) => ({
             id: item.id,
@@ -155,5 +158,6 @@ export const useSearch = ({
     inputRef,
     containerRef,
     isSearching,
+    isIndexing,
   };
 };

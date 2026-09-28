@@ -79,6 +79,13 @@ describe("runOperation", () => {
     expect(text(result)).toContain("get_checklist");
   });
 
+  it("uses the catalog's own hint for a refused mention link", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("connectItems"), { source: "n-1", target: "n-2", style: "mention" }, { curated: true });
+    expect(text(result)).toContain("Mention not found");
+    expect(text(result)).toContain("style=append");
+    expect(text(result)).not.toContain("input schema");
+  });
+
   it("cuts an oversized single record and leaves out the structured copy", async () => {
     const ctx = makeCtx(jotty.url);
     ctx.config.output.maxTextChars = 20;
@@ -125,7 +132,7 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
     const data = structured(result);
     expect(data.version).toBe("9.9.9");
-    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item"]);
+    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "connect_items"]);
     expect(data.unavailableTools).toContain("list_boards");
   });
 

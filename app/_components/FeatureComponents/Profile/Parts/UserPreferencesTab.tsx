@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, useRef, useState, type JSX } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -37,6 +37,7 @@ import {
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { DEFAULT_WEEK_START, WeekDay } from "@/app/_consts/calendar";
+import { DEFAULT_SEARCH_MODE, SearchModes } from "@/app/_consts/search";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
@@ -50,6 +51,12 @@ import {
   generalSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
+
+type SettingsSchema =
+  | typeof generalSettingsSchema
+  | typeof editorSettingsSchema
+  | typeof checklistSettingsSchema
+  | typeof kanbanSettingsSchema;
 
 interface SettingsTabProps {
   noteCategories: Category[];
@@ -85,19 +92,61 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   hideMobileStatusDropdown: user?.hideMobileStatusDropdown || "disable",
   hideTimeTrackingOnCards: user?.hideTimeTrackingOnCards || "disable",
   codeBlockStyle: user?.codeBlockStyle || "default",
+  searchMode: user?.searchMode || DEFAULT_SEARCH_MODE,
 });
 
-const pick = <T extends object, K extends keyof T>(
-  obj: T,
-  keys: K[]
-): Pick<T, K> => {
-  const result = {} as Pick<T, K>;
-  keys.forEach((key) => {
-    if (key in obj) {
-      result[key] = obj[key];
-    }
-  });
-  return result;
+const sectionSchema = (
+  keys: (keyof User)[],
+  schema: SettingsSchema
+): Partial<Record<keyof User, SettingsSchema>> =>
+  Object.fromEntries(keys.map((key) => [key, schema]));
+
+const SETTING_SCHEMAS: Partial<Record<keyof User, SettingsSchema>> = {
+  ...sectionSchema(
+    [
+      "preferredLocale",
+      "preferredTheme",
+      "landingPage",
+      "fileRenameMode",
+      "preferredDateFormat",
+      "preferredTimeFormat",
+      "firstDayOfWeek",
+      "handedness",
+      "hideConnectionIndicator",
+      "searchMode",
+    ],
+    generalSettingsSchema
+  ),
+  ...sectionSchema(
+    [
+      "notesAutoSaveInterval",
+      "notesDefaultMode",
+      "notesDefaultEditor",
+      "tableSyntax",
+      "disableRichEditor",
+      "defaultNoteFilter",
+      "markdownTheme",
+      "codeBlockStyle",
+      "quickCreateNotes",
+      "quickCreateNotesCategory",
+    ],
+    editorSettingsSchema
+  ),
+  ...sectionSchema(
+    [
+      "enableRecurrence",
+      "showCompletedSuggestions",
+      "showChecklistEmojis",
+      "defaultChecklistFilter",
+      "checklistItemClickAction",
+      "newItemInsertion",
+    ],
+    checklistSettingsSchema
+  ),
+  ...sectionSchema(
+    ["hideStatusOnCards", "hideMobileStatusDropdown", "hideTimeTrackingOnCards"],
+    kanbanSettingsSchema
+  ),
 };
 
 export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTabProps) => {
@@ -108,19 +157,18 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [allThemes, setAllThemes] = useState<any[]>([]);
   const [loadingThemes, setLoadingThemes] = useState(true);
-  const [initialSettings, setInitialSettings] = useState<Partial<User>>(
-    getSettingsFromUser(user)
-  );
   const [currentSettings, setCurrentSettings] = useState<Partial<User>>(
     getSettingsFromUser(user)
   );
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+  const savedSettings = useRef<Partial<User>>(getSettingsFromUser(user));
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     const newSettings = getSettingsFromUser(user);
-    setInitialSettings(newSettings);
+    savedSettings.current = newSettings;
     setCurrentSettings(newSettings);
   }, [user]);
 
@@ -138,121 +186,55 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     loadThemes();
   }, []);
 
-  const handleSettingChange = <K extends keyof User>(
-    key: K,
-    value: User[K]
-  ) => {
-    setCurrentSettings((prev) => ({ ...prev, [key]: value }));
-  };
+  const revertSetting = (key: keyof User) =>
+    setCurrentSettings((prev) => ({ ...prev, [key]: savedSettings.current[key] }));
 
-  const hasChanges = (keys: (keyof Partial<User>)[]) => {
-    return keys.some((key) => currentSettings[key] !== initialSettings[key]);
-  };
+  const saveSetting = async (key: keyof User, value: User[keyof User]) => {
+    const schema = SETTING_SCHEMAS[key];
+    const parsed = schema?.partial().safeParse({ [key]: value });
 
-  const hasGeneralChanges = hasChanges([
-    "preferredLocale",
-    "preferredTheme",
-    "landingPage",
-    "fileRenameMode",
-    "preferredDateFormat",
-    "preferredTimeFormat",
-    "firstDayOfWeek",
-    "handedness",
-    "hideConnectionIndicator",
-  ]);
-  const hasEditorChanges = hasChanges([
-    "notesDefaultEditor",
-    "tableSyntax",
-    "notesDefaultMode",
-    "notesAutoSaveInterval",
-    "disableRichEditor",
-    "defaultNoteFilter",
-    "markdownTheme",
-    "codeBlockStyle",
-    "quickCreateNotes",
-    "quickCreateNotesCategory",
-  ]);
-  const hasChecklistsChanges = hasChanges([
-    "enableRecurrence",
-    "showCompletedSuggestions",
-    "showChecklistEmojis",
-    "defaultChecklistFilter",
-    "checklistItemClickAction",
-    "newItemInsertion",
-  ]);
-  const hasKanbanChanges = hasChanges([
-    "hideStatusOnCards",
-    "hideMobileStatusDropdown",
-    "hideTimeTrackingOnCards",
-  ]);
-
-  const validateAndSave = async <T extends Record<string, any>>(
-    settings: T,
-    schema: any,
-    sectionName: string,
-    updateInitialSettings: (prev: Partial<User>) => Partial<User>
-  ) => {
-    try {
-      schema.parse(settings);
-      setValidationErrors((prev) => {
-        const newErrors = { ...prev };
-        Object.keys(settings).forEach((key) => {
-          newErrors[key] = "";
-        });
-        return newErrors;
-      });
-    } catch (error: any) {
-      if (error.errors) {
-        const errors: Record<string, string> = {};
-        error.errors.forEach((err: any) => {
-          errors[err.path[0]] = err.message;
-        });
-        setValidationErrors((prev) => ({ ...prev, ...errors }));
-      }
+    if (parsed && !parsed.success) {
+      const message = parsed.error.issues[0]?.message || "";
+      setValidationErrors((prev) => ({ ...prev, [key]: message }));
+      revertSetting(key);
       showToast({
         type: "error",
         title: t("errors.validationError"),
-        message: "Please fix the validation errors before saving.",
+        message,
       });
       return;
     }
 
-    const result = await updateUserSettings(settings);
-    if (result.success) {
-      setInitialSettings((prev) => updateInitialSettings(prev));
-      router.refresh();
-      showToast({
-        type: "success",
-        title: `${sectionName} settings saved!`,
-        message: `Your ${sectionName.toLowerCase()} preferences have been updated.`,
-      });
-    } else {
-      console.error(
-        `Failed to save ${sectionName.toLowerCase()} settings:`,
-        result.error
-      );
+    setValidationErrors((prev) => ({ ...prev, [key]: "" }));
+
+    const result = await updateUserSettings({ [key]: value });
+    if (!result.success || !result.data?.user) {
+      console.error(`Failed to save setting ${String(key)}:`, result.error);
+      revertSetting(key);
       showToast({
         type: "error",
-        title: `Failed to save ${sectionName.toLowerCase()} settings`,
-        message: result.error || "An unknown error occurred.",
+        title: t("settings.settingsSaveFailed"),
+        message: result.error || t("settings.settingsSaveFailedDescription"),
       });
+      return;
     }
 
-    setUser(result.data?.user || null);
+    savedSettings.current = { ...savedSettings.current, [key]: value };
+    setUser(result.data.user);
     router.refresh();
+    showToast({
+      type: "success",
+      title: t("settings.settingsSaved"),
+    });
   };
 
-  const handleSaveSection = (
-    keys: (keyof User)[],
-    schema: any,
-    sectionName: string
+  const handleSettingChange = <K extends keyof User>(
+    key: K,
+    value: User[K]
   ) => {
-    const settingsToSave = pick(currentSettings, keys);
-
-    validateAndSave(settingsToSave, schema, sectionName, (prev) => ({
-      ...prev,
-      ...settingsToSave,
-    }));
+    if (currentSettings[key] === value) return;
+    setCurrentSettings((prev) => ({ ...prev, [key]: value }));
+    saveQueue.current = saveQueue.current.then(() => saveSetting(key, value));
   };
 
   const dateFormatOptions = [
@@ -348,6 +330,12 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     { id: "edit", name: t('settings.checklistItemClickActionEdit') },
   ];
 
+  const searchModeOptions = [
+    { id: SearchModes.SMART, name: t('settings.searchModeSmart') },
+    { id: SearchModes.RANKED, name: t('settings.searchModeRanked') },
+    { id: SearchModes.SUBSTRING, name: t('settings.searchModeSubstring') },
+  ];
+
   const newItemInsertionOptions = [
     { id: "top", name: t('settings.newItemInsertionTop') },
     { id: "bottom", name: t('settings.newItemInsertionBottom') },
@@ -370,34 +358,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
 
   return (
     <div className="space-y-6">
-      <FormWrapper
-        title={t('settings.general')}
-        action={
-          <Button
-            onClick={() =>
-              handleSaveSection(
-                [
-                  "preferredLocale",
-                  "preferredTheme",
-                  "landingPage",
-                  "fileRenameMode",
-                  "preferredDateFormat",
-                  "preferredTimeFormat",
-                  "firstDayOfWeek",
-                  "handedness",
-                  "hideConnectionIndicator",
-                ],
-                generalSettingsSchema,
-                "General"
-              )
-            }
-            disabled={!hasGeneralChanges}
-            size="sm"
-          >
-            {t('settings.saveGeneral')}
-          </Button>
-        }
-      >
+      <FormWrapper title={t('settings.general')} collapsible>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="preferred-locale">{t('settings.preferredLanguage')}</Label>
@@ -616,37 +577,28 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
               {t('settings.hideConnectionIndicatorDescription')}
             </p>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="search-mode">{t('settings.searchMode')}</Label>
+            <Dropdown
+              id="search-mode"
+              value={currentSettings.searchMode || DEFAULT_SEARCH_MODE}
+              onChange={(value) => handleSettingChange("searchMode", value as SearchModes)}
+              options={searchModeOptions}
+              placeholder={t('settings.selectSearchMode')}
+              className="w-full"
+            />
+            <p className="text-md lg:text-sm text-muted-foreground">
+              {t('settings.searchModeDescription')}
+            </p>
+          </div>
         </div>
       </FormWrapper>
 
       <FormWrapper
         title={t('settings.notesPreferences')}
-        action={
-          <Button
-            onClick={() =>
-              handleSaveSection(
-                [
-                  "notesAutoSaveInterval",
-                  "notesDefaultMode",
-                  "notesDefaultEditor",
-                  "tableSyntax",
-                  "disableRichEditor",
-                  "defaultNoteFilter",
-                  "markdownTheme",
-                  "codeBlockStyle",
-                  "quickCreateNotes",
-                  "quickCreateNotesCategory",
-                ],
-                editorSettingsSchema,
-                "Notes Preferences"
-              )
-            }
-            disabled={!hasEditorChanges}
-            size="sm"
-          >
-            {t('settings.saveEditor')}
-          </Button>
-        }
+        collapsible
+        defaultOpen={false}
       >
         <div className="space-y-2">
           <Label htmlFor="auto-save-interval">{t('settings.autoSaveInterval')}</Label>
@@ -891,28 +843,8 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
 
       <FormWrapper
         title={t('settings.checklistsPreferences')}
-        action={
-          <Button
-            onClick={() =>
-              handleSaveSection(
-                [
-                  "enableRecurrence",
-                  "showCompletedSuggestions",
-                  "showChecklistEmojis",
-                  "defaultChecklistFilter",
-                  "checklistItemClickAction",
-                  "newItemInsertion",
-                ],
-                checklistSettingsSchema,
-                "Checklists"
-              )
-            }
-            disabled={!hasChecklistsChanges}
-            size="sm"
-          >
-            {t('settings.saveChecklists')}
-          </Button>
-        }
+        collapsible
+        defaultOpen={false}
       >
         <div className="space-y-2">
           <Label htmlFor="enable-recurrence">
@@ -1044,25 +976,8 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
 
       <FormWrapper
         title={t('settings.kanbanSection')}
-        action={
-          <Button
-            onClick={() =>
-              handleSaveSection(
-                [
-                  "hideStatusOnCards",
-                  "hideMobileStatusDropdown",
-                  "hideTimeTrackingOnCards",
-                ],
-                kanbanSettingsSchema,
-                "Kanban"
-              )
-            }
-            disabled={!hasKanbanChanges}
-            size="sm"
-          >
-            {t('settings.saveKanban')}
-          </Button>
-        }
+        collapsible
+        defaultOpen={false}
       >
         <div className="space-y-2">
           <Label htmlFor="hide-status-on-cards">
@@ -1134,7 +1049,7 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
         </div>
       </FormWrapper>
 
-      <FormWrapper title={t('settings.accountManagement')}>
+      <FormWrapper title={t('settings.accountManagement')} collapsible defaultOpen={false}>
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-jotty">
             <div>

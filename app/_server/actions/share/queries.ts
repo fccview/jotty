@@ -10,6 +10,7 @@ import {
   FolderShares,
   GlobalShares,
   ItemShares,
+  ShareListing,
   SharedItemSummary,
   SharingData,
   UserSharedItem,
@@ -20,6 +21,7 @@ import {
   CATEGORY_INFO_FILE,
   PUBLIC_USER,
   SHARED_WITH_KEY,
+  ShareDirections,
 } from "@/app/_consts/sharing";
 import { getUsername, canAccessAllContent } from "@/app/_server/actions/users";
 import {
@@ -252,6 +254,7 @@ interface SharedFact {
   owner: string;
   users: Record<string, SharingPermissions>;
   isPublic: boolean;
+  viaCategory?: string;
 }
 
 const _factsFor = cache(async (mode: Modes): Promise<SharedFact[]> => {
@@ -270,6 +273,7 @@ const _factsFor = cache(async (mode: Modes): Promise<SharedFact[]> => {
       owner: access.owner,
       users: access.users,
       isPublic: access.isPublic,
+      viaCategory: access.inherited ? access.viaCategory : undefined,
     });
   }
 
@@ -331,6 +335,33 @@ export const sharedForUser = async (
   } catch (error) {
     console.error("Error in sharedForUser:", error);
     return { notes: [], checklists: [] };
+  }
+};
+
+const _grantsOf = (fact: SharedFact, mode: Modes, username: string): ShareListing[] => {
+  const type = mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST;
+  const base = { uuid: fact.uuid, type, owner: fact.owner, viaCategory: fact.viaCategory };
+
+  if (fact.owner === username) {
+    const people = Object.entries(fact.users).filter(([name]) => name !== PUBLIC_USER);
+    return [{ ...base, direction: ShareDirections.BY_ME, isPublic: fact.isPublic, people }];
+  }
+
+  const mine = fact.users[username];
+  return mine ? [{ ...base, direction: ShareDirections.WITH_ME, permissions: mine }] : [];
+};
+
+export const sharesInvolving = async (username: string): Promise<ShareListing[]> => {
+  try {
+    const perMode = await Promise.all(
+      SHARED_MODES.map(async (mode) =>
+        (await _factsFor(mode)).flatMap((fact) => _grantsOf(fact, mode, username)),
+      ),
+    );
+    return perMode.flat();
+  } catch (error) {
+    console.error("Error in sharesInvolving:", error);
+    return [];
   }
 };
 

@@ -50,6 +50,7 @@ export const mockRestatus = vi.fn();
 export const mockAssignItem = vi.fn();
 export const mockRemindItem = vi.fn();
 export const mockCanReach = vi.fn();
+export const mockSharesInvolving = vi.fn();
 
 vi.mock("@/app/_server/actions/api", () => ({
   authenticateApiKey: (...args: any[]) => mockAuthenticateApiKey(...args),
@@ -118,6 +119,7 @@ vi.mock("@/app/_server/actions/kanban/tweaker", () => ({
 
 vi.mock("@/app/_server/actions/share/queries", () => ({
   canReach: (...args: any[]) => mockCanReach(...args),
+  sharesInvolving: (...args: any[]) => mockSharesInvolving(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item/stamper", () => ({
@@ -230,6 +232,8 @@ export function resetApiMocks() {
   mockRemindItem.mockReset();
   mockCanReach.mockReset();
   mockCanReach.mockResolvedValue(true);
+  mockSharesInvolving.mockReset();
+  mockSharesInvolving.mockResolvedValue([]);
 }
 
 export function createMockRequest(

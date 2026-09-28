@@ -46,7 +46,10 @@ const SCHEMA = `
   CREATE INDEX IF NOT EXISTS bindings_dst ON bindings(dst);
   CREATE VIRTUAL TABLE IF NOT EXISTS texts USING fts5(
     uuid UNINDEXED,
+    title,
     body,
+    prose,
+    extra,
     tokenize = 'unicode61 remove_diacritics 2'
   );
 `;

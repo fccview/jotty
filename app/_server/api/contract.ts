@@ -18,6 +18,8 @@ export enum ApiTag {
   TASKS = "Tasks",
   KANBAN = "Kanban",
   DISCOVERY = "Discovery",
+  RELATIONS = "Relations",
+  SHARING = "Sharing",
   USERS = "Users",
   EXPORTS = "Exports",
   LOGS = "Logs",
