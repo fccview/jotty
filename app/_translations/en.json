@@ -1842,7 +1842,9 @@
       "tag": "Tag"
     },
     "edges": {
-      "mention": "Link",
+      "link": "Link",
+      "mention": "Mention",
+      "checklist": "Checklist",
       "wiki": "Wikilink",
       "suggested": "Suggested",
       "tag": "Tag"

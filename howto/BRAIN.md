@@ -129,4 +129,15 @@ The same links are available with an API key, so scripts and AI assistants can f
 | `GET /api/relations/orphans` | Notes and checklists with no links at all |
 | `POST /api/relations/links` | Adds a link to a note, at the end or on the first plain mention of the target's title |
 
+Every link comes back with a `kind` that says how it's written:
+
+| Kind | What it is |
+| --- | --- |
+| `link` | A `[Title](/note/<uuid>)` link on a line of its own, like the ones `POST /api/relations/links` adds at the end |
+| `mention` | The same kind of link inside a sentence, like a mention picked with `@` or one the API turned into a link |
+| `checklist` | A link inside a checklist item, or inside a `- [ ]` task in a note |
+| `wiki` | A `[[Title]]` wikilink |
+
+When one item links another in more than one way, `/api/relations/{itemId}` shows one kind, the first of `mention`, `link`, `checklist` and `wiki`. The brain draws a line for each.
+
 They follow the same rules as the brain. You only see items you can open, linking needs edit access to the note, and encrypted notes are refused. With **Bilateral Links** turned off they answer `404`.

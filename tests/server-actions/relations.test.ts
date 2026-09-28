@@ -4,7 +4,7 @@ import os from "os";
 import path from "path";
 import { mockFs, resetAllMocks } from "../setup";
 import { ItemTypes } from "@/app/_types/enums";
-import { LinkKinds, RelationsStatus } from "@/app/_consts/relations";
+import { BrainEdgeKinds, LinkKinds, RelationsStatus } from "@/app/_consts/relations";
 
 vi.unmock("unified");
 vi.unmock("unist-util-visit");
@@ -117,12 +117,27 @@ describe("relations", () => {
       );
 
       expect(parsed.targets).toEqual([
-        { uuid: A, type: ItemTypes.NOTE },
-        { uuid: B, type: undefined },
-        { type: ItemTypes.CHECKLIST, legacy: { category: "Work", id: "groceries" } },
-        { uuid: C, type: ItemTypes.CHECKLIST },
+        { uuid: A, type: ItemTypes.NOTE, kind: LinkKinds.MENTION },
+        { uuid: B, type: undefined, kind: LinkKinds.MENTION },
+        { type: ItemTypes.CHECKLIST, legacy: { category: "Work", id: "groceries" }, kind: LinkKinds.MENTION },
+        { uuid: C, type: ItemTypes.CHECKLIST, kind: LinkKinds.MENTION },
       ]);
       expect(parsed.wikis).toEqual(["Milk run", "Escaped"]);
+    });
+
+    it("tells standalone links, mentions and checklist links apart", () => {
+      const kinds = (markdown: string) => readLinks(markdown).targets.map((target) => target.kind);
+
+      expect(kinds(`[Alpha](/note/${A})`)).toEqual([LinkKinds.LINK]);
+      expect(kinds(`## [Alpha](/note/${A})`)).toEqual([LinkKinds.LINK]);
+      expect(kinds(`- [Alpha](/note/${A})`)).toEqual([LinkKinds.LINK]);
+      expect(kinds(`**[Alpha](/note/${A})**`)).toEqual([LinkKinds.LINK]);
+      expect(kinds(`[alpha]: /note/${A}`)).toEqual([LinkKinds.LINK]);
+      expect(kinds(`talk to [Alpha](/note/${A}) first`)).toEqual([LinkKinds.MENTION]);
+      expect(kinds(`[Alpha](/note/${A}) [Beta](/note/${B})`)).toEqual([LinkKinds.MENTION, LinkKinds.MENTION]);
+      expect(kinds(`- [ ] [Alpha](/note/${A})`)).toEqual([LinkKinds.CHECKLIST]);
+      expect(kinds(`- [x] ask [Alpha](/note/${A})`)).toEqual([LinkKinds.CHECKLIST]);
+      expect(kinds(`- [ ] task\n  - see [Alpha](/note/${A}) too`)).toEqual([LinkKinds.MENTION]);
     });
   });
 
@@ -145,7 +160,7 @@ describe("relations", () => {
         { uuid: C, title: "List", type: ItemTypes.CHECKLIST },
       ]);
       expect(backlinksFor(C, visible).backlinks).toMatchObject([
-        { uuid: A, kind: LinkKinds.MENTION },
+        { uuid: A, kind: LinkKinds.LINK },
       ]);
     });
 
@@ -231,6 +246,38 @@ describe("relations", () => {
       );
       expect(graph.edges).toHaveLength(4);
       expect(graph.nodes.find((node) => node.id === "ghost:someday")?.title).toBe("Someday");
+    });
+
+    it("draws an edge per kind of link", () => {
+      write(
+        itemPath("notes", "alice", "a.md"),
+        note(A, "Alpha", `[Beta](/note/${B})\n\nask [Beta](/note/${B}) and [Gamma](/note/${C})\n\n- [ ] [Gamma](/note/${C})`),
+      );
+
+      const graph = graphFor(
+        "alice",
+        visibleOf([
+          { uuid: A, title: "Alpha" },
+          { uuid: B, title: "Beta" },
+          { uuid: C, title: "Gamma" },
+        ]),
+      );
+
+      const edges = graph.edges
+        .filter((edge) => edge.kind !== BrainEdgeKinds.SUGGESTED)
+        .map((edge) => `${edge.target}:${edge.kind}`)
+        .sort();
+      expect(edges).toEqual(
+        [
+          `${B}:${BrainEdgeKinds.LINK}`,
+          `${B}:${BrainEdgeKinds.MENTION}`,
+          `${C}:${BrainEdgeKinds.MENTION}`,
+          `${C}:${BrainEdgeKinds.CHECKLIST}`,
+        ].sort(),
+      );
+      expect(backlinksFor(B, visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Beta" }])).backlinks).toMatchObject([
+        { uuid: A, kind: LinkKinds.MENTION },
+      ]);
     });
 
     it("leaves out links whose source the viewer cannot see", () => {

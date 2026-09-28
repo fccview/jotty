@@ -196,6 +196,8 @@ export const edgeRgb = (edge: BrainEdge, palette: BrainPalette): Rgb => {
   if (edge.kind === BrainEdgeKinds.SUGGESTED) return palette.muted;
   if (edge.kind === BrainEdgeKinds.TAG) return mix(palette.primary, palette.background, 0.55);
   if (edge.kind === BrainEdgeKinds.WIKI) return palette.primary;
+  if (edge.kind === BrainEdgeKinds.MENTION) return mix(palette.primary, palette.foreground, 0.5);
+  if (edge.kind === BrainEdgeKinds.CHECKLIST) return mix(palette.primary, palette.muted, 0.6);
   return mix(palette.foreground, palette.background, 0.35);
 };
 

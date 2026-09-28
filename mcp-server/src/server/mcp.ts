@@ -10,7 +10,7 @@ export const SERVER_INSTRUCTIONS = [
   "Tools for a Jotty instance: notes, checklists and Kanban boards, acting as the user who owns the API key.",
   "Ids are uuids, so list or search first to get one. Checklist items are addressed by tree index, like 0 or 2.1.",
   "Search ranks the best matches first and finds the words in any order.",
-  "Every tool takes maxChars to raise or lower how much output it returns. get_note reports contentLength and takes offset and limit, so read a long note in slices until nextOffset is gone.",
+  "Every tool takes maxChars to raise or lower how much output it returns. get_note reports contentLength and takes offset and limit, so read a long note in slices until nextOffset is gone. get_notes reads several notes by id in one call.",
   "update_note replaces the whole content, so only send it after reading all of the note. For a small change use patch_note, which swaps one exact piece of text and leaves the rest untouched.",
   "Tags are #hashtags in the content, and #parent/child nests. list_tags shows them, list_notes filters by tag, tag_note adds or removes them without resending the note.",
   "Notes link to each other. After finding an item, get_related lists what links to it and what it links to, so you can follow the links and read only what matters. get_brain maps the items around one, or the most linked ones.",

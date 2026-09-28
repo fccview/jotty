@@ -11,6 +11,8 @@ import {
   getResponseJson,
 } from "./setup";
 import { GET as LIST } from "@/app/api/notes/route";
+import { GET as BATCH } from "@/app/api/notes/batch/route";
+import { NOTES_BATCH_MAX } from "@/app/_schemas/api/notes";
 import { GET as READ, PATCH } from "@/app/api/notes/[noteId]/route";
 import { POST as TAG } from "@/app/api/notes/[noteId]/tags/route";
 import { GET as TAGS } from "@/app/api/tags/route";
@@ -72,17 +74,45 @@ describe("note edits over the API", () => {
       { ...stored, uuid: OTHER, title: "Work log", tags: ["work"], extraMetadata: undefined },
     ];
 
-    it("reads several notes by id in one call", async () => {
-      mockGetUserNotes.mockResolvedValue({ success: true, data: notes });
-      const body = await getResponseJson(await LIST(createMockRequest("GET", `/api/notes?ids=${OTHER.toUpperCase()}, nope`)));
-      expect(body.notes.map((note: { id: string }) => note.id)).toEqual([OTHER]);
-    });
-
     it("filters by tag, nested tags included", async () => {
       mockGetUserNotes.mockResolvedValue({ success: true, data: notes });
       const body = await getResponseJson(await LIST(createMockRequest("GET", "/api/notes?tag=home")));
       expect(body.notes).toHaveLength(1);
       expect(body.notes[0]).toMatchObject({ id: NOTE, tags: ["home/garden"], managed: true });
+    });
+  });
+
+  describe("GET /api/notes/batch", () => {
+    const notes = [
+      { ...stored, uuid: NOTE },
+      { ...stored, uuid: OTHER, title: "Work log", content: "log", extraMetadata: undefined },
+    ];
+    const batch = async (ids: string) =>
+      BATCH(createMockRequest("GET", `/api/notes/batch?ids=${encodeURIComponent(ids)}`));
+
+    it("reads several notes by id in the order asked, with their length", async () => {
+      mockGetUserNotes.mockResolvedValue({ success: true, data: notes });
+      const body = await getResponseJson(await batch(`${OTHER.toUpperCase()}, ${NOTE}`));
+      expect(body.notes).toMatchObject([
+        { id: OTHER, content: "log", contentLength: 3 },
+        { id: NOTE, content: "0123456789", contentLength: 10, managed: true },
+      ]);
+      expect(body.missing).toEqual([]);
+    });
+
+    it("lists unknown ids under missing instead of failing", async () => {
+      mockGetUserNotes.mockResolvedValue({ success: true, data: notes });
+      const response = await batch(`${NOTE},nope,${NOTE}`);
+      expect(response.status).toBe(200);
+      const body = await getResponseJson(response);
+      expect(body.notes.map((note: { id: string }) => note.id)).toEqual([NOTE]);
+      expect(body.missing).toEqual(["nope"]);
+    });
+
+    it("refuses an empty list and too many ids", async () => {
+      expect((await batch("")).status).toBe(400);
+      const many = Array.from({ length: NOTES_BATCH_MAX + 1 }, (_, i) => `id-${i}`).join(",");
+      expect((await batch(many)).status).toBe(400);
     });
   });
 

@@ -87,7 +87,7 @@ The assistant can also follow your [links](BRAIN.md) and see what's shared:
 
 | Tool | What it does |
 |---|---|
-| `get_related` | What links to an item and what it links to, as titles. The assistant reads only the ones that matter instead of opening everything |
+| `get_related` | What links to an item and what it links to, as titles. Each link says whether it's a `link`, `mention`, `checklist` or `wiki`. The assistant reads only the ones that matter instead of opening everything |
 | `get_brain` | The items around one item, or your most linked items |
 | `list_orphans` | Items with no links. That's normal, it isn't a to-do list |
 | `connect_items` | Links a note to another item it relates to |
@@ -132,7 +132,7 @@ An assistant reads every character a tool sends back, and a long answer pushes t
 - `list_notes`, `list_checklists` and `list_boards` return 25 results at a time in a summary view. Notes come with a short excerpt instead of their content, checklists with item counts, and boards with card counts per column. `total` says how many matched, `offset` reads the next page, and `view=full` gets everything.
 - An answer longer than `JOTTY_MCP_MAX_TEXT_CHARS` keeps the rows that fit and adds a `trimmed` field with the `offset` for the next ones. A single record that's still too long gets cut.
 - That limit is only the default. Every tool takes `maxChars`, so the assistant can ask for more when it needs a whole answer, or less to save room.
-- `get_note` gives the note's length in `contentLength` and takes `offset` and `limit`, so the assistant can read a very long note in slices. `list_notes` takes `ids` to read several notes in one call.
+- `get_note` gives the note's length in `contentLength` and takes `offset` and `limit`, so the assistant can read a very long note in slices. `get_notes` reads up to 50 notes by UUID in one call, each with its `contentLength`, and lists any it couldn't find under `missing`.
 - Updating or moving a card returns that card, not the whole board.
 - Search puts the best matches first and gives you the `uuid` the other tools take and the file name as `slug`.
 - `get_brain` returns 60 items at most by default, nearest and most linked first, and says when it left some out.

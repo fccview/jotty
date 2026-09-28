@@ -31,6 +31,7 @@ import * as logsStats from "@/app/api/logs/stats/route";
 import * as notes from "@/app/api/notes/route";
 import * as notesNoteId from "@/app/api/notes/[noteId]/route";
 import * as notesNoteIdTags from "@/app/api/notes/[noteId]/tags/route";
+import * as notesBatch from "@/app/api/notes/batch/route";
 import * as openapiJson from "@/app/api/openapi.json/route";
 import * as relationsItemId from "@/app/api/relations/[itemId]/route";
 import * as relationsLinks from "@/app/api/relations/links/route";
@@ -83,6 +84,7 @@ export const ROUTE_MODULES: object[] = [
   notes,
   notesNoteId,
   notesNoteIdTags,
+  notesBatch,
   openapiJson,
   relationsItemId,
   relationsLinks,

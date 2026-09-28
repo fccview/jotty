@@ -17,6 +17,7 @@ export const CATALOG: CatalogEntry[] = [
   { id: "getCurrentUser" },
   { id: "listNotes", defaults: SUMMARY_PAGE },
   { id: "getNote" },
+  { id: "getNotes" },
   { id: "createNote" },
   { id: "updateNote" },
   { id: "patchNote" },

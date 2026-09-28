@@ -4,6 +4,7 @@ import { UNCATEGORIZED } from "@/app/_consts/notes";
 import {
   BrainEdgeKinds,
   BrainNodeKinds,
+  LINK_KIND_RANK,
   LinkKinds,
   MENTION_LIMIT,
   MENTION_MIN_TITLE,
@@ -42,6 +43,15 @@ interface LinkRow {
   kind: LinkKinds;
   weight: number;
 }
+
+const HREF_EDGES: Partial<Record<LinkKinds, BrainEdgeKinds>> = {
+  [LinkKinds.LINK]: BrainEdgeKinds.LINK,
+  [LinkKinds.MENTION]: BrainEdgeKinds.MENTION,
+  [LinkKinds.CHECKLIST]: BrainEdgeKinds.CHECKLIST,
+};
+
+export const byKindRank = (a: { kind: LinkKinds }, b: { kind: LinkKinds }): number =>
+  LINK_KIND_RANK.indexOf(a.kind) - LINK_KIND_RANK.indexOf(b.kind);
 
 const GHOST_PREFIX = "ghost:";
 const TAG_PREFIX = "tag:";
@@ -164,12 +174,12 @@ export const backlinksFor = (
   if (status === RelationsStatus.BUILDING) return { uuid: target, status, ...EMPTY };
 
   const rows = relationsDb()
-    .prepare("SELECT DISTINCT src, kind FROM links WHERE dst = ? ORDER BY kind ASC")
+    .prepare("SELECT DISTINCT src, kind FROM links WHERE dst = ?")
     .all(target) as { src: string; kind: LinkKinds }[];
 
   const seen = new Set<string>();
   const backlinks: RelatedItem[] = [];
-  rows.forEach(({ src, kind }) => {
+  rows.sort(byKindRank).forEach(({ src, kind }) => {
     const source = visible.get(src);
     if (!source || src === target || seen.has(src)) return;
     seen.add(src);
@@ -224,8 +234,9 @@ export const graphFor = (owner: string, visible: Map<string, VisibleItem>): Brai
   };
 
   rows.forEach((row) => {
-    if (row.kind === LinkKinds.MENTION && row.dst && visible.has(row.dst)) {
-      connect(row.src, row.dst, BrainEdgeKinds.MENTION, row.weight);
+    const hrefEdge = HREF_EDGES[row.kind];
+    if (hrefEdge) {
+      if (row.dst && visible.has(row.dst)) connect(row.src, row.dst, hrefEdge, row.weight);
       return;
     }
 

@@ -12,7 +12,7 @@ import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { getAllFileStats } from "@/app/_server/actions/file";
 import { rankClaims, warnClash } from "@/app/_server/actions/lib/uuid-keeper";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
-import { readLinks, titleKey } from "./parser";
+import { readLinks, titleKey, type LinkTarget } from "./parser";
 import { appOrigins, itemFileInfo, itemTreeRoots } from "./paths";
 import { searchableOf } from "./searchable";
 import {
@@ -29,6 +29,24 @@ const _tally = (keys: string[]): Map<string, number> => {
   const counts = new Map<string, number>();
   keys.forEach((key) => counts.set(key, (counts.get(key) || 0) + 1));
   return counts;
+};
+
+interface HrefLink {
+  dst: string;
+  kind: LinkKinds;
+  weight: number;
+}
+
+const _hrefLinks = (targets: LinkTarget[], self: string): HrefLink[] => {
+  const links = new Map<string, HrefLink>();
+  targets.forEach(({ uuid, kind }) => {
+    if (!uuid || uuid === self) return;
+    const key = `${kind}:${uuid}`;
+    const link = links.get(key);
+    if (link) link.weight++;
+    else links.set(key, { dst: uuid, kind, weight: 1 });
+  });
+  return Array.from(links.values());
 };
 
 const _prefixOf = (dir: string): string =>
@@ -168,11 +186,7 @@ export const indexItemFile = (
     ? null
     : searchableOf(info.type, parsed, content, absPath, metadata, origins);
 
-  const mentions = _tally(
-    parsed.targets
-      .map((target) => target.uuid)
-      .filter((dst): dst is string => Boolean(dst) && dst !== uuid),
-  );
+  const hrefs = _hrefLinks(parsed.targets, uuid);
   const wikiLabels = _wikiLabels(parsed.wikis);
   const wikis = _tally(parsed.wikis.map(titleKey).filter(Boolean));
   const rival = _rivalOf(uuid, absPath);
@@ -215,9 +229,7 @@ export const indexItemFile = (
     const insert = db.prepare(
       "INSERT INTO links (src, dst, dst_text, dst_label, kind, weight) VALUES (?, ?, ?, ?, ?, ?)",
     );
-    mentions.forEach((weight, dst) =>
-      insert.run(uuid, dst, null, null, LinkKinds.MENTION, weight),
-    );
+    hrefs.forEach(({ dst, kind, weight }) => insert.run(uuid, dst, null, null, kind, weight));
     wikis.forEach((weight, text) => {
       const dst = _resolveWiki(db, uuid, info.owner, text);
       insert.run(uuid, dst, text, wikiLabels.get(text) || text, LinkKinds.WIKI, weight);

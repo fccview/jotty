@@ -10,6 +10,7 @@ import {
   BRAIN_NODES_MAX,
   BrainEdgeKinds,
   BrainNodeKinds,
+  LINK_EDGE_KINDS,
   LinkKinds,
   LinkStyles,
   RelationsStatus,
@@ -27,7 +28,7 @@ import type {
   RelationsView,
   SuggestedItem,
 } from "@/app/_types/relations";
-import { backlinksFor, graphFor, visibleItems, type VisibleItem } from "./queries";
+import { backlinksFor, byKindRank, graphFor, visibleItems, type VisibleItem } from "./queries";
 import { freshRelations } from "./freshen";
 import { appOrigins } from "./paths";
 import { relationsDb } from "./store";
@@ -36,8 +37,6 @@ import { wrapMention } from "./tidy";
 export const LINKS_OFF = "Links are turned off on this instance";
 export const NOT_VISIBLE = "Not found";
 export const DENIED = "Permission denied";
-
-const LINKING = new Set<BrainEdgeKinds>([BrainEdgeKinds.WIKI, BrainEdgeKinds.MENTION]);
 
 export const linksEnabled = async (): Promise<boolean> => {
   const settings = await getSettings();
@@ -60,7 +59,7 @@ const _outgoing = (uuid: string, visible: Map<string, VisibleItem>) => {
   const links: RelatedItem[] = [];
   const unwritten = new Set<string>();
   const seen = new Set<string>();
-  rows.forEach((row) => {
+  rows.sort(byKindRank).forEach((row) => {
     if (!row.dst) {
       if (row.kind === LinkKinds.WIKI && row.dst_text) unwritten.add(row.dst_label || row.dst_text);
       return;
@@ -203,7 +202,7 @@ export const neighbourhoodFor = async (
   const empty = { status: graph.status, focus: centre, nodes: [], edges: [], total: 0, truncated: false };
   if (graph.status === RelationsStatus.BUILDING) return { success: true, data: empty };
 
-  const links = graph.edges.filter((edge) => LINKING.has(edge.kind));
+  const links = graph.edges.filter((edge) => LINK_EDGE_KINDS.has(edge.kind));
   const degrees = _linkDegrees(links);
   const byId = new Map(graph.nodes.map((node) => [node.id, node]));
   const distance = centre ? _ring(centre, links, Math.min(depth, BRAIN_DEPTH_MAX)) : null;
@@ -268,7 +267,7 @@ export const orphansFor = async (
 
   const connected = new Set<string>();
   graph.edges
-    .filter((edge) => LINKING.has(edge.kind) && visible.has(edge.source) && visible.has(edge.target))
+    .filter((edge) => LINK_EDGE_KINDS.has(edge.kind) && visible.has(edge.source) && visible.has(edge.target))
     .forEach((edge) => {
       connected.add(edge.source);
       connected.add(edge.target);

@@ -2,18 +2,23 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import { SKIP, visit } from "unist-util-visit";
-import type { Nodes, Root } from "mdast";
-import { WIKILINK_REGEX } from "@/app/_consts/relations";
+import type { Nodes, Parents, Root } from "mdast";
+import { LinkKinds, WIKILINK_REGEX } from "@/app/_consts/relations";
 import { ItemHrefTarget, parseItemHref } from "@/app/_utils/item-href-utils";
 
+export interface LinkTarget extends ItemHrefTarget {
+  kind: LinkKinds;
+}
+
 export interface ParsedLinks {
-  targets: ItemHrefTarget[];
+  targets: LinkTarget[];
   wikis: string[];
   text: string;
   readable: string;
 }
 
 const HTML_HREF_REGEX = /data-href="([^"]+)"/g;
+const BLOCKS = new Set<string>(["paragraph", "heading", "tableCell"]);
 
 const processor = unified().use(remarkParse).use(remarkGfm);
 
@@ -33,8 +38,24 @@ const _wikis = (text: string): string[] =>
     Boolean,
   );
 
+const _lineage = (node: Nodes, parents: Map<Nodes, Parents>): Parents[] => {
+  const line: Parents[] = [];
+  for (let up = parents.get(node); up; up = parents.get(up)) line.push(up);
+  return line;
+};
+
+const _kindOf = (node: Nodes, parents: Map<Nodes, Parents>): LinkKinds => {
+  const line = _lineage(node, parents);
+  const task = line.find((up) => up.type === "listItem");
+  if (task?.type === "listItem" && typeof task.checked === "boolean") return LinkKinds.CHECKLIST;
+
+  const block = line.find((up) => BLOCKS.has(up.type));
+  if (!block) return LinkKinds.LINK;
+  return _squash([_plain(block)]) === _squash([_plain(node)]) ? LinkKinds.LINK : LinkKinds.MENTION;
+};
+
 export const readLinks = (markdown: string, origins: string[] = []): ParsedLinks => {
-  const targets: ItemHrefTarget[] = [];
+  const targets: LinkTarget[] = [];
   const wikis: string[] = [];
   const prose: string[] = [];
   const readable: string[] = [];
@@ -49,26 +70,28 @@ export const readLinks = (markdown: string, origins: string[] = []): ParsedLinks
     return empty;
   }
 
-  const addHref = (href: string) => {
+  const parents = new Map<Nodes, Parents>();
+  const addHref = (href: string, node: Nodes) => {
     const target = parseItemHref(href, origins);
-    if (target) targets.push(target);
+    if (target) targets.push({ ...target, kind: _kindOf(node, parents) });
   };
 
-  visit(tree, (node) => {
+  visit(tree, (node, _index, parent) => {
+    if (parent) parents.set(node, parent);
     if (node.type === "link") {
-      addHref(node.url);
+      addHref(node.url, node);
       readable.push(_plain(node));
       return SKIP;
     }
     if (node.type === "linkReference") return SKIP;
     if (node.type === "definition") {
-      addHref(node.url);
+      addHref(node.url, node);
     } else if (node.type === "text") {
       wikis.push(..._wikis(node.value));
       prose.push(node.value.replace(WIKILINK_REGEX, " "));
       readable.push(node.value.replace(WIKILINK_REGEX, (_, target, shown) => shown || target));
     } else if (node.type === "html") {
-      Array.from(node.value.matchAll(HTML_HREF_REGEX), (match) => addHref(match[1]));
+      Array.from(node.value.matchAll(HTML_HREF_REGEX), (match) => addHref(match[1], node));
     }
   });
 

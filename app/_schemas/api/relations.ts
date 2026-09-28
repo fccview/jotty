@@ -17,6 +17,9 @@ import { pageFields, required, totalField, uuidParam } from "./common";
 
 const ORPHANS_DEFAULT = 25;
 
+export const LINK_KINDS_TEXT =
+  "kind says how the link is written. link is a [Title](/note/uuid) link standing on its own line, like the ones connect_items appends. mention is that same link inside a sentence, like connect_items style=mention makes. checklist is a link inside a checklist item or a - [ ] task. wiki is a [[Title]] link";
+
 const statusField = z
   .enum(RelationsStatus)
   .describe("building while Jotty indexes links on first start, when every list comes back empty");
@@ -34,9 +37,7 @@ export const linkedItemSchema = z
 const relatedItemSchema = linkedItemSchema.extend({
   kind: z
     .enum(LinkKinds)
-    .describe(
-      "mention for any [Title](/note/uuid) markdown link, inline or on its own line, including the ones connect_items adds. wiki for a [[Title]] link",
-    ),
+    .describe(`${LINK_KINDS_TEXT}. When one item links another in several ways, the first of mention, link, checklist, wiki wins`),
 });
 
 export const relatedParams = uuidParam("itemId", "Note or checklist");
@@ -111,7 +112,9 @@ export const brainSchema = z
       z.object({
         source: z.string(),
         target: z.string(),
-        kind: z.enum(BrainEdgeKinds),
+        kind: z
+          .enum(BrainEdgeKinds)
+          .describe(`${LINK_KINDS_TEXT}. suggested is a likely link Jotty found. Two items linked in several ways get an edge per kind`),
         weight: z.number().describe("How many times source links to target, or the suggestion score"),
       }),
     ),

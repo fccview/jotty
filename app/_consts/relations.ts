@@ -1,13 +1,22 @@
 export const RELATIONS_DB_NAME = ".relations.db";
-export const RELATIONS_SCHEMA_VERSION = 5;
+export const RELATIONS_SCHEMA_VERSION = 6;
 export const LEGACY_LINK_PREFIX = "/jotty/";
 export const WIKILINK_REGEX =
   /\[\[([^\[\]|#^\n]+)(?:[#^][^\[\]|\n]*)?(?:\|([^\[\]\n]*))?\]\]/g;
 
 export enum LinkKinds {
+  LINK = "link",
   MENTION = "mention",
+  CHECKLIST = "checklist",
   WIKI = "wiki",
 }
+
+export const LINK_KIND_RANK: LinkKinds[] = [
+  LinkKinds.MENTION,
+  LinkKinds.LINK,
+  LinkKinds.CHECKLIST,
+  LinkKinds.WIKI,
+];
 
 export enum RelationsStatus {
   BUILDING = "building",
@@ -22,11 +31,20 @@ export enum BrainNodeKinds {
 }
 
 export enum BrainEdgeKinds {
+  LINK = "link",
   MENTION = "mention",
+  CHECKLIST = "checklist",
   WIKI = "wiki",
   TAG = "tag",
   SUGGESTED = "suggested",
 }
+
+export const LINK_EDGE_KINDS = new Set<BrainEdgeKinds>([
+  BrainEdgeKinds.LINK,
+  BrainEdgeKinds.MENTION,
+  BrainEdgeKinds.CHECKLIST,
+  BrainEdgeKinds.WIKI,
+]);
 
 export const MENTION_MIN_TITLE = 3;
 export const MENTION_LIMIT = 30;

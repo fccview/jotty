@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { BrainEdgeKinds, BrainNodeKinds } from "@/app/_consts/relations";
+import { BrainEdgeKinds, BrainNodeKinds, LINK_EDGE_KINDS } from "@/app/_consts/relations";
 import type { BrainGraph } from "@/app/_types/relations";
 import { BrainPalette, edgeColour } from "../utils/brain-graph";
 
@@ -13,7 +13,9 @@ interface BrainLegendProps {
 }
 
 const SWATCHES = [
+  BrainEdgeKinds.LINK,
   BrainEdgeKinds.MENTION,
+  BrainEdgeKinds.CHECKLIST,
   BrainEdgeKinds.WIKI,
   BrainEdgeKinds.SUGGESTED,
   BrainEdgeKinds.TAG,
@@ -26,10 +28,7 @@ export const BrainLegend = ({ graph, palette, shown, owner }: BrainLegendProps) 
       node.kind === BrainNodeKinds.NOTE ||
       node.kind === BrainNodeKinds.CHECKLIST,
   ).length;
-  const links = graph.edges.filter(
-    (edge) =>
-      edge.kind === BrainEdgeKinds.MENTION || edge.kind === BrainEdgeKinds.WIKI,
-  ).length;
+  const links = graph.edges.filter((edge) => LINK_EDGE_KINDS.has(edge.kind)).length;
 
   return (
     <div className="pointer-events-none absolute bottom-3 left-3 z-10 hidden rounded-jotty border border-border bg-card px-3 py-2 text-md lg:block lg:text-xs text-muted-foreground">
