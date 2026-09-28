@@ -148,6 +148,10 @@ export async function generateViewport(): Promise<Viewport> {
   };
 }
 
+/**
+ * Load session, settings and initial item data for the application providers.
+ * Render the shared document shell while omitting private item lists on public routes.
+ */
 export default async function RootLayout({
   children,
 }: {

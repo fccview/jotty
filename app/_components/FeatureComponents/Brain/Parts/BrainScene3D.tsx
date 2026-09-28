@@ -61,6 +61,10 @@ const LABEL_GAP_PX = 4;
 const noLabel = () => "";
 const orbitProps = { controlType: "orbit" } as Record<string, unknown>;
 
+/**
+ * Render an interactive 3D graph of items and their relationships.
+ * Manage camera movement, node highlighting and labels, and release scene resources on cleanup.
+ */
 export default function BrainScene3D({
   nodes,
   edges,

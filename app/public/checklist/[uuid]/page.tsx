@@ -32,6 +32,10 @@ export async function generateMetadata(
   return getMedatadaTitle(Modes.CHECKLISTS, params.uuid);
 }
 
+/**
+ * Render a publicly shared checklist, or its owner's preview, with sanitized owner details.
+ * Respect the owner's emoji preference and redirect home when the checklist is unavailable.
+ */
 export default async function PublicChecklistPage(
   props: PublicChecklistPageProps,
 ) {

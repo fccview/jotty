@@ -58,6 +58,10 @@ const _overlaps = (a: Box, b: Box) =>
 const _clip = (title: string) =>
   title.length > LABEL_MAX_CHARS ? `${title.slice(0, LABEL_MAX_CHARS - 1)}…` : title;
 
+/**
+ * Render an interactive 2D graph of items and their relationships.
+ * Apply focus, selection and palette settings, and report node selections and opens.
+ */
 export default function BrainCanvas2D({
   nodes,
   edges,

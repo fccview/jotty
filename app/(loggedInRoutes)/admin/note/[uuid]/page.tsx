@@ -26,6 +26,10 @@ export async function generateMetadata(props: AdminNotePageProps): Promise<Metad
   return getMedatadaTitle(Modes.NOTES, uuid);
 }
 
+/**
+ * Render a note with metadata and relations for a user with access to all content.
+ * Run legacy note migration first and redirect home if access or loading fails.
+ */
 export default async function AdminNotePage(props: AdminNotePageProps) {
   const params = await props.params;
   const { uuid } = params;

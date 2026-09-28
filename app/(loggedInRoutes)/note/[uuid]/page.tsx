@@ -31,6 +31,10 @@ export async function generateMetadata(props: NotePageProps): Promise<Metadata> 
   return getMedatadaTitle(Modes.NOTES, params.uuid);
 }
 
+/**
+ * Resolve a note for the signed-in user and load its categories and relations.
+ * Migrate legacy notes, redirect old slugs to UUID URLs, and redirect home if unavailable.
+ */
 export default async function NotePage(props: NotePageProps) {
   const params = await props.params;
   const { uuid } = params;

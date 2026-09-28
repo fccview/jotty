@@ -28,6 +28,10 @@ export async function generateMetadata(props: AdminChecklistPageProps): Promise<
   return getMedatadaTitle(Modes.CHECKLISTS, uuid);
 }
 
+/**
+ * Render a checklist with metadata and relations for a user with access to all content.
+ * Redirect home when access is denied or the checklist cannot be loaded.
+ */
 export default async function AdminChecklistPage(props: AdminChecklistPageProps) {
   const params = await props.params;
   const { uuid } = params;

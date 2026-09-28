@@ -27,6 +27,10 @@ export async function generateMetadata(props: ChecklistPageProps): Promise<Metad
   return getMedatadaTitle(Modes.CHECKLISTS, params.uuid);
 }
 
+/**
+ * Resolve a checklist for the signed-in user and load its categories and relations.
+ * Redirect legacy slugs to UUID URLs and unavailable checklists to the home page.
+ */
 export default async function ChecklistPage(props: ChecklistPageProps) {
   const params = await props.params;
   const { uuid } = params;

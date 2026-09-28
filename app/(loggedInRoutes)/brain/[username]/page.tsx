@@ -6,11 +6,18 @@ import { BrainPage } from "@/app/_components/FeatureComponents/Brain/server/Brai
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Return the localized Brain title for the browser tab.
+ */
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("brain");
   return { title: t("title") };
 }
 
+/**
+ * Render the Brain for the decoded username from the route.
+ * Pass the optional focus query parameter to the shared Brain page.
+ */
 export default async function UserBrainPage(props: {
   params: Promise<{ username: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
