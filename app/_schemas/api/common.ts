@@ -29,6 +29,26 @@ export const searchQuery = z
   .optional()
   .describe("Case-insensitive text filter");
 
+export enum ListView {
+  FULL = "full",
+  SUMMARY = "summary",
+}
+
+export const pageFields = {
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .describe("Most results to return, all when left out"),
+  offset: z.coerce.number().int().min(0).default(0).describe("How many results to skip"),
+};
+
+export const page = <T>(rows: T[], { limit, offset }: { limit?: number; offset: number }): T[] =>
+  rows.slice(offset, limit === undefined ? undefined : offset + limit);
+
+export const totalField = z.number().optional().describe("Matching results before limit and offset");
+
 export const uuidParam = (name: string, label: string) =>
   z.object({ [name]: z.string().describe(`${label} uuid`) });
 

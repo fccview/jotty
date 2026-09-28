@@ -8,7 +8,7 @@ import { kanbanStatusSchema } from "@/app/_schemas/api/items";
 import { statusCreateBody, taskParams } from "@/app/_schemas/api/tasks";
 import { KanbanStatus } from "@/app/_types";
 import { PermissionTypes } from "@/app/_types/enums";
-import { API_FALLBACK_STATUSES } from "@/app/_consts/kanban";
+import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { turnAway } from "@/app/_utils/api-utils";
 import { fetchTask } from "@/app/_utils/api-task";
 
@@ -35,7 +35,7 @@ export const GET = defineRoute(
     const found = await fetchTask(request, params.taskId, user.username);
     if ("refusal" in found) return found.refusal;
 
-    return NextResponse.json({ statuses: found.task.statuses || API_FALLBACK_STATUSES });
+    return NextResponse.json({ statuses: found.task.statuses || DEFAULT_KANBAN_STATUSES });
   },
 );
 
@@ -63,7 +63,7 @@ export const POST = defineRoute(
     if ("refusal" in found) return found.refusal;
     const { task } = found;
 
-    const current = task.statuses || API_FALLBACK_STATUSES;
+    const current = task.statuses || DEFAULT_KANBAN_STATUSES;
     if (current.some((status) => status.id === body.id)) {
       return refuse("Status with this id already exists", 400);
     }
@@ -80,7 +80,7 @@ export const POST = defineRoute(
     if (refused) return refused;
 
     const result = await restatus(user, task.uuid!, (latest) => {
-      const fresh = latest || API_FALLBACK_STATUSES;
+      const fresh = latest || DEFAULT_KANBAN_STATUSES;
       return fresh.some((status) => status.id === body.id) ? fresh : [...fresh, created];
     });
     if (!result.success) {

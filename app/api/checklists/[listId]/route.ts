@@ -8,6 +8,7 @@ import { ERRORS, envelope, okSchema } from "@/app/_schemas/api/common";
 import { checklistSchema, checklistUpdateBody, listParams } from "@/app/_schemas/api/checklists";
 import { ChecklistsTypes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { toApiChecklist } from "@/app/_utils/api-checklist";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,30 @@ const _visibleList = async (request: NextRequest, listId: string, username: stri
   const uuid = await listUuid(request, listId, username);
   return uuid ? getListById(uuid, username) : undefined;
 };
+
+export const GET = defineRoute(
+  {
+    id: "getChecklist",
+    method: HttpMethod.GET,
+    path: "/checklists/{listId}",
+    tag: ApiTag.CHECKLISTS,
+    summary: "Get a checklist",
+    description: "One checklist with its items, including ones shared with the API key owner. Each item carries the index the item routes take.",
+    params: listParams,
+    responses: {
+      200: { description: "The checklist", schema: envelope(checklistSchema) },
+      401: ERRORS[401],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ request, user, params }) => {
+    const list = await _visibleList(request, params.listId, user.username);
+    if (!list) return refuse(NOT_FOUND, 404);
+
+    return NextResponse.json({ success: true, data: toApiChecklist(list) });
+  },
+);
 
 export const PUT = defineRoute(
   {

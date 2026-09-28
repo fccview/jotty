@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { ChecklistsTypes, DropPosition, KanbanPriorityLevel } from "@/app/_types/enums";
-import { categoryField, required, searchQuery, timestamp, uuidParam } from "./common";
+import { ListView, categoryField, pageFields, required, searchQuery, timestamp, uuidParam } from "./common";
 import { apiItemSchema, checklistTypeSchema, itemIndexParam, timeEntrySchema } from "./items";
 
 const TYPE_REFUSAL = "Type must be 'simple' or 'kanban'";
@@ -25,6 +25,8 @@ export const checklistSchema = z
     owner: z.string().optional(),
     isShared: z.boolean().optional().describe("True when another user shared it with you"),
     items: z.array(apiItemSchema).optional(),
+    itemCount: z.number().optional().describe("Top-level items, in the summary view"),
+    completedCount: z.number().optional().describe("Completed top-level items, in the summary view"),
     createdAt: timestamp.optional(),
     updatedAt: timestamp.optional(),
   })
@@ -37,6 +39,11 @@ export const checklistListQuery = z.object({
     .optional()
     .describe("Only checklists of this type, matched exactly: 'simple', 'kanban' or the legacy 'task'"),
   q: searchQuery.describe("Case-insensitive match on the title or any top-level item text"),
+  view: z
+    .enum(ListView)
+    .default(ListView.FULL)
+    .describe("full returns every item, summary returns item counts instead"),
+  ...pageFields,
 });
 
 export const checklistCreateBody = z.object({
@@ -94,9 +101,11 @@ export const itemReorderBody = z.object({
 export const itemCreatedSchema = z.object({
   success: z.literal(true),
   data: z
-    .object({ id: z.string().optional().describe("Id of the new item") })
-    .optional()
-    .describe("Left out when the item was added under a parent"),
+    .object({
+      id: z.string().optional().describe("Id of the new item"),
+      index: z.string().optional().describe("Tree index of the new item, for the item routes"),
+    })
+    .optional(),
 });
 
 export const listParams = uuidParam("listId", "Checklist");

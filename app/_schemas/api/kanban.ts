@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
-import { categoryField, errorSchema, required, searchQuery, timestamp, uuidParam } from "./common";
+import { categoryField, envelope, errorSchema, required, searchQuery, timestamp, uuidParam } from "./common";
 import {
   checklistTypeSchema,
   kanbanStatusSchema,
@@ -115,6 +115,10 @@ export const storedBoardSchema = z
   })
   .describe("The whole board as stored after the change, unlike the trimmed KanbanBoard. Other stored fields may appear.")
   .register(apiNames, { id: "KanbanStoredBoard" });
+
+export const cardChangedSchema = envelope(storedBoardSchema).extend({
+  item: storedCardSchema.optional().describe("The changed card on its own, so you don't have to find it in the board"),
+});
 
 export const calendarEventSchema = z
   .object({

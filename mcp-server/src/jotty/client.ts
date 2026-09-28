@@ -4,7 +4,7 @@ import { withDeadline } from "../utils/timeout.ts";
 
 const LOG_NS = "jotty";
 const API_PREFIX = "/api";
-const API_KEY_HEADER = "x-api-key";
+export const API_KEY_HEADER = "x-api-key";
 const JSON_TYPE = "application/json";
 
 export class JottyError extends Error {
@@ -45,7 +45,14 @@ const _url = (baseUrl: string, path: string, query?: Record<string, string>): st
   return url.toString();
 };
 
+const READABLE_MEDIA = /json|yaml|^text\/|^$/;
+
 const _decode = async (response: Response): Promise<unknown> => {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!READABLE_MEDIA.test(contentType.split(";")[0] ?? "")) {
+    await response.body?.cancel();
+    return { binary: true, contentType, bytes: Number(response.headers.get("content-length")) || undefined };
+  }
   const text = await response.text();
   if (!text) return null;
   try {

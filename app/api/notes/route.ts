@@ -4,7 +4,8 @@ import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { makeNote } from "@/app/_server/actions/note/creator";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, envelope } from "@/app/_schemas/api/common";
+import { ERRORS, envelope, page, totalField } from "@/app/_schemas/api/common";
+import { toApiNote } from "@/app/_utils/api-note";
 import { noteCreateBody, noteListQuery, noteSchema } from "@/app/_schemas/api/notes";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 
@@ -17,10 +18,10 @@ export const GET = defineRoute(
     path: "/notes",
     tag: ApiTag.NOTES,
     summary: "List notes",
-    description: "Every note the API key owner can read, including shared ones.",
+    description: "Every note the API key owner can read, including shared ones. Use view=summary with limit and offset to page through titles and excerpts without loading every note's content.",
     query: noteListQuery,
     responses: {
-      200: { description: "Notes", schema: z.object({ notes: z.array(noteSchema) }) },
+      200: { description: "Notes", schema: z.object({ notes: z.array(noteSchema), total: totalField }) },
       401: ERRORS[401],
       500: ERRORS[500],
     },
@@ -41,14 +42,8 @@ export const GET = defineRoute(
     );
 
     return NextResponse.json({
-      notes: matches.map((note) => ({
-        id: note.uuid,
-        title: note.title,
-        category: note.category || UNCATEGORIZED,
-        content: note.content,
-        createdAt: note.createdAt,
-        updatedAt: note.updatedAt,
-      })),
+      notes: page(matches, query).map((note) => toApiNote(note, query.view)),
+      total: matches.length,
     });
   },
 );

@@ -33,7 +33,7 @@ services:
     depends_on:
       - jotty
     ports:
-      - "3001:3001"
+      - "1133:3001"
     networks: [jotty-net]
     restart: unless-stopped
     environment:

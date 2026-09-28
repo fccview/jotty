@@ -248,6 +248,47 @@ describe('Security: kanban API routes hold every share grant', () => {
     })
   })
 
+  describe('assigning through a card update', () => {
+    beforeEach(() => keyFor(OWNER))
+
+    it.each([
+      ['a user that does not exist', 'ghost', "Assignee not found"],
+      ['a user who cannot see the board', STRANGER, "Assignee can't see this board"],
+      ['a name that walks out of the notifications folder', '../users/owner', "Assignee not found"],
+    ])('refuses %s and writes nothing', async (_label, assignee, message) => {
+      const { PUT } = await import('@/app/api/kanban/[boardId]/items/[itemId]/route')
+
+      const response = await PUT(apiRequest('PUT', `${BASE}/items/card`, { assignee }), onCard())
+
+      expect(response.status).toBe(400)
+      expect((await response.json()).error).toBe(message)
+      expect(mockWrite).not.toHaveBeenCalled()
+    })
+
+    it('still assigns someone who can see the board', async () => {
+      const { PUT } = await import('@/app/api/kanban/[boardId]/items/[itemId]/route')
+
+      const response = await PUT(apiRequest('PUT', `${BASE}/items/card`, { assignee: READER }), onCard())
+
+      expect(response.status).toBe(200)
+      expect(mockWrite).toHaveBeenCalled()
+    })
+  })
+
+  describe('moving a card to a column the board does not have', () => {
+    beforeEach(() => keyFor(OWNER))
+
+    it('answers 400 and writes nothing', async () => {
+      const { PUT } = await import('@/app/api/kanban/[boardId]/items/[itemId]/status/route')
+
+      const response = await PUT(apiRequest('PUT', `${BASE}/items/card/status`, { status: 'nowhere' }), onCard())
+
+      expect(response.status).toBe(400)
+      expect((await response.json()).error).toBe('Status not found on this board')
+      expect(mockWrite).not.toHaveBeenCalled()
+    })
+  })
+
   describe('an unknown card', () => {
     beforeEach(() => keyFor(OWNER))
 

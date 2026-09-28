@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
-import { categoryField, required, searchQuery, timestamp, uuidParam } from "./common";
+import { ListView, categoryField, pageFields, required, searchQuery, timestamp, uuidParam } from "./common";
 
 export const noteSchema = z
   .object({
@@ -8,6 +8,8 @@ export const noteSchema = z
     title: z.string(),
     category: z.string(),
     content: z.string().optional(),
+    excerpt: z.string().optional().describe("Plain-text start of the content, in the summary view. Left out for encrypted notes"),
+    encrypted: z.boolean().optional().describe("The content is ciphertext and can't be read without the passphrase or key"),
     owner: z.string().optional(),
     createdAt: timestamp.optional(),
     updatedAt: timestamp.optional(),
@@ -17,6 +19,11 @@ export const noteSchema = z
 export const noteListQuery = z.object({
   category: z.string().optional().describe("Only notes in this folder"),
   q: searchQuery,
+  view: z
+    .enum(ListView)
+    .default(ListView.FULL)
+    .describe("full returns each note's content, summary returns an excerpt instead"),
+  ...pageFields,
 });
 
 export const noteCreateBody = z.object({

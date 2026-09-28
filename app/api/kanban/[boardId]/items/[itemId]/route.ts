@@ -4,9 +4,9 @@ import { removeItem } from "@/app/_server/actions/checklist-item/remover";
 import { editItem } from "@/app/_server/actions/checklist-item/editor";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, envelope, okSchema } from "@/app/_schemas/api/common";
-import { BOARD_REFUSED, cardParams, cardUpdateBody, storedBoardSchema } from "@/app/_schemas/api/kanban";
-import { boardFor } from "@/app/_utils/kanban/api-board";
+import { ERRORS, okSchema } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, cardParams, cardUpdateBody, cardChangedSchema } from "@/app/_schemas/api/kanban";
+import { boardFor, cardChanged } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,7 @@ export const PUT = defineRoute(
     params: cardParams,
     body: cardUpdateBody,
     responses: {
-      200: { description: "The board after the change", schema: envelope(storedBoardSchema) },
+      200: { description: "The board after the change", schema: cardChangedSchema },
       400: BOARD_REFUSED,
       401: ERRORS[401],
       403: ERRORS[403],
@@ -44,7 +44,7 @@ export const PUT = defineRoute(
     const result = await editItem(user, board, formData);
     if (!result.success) return refuse(result.error || "Failed to update item", 400);
 
-    return NextResponse.json({ success: true, data: result.data });
+    return cardChanged(result.data, params.itemId);
   },
 );
 
@@ -55,7 +55,7 @@ export const DELETE = defineRoute(
     path: "/kanban/{boardId}/items/{itemId}",
     tag: ApiTag.KANBAN,
     summary: "Delete a card",
-    description: "Removes the card and its sub-cards. Needs delete permission on the board. Edit alone is refused with 400. An unknown card id succeeds without changing anything.",
+    description: "Removes the card and its sub-cards. Needs delete permission on the board.",
     params: cardParams,
     responses: {
       200: { description: "Deleted", schema: okSchema },

@@ -25,6 +25,24 @@ export const itemAt = (items: Item[], [head, ...rest]: number[]): Item | undefin
   return itemAt(item.children || [], rest);
 };
 
+export const indexOf = (items: Item[], id: string): string | undefined => {
+  for (let position = 0; position < items.length; position++) {
+    const item = items[position];
+    if (item.id === id) return String(position);
+    const nested = item.children ? indexOf(item.children, id) : undefined;
+    if (nested !== undefined) return `${position}.${nested}`;
+  }
+  return undefined;
+};
+
+const _ids = (items: Item[]): string[] =>
+  items.flatMap((item) => [item.id, ..._ids(item.children || [])]);
+
+export const newcomerIn = (before: Item[], after: Item[]): string | undefined => {
+  const known = new Set(_ids(before));
+  return _ids(after).find((id) => !known.has(id));
+};
+
 export const itemAtIndex = (items: Item[], raw: string): { item: Item; index: number } | null => {
   const path = indexPath(raw);
   const item = path ? itemAt(items, path) : undefined;

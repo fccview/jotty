@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { Checklist, KanbanStatus } from "@/app/_types";
 import { PermissionTypes, isKanbanType } from "@/app/_types/enums";
-import { API_FALLBACK_STATUSES } from "@/app/_consts/kanban";
+import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { getListById } from "@/app/_server/actions/checklist/queries";
 import { refuse } from "@/app/_server/api/define-route";
@@ -15,8 +15,8 @@ export type TaskStatusView = KanbanStatus & { name?: string };
 
 export type TaskLookup = { task: Checklist } | { refusal: Response };
 
-export const LEGACY_TASK_STATUSES: TaskStatusView[] = API_FALLBACK_STATUSES.map(
-  (status) => ({ id: status.id, name: status.label, label: status.label, order: status.order }),
+export const LEGACY_TASK_STATUSES: TaskStatusView[] = DEFAULT_KANBAN_STATUSES.map(
+  (status) => ({ ...status, name: status.label }),
 );
 
 export const taskStatuses = (list?: Pick<Checklist, "statuses">): TaskStatusView[] =>

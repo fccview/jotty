@@ -30,6 +30,7 @@ export interface SpecOperation {
   security?: unknown[];
   parameters?: SpecParameter[];
   requestBody?: { content: Record<string, { schema: JsonSchema }> };
+  responses?: Record<string, { content?: Record<string, unknown> }>;
 }
 
 export interface OpenApiDocument {
@@ -42,3 +43,11 @@ export interface Operation extends SpecOperation {
   method: string;
   path: string;
 }
+
+const READABLE_MEDIA = /json|yaml|^text\//;
+const SUCCESS = "200";
+
+export const binaryMediaOf = (op: SpecOperation): string | undefined => {
+  const media = Object.keys(op.responses?.[SUCCESS]?.content ?? {});
+  return media.length && !media.some((type) => READABLE_MEDIA.test(type)) ? media[0] : undefined;
+};

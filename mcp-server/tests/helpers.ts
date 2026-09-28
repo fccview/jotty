@@ -22,6 +22,8 @@ export interface FakeJotty {
 }
 
 const NOTE = { id: "n-1", title: "Milk", category: "Uncategorized", content: "" };
+const CARD = { id: "c-1", text: "Write tests", status: "todo" };
+const MANY_NOTES = Array.from({ length: 30 }, (_, n) => ({ ...NOTE, id: `n-${n}`, content: "x".repeat(50) }));
 
 export const FAKE_SPEC: OpenApiDocument = {
   info: { title: "Jotty API", version: "9.9.9" },
@@ -31,7 +33,11 @@ export const FAKE_SPEC: OpenApiDocument = {
         operationId: "listNotes",
         summary: "List notes",
         tags: ["Notes"],
-        parameters: [{ name: "q", in: "query" as never, required: false, schema: { type: "string" } }],
+        parameters: [
+          { name: "q", in: "query" as never, required: false, schema: { type: "string" } },
+          { name: "view", in: "query" as never, required: false, schema: { type: "string", default: "full" } },
+          { name: "limit", in: "query" as never, required: false, schema: { type: "integer" } },
+        ],
       },
       post: {
         operationId: "createNote",
@@ -58,6 +64,27 @@ export const FAKE_SPEC: OpenApiDocument = {
         summary: "Delete a note",
         tags: ["Notes"],
         parameters: [{ name: "noteId", in: "path" as never, required: true, schema: { type: "string" } }],
+      },
+    },
+    "/exports/{filename}": {
+      get: {
+        operationId: "downloadExport",
+        summary: "Download an export",
+        tags: ["Exports"],
+        parameters: [{ name: "filename", in: "path" as never, required: true, schema: { type: "string" } }],
+        responses: { "200": { content: { "application/zip": {} } } },
+      },
+    },
+    "/kanban/{boardId}/items/{itemId}": {
+      put: {
+        operationId: "updateBoardItem",
+        summary: "Update a card",
+        tags: ["Kanban"],
+        parameters: [
+          { name: "boardId", in: "path" as never, required: true, schema: { type: "string" } },
+          { name: "itemId", in: "path" as never, required: true, schema: { type: "string" } },
+        ],
+        requestBody: { content: { "application/json": { schema: { type: "object", properties: { text: { type: "string" } } } } } },
       },
     },
     "/tasks/{taskId}/statuses": {
@@ -94,7 +121,13 @@ export const serveJotty = (spec: OpenApiDocument = FAKE_SPEC): FakeJotty => {
       if (url.pathname === "/api/health") return _json({ status: "healthy", version: spec.info.version });
       if (apiKey !== API_KEY) return _json({ error: "Unauthorized" }, 401);
       if (url.pathname === "/api/openapi.json") return _json(spec);
+      if (url.pathname === "/api/notes" && url.searchParams.get("q") === "many") {
+        return _json({ notes: MANY_NOTES, total: MANY_NOTES.length });
+      }
       if (url.pathname === "/api/notes") return _json(request.method === "GET" ? { notes: [NOTE] } : { success: true, data: NOTE });
+      if (url.pathname.startsWith("/api/kanban/")) {
+        return _json({ success: true, data: { uuid: "b-1", items: [CARD, { ...CARD, id: "c-2" }] }, item: CARD });
+      }
       if (url.pathname === "/api/notes/n-1") return _json({ success: true, data: NOTE });
       if (url.pathname.startsWith("/api/notes/")) return _json({ error: "Note not found" }, 404);
       return _json({ success: true });
@@ -105,6 +138,7 @@ export const serveJotty = (spec: OpenApiDocument = FAKE_SPEC): FakeJotty => {
 
 export const makeConfig = (url: string, overrides: Partial<McpConfig["jotty"]> = {}): McpConfig => ({
   ...DEFAULT_CONFIG,
+  output: { ...DEFAULT_CONFIG.output },
   jotty: { ...DEFAULT_CONFIG.jotty, url, apiKey: API_KEY, ...overrides },
 });
 

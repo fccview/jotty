@@ -28,8 +28,7 @@ export const DEFAULT_KANBAN_STATUSES: KanbanStatus[] = [
   },
 ];
 
-export const API_FALLBACK_STATUSES: KanbanStatus[] = [
-  { id: TaskStatus.TODO, label: TaskStatusLabels.TODO, order: 0 },
-  { id: TaskStatus.IN_PROGRESS, label: TaskStatusLabels.IN_PROGRESS, order: 1 },
-  { id: TaskStatus.COMPLETED, label: TaskStatusLabels.COMPLETED, order: 2 },
-];
+export const UNKNOWN_STATUS = "Status not found on this board";
+
+export const boardColumns = (statuses?: KanbanStatus[]): KanbanStatus[] =>
+  statuses?.length ? statuses : DEFAULT_KANBAN_STATUSES;

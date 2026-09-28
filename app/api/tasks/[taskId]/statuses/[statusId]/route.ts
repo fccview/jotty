@@ -6,7 +6,7 @@ import { ERRORS, envelope, okSchema } from "@/app/_schemas/api/common";
 import { kanbanStatusSchema } from "@/app/_schemas/api/items";
 import { statusUpdateBody, taskStatusParams } from "@/app/_schemas/api/tasks";
 import { PermissionTypes } from "@/app/_types/enums";
-import { API_FALLBACK_STATUSES } from "@/app/_consts/kanban";
+import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { turnAway } from "@/app/_utils/api-utils";
 import { fetchTask } from "@/app/_utils/api-task";
 
@@ -38,7 +38,7 @@ export const PUT = defineRoute(
     if ("refusal" in found) return found.refusal;
     const { task } = found;
 
-    const current = task.statuses || API_FALLBACK_STATUSES;
+    const current = task.statuses || DEFAULT_KANBAN_STATUSES;
     if (!current.some((status) => status.id === params.statusId)) {
       return refuse(STATUS_NOT_FOUND, 404);
     }
@@ -47,7 +47,7 @@ export const PUT = defineRoute(
     if (refused) return refused;
 
     const result = await restatus(user, task.uuid!, (latest) =>
-      (latest || API_FALLBACK_STATUSES).map((status) =>
+      (latest || DEFAULT_KANBAN_STATUSES).map((status) =>
         status.id === params.statusId
           ? {
               ...status,
@@ -93,7 +93,7 @@ export const DELETE = defineRoute(
     if ("refusal" in found) return found.refusal;
     const { task } = found;
 
-    const current = task.statuses || API_FALLBACK_STATUSES;
+    const current = task.statuses || DEFAULT_KANBAN_STATUSES;
     if (!current.some((status) => status.id === params.statusId)) {
       return refuse(STATUS_NOT_FOUND, 404);
     }
@@ -102,7 +102,7 @@ export const DELETE = defineRoute(
     if (refused) return refused;
 
     const result = await restatus(user, task.uuid!, (latest) =>
-      (latest || API_FALLBACK_STATUSES).filter((status) => status.id !== params.statusId),
+      (latest || DEFAULT_KANBAN_STATUSES).filter((status) => status.id !== params.statusId),
     );
     if (!result.success) {
       return refuse(result.error || "Failed to delete status", 500);

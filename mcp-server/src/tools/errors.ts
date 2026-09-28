@@ -29,7 +29,7 @@ const HINTS: Partial<Record<ToolErrorKind, string>> = {
   [ToolErrorKind.Input]: "Check the arguments against the tool's input schema.",
   [ToolErrorKind.Auth]: "The Jotty API key is missing or wrong. Check JOTTY_API_KEY or the x-api-key header.",
   [ToolErrorKind.Forbidden]: "The API key owner doesn't hold the permission for that action on that item.",
-  [ToolErrorKind.NotFound]: "Nothing with that id is visible to the API key owner. List first to get a valid id.",
+  [ToolErrorKind.NotFound]: "It doesn't exist or the API key owner can't see it. List or search first to get a valid id.",
   [ToolErrorKind.Timeout]: "Jotty is slow or unreachable. Try the health tool.",
   [ToolErrorKind.Upstream]: "Try the health tool to see whether Jotty is reachable.",
 };

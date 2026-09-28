@@ -33,6 +33,8 @@ import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { updateAllChildren, findItem } from "@/app/_utils/item-tree-utils";
 import { isKanbanType } from "@/app/_types/enums";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
+import { assigneeRefusal } from "@/app/_server/actions/kanban/assignee";
+import { UNKNOWN_STATUS, boardColumns } from "@/app/_consts/kanban";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
@@ -69,6 +71,13 @@ const _editItem = async (
 
     if (!stored) {
       throw new Error("List not found");
+    }
+
+    const assignee = formData.get("assignee") as string | null;
+    const previousAssignee = findItem(stored.items, itemId)?.assignee;
+    if (assignee && assignee !== previousAssignee) {
+      const refusal = await assigneeRefusal(assignee, stored.uuid!);
+      if (refusal) return { success: false, error: refusal };
     }
 
     const _updateParentBasedOnChildren = (parent: Item): Item => {
@@ -108,7 +117,6 @@ const _editItem = async (
 
     const priority = formData.get("priority") as string | null;
     const score = formData.get("score") as string | null;
-    const assignee = formData.get("assignee") as string | null;
     const reminder = formData.get("reminder") as string | null;
     const targetDate = formData.get("targetDate") as string | null;
     const startDate = formData.get("startDate") as string | null;
@@ -225,6 +233,14 @@ const _addItem = async (
 
     if (!stored) {
       throw new Error("List not found");
+    }
+
+    if (
+      status &&
+      isKanbanType(stored.type) &&
+      !boardColumns(stored.statuses).some((column) => column.id === status)
+    ) {
+      return { success: false, error: UNKNOWN_STATUS };
     }
 
     let timeEntries: any[] = [];

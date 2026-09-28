@@ -418,6 +418,20 @@ describe("Kanban API", () => {
   })
 
   describe("PUT /api/kanban/:boardId/items/:itemId", () => {
+    it("returns the changed card next to the board", async () => {
+      mockEditItem.mockResolvedValue({ success: true, data: board() })
+
+      const response = await UPDATE_CARD(
+        createMockRequest("PUT", `${BASE}/${BOARD_UUID}/items/card-1`, { priority: "low" }),
+        cardParams(),
+      )
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.data.uuid).toBe(BOARD_UUID)
+      expect(data.item.id).toBe("card-1")
+    })
+
     it("forwards only the fields that were sent", async () => {
       mockEditItem.mockResolvedValue({ success: true, data: board() })
 

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { turnAway } from "@/app/_utils/api-utils";
-import { findList, indexPath, isRefusal, itemAt } from "@/app/_utils/api-list-utils";
+import { findList, indexOf, indexPath, isRefusal, itemAt, newcomerIn } from "@/app/_utils/api-list-utils";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { UNKNOWN_STATUS } from "@/app/_consts/kanban";
 import { addItem } from "@/app/_server/actions/checklist-item/editor";
 import { graftItem } from "@/app/_server/actions/checklist-item/grafter";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
@@ -20,7 +22,7 @@ export const POST = defineRoute(
     path: "/checklists/{listId}/items",
     tag: ApiTag.CHECKLIST_ITEMS,
     summary: "Add an item to a checklist",
-    description: "Adds a top-level item, or a sub-item when parentIndex is sent. Needs edit permission.",
+    description: "Adds a top-level item, or a sub-item when parentIndex is sent. A new top-level item lands first or last depending on the key owner's insertion setting, so use the index in the response rather than guessing it. Needs edit permission.",
     params: listParams,
     body: itemCreateBody,
     responses: {
@@ -55,7 +57,14 @@ export const POST = defineRoute(
         return refuse(grafted.error || "Failed to add sub-item", 500);
       }
 
-      return NextResponse.json({ success: true });
+      const childId = grafted.data ? newcomerIn(list.items, grafted.data.items) : undefined;
+      return NextResponse.json({
+        success: true,
+        data: {
+          id: childId,
+          index: childId && grafted.data ? indexOf(grafted.data.items, childId) : undefined,
+        },
+      });
     }
 
     const formData = new FormData();
@@ -67,9 +76,15 @@ export const POST = defineRoute(
 
     const result = await addItem(user, list, formData, true);
     if (!result.success) {
-      return refuse(result.error || "Failed to create item", 500);
+      const status = result.error === UNKNOWN_STATUS ? 400 : 500;
+      return refuse(result.error || "Failed to create item", status);
     }
 
-    return NextResponse.json({ success: true, data: { id: result.data?.id } });
+    const id = result.data?.id;
+    const fresh = id ? await getListById(list.uuid!, user.username) : undefined;
+    return NextResponse.json({
+      success: true,
+      data: { id, index: id && fresh ? indexOf(fresh.items, id) : undefined },
+    });
   },
 );

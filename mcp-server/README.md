@@ -12,7 +12,7 @@ That means:
 
 - Pointing it at an older instance works. Tools for endpoints that instance doesn't have are left out, and `discover` lists them as unavailable.
 - A new route in Jotty is reachable straight away through `call_operation`, with no MCP release.
-- The only hand-kept list is `src/tools/catalog.ts`, the operation ids that get a dedicated tool.
+- The only hand-kept list is `src/tools/catalog.ts`: the operation ids that get a dedicated tool, plus a few per-tool defaults.
 
 ## Tools
 
@@ -26,7 +26,19 @@ Three built-in tools cover the rest:
 | `call_operation` | Calls any operation by id. Use it for tasks, statuses, reminders, exports and logs. |
 | `health` | Reports whether Jotty is reachable, its version, and whether the API key works. |
 
-Results carry the Jotty response in `structuredContent`. The visible text is the same JSON, cut off at `JOTTY_MCP_MAX_TEXT_CHARS`. Errors come back with `isError` and `{ kind, message, status, hint }`.
+Results carry the Jotty response as compact JSON, in both the text and `structuredContent`.
+
+## Keeping the context small
+
+An assistant reads every character a tool returns, so the server keeps results short:
+
+- `list_notes` and `list_checklists` default to `view=summary` and `limit=25`. Notes come back with a short plain-text excerpt instead of their content, and checklists with item counts instead of items. `total` says how many matched, and `offset` pages through them. Pass `view=full` to get everything, then `get_note` or `get_checklist` for one item.
+- A result longer than `JOTTY_MCP_MAX_TEXT_CHARS` is trimmed to the rows that fit, with a `trimmed` field saying how many were left out. A single record that is still too long is cut, and the structured copy is dropped so the client can't show the full thing anyway.
+- `update_board_item` and `move_board_item` return the changed card, not the whole board.
+- Binary downloads, such as an export zip, aren't fetched. The tool returns the URL to download it from instead.
+- Encrypted notes are never excerpted. They come back flagged `encrypted`.
+
+Errors come back with `isError` and `{ kind, message, status, hint }`. Arguments the operation doesn't take are refused with the list of the ones it does.
 
 ## Running it
 
@@ -93,7 +105,7 @@ claude mcp add --transport http jotty http://localhost:3001/mcp \
 | `JOTTY_MCP_BIND_HOST` | all interfaces | HTTP bind address |
 | `JOTTY_MCP_AUTH_TOKEN` | | Bearer token required on `/mcp` |
 | `JOTTY_MCP_TIMEOUT_MS` | `30000` | Per request timeout towards Jotty |
-| `JOTTY_MCP_MAX_TEXT_CHARS` | `12000` | Cap on the visible text of a result |
+| `JOTTY_MCP_MAX_TEXT_CHARS` | `12000` | Longest result a tool returns, in characters |
 | `JOTTY_MCP_SPEC_TTL_MS` | `300000` | How long the API spec is cached |
 | `JOTTY_MCP_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`, `silent`. Logs go to stderr. |
 

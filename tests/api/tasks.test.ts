@@ -732,7 +732,7 @@ describe("Tasks API", () => {
   describe("default statuses", () => {
     const bareTask = { ...mockTask, statuses: undefined }
 
-    it("sends label alongside the legacy name when a task has no stored statuses", async () => {
+    it("sends the board's default columns, with the legacy name, when a task has no stored statuses", async () => {
       mockGetListById.mockResolvedValue(bareTask)
 
       const request = createMockRequest("GET", "http://localhost:3000/api/tasks/task-uuid-1")
@@ -741,9 +741,10 @@ describe("Tasks API", () => {
 
       expect(response.status).toBe(200)
       expect(data.task.statuses).toEqual([
-        { id: "todo", label: "To Do", name: "To Do", order: 0 },
-        { id: "in_progress", label: "In Progress", name: "In Progress", order: 1 },
-        { id: "completed", label: "Completed", name: "Completed", order: 2 },
+        { id: "todo", label: "To Do", name: "To Do", order: 0, autoComplete: false },
+        { id: "in_progress", label: "In Progress", name: "In Progress", order: 1, autoComplete: false },
+        { id: "completed", label: "Completed", name: "Completed", order: 2, autoComplete: true },
+        { id: "paused", label: "Paused", name: "Paused", order: 3, autoComplete: false },
       ])
     })
 
@@ -764,7 +765,7 @@ describe("Tasks API", () => {
       )
 
       ;[listed.tasks[0], created.data, updated.data].forEach((task) => {
-        expect(task.statuses[0]).toEqual({ id: "todo", label: "To Do", name: "To Do", order: 0 })
+        expect(task.statuses[0]).toEqual({ id: "todo", label: "To Do", name: "To Do", order: 0, autoComplete: false })
       })
       expect(mockRestatus).not.toHaveBeenCalled()
     })

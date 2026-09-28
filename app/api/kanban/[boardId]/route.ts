@@ -44,7 +44,7 @@ export const PUT = defineRoute(
     path: "/kanban/{boardId}",
     tag: ApiTag.KANBAN,
     summary: "Rename or move a Kanban board",
-    description: "Fields left out keep their current value. Needs edit permission, and moving to another folder also needs delete on the board. A refused change answers 400.",
+    description: "Fields left out keep their current value. Needs edit permission, and moving to another folder also needs delete on the board.",
     params: boardParams,
     body: boardUpdateBody,
     responses: {
@@ -82,7 +82,7 @@ export const DELETE = defineRoute(
     path: "/kanban/{boardId}",
     tag: ApiTag.KANBAN,
     summary: "Delete a Kanban board",
-    description: "Needs delete permission on the board. Edit alone is not enough. A refused delete answers 400.",
+    description: "Needs delete permission on the board. Edit alone is not enough.",
     params: boardParams,
     responses: {
       200: { description: "Deleted", schema: okSchema },

@@ -4,11 +4,11 @@ import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { makeList } from "@/app/_server/actions/checklist/creator";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, envelope } from "@/app/_schemas/api/common";
+import { ERRORS, envelope, page, totalField } from "@/app/_schemas/api/common";
+import { toApiChecklist } from "@/app/_utils/api-checklist";
 import { checklistCreateBody, checklistListQuery, checklistSchema } from "@/app/_schemas/api/checklists";
-import { ChecklistsTypes, isKanbanType } from "@/app/_types/enums";
+import { ChecklistsTypes } from "@/app/_types/enums";
 import { Checklist, Result } from "@/app/_types";
-import { toApiItem } from "@/app/_utils/api-item";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 
 export const dynamic = "force-dynamic";
@@ -20,10 +20,10 @@ export const GET = defineRoute(
     path: "/checklists",
     tag: ApiTag.CHECKLISTS,
     summary: "List checklists",
-    description: "Checklists the API key owner owns or that were shared with them, items included.",
+    description: "Checklists the API key owner owns or that were shared with them, items included. Use view=summary with limit and offset to page through them with item counts instead of items.",
     query: checklistListQuery,
     responses: {
-      200: { description: "Checklists", schema: z.object({ checklists: z.array(checklistSchema) }) },
+      200: { description: "Checklists", schema: z.object({ checklists: z.array(checklistSchema), total: totalField }) },
       401: ERRORS[401],
       500: ERRORS[500],
     },
@@ -46,17 +46,8 @@ export const GET = defineRoute(
     );
 
     return NextResponse.json({
-      checklists: matches.map((list) => ({
-        id: list.uuid,
-        title: list.title,
-        category: list.category || UNCATEGORIZED,
-        type: list.type || ChecklistsTypes.SIMPLE,
-        owner: list.owner,
-        isShared: list.isShared ?? false,
-        items: list.items.map((item, index) => toApiItem(item, index, isKanbanType(list.type))),
-        createdAt: list.createdAt,
-        updatedAt: list.updatedAt,
-      })),
+      checklists: page(matches, query).map((list) => toApiChecklist(list, query.view)),
+      total: matches.length,
     });
   },
 );

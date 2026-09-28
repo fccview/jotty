@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { listUuid } from "@/app/_utils/api-utils";
 import { guard } from "@/app/_utils/api-list-utils";
 import { getListById } from "@/app/_server/actions/checklist/queries";
@@ -46,3 +46,10 @@ export const boardFor = async (
   const card = _cardIn(board.items, itemId);
   return card ? { board, card } : { refused: refuse(CARD_NOT_FOUND, 404) };
 };
+
+export const cardChanged = (board: Checklist | undefined, itemId: string) =>
+  NextResponse.json({
+    success: true,
+    data: board,
+    item: board ? _cardIn(board.items, itemId) : undefined,
+  });

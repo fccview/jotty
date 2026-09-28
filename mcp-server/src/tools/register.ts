@@ -42,6 +42,6 @@ export const registerTools = (server: Server, ctx: ToolContext): void => {
     if (!spec || !op) {
       return errorResult(ToolErrorKind.Unsupported, `This Jotty instance has no ${name} tool.`, "Use discover to see what it offers.");
     }
-    return runOperation(ctx, spec, op, args, extra.signal);
+    return runOperation(ctx, spec, op, args, { signal: extra.signal, curated: true });
   });
 };

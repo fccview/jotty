@@ -5,12 +5,13 @@ import { CURATED_OPERATIONS, toolNameOf } from "./catalog.ts";
 import { BuiltinTool, type ToolContext } from "./context.ts";
 import { ToolErrorKind, errorResult, fromError } from "./errors.ts";
 import { runOperation } from "./operation.ts";
-import { toolResult, type ToolResult } from "./result.ts";
+import { respond, toolResult, type ToolResult } from "./result.ts";
 import { toolInput } from "./schema.ts";
 
 const LOG_NS = "tool-builtin";
 const HEALTH_PATH = "/health";
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
+const PLUMBING_TAG = "System";
 
 export const BUILTIN_TOOLS: Tool[] = [
   {
@@ -49,33 +50,33 @@ export const BUILTIN_TOOLS: Tool[] = [
 ];
 
 const _summaryOf = (spec: Spec) =>
-  [...spec.operations.values()].map((op) => ({
-    operationId: op.operationId,
-    method: op.method.toUpperCase(),
-    path: `/api${op.path}`,
-    summary: op.summary,
-    tag: op.tags?.[0],
-    ...(op.deprecated ? { deprecated: true } : {}),
-  }));
+  [...spec.operations.values()]
+    .filter((op) => op.tags?.[0] !== PLUMBING_TAG)
+    .map((op) => ({
+      operationId: op.operationId,
+      method: op.method.toUpperCase(),
+      path: `/api${op.path}`,
+      summary: op.summary,
+      tag: op.tags?.[0],
+      ...(op.deprecated ? { deprecated: true } : {}),
+    }));
 
-const _discover = (spec: Spec, args: Record<string, unknown>): ToolResult => {
+const _discover = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>): ToolResult => {
+  const limit = ctx.config.output.maxTextChars;
   if (typeof args.operationId === "string") {
     const op = spec.operations.get(args.operationId);
     if (!op) {
       return errorResult(ToolErrorKind.NotFound, `No operation called ${args.operationId}.`, "Call discover without arguments to list them.");
     }
-    const detail = { operationId: op.operationId, summary: op.summary, description: op.description, inputSchema: toolInput(spec, op).schema };
-    return toolResult(JSON.stringify(detail, null, 2), detail);
+    return respond({ operationId: op.operationId, summary: op.summary, description: op.description, inputSchema: toolInput(spec, op).schema }, limit);
   }
 
   const operations = _summaryOf(spec).filter((op) => !args.tag || op.tag === args.tag);
+  if (args.tag) return respond({ version: spec.version, operations }, limit);
+
   const tools = CURATED_OPERATIONS.filter((id) => spec.operations.has(id)).map(toolNameOf);
-  const missing = CURATED_OPERATIONS.filter((id) => !spec.operations.has(id)).map(toolNameOf);
-  const lines = operations.map((op) => `${op.operationId}: ${op.method} ${op.path} - ${op.summary}`);
-  return toolResult(
-    [`Jotty ${spec.version}, ${operations.length} operations.`, ...lines].join("\n"),
-    { version: spec.version, tools, unavailableTools: missing, operations },
-  );
+  const unavailableTools = CURATED_OPERATIONS.filter((id) => !spec.operations.has(id)).map(toolNameOf);
+  return respond({ version: spec.version, tools, unavailableTools, operations }, limit);
 };
 
 const _call = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>, signal?: AbortSignal) => {
@@ -86,7 +87,7 @@ const _call = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>, sign
     );
   }
   const inner = args.arguments && typeof args.arguments === "object" ? (args.arguments as Record<string, unknown>) : {};
-  return runOperation(ctx, spec, op, inner, signal);
+  return runOperation(ctx, spec, op, inner, { signal });
 };
 
 const _health = async (ctx: ToolContext, signal?: AbortSignal): Promise<ToolResult> => {
@@ -118,7 +119,7 @@ export const runBuiltin = async (
   if (name === BuiltinTool.Health) return _health(ctx, signal);
   try {
     const spec = await ctx.specs.load(ctx.client, signal);
-    return name === BuiltinTool.Discover ? _discover(spec, args) : await _call(ctx, spec, args, signal);
+    return name === BuiltinTool.Discover ? _discover(ctx, spec, args) : await _call(ctx, spec, args, signal);
   } catch (err) {
     logger.warn(LOG_NS, `${name} could not load the API spec`, err);
     return fromError(err);

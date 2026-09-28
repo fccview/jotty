@@ -9,8 +9,11 @@ import { summaryQuery, summarySchema } from "@/app/_schemas/api/discovery";
 import { Checklist, Result } from "@/app/_types";
 import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 
 export const dynamic = "force-dynamic";
+
+const NO_SUCH_USER = "User not found";
 
 const _tally = <T>(things: T[], keyOf: (thing: T) => string) =>
   things.reduce<Record<string, number>>((acc, thing) => {
@@ -53,6 +56,7 @@ export const GET = defineRoute(
       200: { description: "Summary", schema: z.object({ summary: summarySchema }) },
       401: ERRORS[401],
       403: ERRORS[403],
+      404: { description: "No user with that username", schema: ERRORS[404].schema },
       500: ERRORS[500],
     },
   },
@@ -62,6 +66,9 @@ export const GET = defineRoute(
     }
 
     const username = query.username || user.username;
+    if (username !== user.username && !(await findUserRecord(username))) {
+      return refuse(NO_SUCH_USER, 404);
+    }
 
     const notesResult = await getUserNotes({ username });
     if (!notesResult.success || !notesResult.data) {
