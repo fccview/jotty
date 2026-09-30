@@ -89,37 +89,9 @@ claude mcp add jotty -e JOTTY_URL=https://jotty.example.com -e JOTTY_API_KEY=ck_
 
 ## Tools
 
-Each everyday action has its own tool, named after its API operation in snake case, so `listNotes` becomes `list_notes`. They cover search, categories, the usage summary, notes, checklists and their items, and the common board actions.
+Each everyday action has its own tool, named after its API operation in snake case, so `listNotes` becomes `list_notes`. They cover search, categories, the usage summary, notes, checklists and their items, boards and their cards, [links](BRAIN.md), shares, duplicate UUIDs and these guides. [MCP tools](MCP-TOOLS.md) lists every one with its arguments and an example.
 
-The assistant can also follow your [links](BRAIN.md) and see what's shared:
-
-| Tool | What it does |
-|---|---|
-| `get_related` | What links to an item and what it links to, as titles. Each link says whether it's a `link`, `mention`, `checklist` or `wiki`. The assistant reads only the ones that matter instead of opening everything |
-| `get_brain` | The items around one item, or your most linked items |
-| `list_orphans` | Items with no links. That's normal, it isn't a to-do list |
-| `connect_items` | Links a note to another item it relates to |
-| `disconnect_items` | Takes a note's links to an item back out, and closes the gap they leave |
-| `list_shares` | What other people shared with you and what you shared, with who can do what. Read only |
-
-These tools change part of a note without resending the rest. Everything else in the file stays byte for byte, line endings included.
-
-| Tool | What it does |
-|---|---|
-| `patch_note` | Swaps one exact piece of text for another. It refuses when the text isn't there or appears more than once |
-| `tag_note` | Adds or removes tags. Tags are the `#hashtags` in a note, and `#parent/child` nests |
-| `list_tags` | Every tag you use and how many notes and checklists carry it. `list_notes` takes `tag` to list the notes with one |
-
-If a script rewrites one of your notes, add `managed: true` to its frontmatter. The [API guide](API.md#note-files) has an example file. Tools then flag the note as managed, and any tool that writes into it warns that the script will overwrite the change.
-
-Two tools deal with duplicate UUIDs. They usually show up when a script copies a note file. The file with the oldest `createdAt` keeps the UUID, and the copies stay hidden until you repair them. `health` tells you when you have any.
-
-| Tool | What it does |
-|---|---|
-| `list_duplicate_uuids` | Which UUIDs more than one file uses, and which file keeps each one |
-| `repair_duplicate_uuid` | Gives the newer file, or the one you pick, a new UUID. Links whose text names that file move with it. Links that could mean either file stay put, and the tool lists them |
-
-The assistant can read these guides too. `list_docs` lists them and `read_doc` returns one as markdown, so it can check how Jotty works instead of guessing.
+Boards can also coordinate a team of AI agents that your own harness runs. `set_board_spec` pins a plan note to a board, `assign_agent` puts an agent on a card, `get_task_context` hands an agent everything it needs for one card, and `list_agent_tasks` lists who holds what. Jotty stores the plan and the progress, it doesn't run anything. [Coordinating agents](MCP-AGENTS.md) walks through it.
 
 Three more tools reach everything else:
 
@@ -129,7 +101,7 @@ Three more tools reach everything else:
 | `call_operation` | Calls any operation by id. This is how you reach tasks, statuses, reminders, exports and logs. |
 | `health` | Says whether Jotty is reachable, which version it runs and whether the API key works. |
 
-Notes, checklists and boards are addressed by UUID, so list or search first to get one. Checklist items take their `itemIndex`, like `0` or `2.1`, which `get_checklist` returns for every item.
+Notes, checklists and boards are addressed by UUID, so list or search first to get one. Checklist items take their `itemIndex`, like `0` or `2.1`, which `get_checklist` returns for every item. Board cards take their card id, which `get_board` returns.
 
 When something fails, the tool says why and what to try next. It also refuses arguments the operation doesn't take and lists the ones it does.
 
@@ -142,6 +114,7 @@ An assistant reads every character a tool sends back, and a long answer pushes t
 - That limit is only the default. Every tool takes `maxChars`, so the assistant can ask for more when it needs a whole answer, or less to save room.
 - `get_note` gives the note's length in `contentLength` and takes `offset` and `limit`, so the assistant can read a very long note in slices. `get_notes` reads up to 50 notes by UUID in one call, each with its `contentLength`, and lists any it couldn't find under `missing`.
 - Updating or moving a card returns that card, not the whole board.
+- `list_agent_tasks` returns 25 cards at a time. `get_task_context` keeps each spec section to 2000 characters and each list of entries to 10, and says `truncated` when it cut something.
 - Search puts the best matches first and gives you the `uuid` the other tools take and the file name as `slug`.
 - `get_brain` returns 60 items at most by default, nearest and most linked first, and says when it left some out.
 - Export downloads aren't fetched. You get the link to download the file yourself.

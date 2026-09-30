@@ -17,6 +17,7 @@ export const SERVER_INSTRUCTIONS = [
   "Link items with connect_items only when they relate to each other, and remove a link with disconnect_items. An item with no links is fine, so don't add links just to empty list_orphans.",
   "A script rewrites any note with managed: true, so edits to it may not last. Write tools say so in a warning.",
   "list_docs and read_doc return Jotty's own guides. Read the api guide before writing a note file or its frontmatter by hand.",
+  "Boards can coordinate agents that run elsewhere. set_board_spec pins a spec note to a board, assign_agent puts an agent listed in that spec on a card, get_task_context returns a card with its slice of the spec, and list_agent_tasks lists the cards agents hold. Jotty stores the plan, assignments and progress but runs nothing. read_doc mcp-agents explains the workflow.",
   "The dedicated tools cover search, links, tags, shares, notes, checklists and boards. Use discover and call_operation for everything else the instance offers.",
 ].join(" ");
 

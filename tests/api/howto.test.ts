@@ -10,7 +10,7 @@ import {
 
 import { GET as LIST } from "@/app/api/howto/route";
 import { GET as READ } from "@/app/api/howto/[docId]/route";
-import { getHowtoGuides } from "@/app/_utils/howto-utils";
+import { HowtoSections, getHowtoGuides } from "@/app/_utils/howto-utils";
 
 const GUIDE = "# Garden guide\n\nPlant things.\n";
 
@@ -30,7 +30,30 @@ describe("how-to guides over the API", () => {
     const body = await getResponseJson(await LIST(createMockRequest("GET", "http://localhost:3000/api/howto")));
     const ids = getHowtoGuides((key: string) => key).map((guide) => guide.id);
     expect(body.total).toBe(ids.length);
-    expect(body.docs[0]).toEqual({ id: ids[0], title: "Garden guide" });
+    expect(body.docs[0]).toEqual({ id: ids[0], title: "Garden guide", section: HowtoSections.JOTTY });
+  });
+
+  it("files the MCP guides under their own section and keeps the old ids", async () => {
+    const body = await getResponseJson(await LIST(createMockRequest("GET", "http://localhost:3000/api/howto")));
+    const sectionOf = (id: string) => body.docs.find((doc: { id: string }) => doc.id === id)?.section;
+
+    expect(["mcp", "mcp-tools", "mcp-agents"].map(sectionOf)).toEqual([
+      HowtoSections.MCP,
+      HowtoSections.MCP,
+      HowtoSections.MCP,
+    ]);
+    expect(["api", "markdown", "shortcuts"].map(sectionOf)).toEqual([
+      HowtoSections.JOTTY,
+      HowtoSections.JOTTY,
+      HowtoSections.JOTTY,
+    ]);
+  });
+
+  it("reads the new MCP guides from their own files", async () => {
+    await read("mcp-tools");
+    await read("mcp-agents");
+    expect(mockReadFile).toHaveBeenCalledWith(expect.stringMatching(/howto[\\/]MCP-TOOLS\.md$/));
+    expect(mockReadFile).toHaveBeenCalledWith(expect.stringMatching(/howto[\\/]MCP-AGENTS\.md$/));
   });
 
   it("reads one guide, in parts when asked", async () => {

@@ -5,6 +5,7 @@ import type { OpenApiDocument } from "../src/jotty/openapi.ts";
 import { createSpecSource } from "../src/jotty/spec.ts";
 import type { ToolContext } from "../src/tools/context.ts";
 import type { ToolResult } from "../src/tools/result.ts";
+import { AGENT_PATHS, agentReply } from "./agent-fakes.ts";
 
 export const API_KEY = "ck_test";
 
@@ -140,6 +141,7 @@ export const FAKE_SPEC: OpenApiDocument = {
         requestBody: { content: { "application/json": { schema: { type: "object", properties: { text: { type: "string" } } } } } },
       },
     },
+    ...AGENT_PATHS,
     "/tasks/{taskId}/statuses": {
       post: {
         operationId: "createTaskStatus",
@@ -169,11 +171,14 @@ export const serveJotty = (spec: OpenApiDocument | null = FAKE_SPEC): FakeJotty 
       const url = new URL(request.url);
       const apiKey = request.headers.get("x-api-key");
       const text = request.method === "GET" ? "" : await request.text();
-      hits.push({ method: request.method, path: `${url.pathname}${url.search}`, apiKey, body: text ? JSON.parse(text) : undefined });
+      const body = text ? JSON.parse(text) : undefined;
+      hits.push({ method: request.method, path: `${url.pathname}${url.search}`, apiKey, body });
 
       if (url.pathname === "/api/health") return _json({ status: "healthy", version: spec?.info.version ?? "1.27.0" });
       if (apiKey !== API_KEY) return _json({ error: "Unauthorized" }, 401);
       if (url.pathname === "/api/openapi.json") return spec ? _json(spec) : _json({ error: "Not found" }, 404);
+      const agentAnswer = agentReply(url, body);
+      if (agentAnswer) return agentAnswer;
       if (url.pathname === "/api/notes" && url.searchParams.get("q") === "many") {
         return _json({ notes: MANY_NOTES, total: MANY_NOTES.length });
       }

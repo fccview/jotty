@@ -58,6 +58,65 @@ What changed this week. #work #home/garden
 - `managed: true` marks a note your script rewrites. The API returns `"managed": true` on it, and any call that writes into it comes back with a `warning`, because your script will overwrite the change.
 - Jotty keeps any other keys you add, untouched.
 
+## Board files
+
+Kanban boards are markdown files too. Each card is one line, with its fields after ` | ` separators:
+
+```markdown
+---
+uuid: 0f6a3b2c-8d9e-4f10-a1b2-c3d4e5f60718
+title: Parser rewrite
+checklistType: kanban
+specNote: 5b1e8a52-3c1d-4d7e-9f0a-1b2c3d4e5f60
+---
+- [ ] Build parser | status:in_progress | time:0 | assignee:alice | agent:parser-bot | metadata:{"id":"card-1"}
+```
+
+- `specNote` is the uuid of the note pinned as the board's spec. Set it with `PUT /api/kanban/{boardId}/spec` rather than by hand, so Jotty can check you can read the note and that it isn't encrypted.
+- `assignee:` is the human assignee, a username.
+- `agent:` is a virtual agent, see below. It sits right after `assignee:` and never replaces it.
+- Boards without these keep working exactly as before.
+
+## Agents and board specs
+
+A virtual agent is a label on a card for whoever works it, usually an AI or a script driven through the API or the [MCP server](MCP.md). It isn't a user: nobody gets notified, nothing is shared with it, and the card's human assignee stays as it is.
+
+Agent ids are 1-64 lowercase letters, digits, dots, dashes or underscores, like `parser-bot`. Jotty lowercases and trims what you send.
+
+Every board can pin one note as its spec. The spec is an ordinary note holding the plan, with `##` sections Jotty knows by name: Goal, Acceptance criteria, Agents, Tasks, Decisions, References, Progress, Blockers and Handover. The Agents section lists the agents allowed on the board, one per bullet:
+
+```markdown
+## Agents
+- `parser-bot` - owns the tokenizer
+- `ui-bot` - renders the preview
+
+## Tasks
+- `card-1` - tokenizer - agent `parser-bot` - depends on `card-0`
+```
+
+The card's column stays the source of truth for its status. The spec carries the plan, the decisions and the handover notes.
+
+| Endpoint | What it does |
+|---|---|
+| `PUT /api/kanban/{boardId}/spec` | Pins a note as the board's spec with `{ "noteId": "<note uuid>" }`, or unpins it with `null`. Needs edit on the board and read on the note. Encrypted notes are refused. Returns the board id, `specNote`, its `status` and the agents it lists |
+| `PUT /api/kanban/{boardId}/items/{itemId}/agent` | Sets a card's agent with `{ "agent": "parser-bot" }`, or clears it with `null`. The agent has to be listed in the spec's Agents section. Needs edit on the board. Answers like the assign endpoint, with the board and the changed `item` |
+| `GET /api/kanban/{boardId}/items/{itemId}/context` | Everything needed to work on one card: the card with its subtasks and last 5 status changes, the board's columns with card counts, the card's agent and its other open cards, the dependencies from the spec's task line with their status, and the spec's goal, acceptance criteria, decisions, references, agents and the progress, blockers and handover entries that mention the card or its agent |
+| `GET /api/agents/tasks` | Every card and subtask with an agent, across your boards and the boards shared with you. Filter with `agent`, `boardId`, `status` (comma separated status ids) and `includeCompleted=true`, and page with `limit` and `offset` |
+
+Spec `status` is `linked`, `none` when the board has no spec, `missing` when the note is gone or you can't read it (the two look the same on purpose), or `encrypted`. An encrypted spec is never opened, so nothing from inside it comes back.
+
+The context answer stays small: whole sections are cut at 2000 characters, the filtered lists keep the last 10 entries of up to 600 characters each, and subtasks and open cards stop at 25. `truncated` is `true` when anything was cut, so read the spec note itself for the rest.
+
+Refusals come back as `400` with one of these messages:
+
+- `Agent id must be 1-64 lowercase letters, digits, dots, dashes or underscores`
+- `Link a spec note to this board first`
+- `The board's spec note is missing or you can't read it`
+- `Encrypted notes can't be a board spec`
+- `Agent isn't listed in the spec note's Agents section`
+
+Board and card responses also carry the new fields: `specNote` on boards and `agent` on cards, left out when they aren't set. `GET /api/howto` rows have a `section`, `jotty` for guides about Jotty itself and `mcp` for the MCP guides.
+
 ## Errors
 
 Errors come back as JSON with the status code telling you what went wrong:

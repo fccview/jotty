@@ -154,7 +154,7 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
     const data = structured(result);
     expect(data.version).toBe("9.9.9");
-    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "connect_items", "list_duplicate_uuids"]);
+    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "assign_agent", "set_board_spec", "get_task_context", "list_agent_tasks", "connect_items", "list_duplicate_uuids"]);
     expect(data.unavailableTools).toContain("list_boards");
   });
 

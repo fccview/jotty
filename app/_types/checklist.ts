@@ -75,6 +75,7 @@ export interface Item {
   priority?: KanbanPriority;
   score?: number;
   assignee?: string;
+  agent?: string;
   reminder?: KanbanReminder;
 }
 
@@ -106,5 +107,6 @@ export interface Checklist {
   rawContent?: string;
   statuses?: KanbanStatus[];
   tags?: string[];
+  specNote?: string;
   extraMetadata?: Record<string, unknown>;
 }

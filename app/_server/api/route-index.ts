@@ -1,5 +1,6 @@
 import * as adminDuplicateUuids from "@/app/api/admin/duplicate-uuids/route";
 import * as adminRebuildIndex from "@/app/api/admin/rebuild-index/route";
+import * as agentsTasks from "@/app/api/agents/tasks/route";
 import * as brain from "@/app/api/brain/route";
 import * as categories from "@/app/api/categories/route";
 import * as checklists from "@/app/api/checklists/route";
@@ -20,9 +21,12 @@ import * as kanbanBoardId from "@/app/api/kanban/[boardId]/route";
 import * as kanbanBoardIdCalendar from "@/app/api/kanban/[boardId]/calendar/route";
 import * as kanbanBoardIdItems from "@/app/api/kanban/[boardId]/items/route";
 import * as kanbanBoardIdItemsItemId from "@/app/api/kanban/[boardId]/items/[itemId]/route";
+import * as kanbanBoardIdItemsItemIdAgent from "@/app/api/kanban/[boardId]/items/[itemId]/agent/route";
 import * as kanbanBoardIdItemsItemIdAssign from "@/app/api/kanban/[boardId]/items/[itemId]/assign/route";
+import * as kanbanBoardIdItemsItemIdContext from "@/app/api/kanban/[boardId]/items/[itemId]/context/route";
 import * as kanbanBoardIdItemsItemIdReminder from "@/app/api/kanban/[boardId]/items/[itemId]/reminder/route";
 import * as kanbanBoardIdItemsItemIdStatus from "@/app/api/kanban/[boardId]/items/[itemId]/status/route";
+import * as kanbanBoardIdSpec from "@/app/api/kanban/[boardId]/spec/route";
 import * as kanbanBoardIdStatuses from "@/app/api/kanban/[boardId]/statuses/route";
 import * as logs from "@/app/api/logs/route";
 import * as logsCleanup from "@/app/api/logs/cleanup/route";
@@ -53,6 +57,7 @@ import * as userUsername from "@/app/api/user/[username]/route";
 export const ROUTE_MODULES: object[] = [
   adminDuplicateUuids,
   adminRebuildIndex,
+  agentsTasks,
   brain,
   categories,
   checklists,
@@ -73,9 +78,12 @@ export const ROUTE_MODULES: object[] = [
   kanbanBoardIdCalendar,
   kanbanBoardIdItems,
   kanbanBoardIdItemsItemId,
+  kanbanBoardIdItemsItemIdAgent,
   kanbanBoardIdItemsItemIdAssign,
+  kanbanBoardIdItemsItemIdContext,
   kanbanBoardIdItemsItemIdReminder,
   kanbanBoardIdItemsItemIdStatus,
+  kanbanBoardIdSpec,
   kanbanBoardIdStatuses,
   logs,
   logsCleanup,

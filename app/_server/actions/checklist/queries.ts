@@ -348,6 +348,7 @@ export const getListById = async (
     ...(parsedData.sharedWith !== undefined && {
       sharedWith: parsedData.sharedWith,
     }),
+    ...(parsedData.specNote && { specNote: parsedData.specNote }),
     ...(parsedData.extraMetadata && {
       extraMetadata: parsedData.extraMetadata,
     }),

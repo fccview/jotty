@@ -99,6 +99,8 @@ export const convertChecklistType = async (formData: FormData) => {
       updatedAt: new Date().toISOString(),
       ...(list.statuses && { statuses: list.statuses }),
       ...(list.tags && { tags: list.tags }),
+      ...(list.sharedWith !== undefined && { sharedWith: list.sharedWith }),
+      ...(list.specNote && { specNote: list.specNote }),
       ...(list.extraMetadata && { extraMetadata: list.extraMetadata }),
     };
 

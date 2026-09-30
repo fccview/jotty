@@ -22,6 +22,7 @@ import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
+import { KanbanAgentPicker } from "./KanbanAgentPicker";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
 import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
 import { KanbanItemTimer } from "./KanbanItemTimer";
@@ -596,6 +597,16 @@ export const KanbanCardDetail = ({
             formatDateTimeString={formatDateTimeString}
             onStatusChange={handleStatusChange}
             timeTracking={timeTrackingContent}
+            agentPicker={
+              <KanbanAgentPicker
+                checklist={checklist}
+                item={item}
+                isOpen={isOpen}
+                canEdit={!!permissions?.canEdit}
+                onUpdate={onUpdate}
+                onItemChange={setItem}
+              />
+            }
           />
         </div>
       </div>
