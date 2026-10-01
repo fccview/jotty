@@ -1,4 +1,3 @@
-import { lock, unlock } from "proper-lockfile";
 import fs from "fs/promises";
 import path from "path";
 import { cookies, headers } from "next/headers";
@@ -6,6 +5,7 @@ import { Result } from "@/app/_types";
 import { SESSION_DATA_FILE, SESSIONS_FILE } from "@/app/_consts/files";
 import { getSessionCookieName } from "@/app/_utils/env-utils";
 import { readJsonFile, writeJsonFile } from "../file";
+import { withFileLock } from "../lib/file-lock";
 
 export type LoginType = "local" | "sso" | "ldap" | "pending-mfa";
 
@@ -28,8 +28,6 @@ export interface SessionStore {
   sessions: Session;
   data: Record<string, SessionData>;
 }
-
-const LOCK_RETRIES = { retries: 10, minTimeout: 50, maxTimeout: 500 };
 
 const EMPTY_STORE = "{}";
 
@@ -65,38 +63,25 @@ export const readSessionMeta = async (): Promise<
 export const mutateSessions = async <T>(
   mutator: (store: SessionStore) => Promise<T | null> | T | null,
 ): Promise<T | null> => {
-  const sessionsPath = await touchStoreFiles();
-
   try {
-    await lock(sessionsPath, { retries: LOCK_RETRIES });
-  } catch (error) {
-    console.error("Failed to lock sessions file for update:", error);
-    return null;
-  }
+    return await withFileLock(await touchStoreFiles(), async () => {
+      const store: SessionStore = {
+        sessions: await readSessionMap(),
+        data: await readSessionMeta(),
+      };
 
-  try {
-    const store: SessionStore = {
-      sessions: await readSessionMap(),
-      data: await readSessionMeta(),
-    };
+      const outcome = await mutator(store);
 
-    const outcome = await mutator(store);
+      if (outcome === null) return null;
 
-    if (outcome === null) return null;
+      await writeJsonFile(store.data, SESSION_DATA_FILE);
+      await writeJsonFile(store.sessions, SESSIONS_FILE);
 
-    await writeJsonFile(store.data, SESSION_DATA_FILE);
-    await writeJsonFile(store.sessions, SESSIONS_FILE);
-
-    return outcome;
+      return outcome;
+    });
   } catch (error) {
     console.error("Failed to update sessions:", error);
     return null;
-  } finally {
-    try {
-      await unlock(sessionsPath);
-    } catch (error) {
-      console.error("Failed to release sessions file lock:", error);
-    }
   }
 };
 

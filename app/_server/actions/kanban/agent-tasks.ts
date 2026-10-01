@@ -2,7 +2,9 @@ import { Checklist, KanbanStatus, Result } from "@/app/_types";
 import { AgentTask, AgentTaskFilter } from "@/app/_types/agents";
 import { isKanbanType } from "@/app/_types/enums";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
-import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
+import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { isUuid } from "@/app/_consts/identity";
+import { getListById, getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import {
   CardSpot,
   cardStatus,
@@ -46,11 +48,25 @@ const _boardTasks = (board: Checklist, filter: AgentTaskFilter): AgentTask[] => 
     .map((spot) => _taskOf(board, statuses, spot));
 };
 
+const _isArchived = (list: Checklist): boolean =>
+  (list.category || "").split("/").includes(ARCHIVED_DIR_NAME);
+
+const _oneBoard = async (username: string, boardId: string): Promise<Checklist[]> => {
+  if (!isUuid(boardId)) return [];
+  const board = await getListById(boardId, username);
+  return board && !_isArchived(board) ? [board] : [];
+};
+
+const _lists = async (username: string, boardId?: string): Promise<Result<Checklist[]>> =>
+  boardId
+    ? { success: true, data: await _oneBoard(username, boardId) }
+    : ((await getUserChecklists({ username })) as Result<Checklist[]>);
+
 export const agentTasks = async (
   username: string,
   filter: AgentTaskFilter,
 ): Promise<Result<AgentTask[]>> => {
-  const lists = (await getUserChecklists({ username })) as Result<Checklist[]>;
+  const lists = await _lists(username, filter.boardId);
   if (!lists.success || !lists.data) {
     return { success: false, error: lists.error || "Failed to fetch boards" };
   }

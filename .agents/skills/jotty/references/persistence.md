@@ -57,7 +57,9 @@ The cache watches `.md` and `.category-info.json`. If you add a new derived file
 
 Read, change, write back without a lock loses data. It has happened.
 
-- Users file: `patchUserFields` / the locked mutator in `users/records.ts` (`proper-lockfile`)
+- Any file lock: `withFileLock` in `lib/file-lock.ts`. It queues callers in memory before taking the `proper-lockfile` lock and logs a compromised lock instead of throwing. Don't call `lock()` directly, and never nest `withFileLock` on the same path: it waits on itself.
+- Users file: `patchUserFields` / `mutateUsers` in `users/records.ts`
+- Sessions: `mutateSessions` in `session/store.ts`
 - Category info: `runQueued` in `lib/concurrency.ts` via `patchCatInfo`
 - Note history git: `proper-lockfile` under `data/.locks/`
 - In-process single-flight: `singleFlight`, `runQueued`

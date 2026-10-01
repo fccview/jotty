@@ -166,9 +166,9 @@ const context = async () => {
   return GET(apiRequest('GET', `${BASE}/items/card/context`), onCard())
 }
 
-const tasks = async () => {
+const tasks = async (query = '') => {
   const { GET } = await import('@/app/api/agents/tasks/route')
-  return GET(apiRequest('GET', '/api/agents/tasks'))
+  return GET(apiRequest('GET', `/api/agents/tasks${query}`))
 }
 
 const errorOf = async (response: Response) => (await response.json()).error
@@ -189,6 +189,7 @@ describe('Security: virtual agents and board specs', () => {
       expect((await pinSpec(SPEC_UUID)).status).toBe(404)
       expect((await context()).status).toBe(404)
       expect((await (await tasks()).json()).tasks).toEqual([])
+      expect((await (await tasks(`?boardId=${BOARD_UUID}`)).json()).tasks).toEqual([])
       expect(mockWrite).not.toHaveBeenCalled()
     })
   })

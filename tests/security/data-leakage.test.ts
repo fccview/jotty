@@ -339,11 +339,6 @@ describe('Security: Data Leakage Prevention', () => {
         { username: 'realuser', passwordHash: 'hash', isAdmin: false },
       ])
 
-      vi.mock('proper-lockfile', () => ({
-        lock: vi.fn().mockResolvedValue(undefined),
-        unlock: vi.fn().mockResolvedValue(undefined),
-      }))
-
       const { login } = await import('@/app/_server/actions/auth')
 
       const formDataExisting = createFormData({
@@ -359,8 +354,8 @@ describe('Security: Data Leakage Prevention', () => {
       const resultExisting = await login(formDataExisting)
       const resultNonExisting = await login(formDataNonExisting)
 
-      expect(resultExisting.error).toBe('Invalid username or password')
-      expect(resultNonExisting.error).toBe('Invalid username or password')
+      expect(resultExisting?.error).toBe('Invalid username or password')
+      expect(resultNonExisting?.error).toBe('Invalid username or password')
     })
   })
 })
