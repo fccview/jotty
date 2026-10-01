@@ -42,6 +42,7 @@ vi.mock('@/app/_utils/grep-utils', () => ({
 
 vi.mock('@/app/_server/actions/file', () => ({
   serverReadFile: async (filePath: string) => FILES[filePath] || '',
+  serverReadExisting: async (filePath: string) => FILES[filePath] ?? null,
   readJsonFile: vi.fn().mockResolvedValue([]),
   ensureDir: vi.fn(),
   getUserModeDir: vi.fn(),

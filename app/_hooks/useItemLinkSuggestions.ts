@@ -54,7 +54,7 @@ export const useItemLinkSuggestions = (
       ...notes.map((note) => ({ ...note, type: ItemTypes.NOTE })),
       ...checklists.map((list) => ({ ...list, type: ItemTypes.CHECKLIST })),
     ]
-      .filter((item) => item.uuid && (item.title || "").toLowerCase().includes(needle))
+      .filter((item) => item.uuid && !item.lockReason && (item.title || "").toLowerCase().includes(needle))
       .slice(0, SUGGESTION_LIMIT)
       .map((item) => ({
         id: item.uuid!,

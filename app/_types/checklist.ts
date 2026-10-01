@@ -1,3 +1,4 @@
+import { StampRefusals } from "@/app/_consts/identity";
 import { ItemTypes } from "./enums";
 import { SharingPermissions } from "./core";
 
@@ -109,4 +110,5 @@ export interface Checklist {
   tags?: string[];
   specNote?: string;
   extraMetadata?: Record<string, unknown>;
+  lockReason?: StampRefusals;
 }

@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "\"{username}\" kullanıcısını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
     "userDeletedSuccessfully": "Kullanıcı silindi.",
     "failedToDeleteUser": "Kullanıcı silinemedi",
-    "readOnlyFolder": "Bu klasör sunucuda salt okunur, bu yüzden değişiklik kaydedilemedi."
+    "readOnlyFolder": "Bu klasör sunucuda salt okunur, bu yüzden değişiklik kaydedilemedi.",
+    "itemLocked": "Bu öğe, frontmatter düzeltilene kadar değiştirilemez.",
+    "frontmatterUnfixable": "Jotty bu frontmatter'ı kendi başına düzeltemedi. Dosyayı elle düzenleyip sayfayı yenileyin.",
+    "frontmatterNothingToFix": "Bu öğenin frontmatter'ında düzeltilecek bir şey yok."
   },
   "pwa": {
     "installPromptTitle": "Uygulamayı Yükle",
@@ -1880,5 +1883,19 @@
     "deprecated": "kullanımdan kalktı",
     "requestFailed": "Yanıt alınamadı. Bağlantınızı kontrol edin ve tekrar denemeden önce değişikliğin uygulanıp uygulanmadığına bakın.",
     "responseMeta": "{status}, {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Jotty kimliğini ekleyene kadar salt okunur",
+    "reasons": {
+      "empty": "Dosya boş, bu yüzden Jotty henüz kimliğini dosyaya yazmadı.",
+      "unparsable": "Frontmatter geçerli bir YAML değil, bu yüzden Jotty onu yeniden yazmadan kimliğini ekleyemiyor.",
+      "foreignUuid": "Frontmatter'da zaten Jotty kimliği olmayan bir uuid var ve Jotty onu ezmiyor."
+    },
+    "askEditor": "Bu öğeyi düzenleyebilen biri düzeltebilir.",
+    "fix": "Düzeltmeyi dene",
+    "confirmTitle": "Frontmatter düzeltilsin mi?",
+    "confirmMessage": "Jotty bu dosyanın başındaki frontmatter'ı yeniden yazacak. Geçerli YAML olmayan değerleri tırnak içine alır, sekmeleri boşluğa çevirir, Jotty kimliği olmayan bir uuid'yi previousUuid alanına taşır ve kendi uuid'sini ekler. Dosyanın geri kalanı olduğu gibi kalır. Jotty bunu geri alamaz, bu yüzden başka bir uygulama bu frontmatter'ı okuyorsa bir kopya saklayın. Bu öğeyi düzenleme iznine ihtiyacınız var ve klasörü yazılabilir olmalı.",
+    "confirm": "Frontmatter'ı düzelt",
+    "fixed": "Düzeltildi. Artık bu öğeyi düzenleyebilirsiniz."
   }
 }

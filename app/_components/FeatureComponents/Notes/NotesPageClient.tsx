@@ -168,7 +168,7 @@ export const NotesPageClient = ({
                     isPinned={user?.pinnedNotes?.some((entry) =>
                       isPinnedEntry(entry, note.uuid),
                     )}
-                    onTogglePin={() => handleTogglePin(note)}
+                    onTogglePin={note.lockReason ? undefined : () => handleTogglePin(note)}
                   />
                 </div>
               ))}
@@ -187,7 +187,7 @@ export const NotesPageClient = ({
                   isPinned={user?.pinnedNotes?.some((entry) =>
                     isPinnedEntry(entry, note.uuid),
                   )}
-                  onTogglePin={() => handleTogglePin(note)}
+                  onTogglePin={note.lockReason ? undefined : () => handleTogglePin(note)}
                 />
               ))}
             </div>
@@ -205,7 +205,7 @@ export const NotesPageClient = ({
                   isPinned={user?.pinnedNotes?.some((entry) =>
                     isPinnedEntry(entry, note.uuid),
                   )}
-                  onTogglePin={() => handleTogglePin(note)}
+                  onTogglePin={note.lockReason ? undefined : () => handleTogglePin(note)}
                 />
               ))}
             </div>

@@ -71,7 +71,8 @@ export const SidebarItem = ({
   const isPubliclyShared = itemDetails.isPublic;
   const isOwned = user?.username === item.owner;
   const isShareable = isOwned;
-  const canEdit = isOwned || item.permissions?.canEdit === true;
+  const isLocked = Boolean(item.lockReason);
+  const canEdit = !isLocked && (isOwned || item.permissions?.canEdit === true);
   const canDelete = isOwned || item.permissions?.canDelete === true;
 
   const grants = shareGrants(
@@ -156,7 +157,7 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(isShareable
+    ...(isShareable && !isLocked
       ? [
           {
             label: t("sharing.share"),
@@ -201,7 +202,7 @@ export const SidebarItem = ({
       ) : (
         <PinIcon className="h-4 w-4" />
       ),
-      disabled: isTogglingPin === item.uuid,
+      disabled: isTogglingPin === item.uuid || isLocked,
     },
     ...(item.category !== ARCHIVED_DIR_NAME && canEdit
       ? [

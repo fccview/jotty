@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Note, Category } from "@/app/_types";
 import { NoteEditor } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditor";
+import { LockedItemNotice } from "@/app/_components/GlobalComponents/Feedback/LockedItemNotice";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
@@ -112,6 +113,11 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
       user={user}
       isEditorInEditMode={viewModel.isEditing}
     >
+      <LockedItemNotice
+        uuid={localNote.uuid}
+        itemType={ItemTypes.NOTE}
+        lockReason={localNote.lockReason}
+      />
       <SwipeNavigationWrapper
         noteUuid={localNote.uuid || ""}
         enabled={!viewModel.isEditMode}

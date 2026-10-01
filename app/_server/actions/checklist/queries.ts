@@ -6,7 +6,9 @@ import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { USERS_FILE } from "@/app/_consts/files";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
+import { getUserModeDir, ensureDir, serverReadExisting } from "@/app/_server/actions/file";
+import { uuidOf } from "@/app/_server/actions/lib/read-only";
+import { lockOf } from "@/app/_server/actions/lib/unstamped";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import {
@@ -257,7 +259,6 @@ export const getListById = async (
   username?: string,
 ): Promise<Checklist | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
-  const { serverReadFile } = await import("@/app/_server/actions/file");
 
   if (!username) {
     const { getUserByChecklistUuid } =
@@ -325,8 +326,9 @@ export const getListById = async (
     return undefined;
   }
 
-  const rawContent = await serverReadFile(filePath);
-  if (!rawContent) return undefined;
+  const rawContent = await serverReadExisting(filePath);
+  if (rawContent === null) return undefined;
+  const lockReason = await lockOf(filePath).catch(() => null);
 
   const stats = await fs.stat(filePath);
   const parsedData = parseChecklistContent(rawContent, listId);
@@ -334,7 +336,8 @@ export const getListById = async (
 
   return {
     id: listId,
-    uuid: parsedData.uuid || uuid,
+    uuid: uuidOf(parsedData.uuid) || uuid,
+    ...(lockReason && { lockReason }),
     title: parsedData.title,
     type: checklistType as Checklist["type"],
     items: parsedData.items,

@@ -11,6 +11,7 @@ import { createNote } from "@/app/_server/actions/note";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { MARKDOWN_EXT, WikiRanks } from "@/app/_consts/relations";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 
 interface WikiLinkProps {
@@ -24,14 +25,28 @@ interface Candidate {
   uuid?: string;
   title?: string;
   owner?: string;
-  createdAt?: string;
+  id?: string;
+  category?: string;
 }
 
 const titleKey = (title = "") => title.trim().replace(/\s+/g, " ").toLowerCase();
 
-const byAge = (a: Candidate, b: Candidate) =>
-  (a.createdAt || "").localeCompare(b.createdAt || "") ||
-  (a.uuid || "").localeCompare(b.uuid || "");
+const folderOf = (item: Candidate) =>
+  item.category === UNCATEGORIZED ? [] : (item.category || "").split("/").filter(Boolean);
+
+const pathKey = (item: Candidate) => [...folderOf(item), item.id || ""].map(titleKey).join("/");
+
+const stripMd = (key: string) =>
+  key.endsWith(MARKDOWN_EXT) ? key.slice(0, -MARKDOWN_EXT.length).trim() : key;
+
+const rankOf = (item: Candidate, key: string): number | null => {
+  const named = stripMd(key);
+  const full = pathKey(item);
+  if (titleKey(item.title) === key) return WikiRanks.TITLE;
+  if (titleKey(item.id) === named) return WikiRanks.FILENAME;
+  if (named.includes("/") && (full === named || full.endsWith(`/${named}`))) return WikiRanks.PATH;
+  return null;
+};
 
 export const useWikiMatch = (target: string): Candidate | null => {
   const { notes, checklists, user } = useAppMode();
@@ -50,11 +65,13 @@ export const useWikiMatch = (target: string): Candidate | null => {
       if (pinned) return pinned;
     }
 
-    return (
-      candidates
-        .filter((item) => (!item.owner || item.owner === user?.username) && titleKey(item.title) === key)
-        .sort(byAge)[0] || null
-    );
+    const ranked = candidates
+      .filter((item) => !item.owner || item.owner === user?.username)
+      .map((item) => ({ item, rank: rankOf(item, key), path: pathKey(item) }))
+      .filter((entry): entry is { item: Candidate; rank: number; path: string } => entry.rank !== null)
+      .sort((a, b) => a.rank - b.rank || a.path.localeCompare(b.path));
+
+    return ranked[0]?.item || null;
   }, [notes, checklists, target, wikis, user?.username]);
 };
 
