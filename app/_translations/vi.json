@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Xóa người dùng \"{username}\"? Điều này không thể hoàn tác được.",
     "userDeletedSuccessfully": "Đã xóa người dùng.",
     "failedToDeleteUser": "Không thể xóa người dùng",
-    "readOnlyFolder": "Thư mục này chỉ đọc trên máy chủ, nên không lưu được thay đổi."
+    "readOnlyFolder": "Thư mục này chỉ đọc trên máy chủ, nên không lưu được thay đổi.",
+    "itemLocked": "Không thể thay đổi mục này cho đến khi frontmatter của nó được sửa.",
+    "frontmatterUnfixable": "Jotty không tự sửa được frontmatter này. Hãy sửa tệp bằng tay rồi tải lại.",
+    "frontmatterNothingToFix": "Frontmatter của mục này không có gì cần sửa."
   },
   "pwa": {
     "installPromptTitle": "Cài đặt ứng dụng",
@@ -1880,5 +1883,19 @@
     "deprecated": "không còn dùng",
     "requestFailed": "Không nhận được phản hồi. Hãy kiểm tra kết nối và xem thay đổi đã được áp dụng chưa trước khi thử lại.",
     "responseMeta": "{status} trong {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Chỉ đọc cho đến khi Jotty thêm được id",
+    "reasons": {
+      "empty": "Tệp đang trống, nên Jotty chưa ghi id vào đó.",
+      "unparsable": "Frontmatter của nó không phải YAML hợp lệ, nên Jotty không thể thêm id mà không viết lại nó.",
+      "foreignUuid": "Frontmatter của nó đã có một uuid không phải id của Jotty, và Jotty sẽ không ghi đè lên."
+    },
+    "askEditor": "Người có quyền chỉnh sửa mục này có thể sửa nó.",
+    "fix": "Thử sửa",
+    "confirmTitle": "Sửa frontmatter?",
+    "confirmMessage": "Jotty sẽ viết lại frontmatter ở đầu tệp này. Jotty đặt các giá trị không phải YAML hợp lệ trong dấu ngoặc kép, đổi tab thành dấu cách, chuyển uuid không phải id của Jotty sang previousUuid và thêm uuid riêng. Phần còn lại của tệp giữ nguyên. Jotty không thể hoàn tác việc này, nên hãy giữ một bản sao nếu ứng dụng khác đọc frontmatter này. Bạn cần quyền chỉnh sửa mục này và thư mục của nó phải cho phép ghi.",
+    "confirm": "Sửa frontmatter",
+    "fixed": "Đã sửa. Giờ bạn có thể chỉnh sửa mục này."
   }
 }

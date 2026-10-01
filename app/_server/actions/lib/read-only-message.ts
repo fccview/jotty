@@ -14,3 +14,8 @@ export const failedWith = async (
 
   return readOnlyNotice();
 };
+
+export const lockedNotice = async (): Promise<string> => {
+  const t = await getTranslations("errors");
+  return t("itemLocked");
+};

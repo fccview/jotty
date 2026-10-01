@@ -10,6 +10,8 @@ import { getUserIndex } from "../users/helpers";
 import { readJsonFile, writeJsonFile } from "../file";
 import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
 import { isPinnedEntry } from "@/app/_utils/global-utils";
+import { isLockedUuid } from "@/app/_server/actions/share/queries";
+import { lockedNotice } from "@/app/_server/actions/lib/read-only-message";
 
 export const togglePin = async (
   uuid: string,
@@ -19,6 +21,10 @@ export const togglePin = async (
     const currentUser = await getCurrentUser();
     if (!currentUser) {
       return { success: false, error: "Not authenticated" };
+    }
+
+    if (await isLockedUuid(type, uuid)) {
+      return { success: false, error: await lockedNotice() };
     }
 
     const allUsers = await readJsonFile(USERS_FILE);

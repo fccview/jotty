@@ -3,7 +3,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import { SKIP, visit } from "unist-util-visit";
 import type { Nodes, Parents, Root } from "mdast";
-import { LinkKinds, WIKILINK_REGEX } from "@/app/_consts/relations";
+import { LinkKinds, WIKI_EMBED_MARK, WIKILINK_REGEX } from "@/app/_consts/relations";
 import { ItemHrefTarget, parseItemHref } from "@/app/_utils/item-href-utils";
 
 export interface LinkTarget extends ItemHrefTarget {
@@ -33,10 +33,13 @@ const _plain = (node: Nodes): string => {
 
 const _squash = (parts: string[]) => parts.join(" ").replace(/\s+/g, " ").trim();
 
+export const isEmbed = (text: string, at: number): boolean => text[at - 1] === WIKI_EMBED_MARK;
+
 const _wikis = (text: string): string[] =>
-  Array.from(text.matchAll(WIKILINK_REGEX), (m) => m[1].trim()).filter(
-    Boolean,
-  );
+  Array.from(text.matchAll(WIKILINK_REGEX))
+    .filter((m) => !isEmbed(text, m.index))
+    .map((m) => m[1].trim())
+    .filter(Boolean);
 
 const _lineage = (node: Nodes, parents: Map<Nodes, Parents>): Parents[] => {
   const line: Parents[] = [];

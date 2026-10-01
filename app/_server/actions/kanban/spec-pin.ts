@@ -5,11 +5,11 @@ import { ItemTypes, Modes, PermissionTypes, isKanbanType } from "@/app/_types/en
 import { INVALID_SPEC_NOTE, SPEC_ENCRYPTED, SPEC_MISSING, SpecStatus } from "@/app/_consts/agents";
 import { isUuid } from "@/app/_consts/identity";
 import { serverWriteFile } from "@/app/_server/actions/file";
-import { reachableFile } from "@/app/_server/actions/share/queries";
+import { isLockedUuid, reachableFile } from "@/app/_server/actions/share/queries";
 import { getListById } from "@/app/_server/actions/checklist/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
-import { failedWith } from "@/app/_server/actions/lib/read-only-message";
+import { failedWith, lockedNotice } from "@/app/_server/actions/lib/read-only-message";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { NOT_A_BOARD } from "@/app/_utils/kanban/api-board";
 import { readSpec } from "./spec";
@@ -31,6 +31,9 @@ const _pinSpec = async (
   if (!list) return { success: false, error: "List not found" };
   if (!isKanbanType(list.type)) return { success: false, error: NOT_A_BOARD };
   if (noteId && !isUuid(noteId)) return { success: false, error: INVALID_SPEC_NOTE };
+  if (noteId && (await isLockedUuid(ItemTypes.NOTE, noteId))) {
+    return { success: false, error: await lockedNotice() };
+  }
 
   const spec = await readSpec(noteId || undefined, username);
   const refusal = PIN_REFUSALS[spec.status];

@@ -26,6 +26,8 @@ import {
 import { catDirByUuid, mutateCatInfo } from "./category-info";
 import { dropMounts } from "./mounts";
 import { resolveAccess, catAccess } from "./access";
+import { isLockedUuid } from "@/app/_server/actions/share/queries";
+import { lockedNotice } from "@/app/_server/actions/lib/read-only-message";
 
 const READ_ONLY: SharingPermissions = {
   canRead: true,
@@ -211,6 +213,9 @@ export const shareItem = async (
   try {
     const owner = await _ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
+    if (await isLockedUuid(mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE, uuid)) {
+      return { success: false, error: await lockedNotice() };
+    }
 
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };

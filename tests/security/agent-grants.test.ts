@@ -104,6 +104,7 @@ vi.mock('@/app/_server/actions/file', () => ({
   getUserModeDir: vi.fn(),
   serverWriteFile: (...args: unknown[]) => mockWrite(...args),
   serverReadFile: async (filePath: string) => NOTE_BODIES[filePath] || '',
+  serverReadExisting: async (filePath: string) => NOTE_BODIES[filePath] ?? null,
 }))
 
 vi.mock('@/app/_server/actions/checklist/queries', () => ({
@@ -120,6 +121,7 @@ vi.mock('@/app/_server/actions/share/queries', () => ({
     pathFor(uuid, type, username, permission) !== null,
   reachableFile: async (uuid: string, type: string, username: string, permission: PermissionTypes) =>
     pathFor(uuid, type, username, permission),
+  isLockedUuid: async () => false,
 }))
 
 vi.mock('@/app/_server/actions/ws/broadcast', () => ({
