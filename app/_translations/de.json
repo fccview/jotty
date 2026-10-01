@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Willst du Benutzer \"{username}\" wirklich löschen? Das kann nicht rückgängig gemacht werden.",
     "userDeletedSuccessfully": "Benutzer gelöscht.",
     "failedToDeleteUser": "Benutzer konnte nicht gelöscht werden",
-    "readOnlyFolder": "Dieser Ordner ist auf dem Server schreibgeschützt, die Änderung konnte nicht gespeichert werden."
+    "readOnlyFolder": "Dieser Ordner ist auf dem Server schreibgeschützt, die Änderung konnte nicht gespeichert werden.",
+    "itemLocked": "Dieses Element kann erst geändert werden, wenn sein Frontmatter repariert ist.",
+    "frontmatterUnfixable": "Jotty konnte dieses Frontmatter nicht selbst reparieren. Bearbeite die Datei von Hand und lade die Seite neu.",
+    "frontmatterNothingToFix": "Am Frontmatter dieses Elements gibt es nichts zu reparieren."
   },
   "pwa": {
     "installPromptTitle": "Anwendung installieren",
@@ -1880,5 +1883,19 @@
     "deprecated": "veraltet",
     "requestFailed": "Es kam keine Antwort zurück. Prüfe deine Verbindung und ob die Änderung übernommen wurde, bevor du es erneut versuchst.",
     "responseMeta": "{status} in {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Schreibgeschützt, bis Jotty seine ID hinzufügen kann",
+    "reasons": {
+      "empty": "Die Datei ist leer, daher hat Jotty seine ID noch nicht hineingeschrieben.",
+      "unparsable": "Das Frontmatter ist kein gültiges YAML, daher kann Jotty seine ID nicht hinzufügen, ohne es neu zu schreiben.",
+      "foreignUuid": "Das Frontmatter hat bereits eine uuid, die keine Jotty-ID ist, und Jotty überschreibt sie nicht."
+    },
+    "askEditor": "Jemand mit Bearbeitungsrechten für dieses Element kann es reparieren.",
+    "fix": "Reparatur versuchen",
+    "confirmTitle": "Frontmatter reparieren?",
+    "confirmMessage": "Jotty schreibt das Frontmatter am Anfang dieser Datei neu. Werte, die kein gültiges YAML sind, bekommen Anführungszeichen, Tabs werden zu Leerzeichen, eine uuid, die keine Jotty-ID ist, wandert nach previousUuid, und Jotty fügt eine eigene uuid hinzu. Der Rest der Datei bleibt, wie er ist. Jotty kann das nicht rückgängig machen. Leg also eine Kopie an, wenn eine andere App dieses Frontmatter liest. Du brauchst Bearbeitungsrechte für dieses Element, und sein Ordner muss beschreibbar sein.",
+    "confirm": "Frontmatter reparieren",
+    "fixed": "Repariert. Du kannst dieses Element jetzt bearbeiten."
   }
 }

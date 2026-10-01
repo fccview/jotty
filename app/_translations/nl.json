@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Gebruiker \"{username}\" verwijderen? Dit kan niet ongedaan worden gemaakt.",
     "userDeletedSuccessfully": "Gebruiker verwijderd.",
     "failedToDeleteUser": "Gebruiker verwijderen mislukt",
-    "readOnlyFolder": "Deze map is alleen-lezen op de server, dus de wijziging kon niet worden opgeslagen."
+    "readOnlyFolder": "Deze map is alleen-lezen op de server, dus de wijziging kon niet worden opgeslagen.",
+    "itemLocked": "Dit item kan pas worden gewijzigd als de frontmatter is gerepareerd.",
+    "frontmatterUnfixable": "Jotty kon deze frontmatter niet zelf repareren. Pas het bestand met de hand aan en laad de pagina opnieuw.",
+    "frontmatterNothingToFix": "Er valt niets te repareren aan de frontmatter van dit item."
   },
   "pwa": {
     "installPromptTitle": "App installeren",
@@ -1880,5 +1883,19 @@
     "deprecated": "verouderd",
     "requestFailed": "Er kwam geen antwoord terug. Controleer je verbinding en kijk of de wijziging is doorgevoerd voordat je het opnieuw probeert.",
     "responseMeta": "{status} in {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Alleen-lezen tot Jotty zijn id kan toevoegen",
+    "reasons": {
+      "empty": "Het bestand is leeg, dus Jotty heeft er nog geen id in geschreven.",
+      "unparsable": "De frontmatter is geen geldige YAML, dus Jotty kan zijn id niet toevoegen zonder hem te herschrijven.",
+      "foreignUuid": "De frontmatter heeft al een uuid die geen Jotty-id is, en Jotty overschrijft die niet."
+    },
+    "askEditor": "Iemand die dit item mag bewerken kan het repareren.",
+    "fix": "Probeer dit te repareren",
+    "confirmTitle": "Frontmatter repareren?",
+    "confirmMessage": "Jotty herschrijft de frontmatter bovenaan dit bestand. Waarden die geen geldige YAML zijn krijgen aanhalingstekens, tabs worden spaties, een uuid die geen Jotty-id is gaat naar previousUuid, en Jotty voegt een eigen uuid toe. De rest van het bestand blijft zoals het is. Jotty kan dit niet ongedaan maken, dus bewaar een kopie als een andere app deze frontmatter leest. Je hebt bewerkrechten op dit item nodig en de map moet beschrijfbaar zijn.",
+    "confirm": "Frontmatter repareren",
+    "fixed": "Gerepareerd. Je kunt dit item nu bewerken."
   }
 }

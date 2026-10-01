@@ -509,17 +509,21 @@ export const NoteEditorHeader = ({
                       </Button>
                     }
                     items={[
-                      {
-                        type: "item" as const,
-                        label: isPinned ? t("common.unpin") : t("common.pin"),
-                        icon: isPinned ? (
-                          <PinOffIcon className="h-4 w-4" />
-                        ) : (
-                          <PinIcon className="h-4 w-4" />
-                        ),
-                        onClick: handlePinToggle,
-                      },
-                      ...(permissions?.isOwner
+                      ...(!permissions?.isLocked
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: isPinned ? t("common.unpin") : t("common.pin"),
+                            icon: isPinned ? (
+                              <PinOffIcon className="h-4 w-4" />
+                            ) : (
+                              <PinIcon className="h-4 w-4" />
+                            ),
+                            onClick: handlePinToggle,
+                          },
+                        ]
+                        : []),
+                      ...(permissions?.isOwner && !permissions?.isLocked
                         ? [
                           {
                             type: "item" as const,

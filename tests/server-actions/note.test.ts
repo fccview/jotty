@@ -41,6 +41,7 @@ vi.mock("@/app/_server/actions/file", () => ({
   serverDeleteFile: (...args: any[]) => mockServerDeleteFile(...args),
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: any[]) => (await mockServerReadFile(...args)) ?? null,
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
   readJsonFile: vi.fn().mockResolvedValue([]),
 }));

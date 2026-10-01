@@ -1,5 +1,6 @@
 "use client";
 
+import { LockedItemNotice } from "@/app/_components/GlobalComponents/Feedback/LockedItemNotice";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
@@ -165,6 +166,11 @@ export const ChecklistClient = ({
       user={user}
       extraClasses="jotty-checklist-page"
     >
+      <LockedItemNotice
+        uuid={localChecklist.uuid}
+        itemType={ItemTypes.CHECKLIST}
+        lockReason={localChecklist.lockReason}
+      />
       {renderContent()}
 
       {showShareModal && (

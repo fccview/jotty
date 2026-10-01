@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { turnAway } from "@/app/_utils/api-utils";
 import { findList, indexOf, indexPath, isRefusal, itemAt, newcomerIn } from "@/app/_utils/api-list-utils";
 import { getListById } from "@/app/_server/actions/checklist/queries";
-import { UNKNOWN_STATUS } from "@/app/_consts/kanban";
+import { isUnknownStatus } from "@/app/_consts/kanban";
 import { addItem } from "@/app/_server/actions/checklist-item/editor";
 import { graftItem } from "@/app/_server/actions/checklist-item/grafter";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
@@ -76,7 +76,7 @@ export const POST = defineRoute(
 
     const result = await addItem(user, list, formData, true);
     if (!result.success) {
-      const status = result.error === UNKNOWN_STATUS ? 400 : 500;
+      const status = isUnknownStatus(result.error) ? 400 : 500;
       return refuse(result.error || "Failed to create item", status);
     }
 

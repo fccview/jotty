@@ -1,14 +1,12 @@
-import { lock, unlock } from "proper-lockfile";
 import fs from "fs/promises";
 import path from "path";
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import { User } from "@/app/_types";
 import { getSessionId, readSessions } from "../session/store";
+import { withFileLock } from "../lib/file-lock";
 
-const LOCK_RETRIES = { retries: 10, minTimeout: 50, maxTimeout: 500 };
-
-const touchUsersFile = async (): Promise<string> => {
+export const touchUsersFile = async (): Promise<string> => {
   const usersPath = path.join(process.cwd(), USERS_FILE);
 
   await fs.mkdir(path.dirname(usersPath), { recursive: true });
@@ -51,36 +49,23 @@ export const getCurrentUserRecord = async (): Promise<User | null> => {
 export const mutateUsers = async <T>(
   mutator: (users: User[]) => Promise<T | null> | T | null,
 ): Promise<T | null> => {
-  const usersPath = await touchUsersFile();
-
   try {
-    await lock(usersPath, { retries: LOCK_RETRIES });
-  } catch (error) {
-    console.error("Failed to lock users file for update:", error);
-    return null;
-  }
+    return await withFileLock(await touchUsersFile(), async () => {
+      const allUsers = await readJsonFile(USERS_FILE);
 
-  try {
-    const allUsers = await readJsonFile(USERS_FILE);
+      if (!Array.isArray(allUsers)) return null;
 
-    if (!Array.isArray(allUsers)) return null;
+      const outcome = await mutator(allUsers);
 
-    const outcome = await mutator(allUsers);
+      if (outcome === null) return null;
 
-    if (outcome === null) return null;
+      await writeJsonFile(allUsers, USERS_FILE);
 
-    await writeJsonFile(allUsers, USERS_FILE);
-
-    return outcome;
+      return outcome;
+    });
   } catch (error) {
     console.error("Failed to update user record:", error);
     return null;
-  } finally {
-    try {
-      await unlock(usersPath);
-    } catch (error) {
-      console.error("Failed to release users file lock:", error);
-    }
   }
 };
 

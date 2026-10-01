@@ -353,7 +353,7 @@ export const SlashCommands = Extension.create({
               ...checklist,
               type: ItemTypes.CHECKLIST as const,
             })),
-          ];
+          ].filter((item) => !item.lockReason);
 
           if (!query.trim()) return allItems;
 

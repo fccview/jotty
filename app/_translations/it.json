@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Eliminare utente \"{username}\"? Non può essere annullato.",
     "userDeletedSuccessfully": "Utente eliminato.",
     "failedToDeleteUser": "Impossibile eliminare utente",
-    "readOnlyFolder": "Questa cartella è in sola lettura sul server, quindi la modifica non è stata salvata."
+    "readOnlyFolder": "Questa cartella è in sola lettura sul server, quindi la modifica non è stata salvata.",
+    "itemLocked": "Questo elemento non può essere modificato finché il suo frontmatter non viene sistemato.",
+    "frontmatterUnfixable": "Jotty non è riuscito a sistemare questo frontmatter da solo. Modifica il file a mano, poi ricarica.",
+    "frontmatterNothingToFix": "Non c'è niente da sistemare nel frontmatter di questo elemento."
   },
   "pwa": {
     "installPromptTitle": "Installa App",
@@ -1880,5 +1883,19 @@
     "deprecated": "deprecato",
     "requestFailed": "Non è arrivata nessuna risposta. Controlla la connessione e verifica se la modifica è andata a buon fine prima di riprovare.",
     "responseMeta": "{status} in {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Sola lettura finché Jotty non può aggiungere il suo id",
+    "reasons": {
+      "empty": "Il file è vuoto, quindi Jotty non ci ha ancora scritto il suo id.",
+      "unparsable": "Il suo frontmatter non è YAML valido, quindi Jotty non può aggiungere il suo id senza riscriverlo.",
+      "foreignUuid": "Il suo frontmatter ha già un uuid che non è un id di Jotty, e Jotty non lo sovrascrive."
+    },
+    "askEditor": "Chi può modificare questo elemento può sistemarlo.",
+    "fix": "Prova a sistemarlo",
+    "confirmTitle": "Sistemare il frontmatter?",
+    "confirmMessage": "Jotty riscriverà il frontmatter all'inizio di questo file. Mette tra virgolette i valori che non sono YAML valido, sostituisce le tabulazioni con spazi, sposta in previousUuid un uuid che non è un id di Jotty e aggiunge il proprio uuid. Il resto del file resta com'è. Jotty non può annullarlo, quindi tieni una copia se un'altra app legge questo frontmatter. Serve il permesso di modifica su questo elemento e la sua cartella deve essere scrivibile.",
+    "confirm": "Sistema il frontmatter",
+    "fixed": "Sistemato. Ora puoi modificare questo elemento."
   }
 }
