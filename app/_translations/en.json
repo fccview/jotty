@@ -672,7 +672,17 @@
     "startTime": "Start",
     "endTime": "End",
     "addItemToColumn": "Add item to {column}",
-    "addItemPlaceholder": "New item..."
+    "addItemPlaceholder": "New item...",
+    "agentAvatar": "Agent {agent}",
+    "agentInvalid": "Agent names use 1-64 letters, digits, dots, dashes or underscores, with no spaces.",
+    "assigneeSearch": "Search users or name an agent...",
+    "assignAgentAs": "Assign agent {agent}",
+    "assigneeWillShare": "Will share the board",
+    "assigneeNoAccess": "Can't see this board",
+    "assigneeShareTitle": "Share this board?",
+    "assigneeShareMessage": "{user} can't see this board yet. Assigning them will share it with edit access.",
+    "assigneeShareConfirm": "Share and assign",
+    "assignFailed": "Could not change the assignee"
   },
   "profile": {
     "userProfile": "User",

@@ -61,7 +61,11 @@ export const operationTool = (spec: Spec, op: Operation, maxChars: number): Tool
 const _picked = (data: unknown, field?: string): unknown => {
   if (!field || !data || typeof data !== "object" || !(field in data)) return data;
   const record = data as Record<string, unknown>;
-  return { success: record.success, [field]: record[field] };
+  return {
+    success: record.success,
+    [field]: record[field],
+    ...(record.warning !== undefined && { warning: record.warning }),
+  };
 };
 
 const _omitted = (data: unknown, keys?: string[]): unknown => {
@@ -71,7 +75,7 @@ const _omitted = (data: unknown, keys?: string[]): unknown => {
       ? Object.fromEntries(Object.entries(row).filter(([key]) => !keys.includes(key)))
       : row;
   return Object.fromEntries(
-    Object.entries(data).map(([field, value]) => [field, Array.isArray(value) ? value.map(strip) : value]),
+    Object.entries(data).map(([field, value]) => [field, Array.isArray(value) ? value.map(strip) : strip(value)]),
   );
 };
 
@@ -84,6 +88,9 @@ const _moreRows = (layout: ArgLayout, offset: unknown): MoreRows => {
   const narrow = filters.length ? `Narrow it with ${filters.join(", ")}` : "Use a more specific operation";
   return () => `This operation doesn't page. ${narrow} to see the rest.`;
 };
+
+const _nameOf = (op: Operation, curated: boolean): string =>
+  curated ? toolNameOf(op.operationId) : op.operationId;
 
 const _hintsFor = (op: Operation, curated: boolean): ErrorHints => ({
   [ToolErrorKind.Input]: op.path.includes(ITEM_INDEX)
@@ -125,7 +132,7 @@ export const runOperation = async (
     return errorResult(
       ToolErrorKind.Input,
       `Unknown argument ${unknown.join(", ")}.`,
-      known.length ? `${op.operationId} takes: ${known.join(", ")}.` : `${op.operationId} takes no arguments.`,
+      known.length ? `${_nameOf(op, curated)} takes: ${known.join(", ")}.` : `${_nameOf(op, curated)} takes no arguments.`,
     );
   }
   const missing = layout.path.filter((name) => args[name] === undefined || args[name] === "");

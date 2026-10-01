@@ -13,4 +13,6 @@ export enum BuiltinTool {
   Discover = "discover",
   CallOperation = "call_operation",
   Health = "health",
+  McpDocs = "mcp_docs",
+  JottyDocs = "jotty_docs",
 }

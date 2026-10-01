@@ -14,14 +14,14 @@ import {
   bulkToggleItems,
   updateItemStatus,
 } from "@/app/_server/actions/checklist-item";
-import { usersWithAccess } from "@/app/_server/actions/share/lookups";
-import { getUsers } from "@/app/_server/actions/users";
 import { FloppyDiskIcon, MultiplicationSignIcon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
+import { KanbanAssigneePicker } from "./KanbanAssigneePicker";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
 import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
 import { KanbanItemTimer } from "./KanbanItemTimer";
@@ -30,6 +30,8 @@ import { TimeEntriesModal } from "./TimeEntriesModal";
 import { TaskDescriptionEditor } from "./TaskDescriptionEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
+import { useBoardPeople } from "@/app/_hooks/kanban/useBoardPeople";
+import { useAssignee } from "@/app/_hooks/kanban/useAssignee";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { formatTimerTime } from "@/app/_utils/kanban/index";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
@@ -106,10 +108,7 @@ export const KanbanCardDetail = ({
   const [startDateInput, setStartDateInput] = useState(initialItem.startDate || "");
   const [priorityInput, setPriorityInput] = useState<KanbanPriority>(initialItem.priority || KanbanPriorityLevel.NONE);
   const [statusInput, setStatusInput] = useState(initialItem.status || defaultStatusId);
-  const [assigneeInput, setAssigneeInput] = useState(initialItem.assignee || "");
   const [estimatedTimeInput, setEstimatedTimeInput] = useState(initialItem.estimatedTime?.toString() || "");
-  const [availableUsers, setAvailableUsers] = useState<{ username: string; avatarUrl?: string }[]>([]);
-  const [boardIsShared, setBoardIsShared] = useState(false);
   const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
 
   const kanbanItemHook = useKanbanItem({
@@ -128,43 +127,15 @@ export const KanbanCardDetail = ({
     setStartDateInput(initialItem.startDate || "");
     setPriorityInput(initialItem.priority || KanbanPriorityLevel.NONE);
     setStatusInput(initialItem.status || defaultStatusId);
-    setAssigneeInput(initialItem.assignee || "");
     setEstimatedTimeInput(initialItem.estimatedTime?.toString() || "");
   }, [initialItem, defaultStatusId]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    if (!permissions?.canEdit) return;
-    const _loadUsers = async () => {
-      const sharedWithUsers = await usersWithAccess(checklistUuid);
-      const allUsers = await getUsers();
-
-      if (sharedWithUsers.length === 0) {
-        setBoardIsShared(false);
-        setAvailableUsers(
-          allUsers.map((u: { username: string; avatarUrl?: string }) => ({
-            username: u.username,
-            avatarUrl: u.avatarUrl,
-          })),
-        );
-        return;
-      }
-      setBoardIsShared(true);
-      const allowedUsernames = new Set(sharedWithUsers);
-      if (checklist.owner) allowedUsernames.add(checklist.owner);
-      const userMap = new Map<string, { username: string; avatarUrl?: string }>();
-      allUsers
-        .filter((u: { username: string }) => allowedUsernames.has(u.username))
-        .forEach((u: { username: string; avatarUrl?: string }) => {
-          userMap.set(u.username, { username: u.username, avatarUrl: u.avatarUrl });
-        });
-      allowedUsernames.forEach((username) => {
-        if (!userMap.has(username)) userMap.set(username, { username });
-      });
-      setAvailableUsers(Array.from(userMap.values()));
-    };
-    _loadUsers();
-  }, [isOpen, permissions?.canEdit, checklistUuid, checklist.owner]);
+  const { people, mentionable, reload: reloadPeople } = useBoardPeople({
+    uuid: checklistUuid,
+    owner: checklist.owner,
+    isOpen,
+    canEdit: !!permissions?.canEdit,
+  });
 
   const descriptionMarkdown = useMemo(() => {
     if (!item.description) return "";
@@ -182,7 +153,15 @@ export const KanbanCardDetail = ({
       const updatedItem = _findItemInChecklist(result.data, item.id);
       if (updatedItem) setItem(updatedItem);
     }
+    return result;
   };
+
+  const assignee = useAssignee({
+    uuid: checklistUuid,
+    people,
+    save: _saveField,
+    onShared: reloadPeople,
+  });
 
   const handleSave = async () => {
     const sanitizedDescription = _sanitizeDescription(editDescription.trim());
@@ -552,7 +531,7 @@ export const KanbanCardDetail = ({
                 itemId={item.id}
                 canEdit={!!permissions?.canEdit}
                 currentUsername={user?.username || ""}
-                availableUsers={availableUsers}
+                availableUsers={mentionable}
               />
             </div>
           )}
@@ -565,23 +544,16 @@ export const KanbanCardDetail = ({
             statusInput={statusInput}
             priorityInput={priorityInput}
             scoreInput={scoreInput}
-            assigneeInput={assigneeInput}
             reminderInput={reminderInput}
             targetDateInput={targetDateInput}
             startDateInput={startDateInput}
             estimatedTimeInput={estimatedTimeInput}
-            availableUsers={availableUsers}
             canEdit={!!permissions?.canEdit}
-            isShared={boardIsShared}
             toLocalDateTimeValue={_toLocalDateTimeValue}
             toLocalDateValue={_toLocalDateValue}
             onPriorityChange={handlePriorityChange}
             onScoreChange={setScoreInput}
             onScoreSave={handleScoreSave}
-            onAssigneeChange={async (v) => {
-              setAssigneeInput(v);
-              await _saveField({ assignee: v });
-            }}
             onReminderChange={async (v) => {
               setReminderInput(v);
               await _saveField({
@@ -596,10 +568,28 @@ export const KanbanCardDetail = ({
             formatDateTimeString={formatDateTimeString}
             onStatusChange={handleStatusChange}
             timeTracking={timeTrackingContent}
+            assigneePicker={
+              <KanbanAssigneePicker
+                checklist={checklist}
+                item={item}
+                people={people}
+                canShare={user?.username === checklist.owner || !!user?.isAdmin}
+                disabled={assignee.isSaving}
+                onPick={assignee.pick}
+              />
+            }
           />
         </div>
       </div>
       </Modal>
+      <ConfirmModal
+        isOpen={!!assignee.pendingShare}
+        onClose={assignee.cancelShare}
+        onConfirm={assignee.confirmShare}
+        title={t("kanban.assigneeShareTitle")}
+        message={t("kanban.assigneeShareMessage", { user: assignee.pendingShare || "" })}
+        confirmText={t("kanban.assigneeShareConfirm")}
+      />
     </>
   );
 };

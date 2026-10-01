@@ -45,15 +45,25 @@ export enum OwnedMetaKeys {
   UPDATED_AT = "updatedAt",
 }
 
+export enum BoardMetaKeys {
+  SPEC_NOTE = "specNote",
+}
+
 export const JOTTY_META_KEYS: string[] = Object.values(OwnedMetaKeys);
+
+export const LIST_META_KEYS: string[] = [
+  ...JOTTY_META_KEYS,
+  ...Object.values(BoardMetaKeys),
+];
 
 export const strayMeta = (
   metadata: DocumentMetadata | undefined,
+  owned: string[] = JOTTY_META_KEYS,
 ): Record<string, unknown> | undefined => {
   if (!metadata) return undefined;
 
   const strays = Object.entries(metadata).filter(
-    ([key]) => !JOTTY_META_KEYS.includes(key),
+    ([key]) => !owned.includes(key),
   );
 
   return strays.length > 0 ? Object.fromEntries(strays) : undefined;

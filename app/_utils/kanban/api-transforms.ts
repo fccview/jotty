@@ -13,6 +13,7 @@ interface TransformedItem {
   priority?: string;
   score?: number;
   assignee?: string;
+  agent?: string;
   reminder?: { datetime: string; notified?: boolean };
   children?: TransformedItem[];
 }
@@ -27,6 +28,7 @@ export const transformItem = (item: Item, index: number): TransformedItem => {
     priority: item.priority,
     score: item.score,
     assignee: item.assignee,
+    agent: item.agent,
     reminder: item.reminder,
   };
 
@@ -52,6 +54,7 @@ export const transformBoard = (list: Checklist, view: ListView = ListView.FULL) 
   title: list.title,
   category: list.category || UNCATEGORIZED,
   statuses: list.statuses || DEFAULT_KANBAN_STATUSES,
+  ...(list.specNote && { specNote: list.specNote }),
   ...(view === ListView.SUMMARY
     ? { itemCount: list.items.length, statusCounts: _statusCounts(list.items) }
     : { items: list.items.map((item, index) => transformItem(item, index)) }),

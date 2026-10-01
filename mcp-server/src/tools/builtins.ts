@@ -5,6 +5,7 @@ import { logger } from "../utils/logger.ts";
 import { CURATED_OPERATIONS, toolNameOf } from "./catalog.ts";
 import { BuiltinTool, type ToolContext } from "./context.ts";
 import { ToolErrorKind, errorResult, fromError } from "./errors.ts";
+import { GuideId, mcpDocs } from "./guides.ts";
 import { runOperation } from "./operation.ts";
 import { respond, toolResult, type ToolResult } from "./result.ts";
 import { toolInput } from "./schema.ts";
@@ -12,9 +13,15 @@ import { budgetOf, withBudget } from "./budget.ts";
 import type { JsonSchema } from "../jotty/openapi.ts";
 
 const LOG_NS = "tool-builtin";
+const DOC_OPS = { list: "listDocs", read: "readDoc" };
 const HEALTH_PATH = "/health";
 const READ_ONLY = { readOnlyHint: true, openWorldHint: false } as const;
 const PLUMBING_TAG = "System";
+
+const SLICE_ARGS = {
+  offset: { type: "integer", minimum: 0, description: "First character to return" },
+  limit: { type: "integer", minimum: 1, description: "Most characters to return, all when left out" },
+};
 
 const BUILTIN_TOOLS: Tool[] = [
   {
@@ -50,9 +57,35 @@ const BUILTIN_TOOLS: Tool[] = [
     inputSchema: { type: "object", properties: {} },
     annotations: { title: "Jotty health", ...READ_ONLY },
   },
+  {
+    name: BuiltinTool.McpDocs,
+    description:
+      "The guides that ship with this MCP server. tools describes every tool with an example, agents explains how to coordinate a team of AI agents on a Kanban board. Leave docId out to list them, pass it to read one.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        docId: { type: "string", enum: Object.values(GuideId), description: "Which guide" },
+        ...SLICE_ARGS,
+      },
+    },
+    annotations: { title: "MCP guides", ...READ_ONLY },
+  },
+  {
+    name: BuiltinTool.JottyDocs,
+    description:
+      "Jotty's own guides, the same ones as the How To pages in the app: markdown, api, brain and the rest. Leave docId out to list them, pass it to read one. Read api before writing a note file or its frontmatter by hand.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        docId: { type: "string", description: "Guide id from the list, like api, markdown or brain" },
+        ...SLICE_ARGS,
+      },
+    },
+    annotations: { title: "Jotty guides", ...READ_ONLY },
+  },
 ];
 
-const BUDGETED = new Set<string>([BuiltinTool.Discover, BuiltinTool.CallOperation]);
+const BUDGETED = new Set<string>([BuiltinTool.Discover, BuiltinTool.CallOperation, BuiltinTool.JottyDocs]);
 
 export const builtinTools = (maxChars: number): Tool[] =>
   BUILTIN_TOOLS.map((tool) =>
@@ -64,6 +97,7 @@ export const builtinTools = (maxChars: number): Tool[] =>
 const _summaryOf = (spec: Spec) =>
   [...spec.operations.values()]
     .filter((op) => op.tags?.[0] !== PLUMBING_TAG && !CURATED_OPERATIONS.includes(op.operationId))
+    .filter((op) => !Object.values(DOC_OPS).includes(op.operationId))
     .map((op) => ({
       operationId: op.operationId,
       method: op.method.toUpperCase(),
@@ -101,6 +135,20 @@ const _call = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>, sign
   const inner = args.arguments && typeof args.arguments === "object" ? (args.arguments as Record<string, unknown>) : {};
   const maxChars = budgetOf({ ...args, ...inner }, ctx.config.output.maxTextChars);
   return runOperation(ctx, spec, op, inner, { signal, maxChars });
+};
+
+const _jottyDocs = (ctx: ToolContext, spec: Spec, args: Record<string, unknown>, signal?: AbortSignal) => {
+  const reading = typeof args.docId === "string" && args.docId !== "";
+  const op = spec.operations.get(reading ? DOC_OPS.read : DOC_OPS.list);
+  if (!op) {
+    return Promise.resolve(
+      errorResult(ToolErrorKind.Unsupported, "This Jotty instance doesn't serve its guides over the API.", "Update Jotty to read them here."),
+    );
+  }
+  const picked = reading
+    ? Object.fromEntries(["docId", "offset", "limit"].filter((name) => args[name] !== undefined).map((name) => [name, args[name]]))
+    : {};
+  return runOperation(ctx, spec, op, picked, { signal, maxChars: budgetOf(args, ctx.config.output.maxTextChars) });
 };
 
 const REJECTED = new Set([401, 403]);
@@ -166,9 +214,12 @@ export const runBuiltin = async (
   signal?: AbortSignal,
 ): Promise<ToolResult> => {
   if (name === BuiltinTool.Health) return _health(ctx, signal);
+  if (name === BuiltinTool.McpDocs) return mcpDocs(args);
   try {
     const spec = await ctx.specs.load(ctx.client, signal);
-    return name === BuiltinTool.Discover ? _discover(ctx, spec, args) : await _call(ctx, spec, args, signal);
+    if (name === BuiltinTool.Discover) return _discover(ctx, spec, args);
+    if (name === BuiltinTool.JottyDocs) return await _jottyDocs(ctx, spec, args, signal);
+    return await _call(ctx, spec, args, signal);
   } catch (err) {
     logger.warn(LOG_NS, `${name} could not load the API spec`, err);
     return fromError(err);
