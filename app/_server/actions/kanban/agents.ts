@@ -1,45 +1,25 @@
 import { Checklist, Result, SanitisedUser } from "@/app/_types";
-import { BoardAgents } from "@/app/_types/agents";
 import { ItemTypes, PermissionTypes, isKanbanType } from "@/app/_types/enums";
 import {
-  AGENT_NOT_INDEXED,
-  INVALID_AGENT,
-  NO_SPEC,
-  SPEC_ENCRYPTED,
-  SPEC_MISSING,
+  SpecSections,
   SpecStatus,
-  isAgentId,
+  agentRefusal,
   normalAgent,
+  otherTaskAgent,
+  unlistedAgent,
 } from "@/app/_consts/agents";
+import { specTasks, taskFor } from "@/app/_utils/spec/roster";
+import { readSpec } from "./spec";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { findItem } from "@/app/_utils/item-tree-utils";
 import { CARD_NOT_FOUND, NOT_A_BOARD } from "@/app/_utils/kanban/api-board";
 import { ListVet, tweakItem } from "./tweaker";
-import { readSpec } from "./spec";
 
-export const SPEC_REFUSALS: Partial<Record<SpecStatus, string>> = {
-  [SpecStatus.NONE]: NO_SPEC,
-  [SpecStatus.MISSING]: SPEC_MISSING,
-  [SpecStatus.ENCRYPTED]: SPEC_ENCRYPTED,
-};
-
-export const agentsOf = async (list: Checklist, username: string): Promise<BoardAgents> => {
-  const spec = await readSpec(list.specNote, username);
-  return { specNote: list.specNote ?? null, status: spec.status, agents: spec.agents };
-};
-
-const _agentVet =
-  (agent: string, itemId: string, username: string): ListVet =>
+const _cardVet =
+  (itemId: string): ListVet =>
   async (list) => {
     if (!isKanbanType(list.type)) return NOT_A_BOARD;
-    if (!findItem(list.items, itemId)) return CARD_NOT_FOUND;
-    if (!agent) return null;
-
-    const spec = await readSpec(list.specNote, username);
-    const refusal = SPEC_REFUSALS[spec.status];
-    if (refusal) return refusal;
-
-    return spec.agents.some((known) => known.id === agent) ? null : AGENT_NOT_INDEXED;
+    return findItem(list.items, itemId) ? null : CARD_NOT_FOUND;
   };
 
 export const assignAgent = async (
@@ -57,17 +37,28 @@ export const assignAgent = async (
     }
 
     const agent = normalAgent(raw);
-    if (agent && !isAgentId(agent)) return { success: false, error: INVALID_AGENT };
+    const refusal = agentRefusal(agent);
+    if (refusal) return { success: false, error: refusal };
 
-    return await tweakItem(
-      actor,
-      uuid,
-      itemId,
-      { agent: agent || undefined },
-      _agentVet(agent, itemId, username),
-    );
+    return await tweakItem(actor, uuid, itemId, { agent: agent || undefined }, _cardVet(itemId));
   } catch (error) {
     console.error("Error assigning agent:", error);
     return { success: false, error: "Failed to assign agent" };
   }
+};
+
+export const agentWarning = async (
+  board: Checklist,
+  cardId: string,
+  agent: string | undefined,
+  username: string,
+): Promise<string | undefined> => {
+  if (!agent || !board.specNote) return undefined;
+
+  const spec = await readSpec(board.specNote, username);
+  if (spec.status !== SpecStatus.LINKED) return undefined;
+  if (!spec.agents.some((known) => known.id === agent)) return unlistedAgent(agent);
+
+  const named = taskFor(specTasks(spec.sections[SpecSections.TASKS]), board.uuid, cardId)?.agent;
+  return named && named !== agent ? otherTaskAgent(agent, named) : undefined;
 };

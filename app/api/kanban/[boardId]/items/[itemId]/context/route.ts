@@ -5,7 +5,7 @@ import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
 import { cardParams } from "@/app/_schemas/api/kanban";
 import { taskContextSchema } from "@/app/_schemas/api/agents";
-import { CARD_NOT_FOUND, boardFor } from "@/app/_utils/kanban/api-board";
+import { CARD_NOT_FOUND, cardFor } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +27,10 @@ export const GET = defineRoute(
     },
   },
   async ({ request, user, params }) => {
-    const { board, refused } = await boardFor(request, params.boardId, user.username, { itemId: params.itemId });
+    const { board, card, refused } = await cardFor(request, params.boardId, user.username, params.itemId);
     if (refused) return refused;
 
-    const context = await taskContext(user.username, board, params.itemId);
+    const context = await taskContext(user.username, board, card.id);
     if (!context) return refuse(CARD_NOT_FOUND, 404);
 
     return NextResponse.json({ success: true, data: context });

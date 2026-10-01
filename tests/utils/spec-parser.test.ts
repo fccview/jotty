@@ -74,10 +74,10 @@ describe("spec note parser", () => {
     const tasks = specTasks(sections[SpecSections.TASKS]);
 
     expect(tasks.map((task) => task.cardId)).toEqual(["card-1", "card-2", "card-3"]);
-    expect(taskFor(tasks, "card-2")).toMatchObject({ agent: "ui-bot", dependsOn: ["card-1", "card-3"] });
-    expect(taskFor(tasks, "card-3")).toMatchObject({ agent: "docs.bot", dependsOn: ["card-1"] });
-    expect(taskFor(tasks, "card-1")).toMatchObject({ agent: "parser-bot", dependsOn: [] });
-    expect(taskFor(tasks, "card-9")).toBeUndefined();
+    expect(taskFor(tasks, "board", "card-2")).toMatchObject({ agent: "ui-bot", dependsOn: ["card-1", "card-3"] });
+    expect(taskFor(tasks, "board", "card-3")).toMatchObject({ agent: "docs.bot", dependsOn: ["card-1"] });
+    expect(taskFor(tasks, "board", "card-1")).toMatchObject({ agent: "parser-bot", dependsOn: [] });
+    expect(taskFor(tasks, "board", "card-9")).toBeUndefined();
   });
 
   it("groups list items with their continuation lines, and paragraphs", () => {

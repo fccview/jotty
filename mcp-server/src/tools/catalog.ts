@@ -10,7 +10,13 @@ export interface CatalogEntry {
 
 const SUMMARY_PAGE = { view: "summary", limit: 25 };
 
-const CARD_NOT_FOUND = "list_boards gives the board uuid and get_board lists its cards with their ids.";
+const CARD_NOT_FOUND =
+  "list_boards gives the board uuid and get_board lists its cards with their ids. A card id also works without the board uuid in front of it.";
+
+const CARD_NOISE = ["history", "timeEntries", "order", "createdBy", "createdAt"];
+
+const FIND_HINT =
+  "find has to appear exactly once. Re-read the note with get_note and copy the text exactly, adding nearby text when it shows up more than once. The end of the note counts as a line end.";
 
 export const CATALOG: CatalogEntry[] = [
   { id: "search", omit: ["id"] },
@@ -20,9 +26,9 @@ export const CATALOG: CatalogEntry[] = [
   { id: "listNotes", defaults: SUMMARY_PAGE },
   { id: "getNote" },
   { id: "getNotes" },
-  { id: "createNote" },
-  { id: "updateNote" },
-  { id: "patchNote" },
+  { id: "createNote", omit: ["content"] },
+  { id: "updateNote", omit: ["content"] },
+  { id: "patchNote", hints: { [ToolErrorKind.Input]: FIND_HINT } },
   { id: "tagNote" },
   { id: "listTags" },
   { id: "deleteNote" },
@@ -39,15 +45,21 @@ export const CATALOG: CatalogEntry[] = [
   { id: "listBoards", defaults: SUMMARY_PAGE },
   { id: "getBoard" },
   { id: "createBoard" },
-  { id: "createBoardItem" },
-  { id: "updateBoardItem", pick: "item" },
-  { id: "moveBoardItem", pick: "item" },
+  { id: "createBoardItem", omit: CARD_NOISE },
+  { id: "updateBoardItem", pick: "item", omit: CARD_NOISE },
+  {
+    id: "moveBoardItem",
+    pick: "item",
+    omit: CARD_NOISE,
+    hints: { [ToolErrorKind.Input]: "Move it to one of the column ids the message lists." },
+  },
   {
     id: "assignAgent",
     pick: "item",
+    omit: CARD_NOISE,
     hints: {
       [ToolErrorKind.Input]:
-        "The agent id has to be listed in the Agents section of the board's spec note. get_task_context shows the spec status and the agents it lists. Add a missing agent to that section with patch_note, and pin a spec with set_board_spec when the board has none. An empty agent clears the card.",
+        "Agent ids use 1-64 letters, digits, dots, dashes or underscores with no spaces, and Jotty lowercases them. Any id works, and a warning says when the spec's Agents section doesn't list it. An empty agent clears the card.",
       [ToolErrorKind.NotFound]: CARD_NOT_FOUND,
     },
   },
@@ -84,8 +96,6 @@ export const CATALOG: CatalogEntry[] = [
     },
   },
   { id: "listShares", defaults: { limit: 25 } },
-  { id: "listDocs" },
-  { id: "readDoc" },
   { id: "listDuplicateUuids" },
   { id: "repairDuplicateUuid" },
 ];

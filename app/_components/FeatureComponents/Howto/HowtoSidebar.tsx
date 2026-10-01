@@ -5,11 +5,7 @@ import { SidebarItem } from "@/app/_components/GlobalComponents/Sidebar/SidebarI
 import { usePathname, useRouter } from "next/navigation";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { useTranslations } from "next-intl";
-import {
-  HOWTO_SECTION_ORDER,
-  HowtoSections,
-  getHowtoGuides,
-} from "@/app/_utils/howto-utils";
+import { getHowtoGuides } from "@/app/_utils/howto-utils";
 import {
   HelpCircleIcon,
   SquareLock01Icon,
@@ -27,8 +23,6 @@ import {
   AiBrain04Icon,
   UserMultipleIcon,
   RoboticIcon,
-  ToolsIcon,
-  BotIcon,
 } from "hugeicons-react";
 
 interface HowtoSidebarProps {
@@ -36,12 +30,7 @@ interface HowtoSidebarProps {
   onClose: () => void;
 }
 
-const SECTION_TITLES: Record<HowtoSections, string> = {
-  [HowtoSections.JOTTY]: "help.howToJotty",
-  [HowtoSections.MCP]: "help.howToMcp",
-};
-
-const iconMap: Record<string, typeof HelpCircleIcon> = {
+const iconMap: Record<string, any> = {
   zap: ZapIcon,
   hash: GridIcon,
   code: CodeIcon,
@@ -58,8 +47,6 @@ const iconMap: Record<string, typeof HelpCircleIcon> = {
   brain: AiBrain04Icon,
   users: UserMultipleIcon,
   robot: RoboticIcon,
-  tools: ToolsIcon,
-  bot: BotIcon,
 };
 
 export const HowtoSidebar = ({ isOpen, onClose }: HowtoSidebarProps) => {
@@ -85,33 +72,24 @@ export const HowtoSidebar = ({ isOpen, onClose }: HowtoSidebarProps) => {
 
   return (
     <SidebarWrapper isOpen={isOpen} onClose={onClose} title={t("help.howTo")}>
-      <div className="space-y-4">
-        {HOWTO_SECTION_ORDER.map((section) => (
-          <div key={section} className="space-y-1">
-            <h3 className="px-2 text-sm lg:text-xs font-bold uppercase text-muted-foreground tracking-wider">
-              {t(SECTION_TITLES[section])}
-            </h3>
-            <div className="space-y-0.5 pl-2">
-              {guides
-                .filter((guide) => guide.section === section)
-                .map((guide) => {
-                  const Icon = iconMap[guide.icon] || HelpCircleIcon;
-                  const isActive = isItemActive(`/howto/${guide.id}`);
+      <div className="space-y-1">
+        <div className="space-y-0.5 pl-2">
+          {guides.map((guide) => {
+            const Icon = iconMap[guide.icon] || HelpCircleIcon;
+            const isActive = isItemActive(`/howto/${guide.id}`);
 
-                  return (
-                    <SidebarItem
-                      href={`/howto/${guide.id}`}
-                      key={guide.id}
-                      icon={Icon}
-                      label={guide.name}
-                      isActive={isActive}
-                      onClick={() => handleNavigate(`/howto/${guide.id}`)}
-                    />
-                  );
-                })}
-            </div>
-          </div>
-        ))}
+            return (
+              <SidebarItem
+                href={`/howto/${guide.id}`}
+                key={guide.id}
+                icon={Icon}
+                label={guide.name}
+                isActive={isActive}
+                onClick={() => handleNavigate(`/howto/${guide.id}`)}
+              />
+            );
+          })}
+        </div>
       </div>
     </SidebarWrapper>
   );

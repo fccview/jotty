@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
-import { HowtoSections } from "@/app/_utils/howto-utils";
 
 export const docParams = z.object({
   docId: z.string().describe("Guide id from listDocs, like mcp, api or markdown"),
@@ -9,11 +8,7 @@ export const docParams = z.object({
 export const docListSchema = z.object({
   docs: z.array(
     z
-      .object({
-        id: z.string(),
-        title: z.string(),
-        section: z.enum(HowtoSections).describe("jotty for guides about Jotty itself, mcp for the MCP server guides"),
-      })
+      .object({ id: z.string(), title: z.string() })
       .register(apiNames, { id: "DocSummary" }),
   ),
   total: z.number(),

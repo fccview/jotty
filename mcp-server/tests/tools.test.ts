@@ -136,6 +136,11 @@ describe("runOperation", () => {
     expect(jotty.hits.length).toBe(before);
   });
 
+  it("names the tool, not the operation, when a curated tool gets a stray argument", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("getNote"), { id: "n-1" }, { curated: true });
+    expect(text(result)).toContain("get_note takes: noteId");
+  });
+
   it("hands back a download link instead of fetching a binary file", async () => {
     const before = jotty.hits.length;
     const result = await runOperation(makeCtx(jotty.url), spec, op("downloadExport"), { filename: "a.zip" });

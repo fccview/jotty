@@ -18,6 +18,7 @@ import {
   statusLabel,
 } from "@/app/_utils/kanban/card-tree";
 import { Snipper, snipper } from "@/app/_utils/spec/bounds";
+import { isCardRef } from "@/app/_utils/kanban/card-keys";
 import { SpecTask, specTasks, taskFor } from "@/app/_utils/spec/roster";
 import { SpecRead, readSpec } from "./spec";
 import { specView } from "./context-spec";
@@ -94,12 +95,12 @@ const _agentOf = (
   };
 };
 
-const _dependenciesOf = (task: SpecTask | undefined, cards: CardSpot[]): ContextDependency[] =>
+const _dependenciesOf = (board: Checklist, task: SpecTask | undefined, cards: CardSpot[]): ContextDependency[] =>
   (task?.dependsOn || []).slice(0, CARDS_MAX).map((itemId) => {
-    const hit = cards.find(({ item }) => item.id === itemId)?.item;
+    const hit = cards.find(({ item }) => isCardRef(board.uuid, item.id, itemId))?.item;
     if (!hit) return { itemId, found: false };
 
-    return { itemId, found: true, text: hit.text, status: cardStatus(hit), completed: isCardDone(hit) };
+    return { itemId: hit.id, found: true, text: hit.text, status: cardStatus(hit), completed: isCardDone(hit) };
   });
 
 export const taskContext = async (
@@ -114,11 +115,11 @@ export const taskContext = async (
   const snip = snipper();
   const statuses = board.statuses || DEFAULT_KANBAN_STATUSES;
   const spec = await readSpec(board.specNote, username);
-  const task = taskFor(specTasks(spec.sections[SpecSections.TASKS]), itemId);
+  const task = taskFor(specTasks(spec.sections[SpecSections.TASKS]), board.uuid, itemId);
 
   const card = _cardOf(spot, statuses, snip);
   const agent = _agentOf(spot, cards, spec, snip);
-  const specPart = specView(spec, spot.item, task, snip);
+  const specPart = specView(spec, board.uuid, spot.item, task, snip);
 
   return {
     board: {
@@ -131,7 +132,7 @@ export const taskContext = async (
     },
     card,
     agent,
-    dependencies: _dependenciesOf(task, cards),
+    dependencies: _dependenciesOf(board, task, cards),
     spec: { ...specPart, truncated: snip.wasCut() },
   };
 };

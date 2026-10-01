@@ -7,11 +7,12 @@ export const SECRET_NOTE_ID = "n-secret";
 export const CARD_ID = "c-1";
 export const PARSER_BOT = "parser-bot";
 export const GHOST_BOT = "ghost-bot";
+export const BAD_AGENT = "bad | agent:x";
+export const UNLISTED_WARNING = "ghost-bot isn't in the spec's Agents section";
 export const TASK_TOTAL = 40;
 
 export const REFUSALS = {
-  noSpec: "Link a spec note to this board first",
-  notIndexed: "Agent isn't listed in the spec note's Agents section",
+  invalidAgent: "Agent id must be 1-64 letters, digits, dots, dashes or underscores with no spaces, starting with a letter or digit. Jotty lowercases it",
   encrypted: "Encrypted notes can't be a board spec",
 };
 
@@ -54,7 +55,16 @@ export const AGENT_PATHS: Paths = {
   },
 };
 
-const CARD = { id: CARD_ID, text: "Build parser", status: "todo", completed: false, order: 0, assignee: "alice" };
+const CARD = {
+  id: CARD_ID,
+  text: "Build parser",
+  status: "todo",
+  completed: false,
+  order: 0,
+  assignee: "alice",
+  history: [{ status: "todo", timestamp: "2026-01-01T00:00:00.000Z", user: "alice" }],
+  timeEntries: [],
+};
 
 const TASKS = Array.from({ length: TASK_TOTAL }, (_, n) => ({
   boardId: BOARD_ID,
@@ -89,10 +99,10 @@ export const TASK_CONTEXT = {
 const _json = (data: unknown, status = 200) => Response.json(data, { status });
 
 const _assign = (boardId: string, agent: unknown): Response => {
-  if (agent && boardId === BARE_BOARD_ID) return _json({ error: REFUSALS.noSpec }, 400);
-  if (agent === GHOST_BOT) return _json({ error: REFUSALS.notIndexed }, 400);
+  if (agent === BAD_AGENT) return _json({ error: REFUSALS.invalidAgent }, 400);
   const item = agent ? { ...CARD, agent } : CARD;
-  return _json({ success: true, data: { uuid: boardId, specNote: SPEC_NOTE_ID, items: [item, { ...CARD, id: "c-2" }] }, item });
+  const warning = agent === GHOST_BOT ? { warning: UNLISTED_WARNING } : {};
+  return _json({ success: true, data: { uuid: boardId, specNote: SPEC_NOTE_ID, items: [item, { ...CARD, id: "c-2" }] }, item, ...warning });
 };
 
 const _spec = (boardId: string, noteId: unknown): Response => {

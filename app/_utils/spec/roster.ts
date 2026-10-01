@@ -1,5 +1,6 @@
 import { isAgentId, normalAgent } from "@/app/_consts/agents";
 import { AgentRole } from "@/app/_types/agents";
+import { isCardRef } from "@/app/_utils/kanban/card-keys";
 
 export interface SpecTask {
   cardId: string;
@@ -66,5 +67,5 @@ export const specTasks = (section?: string): SpecTask[] =>
     .map(_taskFrom)
     .filter((task): task is SpecTask => task !== null);
 
-export const taskFor = (tasks: SpecTask[], cardId: string): SpecTask | undefined =>
-  tasks.find((task) => task.cardId.toLowerCase() === cardId.toLowerCase());
+export const taskFor = (tasks: SpecTask[], boardUuid: string, cardId: string): SpecTask | undefined =>
+  tasks.find((task) => isCardRef(boardUuid, cardId, task.cardId));

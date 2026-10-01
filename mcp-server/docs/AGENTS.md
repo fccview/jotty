@@ -1,6 +1,6 @@
 # Coordinating agents
 
-A Kanban board and one note can be the shared memory for a team of AI agents. A coordinator writes the plan and hands out cards, workers pick up their cards, and anybody who opens a fresh session later can read where things stand. This guide shows how to set that up through the [MCP server](MCP.md). Every tool used here is described in [MCP tools](MCP-TOOLS.md).
+A Kanban board and one note can be the shared memory for a team of AI agents. A coordinator writes the plan and hands out cards, workers pick up their cards, and anybody who opens a fresh session later can read where things stand. Every tool used here is described in the `tools` guide, which `mcp_docs` returns.
 
 ---
 
@@ -15,10 +15,10 @@ Jotty stores things:
 
 Your harness does everything else. The harness is whatever runs the agents: Claude Code with subagents, a script, a CI job. It starts workers, decides when they run, retries them, times them out, stops them and replaces them.
 
-There is no execution engine in Jotty. Nothing in Jotty runs an agent, queues work, schedules anything, retries a failure or watches a worker. An agent on a card means somebody wrote that name there. It doesn't mean anything is running.
+Jotty runs nothing. An agent on a card means somebody wrote that name there, not that a worker is running.
 
 > [!IMPORTANT]
-> Agents aren't accounts. An agent id is a label the coordinator picks. It has no login, gets no notification, and isn't shared anything. Every call acts as the user who owns the API key, and card history records that user. The human **assignee** field on a card is separate, still takes a Jotty username, and assigning somebody there still notifies them.
+> Agents aren't accounts. An agent id is a label the coordinator picks. It has no login, gets no notifications and can't receive a share. Every call acts as the user who owns the API key, and card history records that user. The human **assignee** field on a card is separate, still takes a Jotty username, and assigning somebody there still notifies them.
 
 ---
 
@@ -73,12 +73,16 @@ Replace the regex parser with a recursive descent parser that handles every fixt
 | Blockers | Each worker, own entries only | What stops a card |
 | Handover | Each worker, own entries only | The next action for whoever picks the card up |
 
+Card ids look like the board's UUID followed by a dash and a number. Anywhere Jotty takes a card id, in the spec or in a tool call, the number alone works too, so `` `1759222800417` `` is enough and saves a lot of typing.
+
 In Progress, Blockers and Handover, start each entry with the card id and the agent id, like `` `<card id>` / `parser-bot` - ... ``. `get_task_context` only returns the entries that mention the card or its agent, so an entry without them won't reach anybody.
 
-`assign_agent` only accepts agents listed under `## Agents`. That list is the roster. To add a worker, add a line there first.
+`## Agents` is the roster. `assign_agent` takes any valid agent id, and answers with a `warning` when the roster doesn't list it or the card's task line names a different agent. `get_task_context` reports the same two problems as `indexed: false` and `task.agentMatches: false`. Add a roster line when a new worker joins.
+
+People can assign agents from the board too. The card's Assignee field searches users as you type, and when the name doesn't match anybody it offers it as an agent, with its robot avatar.
 
 > [!NOTE]
-> An encrypted note can't be a spec. Jotty never reads inside encrypted notes, so it couldn't find the agents or the tasks. If a pinned spec gets encrypted later, the board reports it as `encrypted` and refuses new assignments until you pin another note.
+> An encrypted note can't be a spec. Jotty never reads inside encrypted notes, so it couldn't find the agents or the tasks. If a pinned spec gets encrypted later, the board reports it as `encrypted` and `get_task_context` leaves the spec out until you pin another note.
 
 ---
 
@@ -86,7 +90,7 @@ In Progress, Blockers and Handover, start each entry with the card id and the ag
 
 The ids below are examples. Each step returns the id the next one needs.
 
-**1. Create the spec note** with `create_note`. Leave the card ids out of `## Tasks` for now, the cards don't exist yet.
+**1. Create the spec note** with `create_note`. Leave `## Tasks` empty for now. The cards don't exist yet.
 
 ```json
 { "title": "Spec: Parser rewrite", "category": "Work", "content": "# Spec: Parser rewrite\n\n## Goal\nReplace the regex parser with a recursive descent parser.\n\n## Acceptance criteria\n- Every file in tests/parser/fixtures parses\n\n## Agents\n- `coordinator` - plans, reviews, owns Decisions\n- `parser-bot` - tokenizer and parser, src/parser only\n- `ui-bot` - editor integration, src/editor only\n\n## Tasks\n\n## Decisions\n\n## References\n- repo: github.com/example/parser / branch: rewrite\n\n## Progress\n\n## Blockers\n\n## Handover\n" }
@@ -117,7 +121,7 @@ The answer's `data.id` is the board's UUID, here `c41e7a92-0d5b-4f38-a6e1-7b2c9d
 { "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "text": "Build the parser", "status": "todo", "description": "Tokenizer and recursive descent parser in src/parser" }
 ```
 
-Here the three cards come back as `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800000` (grammar), `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417` (parser) and `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800903` (editor).
+Here the three cards come back as `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800000` (grammar), `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417` (parser) and `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800903` (editor). From here on the examples use the short form, `1759222800417` and so on.
 
 **4. Fill in the task index** with `patch_note`, anchored on the empty section.
 
@@ -125,7 +129,7 @@ Here the three cards come back as `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-17592228
 {
   "noteId": "3b9d6f2e-8a41-4c7e-b5d0-91f2a6c4e8b7",
   "find": "## Tasks\n\n## Decisions",
-  "replace": "## Tasks\n- `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800000` - Agree on the grammar - agent `coordinator`\n- `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417` - Build the parser - agent `parser-bot` - depends on `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800000`\n- `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800903` - Show parse errors in the editor - agent `ui-bot` - depends on `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417`\n\n## Decisions"
+  "replace": "## Tasks\n- `1759222800000` - Agree on the grammar - agent `coordinator`\n- `1759222800417` - Build the parser - agent `parser-bot` - depends on `1759222800000`\n- `1759222800903` - Show parse errors in the editor - agent `ui-bot` - depends on `1759222800417`\n\n## Decisions"
 }
 ```
 
@@ -135,7 +139,7 @@ Here the three cards come back as `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-17592228
 { "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "noteId": "3b9d6f2e-8a41-4c7e-b5d0-91f2a6c4e8b7" }
 ```
 
-**6. Link the spec to the board** with `connect_items`. The pin is what counts. The link makes the pair show up in `get_related` and the [brain](BRAIN.md), so somebody starting from the note can find the board.
+**6. Link the spec to the board** with `connect_items`. The pin is what counts. The link makes the pair show up in `get_related` and the brain, so somebody starting from the note can find the board.
 
 ```json
 { "source": "3b9d6f2e-8a41-4c7e-b5d0-91f2a6c4e8b7", "target": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "style": "append" }
@@ -144,10 +148,10 @@ Here the three cards come back as `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-17592228
 **7. Put an agent on each card** with `assign_agent`.
 
 ```json
-{ "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "itemId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417", "agent": "parser-bot" }
+{ "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "itemId": "1759222800417", "agent": "parser-bot" }
 ```
 
-An empty `agent` takes it off again. If Jotty refuses, the error names the reason, and [MCP tools](MCP-TOOLS.md#assign_agent) lists what to do for each one.
+An empty `agent` takes it off again. Check the answer for a `warning`, which means the roster or the task line disagrees with what you just did.
 
 ---
 
@@ -164,7 +168,7 @@ A worker gets its agent id and the board id from the harness, then:
 2. `get_task_context` on the card it's going to work on. That's the card, its dependencies, the goal, the decisions and any progress or handover left for it.
 
    ```json
-   { "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "itemId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417" }
+   { "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "itemId": "1759222800417" }
    ```
 
 3. Checks `dependencies`. Every entry should be `found` and `completed` before it starts.
@@ -194,14 +198,14 @@ Before a card leaves `in_progress`, its worker adds a Progress entry that lets s
 {
   "noteId": "3b9d6f2e-8a41-4c7e-b5d0-91f2a6c4e8b7",
   "find": "\n## Blockers",
-  "replace": "- `c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417` / `parser-bot` - parser done. commit 1a2b3c4 on rewrite. `bun test tests/parser` 48 pass 0 fail. artifact: https://ci.example.com/runs/812\n\n## Blockers"
+  "replace": "- `1759222800417` / `parser-bot` - parser done. commit 1a2b3c4 on rewrite. `bun test tests/parser` 48 pass 0 fail. artifact: https://ci.example.com/runs/812\n\n## Blockers"
 }
 ```
 
 Then it moves the card:
 
 ```json
-{ "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "itemId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50-1759222800417", "status": "review" }
+{ "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "itemId": "1759222800417", "status": "review" }
 ```
 
 ---
@@ -213,7 +217,7 @@ Several agents write to one note, so a careless write loses somebody else's line
 - **Use `patch_note`, never `update_note`, from a worker.** `update_note` replaces the whole note with what the agent sent. If another agent added a line in between, that line is gone. `patch_note` changes one piece of text and leaves the rest as it is on disk.
 - **Jotty applies each `patch_note` on its own**, against the note as it is at that moment. Two workers appending before the same heading both land, one after the other.
 - **Re-read before you patch.** Use `get_note` or `get_task_context` right before, not a copy from an hour ago.
-- **Anchor on a small, unique piece of text.** A heading such as `\n## Blockers` for appending to the end of Progress, or the start of your own entry when you edit it. `patch_note` refuses when the text isn't there or shows up twice. When it refuses, re-read and pick a better anchor. Don't fall back to `update_note`.
+- **Anchor on a small, unique piece of text.** A heading such as `\n## Blockers` for appending to the end of Progress, or the start of your own entry when you edit it. The end of the note counts as a line end, so `## Handover\n` works on the last section too. `patch_note` refuses when the text isn't there or shows up twice. When it refuses, re-read and pick a better anchor. Don't fall back to `update_note`.
 - **The coordinator owns Decisions**, and Goal, Acceptance criteria, Agents, Tasks and References. Workers put what they want decided in Blockers and let the coordinator write the decision.
 - **Workers only append**, and only change entries that start with their own card id and agent id.
 - **`update_note` on the spec is for the coordinator**, and only when no worker is running.
@@ -258,10 +262,10 @@ Never let two live workers hold the same card. Jotty won't stop it, and they'll 
 
 On a **private board**, everything runs as the board owner's API key. That's the simplest setup, and every agent can do everything.
 
-On a **shared board**, each collaborator's API key acts as that collaborator, and every call is checked against their share:
+On a **shared board**, each collaborator's API key acts as that collaborator, and Jotty checks every call against their share:
 
 - Moving cards and putting agents on them needs edit permission on the board.
-- Putting an agent on a card also needs read permission on the spec note. The spec sits in the owner's folder, so share it too with anybody who assigns agents. Without that, they see the spec as `missing`.
+- Reading the spec through `get_task_context` needs read permission on the spec note. The spec sits in the owner's folder, so share it too with anybody who works the board. Without that, they see the spec as `missing`.
 - Workers that write progress need edit permission on the spec note.
 - `list_agent_tasks` and `get_task_context` only show boards and specs the caller can see.
 
@@ -270,7 +274,7 @@ On a **shared board**, each collaborator's API key acts as that collaborator, an
 ## Limits worth knowing
 
 - One spec per board. Many notes can link to a board, only the pinned one is the spec.
-- Agent ids are 1 to 64 lowercase letters, digits, dots, dashes or underscores, starting with a letter or digit.
+- Agent ids are 1 to 64 letters, digits, dots, dashes or underscores, with no spaces, starting with a letter or digit. Jotty lowercases them.
 - `get_task_context` keeps each section to 2000 characters and each list to 10 entries, and sets `truncated` when it cut something. Read the whole spec with `get_note` when you need it.
 - `list_agent_tasks` returns 25 cards at a time. Use `offset` for the next page.
 - Agents get no notifications and don't appear in user lists. People who want to know what happened read the board.

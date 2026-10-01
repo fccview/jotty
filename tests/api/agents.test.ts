@@ -9,13 +9,21 @@ import {
   createMockRequest,
   getResponseJson,
 } from "./setup";
-import { SpecSections, SpecStatus, SPEC_ENCRYPTED, AGENT_NOT_INDEXED } from "@/app/_consts/agents";
+import {
+  SpecSections,
+  SpecStatus,
+  SPEC_ENCRYPTED,
+  INVALID_AGENT,
+  otherTaskAgent,
+  unlistedAgent,
+} from "@/app/_consts/agents";
 
 const mockAssignAgent = vi.fn();
 const mockPinSpec = vi.fn();
 const mockReadSpec = vi.fn();
 
-vi.mock("@/app/_server/actions/kanban/agents", () => ({
+vi.mock("@/app/_server/actions/kanban/agents", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/app/_server/actions/kanban/agents")>()),
   assignAgent: (...args: unknown[]) => mockAssignAgent(...args),
 }));
 
@@ -132,6 +140,40 @@ describe("Agent coordination API", () => {
       expect(data.item).toMatchObject({ id: "card-1", agent: "parser-bot", assignee: "alice" });
     });
 
+    it.each([
+      ["an agent the spec doesn't list", "ghost-bot", unlistedAgent("ghost-bot")],
+      ["an agent the task line doesn't name", "ui-bot", otherTaskAgent("ui-bot", "parser-bot")],
+      ["the agent the task line names", "parser-bot", undefined],
+    ])("warns about %s", async (_label, agent, warning) => {
+      const changed = board();
+      changed.items[0].agent = agent;
+      mockAssignAgent.mockResolvedValue({ success: true, data: changed });
+
+      const response = await ASSIGN_AGENT(
+        createMockRequest("PUT", `${BASE}/items/card-1/agent`, { agent }),
+        cardParams(),
+      );
+
+      expect(response.status).toBe(200);
+      expect((await getResponseJson(response)).warning).toBe(warning);
+    });
+
+    it("takes a card id without the board uuid in front of it", async () => {
+      const full = `${BOARD_UUID}-1790837674986`;
+      const withKey = board({ items: [{ id: full, text: "Keyed", completed: false, order: 0, status: "todo" }] });
+      mockGetListById.mockResolvedValue(withKey);
+      mockAssignAgent.mockResolvedValue({ success: true, data: withKey });
+
+      const response = await ASSIGN_AGENT(
+        createMockRequest("PUT", `${BASE}/items/1790837674986/agent`, { agent: "parser-bot" }),
+        cardParams("1790837674986"),
+      );
+
+      expect(response.status).toBe(200);
+      expect(mockAssignAgent).toHaveBeenCalledWith(mockUser, BOARD_UUID, full, "parser-bot");
+      expect((await getResponseJson(response)).item.id).toBe(full);
+    });
+
     it("passes a missing agent through as a clear", async () => {
       mockAssignAgent.mockResolvedValue({ success: true, data: board() });
 
@@ -141,15 +183,15 @@ describe("Agent coordination API", () => {
     });
 
     it("turns a refusal into a 400 with the refusal text", async () => {
-      mockAssignAgent.mockResolvedValue({ success: false, error: AGENT_NOT_INDEXED });
+      mockAssignAgent.mockResolvedValue({ success: false, error: INVALID_AGENT });
 
       const response = await ASSIGN_AGENT(
-        createMockRequest("PUT", `${BASE}/items/card-1/agent`, { agent: "ghost-bot" }),
+        createMockRequest("PUT", `${BASE}/items/card-1/agent`, { agent: "Bad Bot!" }),
         cardParams(),
       );
 
       expect(response.status).toBe(400);
-      expect(await getResponseJson(response)).toEqual({ error: AGENT_NOT_INDEXED });
+      expect(await getResponseJson(response)).toEqual({ error: INVALID_AGENT });
     });
 
     it("answers 404 for an unknown card and 403 without edit", async () => {
@@ -242,7 +284,7 @@ describe("Agent coordination API", () => {
         status: SpecStatus.LINKED,
         goal: "Ship it",
         acceptance: "- tests pass",
-        task: { dependsOn: ["card-2", "ghost"], agent: "parser-bot" },
+        task: { dependsOn: ["card-2", "ghost"], agent: "parser-bot", agentMatches: true },
         progress: ["- card-1 half done", "- parser-bot pushed a branch"],
         blockers: [],
         handover: ["- `card-1` / `parser-bot` - next: escapes"],

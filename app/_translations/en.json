@@ -673,19 +673,16 @@
     "endTime": "End",
     "addItemToColumn": "Add item to {column}",
     "addItemPlaceholder": "New item...",
-    "agent": "Agent",
-    "agentNone": "No agent",
     "agentAvatar": "Agent {agent}",
-    "agentUnlisted": "{agent} (not in the spec)",
-    "agentHint": "Agents are labels for AI or script workers listed in the board's spec note. They aren't users and never get notifications.",
-    "agentLoading": "Loading agents...",
-    "agentNoSpec": "Pin a spec note to this board through the API or MCP to pick an agent.",
-    "agentSpecMissing": "The board's spec note is missing or you can't read it.",
-    "agentSpecEncrypted": "The board's spec note is encrypted, so its agents can't be read.",
-    "agentNoneListed": "The spec note's Agents section doesn't list any agents yet.",
-    "agentInvalid": "Agent ids use 1-64 lowercase letters, digits, dots, dashes or underscores.",
-    "agentNotIndexed": "That agent isn't listed in the spec note's Agents section.",
-    "agentAssignFailed": "Could not set the agent"
+    "agentInvalid": "Agent names use 1-64 letters, digits, dots, dashes or underscores, with no spaces.",
+    "assigneeSearch": "Search users or name an agent...",
+    "assignAgentAs": "Assign agent {agent}",
+    "assigneeWillShare": "Will share the board",
+    "assigneeNoAccess": "Can't see this board",
+    "assigneeShareTitle": "Share this board?",
+    "assigneeShareMessage": "{user} can't see this board yet. Assigning them will share it with edit access.",
+    "assigneeShareConfirm": "Share and assign",
+    "assignFailed": "Could not change the assignee"
   },
   "profile": {
     "userProfile": "User",
@@ -1783,11 +1780,7 @@
     "translations": "Translations",
     "unraid": "Unraid",
     "patches": "Patches",
-    "mcp": "MCP",
-    "howToJotty": "How to Jotty",
-    "howToMcp": "How to MCP",
-    "mcpTools": "MCP tools",
-    "mcpAgents": "Agent coordination"
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Page Not Found",

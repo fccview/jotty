@@ -1,11 +1,10 @@
 import { readFile } from "@/app/_server/actions/file";
-import { HowtoSections, getHowtoFilePath, getHowtoGuides } from "@/app/_utils/howto-utils";
+import { getHowtoFilePath, getHowtoGuides } from "@/app/_utils/howto-utils";
 import { leadingHeading } from "@/app/_utils/title-utils";
 
 export interface HowtoDoc {
   id: string;
   title: string;
-  section: HowtoSections;
   content: string;
 }
 
@@ -19,15 +18,10 @@ export const readHowto = async (id: string): Promise<HowtoDoc | null> => {
     console.warn(`Howto guide ${guide.filename} is missing or empty`);
     return null;
   }
-  return {
-    id: guide.id,
-    title: leadingHeading(content) ?? guide.id,
-    section: guide.section,
-    content,
-  };
+  return { id: guide.id, title: leadingHeading(content) ?? guide.id, content };
 };
 
 export const listHowtos = async (): Promise<Array<Omit<HowtoDoc, "content">>> => {
   const docs = await Promise.all(getHowtoGuides(_keyOnly).map((guide) => readHowto(guide.id)));
-  return docs.filter((doc): doc is HowtoDoc => doc !== null).map(({ id, title, section }) => ({ id, title, section }));
+  return docs.filter((doc): doc is HowtoDoc => doc !== null).map(({ id, title }) => ({ id, title }));
 };

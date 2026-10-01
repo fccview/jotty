@@ -22,9 +22,3 @@ export {
 export {
   getTempoData,
 } from "./tempo";
-
-export {
-  assignKanbanAgent,
-  setKanbanSpec,
-  getBoardAgents,
-} from "./agent-actions";

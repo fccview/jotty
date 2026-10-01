@@ -63,6 +63,8 @@ describe("http transport", () => {
       "discover",
       "call_operation",
       "health",
+      "mcp_docs",
+      "jotty_docs",
     ]);
     const result = await client.callTool({ name: "get_note", arguments: { noteId: "n-1" } });
     expect(result.structuredContent).toMatchObject({ success: true, data: { id: "n-1" } });
@@ -73,7 +75,7 @@ describe("http transport", () => {
   it("falls back to built-in tools when the session has no working key", async () => {
     const client = await connect({ authorization: `Bearer ${TOKEN}` });
     const { tools } = await client.listTools();
-    expect(tools.map((tool) => tool.name)).toEqual(["discover", "call_operation", "health"]);
+    expect(tools.map((tool) => tool.name)).toEqual(["discover", "call_operation", "health", "mcp_docs", "jotty_docs"]);
     await client.close();
   });
 });

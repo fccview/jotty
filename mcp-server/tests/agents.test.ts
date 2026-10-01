@@ -5,6 +5,8 @@ import { CURATED_OPERATIONS, toolNameOf } from "../src/tools/catalog.ts";
 import { BuiltinTool } from "../src/tools/context.ts";
 import { operationTool, runOperation } from "../src/tools/operation.ts";
 import {
+  BAD_AGENT,
+  UNLISTED_WARNING,
   BARE_BOARD_ID,
   BOARD_ID,
   CARD_ID,
@@ -83,17 +85,26 @@ describe("assign_agent", () => {
     expect(jotty.hits.length).toBe(before);
   });
 
-  it("points an agent missing from the spec at get_task_context and patch_note", async () => {
-    const result = await run("assignAgent", { boardId: BOARD_ID, itemId: CARD_ID, agent: GHOST_BOT });
-    expect(structured(result).error).toMatchObject({ kind: "input", status: 400, message: REFUSALS.notIndexed });
-    expect(text(result)).toContain("get_task_context");
-    expect(text(result)).toContain("patch_note");
+  it("assigns an agent the spec doesn't list and passes the warning on", async () => {
+    const result = await run("assignAgent", { boardId: BARE_BOARD_ID, itemId: CARD_ID, agent: GHOST_BOT });
+    expect(structured(result)).toEqual({
+      success: true,
+      item: expect.objectContaining({ agent: GHOST_BOT }),
+      warning: UNLISTED_WARNING,
+    });
   });
 
-  it("points a board without a spec at set_board_spec", async () => {
-    const result = await run("assignAgent", { boardId: BARE_BOARD_ID, itemId: CARD_ID, agent: PARSER_BOT });
-    expect(text(result)).toContain(REFUSALS.noSpec);
-    expect(text(result)).toContain("set_board_spec");
+  it("leaves the card's history and bookkeeping out of the reply", async () => {
+    const result = await run("assignAgent", { boardId: BOARD_ID, itemId: CARD_ID, agent: PARSER_BOT });
+    const item = structured(result).item as Record<string, unknown>;
+    expect(Object.keys(item).sort()).toEqual(["agent", "assignee", "completed", "id", "status", "text"]);
+  });
+
+  it("explains the id rules when an id is refused", async () => {
+    const result = await run("assignAgent", { boardId: BOARD_ID, itemId: CARD_ID, agent: BAD_AGENT });
+    expect(structured(result).error).toMatchObject({ kind: "input", status: 400, message: REFUSALS.invalidAgent });
+    expect(text(result)).toContain("no spaces");
+    expect(text(result)).toContain("Agents section");
   });
 });
 

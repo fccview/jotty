@@ -29,6 +29,21 @@ const MANY_NOTES = Array.from({ length: 30 }, (_, n) => ({ ...NOTE, id: `n-${n}`
 export const FAKE_SPEC: OpenApiDocument = {
   info: { title: "Jotty API", version: "9.9.9" },
   paths: {
+    "/howto": {
+      get: { operationId: "listDocs", summary: "List the guides", tags: ["Guides"] },
+    },
+    "/howto/{docId}": {
+      get: {
+        operationId: "readDoc",
+        summary: "Read a guide",
+        tags: ["Guides"],
+        parameters: [
+          { name: "docId", in: "path" as never, required: true, schema: { type: "string" } },
+          { name: "offset", in: "query" as never, required: false, schema: { type: "integer" } },
+          { name: "limit", in: "query" as never, required: false, schema: { type: "integer" } },
+        ],
+      },
+    },
     "/notes": {
       get: {
         operationId: "listNotes",
@@ -182,6 +197,9 @@ export const serveJotty = (spec: OpenApiDocument | null = FAKE_SPEC): FakeJotty 
       if (url.pathname === "/api/notes" && url.searchParams.get("q") === "many") {
         return _json({ notes: MANY_NOTES, total: MANY_NOTES.length });
       }
+      if (url.pathname === "/api/howto") return _json({ docs: [{ id: "api", title: "API" }], total: 1 });
+      if (url.pathname === "/api/howto/api") return _json({ id: "api", title: "API", content: "# API", contentLength: 5 });
+      if (url.pathname.startsWith("/api/howto/")) return _json({ error: "Guide not found" }, 404);
       if (url.pathname === "/api/search") {
         return _json({ results: [{ uuid: "u-1", slug: "milk", id: "milk", title: "Milk" }], total: 1 });
       }

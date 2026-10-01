@@ -88,7 +88,7 @@ export interface ContextSpec {
   decisions?: string;
   references?: string;
   agents: AgentRole[];
-  task?: { line: string; dependsOn: string[]; agent?: string };
+  task?: { line: string; dependsOn: string[]; agent?: string; agentMatches?: boolean };
   progress: string[];
   blockers: string[];
   handover: string[];

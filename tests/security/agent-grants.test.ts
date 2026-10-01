@@ -3,9 +3,7 @@ import { NextRequest } from 'next/server'
 import { resetAllMocks } from '../setup'
 import { ItemTypes, PermissionTypes } from '@/app/_types/enums'
 import {
-  AGENT_NOT_INDEXED,
   INVALID_AGENT,
-  NO_SPEC,
   SPEC_ENCRYPTED,
   SPEC_MISSING,
   SpecStatus,
@@ -242,8 +240,15 @@ describe('Security: virtual agents and board specs', () => {
       expect(mockFindUser).not.toHaveBeenCalled()
     })
 
+    it('assigns an agent the spec does not list', async () => {
+      const response = await assign('ghost-bot')
+
+      expect(response.status).toBe(200)
+      expect((await response.json()).item).toMatchObject({ agent: 'ghost-bot' })
+      expect(mockWrite).toHaveBeenCalledOnce()
+    })
+
     it.each([
-      ['an agent the spec does not list', 'ghost-bot', AGENT_NOT_INDEXED],
       ['an id with a pipe in it', 'bad | agent:x', INVALID_AGENT],
       ['an id that walks out of a folder', '../owner', INVALID_AGENT],
     ])('refuses %s with 400 and writes nothing', async (_label, agent, message) => {
@@ -263,28 +268,26 @@ describe('Security: virtual agents and board specs', () => {
       expect(mockWrite).toHaveBeenCalledOnce()
     })
 
-    it('needs a pinned spec to set one', async () => {
+    it('sets one on a board without a pinned spec', async () => {
       pin.current = undefined
 
       const response = await assign('parser-bot')
 
-      expect(response.status).toBe(400)
-      expect(await errorOf(response)).toBe(NO_SPEC)
+      expect(response.status).toBe(200)
+      expect(mockWrite).toHaveBeenCalledOnce()
     })
   })
 
   describe('an editor who cannot read the spec note', () => {
     beforeEach(() => keyFor(BLIND))
 
-    it('reports the spec as missing, the same as one that is gone', async () => {
+    it('assigns the same way whether the spec is unreadable or gone', async () => {
       const unreadable = await assign('parser-bot')
       pin.current = GONE_UUID
       const gone = await assign('parser-bot')
 
-      expect([unreadable.status, gone.status]).toEqual([400, 400])
-      expect(await errorOf(unreadable)).toBe(SPEC_MISSING)
-      expect(await errorOf(gone)).toBe(SPEC_MISSING)
-      expect(mockWrite).not.toHaveBeenCalled()
+      expect([unreadable.status, gone.status]).toEqual([200, 200])
+      expect(JSON.stringify(await unreadable.json())).not.toContain('tokenizer')
     })
 
     it('cannot pin a note it cannot read, and learns nothing about it', async () => {
@@ -325,10 +328,8 @@ describe('Security: virtual agents and board specs', () => {
     it('stay opaque when a board already points at one', async () => {
       pin.current = SECRET_UUID
 
-      const refused = await assign('parser-bot')
       const { data } = await (await context()).json()
 
-      expect(await errorOf(refused)).toBe(SPEC_ENCRYPTED)
       expect(data.spec.status).toBe(SpecStatus.ENCRYPTED)
       expect(data.spec.note).toBeUndefined()
       expect(JSON.stringify(data)).not.toContain('agents-are-in-here')

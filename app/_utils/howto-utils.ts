@@ -3,31 +3,20 @@ import path from "path";
 
 export const API_GUIDE_ID = "api";
 
-export enum HowtoSections {
-  JOTTY = "jotty",
-  MCP = "mcp",
-}
-
-export const HOWTO_SECTION_ORDER: HowtoSections[] = [HowtoSections.JOTTY, HowtoSections.MCP];
-
-export type HowtoLabel = (key: string) => string;
-
 export interface HowtoGuide {
   id: string;
   name: string;
   filename: string;
   icon: string;
-  section: HowtoSections;
   translationKey: string;
 }
 
-export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
+export const getHowtoGuides = (t: any): HowtoGuide[] => [
   {
     id: "shortcuts",
     name: t("help.shortcuts"),
     filename: "SHORTCUTS.md",
     icon: "zap",
-    section: HowtoSections.JOTTY,
     translationKey: "help.shortcuts",
   },
   {
@@ -35,7 +24,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.markdownGuide"),
     filename: "MARKDOWN.md",
     icon: "hash",
-    section: HowtoSections.JOTTY,
     translationKey: "help.markdownGuide",
   },
   {
@@ -43,7 +31,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.brain"),
     filename: "BRAIN.md",
     icon: "brain",
-    section: HowtoSections.JOTTY,
     translationKey: "help.brain",
   },
   {
@@ -51,7 +38,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("common.api"),
     filename: "API.md",
     icon: "code",
-    section: HowtoSections.JOTTY,
     translationKey: "common.api",
   },
   {
@@ -59,31 +45,13 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.mcp"),
     filename: "MCP.md",
     icon: "robot",
-    section: HowtoSections.MCP,
     translationKey: "help.mcp",
-  },
-  {
-    id: "mcp-tools",
-    name: t("help.mcpTools"),
-    filename: "MCP-TOOLS.md",
-    icon: "tools",
-    section: HowtoSections.MCP,
-    translationKey: "help.mcpTools",
-  },
-  {
-    id: "mcp-agents",
-    name: t("help.mcpAgents"),
-    filename: "MCP-AGENTS.md",
-    icon: "bot",
-    section: HowtoSections.MCP,
-    translationKey: "help.mcpAgents",
   },
   {
     id: "customisations",
     name: t("help.customisations"),
     filename: "CUSTOMISATIONS.md",
     icon: "paintbrush",
-    section: HowtoSections.JOTTY,
     translationKey: "help.customisations",
   },
   {
@@ -91,7 +59,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.docker"),
     filename: "DOCKER.md",
     icon: "laptop",
-    section: HowtoSections.JOTTY,
     translationKey: "help.docker",
   },
   {
@@ -99,7 +66,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.unraid"),
     filename: "UNRAID.md",
     icon: "rain",
-    section: HowtoSections.JOTTY,
     translationKey: "help.unraid",
   },
   {
@@ -107,7 +73,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.envVariables"),
     filename: "ENV-VARIABLES.md",
     icon: "key",
-    section: HowtoSections.JOTTY,
     translationKey: "help.envVariables",
   },
   {
@@ -115,7 +80,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.pwa"),
     filename: "PWA.md",
     icon: "smartphone",
-    section: HowtoSections.JOTTY,
     translationKey: "help.pwa",
   },
   {
@@ -123,7 +87,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.encryption"),
     filename: "ENCRYPTION.md",
     icon: "lock",
-    section: HowtoSections.JOTTY,
     translationKey: "help.encryption",
   },
   {
@@ -131,7 +94,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.mfa"),
     filename: "MFA.md",
     icon: "computerphone",
-    section: HowtoSections.JOTTY,
     translationKey: "help.mfa",
   },
   {
@@ -139,7 +101,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.sso"),
     filename: "SSO.md",
     icon: "squarelock",
-    section: HowtoSections.JOTTY,
     translationKey: "help.sso",
   },
   {
@@ -147,7 +108,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.ldap"),
     filename: "LDAP.md",
     icon: "users",
-    section: HowtoSections.JOTTY,
     translationKey: "help.ldap",
   },
   {
@@ -155,7 +115,6 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.translations"),
     filename: "TRANSLATIONS.md",
     icon: "translation",
-    section: HowtoSections.JOTTY,
     translationKey: "help.translations",
   },
   {
@@ -163,14 +122,13 @@ export const getHowtoGuides = (t: HowtoLabel): HowtoGuide[] => [
     name: t("help.patches"),
     filename: "PATCHES.md",
     icon: "patch",
-    section: HowtoSections.JOTTY,
     translationKey: "help.patches",
   },
 ];
 
 export const getHowtoGuideById = (
   id: string,
-  t: HowtoLabel,
+  t: any,
 ): HowtoGuide | undefined => {
   return getHowtoGuides(t).find((guide) => guide.id === id);
 };
@@ -179,6 +137,6 @@ export const getHowtoFilePath = (filename: string): string => {
   return path.join(HOWTO_DIR, filename);
 };
 
-export const isValidHowtoGuide = (id: string, t: HowtoLabel): boolean => {
+export const isValidHowtoGuide = (id: string, t: any): boolean => {
   return getHowtoGuides(t).some((guide) => guide.id === id);
 };

@@ -10,6 +10,7 @@ import {
 import { Snipper } from "@/app/_utils/spec/bounds";
 import { mentions, specEntries } from "@/app/_utils/spec/sections";
 import { SpecTask } from "@/app/_utils/spec/roster";
+import { cardKey } from "@/app/_utils/kanban/card-keys";
 import { SpecRead } from "./spec";
 
 const _closed = (status: SpecStatus): ContextSpec => ({
@@ -23,6 +24,7 @@ const _closed = (status: SpecStatus): ContextSpec => ({
 
 export const specView = (
   spec: SpecRead,
+  boardUuid: string,
   item: Item,
   task: SpecTask | undefined,
   snip: Snipper,
@@ -30,7 +32,9 @@ export const specView = (
   if (spec.status !== SpecStatus.LINKED) return _closed(spec.status);
 
   const { sections } = spec;
-  const needles = [item.id, item.agent].filter((needle): needle is string => !!needle);
+  const needles = [item.id, cardKey(boardUuid, item.id), item.agent].filter(
+    (needle): needle is string => !!needle,
+  );
 
   const whole = (name: SpecSections) => snip.text(sections[name] || undefined, SECTION_MAX_CHARS);
 
@@ -56,7 +60,7 @@ export const specView = (
       task: {
         line: snip.text(task.line, ENTRY_MAX_CHARS) ?? "",
         dependsOn: task.dependsOn,
-        ...(task.agent && { agent: task.agent }),
+        ...(task.agent && { agent: task.agent, agentMatches: task.agent === item.agent }),
       },
     }),
     progress: picked(SpecSections.PROGRESS),

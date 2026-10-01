@@ -4,6 +4,7 @@ import { isUuid } from "@/app/_consts/identity";
 import { SpecStatus } from "@/app/_consts/agents";
 import { envelope, pageFields, timestamp } from "./common";
 import { statusChangeSchema } from "./items";
+import { cardChangedSchema } from "./kanban";
 
 const specStatusSchema = z
   .enum(SpecStatus)
@@ -20,7 +21,14 @@ export const cardAgentBody = z.object({
   agent: z
     .string()
     .nullish()
-    .describe("Agent id listed in the spec note's Agents section. Empty, null or missing clears it"),
+    .describe("Agent id, 1-64 lowercase letters, digits, dots, dashes or underscores. Empty, null or missing clears it"),
+});
+
+export const agentChangedSchema = cardChangedSchema.extend({
+  warning: z
+    .string()
+    .optional()
+    .describe("Set when the agent isn't in the spec's Agents section or the card's task line names another agent"),
 });
 
 export const boardSpecBody = z.object({
@@ -95,7 +103,15 @@ const contextSpecSchema = z.object({
   references: z.string().optional(),
   agents: z.array(agentRoleSchema),
   task: z
-    .object({ line: z.string(), dependsOn: z.array(z.string()), agent: z.string().optional() })
+    .object({
+      line: z.string(),
+      dependsOn: z.array(z.string()),
+      agent: z.string().optional(),
+      agentMatches: z
+        .boolean()
+        .optional()
+        .describe("Whether the card's agent is the one this task line names. False means the card or the spec needs updating"),
+    })
     .optional()
     .describe("This card's line in the Tasks section"),
   progress: z.array(z.string()).describe("Progress entries mentioning this card or its agent, the last 10"),

@@ -69,7 +69,7 @@ vi.mock("@/app/_server/actions/api/authenticate", () => ({
 import { spliceNote } from "@/app/_server/actions/note/splice";
 import { findReplace } from "@/app/_utils/note-edits";
 import { dropMounts } from "@/app/_server/actions/share/mounts";
-import { AGENT_NOT_INDEXED, SpecStatus } from "@/app/_consts/agents";
+import { SpecStatus } from "@/app/_consts/agents";
 import { Modes } from "@/app/_types/enums";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
 import type { SanitisedUser } from "@/app/_types";
@@ -241,9 +241,10 @@ describe("Virtual agents coordinating on real board files", () => {
     expect((await agentAs("bob", SHARED_BOARD, "card-b", "ui-bot")).status).toBe(200);
     expect((await agentAs("bob", SHARED_BOARD, "card-c", "parser-bot")).status).toBe(200);
 
-    const refused = await agentAs("bob", SHARED_BOARD, "card-b", "ghost-bot");
-    expect(refused.status).toBe(400);
-    expect((await refused.json()).error).toBe(AGENT_NOT_INDEXED);
+    const unlisted = await agentAs("bob", SHARED_BOARD, "card-b", "ghost-bot");
+    expect(unlisted.status).toBe(200);
+    expect(lineOf(sharedBoardFile(), "Preview")).toContain("| agent:ghost-bot |");
+    expect((await agentAs("bob", SHARED_BOARD, "card-b", "ui-bot")).status).toBe(200);
 
     expect(lineOf(sharedBoardFile(), "Tokenizer")).toContain("| assignee:bob | agent:parser-bot |");
     expect(lineOf(sharedBoardFile(), "Preview")).toContain("| agent:ui-bot |");
