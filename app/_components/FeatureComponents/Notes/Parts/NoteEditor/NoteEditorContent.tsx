@@ -28,6 +28,7 @@ interface NoteEditorContentProps {
     isMarkdown: boolean,
     isDirty: boolean,
   ) => void;
+  onRemoteContentChange?: (content: string, isMarkdown: boolean) => void;
   noteId?: string;
   encrypted?: boolean;
   onOpenDecryptModal?: () => void;
@@ -39,6 +40,7 @@ export const NoteEditorContent = ({
   noteContent,
   editorContent,
   onEditorContentChange,
+  onRemoteContentChange,
   noteId,
   encrypted,
   onOpenDecryptModal,
@@ -138,6 +140,7 @@ export const NoteEditorContent = ({
           ref={editorRef}
           content={editorContent}
           onChange={onEditorContentChange}
+          onRemoteChange={onRemoteContentChange}
           tableSyntax={user?.tableSyntax}
           notes={notes}
           checklists={checklists}

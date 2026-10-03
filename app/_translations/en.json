@@ -1916,9 +1916,12 @@
   },
   "live": {
     "currentlyEditing": "Currently editing",
+    "dropped": "Someone changed this note while you were offline, so your unsaved changes were dropped.",
+    "copyDropped": "Copy my changes",
     "status": {
-      "offline": "Offline, save your changes, they may be lost when your session is reconnected",
-      "refused": "Live editing stopped because your access or this note changed. Refresh to continue."
+      "offline": "Offline. If someone else changes this note before you reconnect, your unsaved changes will be dropped.",
+      "refused": "Live editing stopped because your access or this note changed. Refresh to continue.",
+      "unavailable": "Live editing isn't available, so you're editing on your own. Your changes still save."
     }
   }
 }
