@@ -110,7 +110,10 @@ export async function register() {
     }
 
     import("./app/_server/actions/live/room")
-      .then(({ liveUpgrade }) => ((globalThis as any).__jottyLiveUpgrade = liveUpgrade))
+      .then(({ liveUpgrade, liveRecheck }) => {
+        globalThis.__jottyLiveUpgrade = liveUpgrade;
+        globalThis.__jottyLiveRecheck = liveRecheck;
+      })
       .catch((err) => console.error("[live] runtime failed to start:", err));
 
     if (!(globalThis as any).__jottyRelationsStarted) {

@@ -47,12 +47,15 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
-function authenticateWs(req) {
+function sessionIdOf(req) {
   const cookies = parseCookies(req.headers.cookie);
-  const isHttps = process.env.HTTPS === "true";
-  const sessionId = isHttps
+  return process.env.HTTPS === "true"
     ? cookies["__Host-session"]
     : cookies["session"];
+}
+
+function authenticateWs(req) {
+  const sessionId = sessionIdOf(req);
 
   if (!sessionId) return null;
 
@@ -141,7 +144,7 @@ app.prepare().then(() => {
         socket.destroy();
         return;
       }
-      globalThis.__jottyLiveUpgrade(req, socket, head, username);
+      globalThis.__jottyLiveUpgrade(req, socket, head, username, sessionIdOf(req));
       return;
     }
     if (pathname === "/_ws") {

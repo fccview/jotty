@@ -419,7 +419,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
                 ))}
               </>
             ) : (
-              <span>{t("live.status.refused")}</span>
+              <span>{t(`live.status.${live.refusal}`)}</span>
             )}
           </div>
         )}

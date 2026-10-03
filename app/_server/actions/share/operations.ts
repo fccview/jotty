@@ -104,6 +104,7 @@ const _notify = async (
 ): Promise<void> => {
   dropMounts(mode);
   revalidateTag(_modeTag(mode), { expire: 0 });
+  if (mode === Modes.NOTES) void globalThis.__jottyLiveRecheck?.();
 
   await Promise.all(
     affected.map((username) =>

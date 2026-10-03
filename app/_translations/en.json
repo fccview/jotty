@@ -1917,7 +1917,9 @@
   "live": {
     "currentlyEditing": "Currently editing",
     "status": {
-      "refused": "Your edit access changed. Refresh to update your permissions."
+      "refused": "Your edit access changed. Refresh to update your permissions.",
+      "encrypted": "This note is now encrypted, so live editing has stopped. Refresh to continue.",
+      "locked": "This note is locked, so live editing has stopped."
     }
   }
 }
