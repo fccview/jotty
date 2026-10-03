@@ -231,21 +231,15 @@ export const liveUpgrade = (
     const filePath =
       rooms.get(uuid)?.filePath ??
       (await grepFindFileByUuid(path.join(process.cwd(), DATA_DIR, Modes.NOTES), uuid))?.filePath;
-    if (!filePath) {
-      socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
-      socket.destroy();
-      return;
-    }
     try {
+      if (!filePath) throw new LiveRefusal("Note not found");
       await assertCanEdit(uuid, filePath, actor, sessionId);
+      const room = await openRoom(uuid, filePath);
+      wss.handleUpgrade(req, socket, head, (ready) => attach(ready, room, uuid, actor, sessionId));
     } catch (error) {
       if (!(error instanceof LiveRefusal)) throw error;
-      socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
-      socket.destroy();
-      return;
+      wss.handleUpgrade(req, socket, head, (ready) => ready.close(CLOSE_REFUSED));
     }
-    const room = await openRoom(uuid, filePath);
-    wss.handleUpgrade(req, socket, head, (ready) => attach(ready, room, uuid, actor, sessionId));
   }).catch((error) => {
     console.error("[live] upgrade failed:", error);
     socket.destroy();

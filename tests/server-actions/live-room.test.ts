@@ -37,7 +37,7 @@ describe("live room", () => {
   let sockets: WebSocket[];
 
   const connect = (id = UUID) =>
-    new Promise<{ socket: WebSocket; ready?: Record<string, unknown>; status?: number; closed: Promise<{ code: number; reason: string }> }>(
+    new Promise<{ socket: WebSocket; ready?: Record<string, unknown>; refused?: number; closed: Promise<{ code: number; reason: string }> }>(
       (resolve) => {
         const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as AddressInfo).port}/_live/${id}`);
         sockets.push(socket);
@@ -45,7 +45,7 @@ describe("live room", () => {
           socket.on("close", (code, reason) => done({ code, reason: reason.toString() })),
         );
         socket.on("message", (data) => resolve({ socket, ready: JSON.parse(data.toString()), closed }));
-        socket.on("unexpected-response", (_, res) => resolve({ socket, status: res.statusCode, closed }));
+        socket.on("close", (code) => resolve({ socket, refused: code, closed }));
         socket.on("error", () => {});
       },
     );
@@ -79,18 +79,28 @@ describe("live room", () => {
 
   it("refuses someone without edit access", async () => {
     mockCanReach.mockResolvedValue(false);
-    expect((await connect()).status).toBe(403);
+    expect((await connect()).refused).toBe(1008);
   });
 
   it("refuses an encrypted note", async () => {
     fs.writeFileSync(notePath, secretNote);
-    expect((await connect()).status).toBe(403);
+    expect((await connect()).refused).toBe(1008);
+  });
+
+  it("refuses a note that does not exist", async () => {
+    mockFind.mockResolvedValue(undefined);
+    expect((await connect()).refused).toBe(1008);
+  });
+
+  it("drops the handshake without refusing when the check itself fails", async () => {
+    mockCanReach.mockRejectedValue(new Error("disk on fire"));
+    expect((await connect()).refused).toBe(1006);
   });
 
   it("refuses a join when the note became encrypted under a live room", async () => {
     await connect();
     fs.writeFileSync(notePath, secretNote);
-    expect((await connect()).status).toBe(403);
+    expect((await connect()).refused).toBe(1008);
   });
 
   it("evicts a passive client when edit access is revoked", async () => {
