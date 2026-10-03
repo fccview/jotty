@@ -8,12 +8,6 @@ export enum LiveStatus {
   Refused = "refused",
 }
 
-export enum LiveRefusals {
-  Refused = "refused",
-  Encrypted = "encrypted",
-  Locked = "locked",
-}
-
 export enum LiveType {
   Ready = "ready",
   Update = "update",
@@ -24,7 +18,6 @@ export type LiveMessage =
   | {
       type: LiveType.Ready;
       snapshot: string;
-      generation: string;
       initialize: boolean;
       markdown: string;
     }

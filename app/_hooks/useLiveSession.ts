@@ -8,7 +8,7 @@ import {
   encodeAwarenessUpdate,
 } from "y-protocols/awareness";
 import { fromBase64, toBase64 } from "lib0/buffer";
-import { LiveRefusals, LiveStatus, LiveType, type LiveMessage } from "@/app/_types/live";
+import { LiveStatus, LiveType, type LiveMessage } from "@/app/_types/live";
 
 const RETRY_MS = 2000;
 const REMOTE = Symbol("remote");
@@ -49,7 +49,6 @@ export const useLiveSession = (uuid?: string) => {
     hasContent: false,
     restored: false,
     peers: [] as string[],
-    refusal: LiveRefusals.Refused,
   });
 
   useEffect(() => {
@@ -59,7 +58,6 @@ export const useLiveSession = (uuid?: string) => {
     let timer: ReturnType<typeof setTimeout>;
     let stopped = false;
     let online = false;
-    let generation: string | null = null;
 
     const send = (type: LiveType.Update | LiveType.Awareness, bytes: Uint8Array) => {
       if (online && socket.readyState === WebSocket.OPEN) {
@@ -94,11 +92,9 @@ export const useLiveSession = (uuid?: string) => {
             const snapshot = fromBase64(message.snapshot);
             const { structs } = Y.decodeUpdate(snapshot);
             const foreign = !structs.some((struct) => doc.store.clients.has(struct.id.client));
-            const newRoom = generation !== null && generation !== message.generation;
-            generation = message.generation;
             doc.transact(() => {
               const fragment = doc.getXmlFragment("default");
-              if (newRoom || (structs.length && foreign)) fragment.delete(0, fragment.length);
+              if (structs.length && foreign) fragment.delete(0, fragment.length);
               Y.applyUpdate(doc, snapshot);
             }, REMOTE);
             online = true;
@@ -112,7 +108,6 @@ export const useLiveSession = (uuid?: string) => {
               hasContent: hasContent(),
               restored,
               peers: peerNames(awareness),
-              refusal: LiveRefusals.Refused,
             });
             send(LiveType.Update, Y.encodeStateAsUpdate(doc));
             shareCursor({ added: [doc.clientID], updated: [], removed: [] });
@@ -131,8 +126,7 @@ export const useLiveSession = (uuid?: string) => {
         if (stopped) return;
         const refused = event.code === 1008;
         stopped = refused;
-        const refusal = Object.values(LiveRefusals).find((reason) => reason === event.reason) ?? LiveRefusals.Refused;
-        setState((old) => ({ ...old, status: refused ? LiveStatus.Refused : LiveStatus.Offline, refusal }));
+        setState((old) => ({ ...old, status: refused ? LiveStatus.Refused : LiveStatus.Offline }));
         if (!refused) timer = setTimeout(connect, RETRY_MS);
       };
     };

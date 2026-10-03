@@ -400,7 +400,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     return (
       <div className="flex flex-col h-full pb-0">
-        {(live?.status === LiveStatus.Live || live?.status === LiveStatus.Refused) && (
+        {live && live.status !== LiveStatus.Joining && (
           <div
             role="status"
             className="flex flex-wrap items-center gap-2 px-6 py-1.5 text-xs text-muted-foreground border-b border-border"
@@ -418,8 +418,10 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
                   </span>
                 ))}
               </>
+            ) : live.status === LiveStatus.Offline ? (
+              <span>{t("live.status.offline")}</span>
             ) : (
-              <span>{t(`live.status.${live.refusal}`)}</span>
+              <span>{t("live.status.refused")}</span>
             )}
           </div>
         )}

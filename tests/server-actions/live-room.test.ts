@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { AddressInfo, Socket } from "node:net";
 import { WebSocket } from "ws";
-import { LiveRefusals, LiveType } from "@/app/_types/live";
+import { LiveType } from "@/app/_types/live";
 
 const UUID = "8b3e4d6a-ac5f-4e70-9b32-4d5e6f708192";
 const PATH_UUID = "8b3e4d6a-ac5f-5e70-9b32-4d5e6f708192";
@@ -72,10 +72,9 @@ describe("live room", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  it("admits an editor and sends a room generation", async () => {
+  it("admits an editor", async () => {
     const { ready } = await connect();
     expect(ready?.type).toBe(LiveType.Ready);
-    expect(typeof ready?.generation).toBe("string");
   });
 
   it("refuses someone without edit access", async () => {
@@ -98,7 +97,7 @@ describe("live room", () => {
     const { closed } = await connect();
     mockCanReach.mockResolvedValue(false);
     await room.liveRecheck();
-    expect(await closed).toEqual({ code: 1008, reason: LiveRefusals.Refused });
+    expect((await closed).code).toBe(1008);
   });
 
   it("keeps a client whose access still holds", async () => {
@@ -112,8 +111,8 @@ describe("live room", () => {
     const second = await connect();
     fs.writeFileSync(notePath, secretNote);
     await room.liveRecheck();
-    expect(await first.closed).toEqual({ code: 1008, reason: LiveRefusals.Encrypted });
-    expect(await second.closed).toEqual({ code: 1008, reason: LiveRefusals.Encrypted });
+    expect((await first.closed).code).toBe(1008);
+    expect((await second.closed).code).toBe(1008);
   });
 
   it("evicts a client whose session ended", async () => {
@@ -128,7 +127,7 @@ describe("live room", () => {
     const { closed } = await connect(PATH_UUID);
     mockLock.mockResolvedValue("locked");
     await room.liveRecheck();
-    expect(await closed).toEqual({ code: 1008, reason: LiveRefusals.Locked });
+    expect((await closed).code).toBe(1008);
   });
 
   it("closes with 1011, not 1008, when the permission check itself fails", async () => {
@@ -136,20 +135,6 @@ describe("live room", () => {
     mockCanReach.mockRejectedValue(new Error("disk on fire"));
     await room.liveRecheck();
     expect((await closed).code).toBe(1011);
-  });
-
-  it("starts a new generation once the last client leaves", async () => {
-    const first = await connect();
-    first.socket.close();
-    await first.closed;
-    const second = await connect();
-    expect(second.ready?.generation).not.toBe(first.ready?.generation);
-  });
-
-  it("keeps the generation while someone is still in the room", async () => {
-    const first = await connect();
-    const second = await connect();
-    expect(second.ready?.generation).toBe(first.ready?.generation);
   });
 
   it("evicts a passive client on the heartbeat even when no share event fires", async () => {
@@ -168,7 +153,7 @@ describe("live room", () => {
       await new Promise((ready) => socket.once("message", ready));
       mockCanReach.mockResolvedValue(false);
       await vi.advanceTimersByTimeAsync(30000);
-      expect(await closed).toEqual({ code: 1008, reason: LiveRefusals.Refused });
+      expect((await closed).code).toBe(1008);
     } finally {
       vi.useRealTimers();
       await new Promise((done) => beat.close(done));

@@ -1,5 +1,4 @@
 import path from "node:path";
-import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import { WebSocketServer, WebSocket } from "ws";
 import * as Y from "yjs";
@@ -14,7 +13,7 @@ import * as encoding from "lib0/encoding";
 import { DATA_DIR } from "@/app/_consts/files";
 import { isUuid } from "@/app/_consts/identity";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
-import { LiveRefusals, LiveType, type LiveMessage } from "@/app/_types/live";
+import { LiveType, type LiveMessage } from "@/app/_types/live";
 import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
@@ -30,11 +29,7 @@ const FIELD = "default";
 const CLOSE_REFUSED = 1008;
 const CLOSE_INTERNAL = 1011;
 
-class LiveRefusal extends Error {
-  constructor(message: string, readonly reason = LiveRefusals.Refused) {
-    super(message);
-  }
-}
+class LiveRefusal extends Error {}
 
 interface Client {
   actor: string;
@@ -45,7 +40,6 @@ interface Client {
 }
 
 interface Room {
-  generation: string;
   doc: Y.Doc;
   awareness: Awareness;
   markdown: string;
@@ -83,7 +77,6 @@ const awarenessMessage = (room: Room, ids: number[]): LiveMessage => ({
 
 const readyMessage = (room: Room, initialize: boolean): LiveMessage => ({
   type: LiveType.Ready,
-  generation: room.generation,
   snapshot: toBase64(Y.encodeStateAsUpdate(room.doc)),
   initialize,
   markdown: room.markdown,
@@ -94,16 +87,14 @@ const readPlain = async (filePath: string) => {
     await fs.readFile(filePath, "utf8"),
   );
   if (metadata.encrypted || isEncrypted(contentWithoutMetadata)) {
-    throw new LiveRefusal("Encrypted notes cannot be shared documents", LiveRefusals.Encrypted);
+    throw new LiveRefusal("Encrypted notes cannot be shared documents");
   }
   return contentWithoutMetadata;
 };
 
 const assertCanEdit = async (uuid: string, filePath: string, actor: string, sessionId: string) => {
   if ((await readSessions())[sessionId] !== actor) throw new LiveRefusal("Session ended");
-  if (isPathUuid(uuid) && (await lockOf(filePath))) {
-    throw new LiveRefusal("Item is locked", LiveRefusals.Locked);
-  }
+  if (isPathUuid(uuid) && (await lockOf(filePath))) throw new LiveRefusal("Item is locked");
   if (!(await canReachFile(Modes.NOTES, filePath, actor, PermissionTypes.EDIT))) {
     throw new LiveRefusal("Edit permission revoked");
   }
@@ -111,9 +102,7 @@ const assertCanEdit = async (uuid: string, filePath: string, actor: string, sess
 };
 
 const closeSocket = (socket: WebSocket, error: unknown) =>
-  error instanceof LiveRefusal
-    ? socket.close(CLOSE_REFUSED, error.reason)
-    : socket.close(CLOSE_INTERNAL);
+  socket.close(error instanceof LiveRefusal ? CLOSE_REFUSED : CLOSE_INTERNAL);
 
 const openRoom = async (uuid: string, filePath: string): Promise<Room> => {
   const existing = rooms.get(uuid);
@@ -123,7 +112,6 @@ const openRoom = async (uuid: string, filePath: string): Promise<Room> => {
   const awareness = new Awareness(doc);
   awareness.setLocalState(null);
   const room: Room = {
-    generation: randomUUID(),
     doc,
     awareness,
     markdown: contentWithoutMetadata,
