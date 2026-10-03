@@ -50,6 +50,7 @@ export interface NoteEditorViewModel {
     isMarkdown: boolean,
     isDirty: boolean
   ) => void;
+  handleRemoteContentChange: (content: string, isMarkdown: boolean) => void;
   showUnsavedChangesModal: boolean;
   setShowUnsavedChangesModal: (show: boolean) => void;
   handleUnsavedChangesSave: () => void;

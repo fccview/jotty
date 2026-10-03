@@ -63,6 +63,7 @@ export const NoteEditor = ({
               noteContent={note.content}
               editorContent={viewModel.editorContent}
               onEditorContentChange={viewModel.handleEditorContentChange}
+              onRemoteContentChange={viewModel.handleRemoteContentChange}
               noteId={note.uuid}
               encrypted={note.encrypted}
               onOpenDecryptModal={() => decryptModalRef.current?.()}

@@ -1913,5 +1913,15 @@
     "confirmMessage": "Jotty will rewrite the frontmatter at the top of this file. It quotes values that aren't valid YAML, swaps tabs for spaces, moves a uuid that isn't a Jotty id to previousUuid, and adds its own uuid. The rest of the file stays as it is. Jotty can't undo this, so keep a copy if another app reads this frontmatter. You need edit access to this item, and its folder must be writable.",
     "confirm": "Fix the frontmatter",
     "fixed": "Fixed. You can edit this item now."
+  },
+  "live": {
+    "currentlyEditing": "Currently editing",
+    "dropped": "Someone changed this note while you were offline, so your unsaved changes were dropped.",
+    "copyDropped": "Copy my changes",
+    "status": {
+      "offline": "Offline. If someone else changes this note before you reconnect, your unsaved changes will be dropped.",
+      "refused": "Live editing stopped because your access or this note changed. Refresh to continue.",
+      "unavailable": "Live editing isn't available, so you're editing on your own. Your changes still save."
+    }
   }
 }
