@@ -3,6 +3,7 @@ import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import type { Doc } from "yjs";
 import type { Awareness } from "y-protocols/awareness";
+import { liveCaret, liveSelection, type AvatarOf } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorUtils/liveCaret";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -65,7 +66,7 @@ export const createEditorExtensions = (
   editorSettings?: EditorSettings,
   editorData?: EditorData,
   t?: (key: string) => string,
-  live?: { doc: Doc; awareness: Awareness } | null,
+  live?: { doc: Doc; awareness: Awareness; avatarOf: AvatarOf } | null,
 ) => {
   const settings = editorSettings || {
     enableSlashCommands: true,
@@ -238,6 +239,8 @@ export const createEditorExtensions = (
       CollaborationCaret.configure({
         provider: { awareness: live.awareness },
         user: { name: editorData?.username || "" },
+        render: liveCaret(live.avatarOf),
+        selectionRender: liveSelection,
       }),
     ] : []),
   ];

@@ -1,5 +1,5 @@
 import type { IncomingMessage } from "node:http";
-import type { Socket } from "node:net";
+import type { Duplex } from "node:stream";
 
 export enum LiveStatus {
   Joining = "joining",
@@ -25,7 +25,7 @@ export type LiveMessage =
 
 declare global {
   var __jottyLiveUpgrade:
-    | ((req: IncomingMessage, socket: Socket, head: Buffer, actor: string, sessionId: string) => void)
+    | ((req: IncomingMessage, socket: Duplex, head: Buffer, actor: string, sessionId: string) => void)
     | undefined;
   var __jottyLiveRecheck: (() => Promise<unknown>) | undefined;
 }

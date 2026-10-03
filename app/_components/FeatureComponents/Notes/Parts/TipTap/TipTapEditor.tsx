@@ -60,7 +60,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     { content, onChange, onRemoteChange, tableSyntax, notes, checklists, collaborationUuid },
     ref,
   ) => {
-    const { user, appSettings, tagsIndex } = useAppMode();
+    const { user, appSettings, tagsIndex, usersPublicData } = useAppMode();
     const { compactMode } = useSettings();
     const t = useTranslations();
 
@@ -82,6 +82,12 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     };
 
     const live = useLiveSession(collaborationUuid, getOriginalMarkdown);
+    const peopleRef = useRef(usersPublicData);
+    peopleRef.current = usersPublicData;
+    const avatarOf = useCallback(
+      (name: string) => peopleRef.current.find((entry) => entry.username === name)?.avatarUrl || undefined,
+      [],
+    );
 
     const initialOutput =
       defaultEditorIsMarkdown && !contentIsMarkdown
@@ -157,7 +163,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           tags: Object.keys(tagsIndex || {}),
         },
         t,
-        live,
+        live && { doc: live.doc, awareness: live.awareness, avatarOf },
       ),
       content: "",
       onUpdate: ({ editor, transaction }) => {

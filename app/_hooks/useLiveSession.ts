@@ -11,6 +11,7 @@ import { fromBase64, toBase64 } from "lib0/buffer";
 import { LiveStatus, LiveType, type LiveMessage } from "@/app/_types/live";
 
 const RETRY_MS = 2000;
+const DEV_WS_PORT = 3131;
 const JOIN_TIMEOUT_MS = 5000;
 const REMOTE = Symbol("remote");
 export const LIVE_FIELD = "default";
@@ -83,7 +84,7 @@ const peerNames = (awareness: Awareness) =>
 
 export const useLiveSession = (uuid: string | undefined, readFile: () => string) => {
   const [session] = useState(() => {
-    if (!uuid || typeof window === "undefined" || process.env.NODE_ENV !== "production") return null;
+    if (!uuid || typeof window === "undefined") return null;
     const doc = new Y.Doc();
     return { doc, awareness: new Awareness(doc) };
   });
@@ -101,9 +102,11 @@ export const useLiveSession = (uuid: string | undefined, readFile: () => string)
   const fileRef = useRef(readFile);
   fileRef.current = readFile;
   const resetting = useRef(false);
+  const teardown = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     if (!uuid || !session) return;
+    clearTimeout(teardown.current);
     const { doc, awareness } = session;
     let socket: WebSocket;
     let timer: ReturnType<typeof setTimeout>;
@@ -173,7 +176,9 @@ export const useLiveSession = (uuid: string | undefined, readFile: () => string)
     const connect = () => {
       if (stopped) return;
       socket = new WebSocket(
-        `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/_live/${uuid}`,
+        process.env.NODE_ENV === "development"
+          ? `ws://${location.hostname}:${DEV_WS_PORT}/_live/${uuid}`
+          : `${location.protocol === "https:" ? "wss:" : "ws:"}//${location.host}/_live/${uuid}`,
       );
       socket.onmessage = (event) => {
         if (stopped) return;
@@ -206,13 +211,14 @@ export const useLiveSession = (uuid: string | undefined, readFile: () => string)
       stopped = true;
       clearTimeout(timer);
       clearTimeout(joinTimer);
-      awareness.setLocalState(null);
       doc.off("update", shareDoc);
       awareness.off("update", shareCursor);
       awareness.off("change", sharePeers);
       socket.close();
-      awareness.destroy();
-      doc.destroy();
+      teardown.current = setTimeout(() => {
+        awareness.destroy();
+        doc.destroy();
+      });
     };
   }, [uuid, session]);
 

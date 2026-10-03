@@ -28,6 +28,7 @@ const RECHECK_MS = 5000;
 const FIELD = "default";
 const CLOSE_REFUSED = 1008;
 const CLOSE_INTERNAL = 1011;
+const DEV = process.env.NODE_ENV !== "production";
 
 class LiveRefusal extends Error {}
 
@@ -59,6 +60,11 @@ const liveColour = (username: string) =>
   COLOURS[Array.from(username).reduce((total, char) => total + char.charCodeAt(0), 0) % COLOURS.length];
 
 const toBase64 = (bytes: Uint8Array) => Buffer.from(bytes).toString("base64");
+
+const sameSite = (origin: string, host = "") => {
+  const page = new URL(origin);
+  return DEV ? page.hostname === new URL(`http://${host}`).hostname : page.host === host;
+};
 
 const send = (socket: WebSocket, message: LiveMessage) => {
   if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message));
@@ -209,7 +215,7 @@ const attach = (socket: WebSocket, room: Room, uuid: string, actor: string, sess
 
 export const liveUpgrade = (
   req: import("node:http").IncomingMessage,
-  socket: import("node:net").Socket,
+  socket: import("node:stream").Duplex,
   head: Buffer,
   actor: string,
   sessionId: string,
@@ -217,8 +223,7 @@ export const liveUpgrade = (
   let uuid: string;
   try {
     uuid = new URL(req.url || "/", "http://jotty").pathname.split("/")[2];
-    if (!isUuid(uuid) || (req.headers.origin &&
-      new URL(req.headers.origin).host !== req.headers.host)) {
+    if (!isUuid(uuid) || (req.headers.origin && !sameSite(req.headers.origin, req.headers.host))) {
       socket.destroy();
       return;
     }
