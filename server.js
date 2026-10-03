@@ -135,6 +135,15 @@ app.prepare().then(() => {
 
   server.on("upgrade", (req, socket, head) => {
     const { pathname } = parse(req.url);
+    if (pathname.startsWith("/_live/")) {
+      const username = authenticateWs(req);
+      if (!username || !globalThis.__jottyLiveUpgrade) {
+        socket.destroy();
+        return;
+      }
+      globalThis.__jottyLiveUpgrade(req, socket, head, username);
+      return;
+    }
     if (pathname === "/_ws") {
       const username = authenticateWs(req);
       if (!username) {

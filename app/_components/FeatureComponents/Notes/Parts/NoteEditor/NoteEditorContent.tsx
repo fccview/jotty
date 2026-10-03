@@ -133,6 +133,8 @@ export const NoteEditorContent = ({
     <div className="flex-1 h-full">
       {isEditorVisible ? (
         <TiptapEditor
+          key={noteId}
+          collaborationUuid={!encrypted ? noteId : undefined}
           ref={editorRef}
           content={editorContent}
           onChange={onEditorContentChange}

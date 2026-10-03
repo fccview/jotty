@@ -109,6 +109,10 @@ export async function register() {
       console.log(`> WebSocket dev server running on ws://0.0.0.0:${WS_PORT}`);
     }
 
+    import("./app/_server/actions/live/room")
+      .then(({ liveUpgrade }) => ((globalThis as any).__jottyLiveUpgrade = liveUpgrade))
+      .catch((err) => console.error("[live] runtime failed to start:", err));
+
     if (!(globalThis as any).__jottyRelationsStarted) {
       (globalThis as any).__jottyRelationsStarted = true;
       import("./app/_server/actions/relations/indexer")

@@ -1,4 +1,8 @@
 import { ReactNodeViewRenderer } from "@tiptap/react";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+import type { Doc } from "yjs";
+import type { Awareness } from "y-protocols/awareness";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -60,7 +64,8 @@ export const createEditorExtensions = (
   callbacks: OverlayCallbacks,
   editorSettings?: EditorSettings,
   editorData?: EditorData,
-  t?: (key: string) => string
+  t?: (key: string) => string,
+  live?: { doc: Doc; awareness: Awareness } | null,
 ) => {
   const settings = editorSettings || {
     enableSlashCommands: true,
@@ -77,6 +82,7 @@ export const createEditorExtensions = (
       listItem: false,
       bulletList: false,
       hardBreak: false,
+      ...(live && { undoRedo: false as const }),
       code: {
         HTMLAttributes: { spellcheck: "false" },
       },
@@ -227,6 +233,13 @@ export const createEditorExtensions = (
     BulletList.extend({
       content: "listItem+",
     }),
+    ...(live ? [
+      Collaboration.configure({ document: live.doc }),
+      CollaborationCaret.configure({
+        provider: { awareness: live.awareness },
+        user: { name: editorData?.username || "" },
+      }),
+    ] : []),
   ];
 
   return extensions;
