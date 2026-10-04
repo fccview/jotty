@@ -22,6 +22,7 @@ import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
+import { markSaved } from "@/app/_hooks/useLiveSession";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseNoteEditorProps {
@@ -280,6 +281,10 @@ export const useNoteEditor = ({
 
       const result = await updateNote(formData, useAutosave);
 
+      if (result.success && !isEditingEncrypted && note.uuid) {
+        markSaved(note.uuid, cleanContent);
+      }
+
       if (!result.success) {
         showToast({
           type: "error",
@@ -332,11 +337,13 @@ export const useNoteEditor = ({
       autosaveTimeoutRef.current = setTimeout(() => {
         setStatus((prev) => ({ ...prev, isAutoSaving: true }));
         const isAutosave = autosaveNotes ? true : false;
-        handleSave(isAutosave).finally(() => {
-          setStatus((prev) => ({ ...prev, isAutoSaving: false }));
-          setHasUnsavedChanges(false);
-          setContentIsDirty(false);
-        });
+        handleSave(isAutosave)
+          .catch((error) => console.error("[note] autosave failed:", error))
+          .finally(() => {
+            setStatus((prev) => ({ ...prev, isAutoSaving: false }));
+            setHasUnsavedChanges(false);
+            setContentIsDirty(false);
+          });
       }, user?.notesAutoSaveInterval || 5000);
     }
     return () => {
@@ -367,6 +374,11 @@ export const useNoteEditor = ({
     setEditorContent(content);
     setIsMarkdownMode(isMarkdown);
     setContentIsDirty(isDirty);
+  };
+
+  const handleRemoteContentChange = (content: string, isMarkdown: boolean) => {
+    setEditorContent(content);
+    setIsMarkdownMode(isMarkdown);
   };
 
   const handleEdit = () => setIsEditing(true);
@@ -504,6 +516,7 @@ export const useNoteEditor = ({
     handleSave,
     handleDelete: () => setShowDeleteModal(true),
     handleEditorContentChange,
+    handleRemoteContentChange,
     derivedMarkdownContent,
     showUnsavedChangesModal,
     setShowUnsavedChangesModal,

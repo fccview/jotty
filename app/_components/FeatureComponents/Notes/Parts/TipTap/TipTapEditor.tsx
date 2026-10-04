@@ -28,6 +28,10 @@ import { BubbleMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipT
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useTranslations } from "next-intl";
 import { menuCeilingProps } from "@/app/_utils/menu-placement-utils";
+import { isChangeOrigin } from "@tiptap/extension-collaboration";
+import { prosemirrorToYXmlFragment, yUndoPluginKey } from "@tiptap/y-tiptap";
+import { LIVE_FIELD, saveDraft, useLiveSession } from "@/app/_hooks/useLiveSession";
+import { LiveStatusBar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/LiveStatusBar";
 
 type TiptapEditorProps = {
   content: string;
@@ -36,9 +40,11 @@ type TiptapEditorProps = {
     isMarkdownMode: boolean,
     isDirty: boolean,
   ) => void;
+  onRemoteChange?: (content: string, isMarkdownMode: boolean) => void;
   tableSyntax?: TableSyntax;
   notes?: any[];
   checklists?: any[];
+  collaborationUuid?: string;
 };
 
 export interface TiptapEditorRef {
@@ -50,8 +56,11 @@ export interface TiptapEditorRef {
 }
 
 export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
-  ({ content, onChange, tableSyntax, notes, checklists }, ref) => {
-    const { user, appSettings, tagsIndex } = useAppMode();
+  (
+    { content, onChange, onRemoteChange, tableSyntax, notes, checklists, collaborationUuid },
+    ref,
+  ) => {
+    const { user, appSettings, tagsIndex, usersPublicData } = useAppMode();
     const { compactMode } = useSettings();
     const t = useTranslations();
 
@@ -72,6 +81,14 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       return convertHtmlToMarkdownUnified(content, tableSyntax);
     };
 
+    const live = useLiveSession(collaborationUuid, getOriginalMarkdown);
+    const peopleRef = useRef(usersPublicData);
+    peopleRef.current = usersPublicData;
+    const avatarOf = useCallback(
+      (name: string) => peopleRef.current.find((entry) => entry.username === name)?.avatarUrl || undefined,
+      [],
+    );
+
     const initialOutput =
       defaultEditorIsMarkdown && !contentIsMarkdown
         ? convertHtmlToMarkdownUnified(content, tableSyntax)
@@ -89,6 +106,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const [linkRequestHasSelection, setLinkRequestHasSelection] =
       useState(false);
     const isInitialized = useRef(false);
+    const liveGeneration = useRef(0);
     const debounceTimeoutRef = useRef<NodeJS.Timeout>(undefined);
     const originalMarkdownRef = useRef<string>(getOriginalMarkdown());
     const richEditorWasEditedRef = useRef<boolean>(false);
@@ -96,6 +114,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     const uploadHook = useFileUpload(appSettings?.maximumFileSize);
     const tableToolbar = useTableToolbar();
+
+    const draftTimeoutRef = useRef<NodeJS.Timeout>(undefined);
 
     const debouncedOnChange = useCallback(
       (newContent: string, isMarkdown: boolean, isDirty: boolean) => {
@@ -105,8 +125,14 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         debounceTimeoutRef.current = setTimeout(() => {
           onChange(newContent, isMarkdown, isDirty);
         }, 0);
+        if (!collaborationUuid || !isDirty) return;
+        clearTimeout(draftTimeoutRef.current);
+        draftTimeoutRef.current = setTimeout(() => saveDraft(
+          collaborationUuid,
+          isMarkdown ? newContent : convertHtmlToMarkdownUnified(newContent, tableSyntax),
+        ), 300);
       },
-      [onChange],
+      [onChange, collaborationUuid, tableSyntax],
     );
 
     const imageClickRef = useRef<((pos: any) => void) | null>(null);
@@ -118,6 +144,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     const editor: Editor | null = useEditor({
       immediatelyRender: false,
+      editable: !live,
       extensions: createEditorExtensions(
         {
           onImageClick: (pos) => {
@@ -136,10 +163,22 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
           tags: Object.keys(tagsIndex || {}),
         },
         t,
+        live && { doc: live.doc, awareness: live.awareness, avatarOf },
       ),
       content: "",
-      onUpdate: ({ editor }) => {
-        if (!isMarkdownMode) {
+      onUpdate: ({ editor, transaction }) => {
+        if (live && (!isInitialized.current || live.resetting.current)) return;
+        if (live && isChangeOrigin(transaction)) {
+          if (!isMarkdownMode) {
+            richEditorWasEditedRef.current = true;
+            onRemoteChange?.(editor.getHTML(), false);
+            return;
+          }
+          const markdown = convertHtmlToMarkdownUnified(editor.getHTML(), tableSyntax);
+          setMarkdownContent(markdown);
+          originalMarkdownRef.current = markdown;
+          onRemoteChange?.(markdown, true);
+        } else if (!isMarkdownMode) {
           richEditorWasEditedRef.current = true;
           isDirtyRef.current = true;
           debouncedOnChange(editor.getHTML(), false, true);
@@ -230,6 +269,11 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const imageResize = useImageResize(editor);
 
     useEffect(() => {
+      if (!editor || editor.isDestroyed || !live) return;
+      editor.setEditable(live.ready);
+    }, [editor, live?.ready]);
+
+    useEffect(() => {
       if (editor) {
         imageClickRef.current = imageResize.handleImageClick;
       }
@@ -259,7 +303,32 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     }, [content, isMarkdownMode, tableSyntax]);
 
     useEffect(() => {
-      if (editor && !isInitialized.current) {
+      if (!editor || editor.isDestroyed || !live) return;
+      if (liveGeneration.current === live.generation) return;
+      isDirtyRef.current = live.restored;
+      if (!live.ready) {
+        debouncedOnChange(content, isMarkdownMode, false);
+        return;
+      }
+      liveGeneration.current = live.generation;
+      isInitialized.current = true;
+      live.resetting.current = false;
+      const fragment = live.doc.getXmlFragment(LIVE_FIELD);
+      if (live.initialize && editor.isEmpty) {
+        editor.commands.setContent(convertMarkdownToHtml(live.markdown), { emitUpdate: false });
+        if (fragment.length === 0) {
+          prosemirrorToYXmlFragment(editor.state.doc, fragment);
+        }
+        yUndoPluginKey.getState(editor.state)?.undoManager.clear();
+      }
+      const markdown = convertHtmlToMarkdownUnified(editor.getHTML(), tableSyntax);
+      originalMarkdownRef.current = markdown;
+      setMarkdownContent(markdown);
+      debouncedOnChange(isMarkdownMode ? markdown : editor.getHTML(), isMarkdownMode, isDirtyRef.current);
+    }, [editor, live?.ready, live?.generation]);
+
+    useEffect(() => {
+      if (editor && !live && !isInitialized.current) {
         isInitialized.current = true;
         setTimeout(() => {
           if (isMarkdownMode) {
@@ -280,17 +349,21 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
         if (debounceTimeoutRef.current) {
           clearTimeout(debounceTimeoutRef.current);
         }
+        clearTimeout(draftTimeoutRef.current);
       };
     }, []);
 
-    const handleMarkdownChange = (
-      e: React.ChangeEvent<HTMLTextAreaElement>,
-    ) => {
-      const newContent = e.target.value;
+    const changeMarkdown = useCallback((newContent: string) => {
       setMarkdownContent(newContent);
+      if (live && editor && !editor.isDestroyed) {
+        editor.commands.setContent(convertMarkdownToHtml(newContent), { emitUpdate: false });
+      }
       isDirtyRef.current = true;
       debouncedOnChange(newContent, true, true);
-    };
+    }, [editor, live?.doc, debouncedOnChange]);
+
+    const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+      changeMarkdown(e.target.value);
 
     const handleVisualFileDrop = useCallback(
       (files: File[]) => {
@@ -330,27 +403,24 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
               onImageUpload: (url) => {
                 const markdownImage = `![${file.name}](${url})`;
                 const newContent = markdownContent + "\n" + markdownImage;
-                setMarkdownContent(newContent);
-                isDirtyRef.current = true;
-                debouncedOnChange(newContent, true, true);
+                changeMarkdown(newContent);
               },
               onFileUpload: (data) => {
                 const markdownLink = `[📎 ${data.fileName}](${data.url})`;
                 const newContent = markdownContent + "\n" + markdownLink;
-                setMarkdownContent(newContent);
-                isDirtyRef.current = true;
-                debouncedOnChange(newContent, true, true);
+                changeMarkdown(newContent);
               },
             },
             true,
           );
         });
       },
-      [markdownContent, uploadHook, debouncedOnChange],
+      [markdownContent, uploadHook, changeMarkdown],
     );
 
     return (
       <div className="flex flex-col h-full pb-0">
+        {live && <LiveStatusBar live={live} />}
         <div
           className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 py-2`}
           {...menuCeilingProps}
@@ -361,11 +431,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             toggleMode={toggleMode}
             showPreview={showPreview}
             onTogglePreview={() => setShowPreview(!showPreview)}
-            onMarkdownChange={(newContent: string) => {
-              setMarkdownContent(newContent);
-              isDirtyRef.current = true;
-              debouncedOnChange(newContent, true, true);
-            }}
+            onMarkdownChange={changeMarkdown}
             linkRequestPending={linkRequestPending}
             linkRequestHasSelection={linkRequestHasSelection}
             onLinkRequestHandled={() => setLinkRequestPending(false)}

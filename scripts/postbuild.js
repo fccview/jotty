@@ -28,4 +28,11 @@ if (fs.existsSync(wsSource)) {
   copyDirSync(wsSource, wsDest);
 }
 
+for (const name of ["yjs", "y-protocols", "lib0"]) {
+  copyDirSync(
+    path.join(__dirname, "..", "node_modules", name),
+    path.join(standaloneDir, "node_modules", name),
+  );
+}
+
 console.log("Postbuild: custom server.js and ws module copied to standalone");
