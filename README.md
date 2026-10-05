@@ -1,4 +1,6 @@
 <p align="center">
+
+[![Deploy to Railyard](https://app.railyard.run/deploy/badge)](https://app.railyard.run/deploy?repo=https://github.com/fccview/jotty)
   <img src="public/app-icons/logos/logo-animated.svg" alt="Jotty Logo" width="100"> 
   <br />
   <h1 align="center">jotty·page</h1><br/>
