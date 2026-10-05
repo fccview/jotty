@@ -62,9 +62,12 @@ const SCHEMA = `
   );
 `;
 
+const relationsName = () =>
+  process.env.JOTTY_NODE ? `.relations_${process.env.JOTTY_NODE}.db` : RELATIONS_DB_NAME;
+
 export const relationsFile = (): string =>
   process.env.JOTTY_RELATIONS_DB ||
-  path.join(process.cwd(), DATA_DIR, RELATIONS_DB_NAME);
+  path.join(process.cwd(), DATA_DIR, relationsName());
 
 const _discard = (file: string) => {
   for (const suffix of ["", "-wal", "-shm"]) {

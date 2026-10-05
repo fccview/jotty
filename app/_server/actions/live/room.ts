@@ -10,6 +10,7 @@ import {
 } from "y-protocols/awareness";
 import * as decoding from "lib0/decoding";
 import * as encoding from "lib0/encoding";
+import { toBase64 } from "lib0/buffer";
 import { DATA_DIR } from "@/app/_consts/files";
 import { isUuid } from "@/app/_consts/identity";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
@@ -22,6 +23,7 @@ import { canReachFile } from "@/app/_server/actions/share/access";
 import { lockOf } from "@/app/_server/actions/lib/unstamped";
 import { isPathUuid } from "@/app/_server/actions/lib/read-only";
 import { runQueued } from "@/app/_server/actions/lib/concurrency";
+import { openReplica, sweepReplicas, type Replica } from "@/app/_server/actions/live/replica";
 
 const HEARTBEAT_MS = 30000;
 const RECHECK_MS = 5000;
@@ -47,6 +49,7 @@ interface Room {
   filePath: string;
   clients: Map<WebSocket, Client>;
   initializer?: WebSocket;
+  replica: Replica | null;
 }
 
 type AwarenessChange = { added: number[]; updated: number[]; removed: number[] };
@@ -58,8 +61,6 @@ const COLOURS = ["#2563eb", "#be185d", "#047857", "#b45309", "#7c3aed"];
 
 const liveColour = (username: string) =>
   COLOURS[Array.from(username).reduce((total, char) => total + char.charCodeAt(0), 0) % COLOURS.length];
-
-const toBase64 = (bytes: Uint8Array) => Buffer.from(bytes).toString("base64");
 
 const sameSite = (origin: string, host = "") => {
   const page = new URL(origin);
@@ -123,6 +124,7 @@ const openRoom = async (uuid: string, filePath: string): Promise<Room> => {
     markdown: contentWithoutMetadata,
     filePath,
     clients: new Map(),
+    replica: null,
   };
   doc.on("update", (update: Uint8Array, origin: unknown) => {
     relay(room, { type: LiveType.Update, data: toBase64(update) }, origin);
@@ -131,8 +133,18 @@ const openRoom = async (uuid: string, filePath: string): Promise<Room> => {
     const ids = [...change.added, ...change.updated, ...change.removed];
     relay(room, awarenessMessage(room, ids), origin);
   });
+  room.replica = await openReplica(uuid, doc, awareness, () => promote(room));
   rooms.set(uuid, room);
   return room;
+};
+
+const canSeed = (room: Room) => !room.replica || room.replica.seeder;
+
+const promote = (room: Room) => {
+  const next = room.clients.keys().next().value;
+  if (!next || room.initializer || room.doc.getXmlFragment(FIELD).length || !canSeed(room)) return;
+  room.initializer = next;
+  send(next, readyMessage(room, true));
 };
 
 const cursorUpdate = (room: Room, socket: WebSocket, client: Client, data: string) => {
@@ -160,7 +172,8 @@ const cursorUpdate = (room: Room, socket: WebSocket, client: Client, data: strin
 const attach = (socket: WebSocket, room: Room, uuid: string, actor: string, sessionId: string) => {
   const client: Client = { actor, sessionId, alive: true, checked: Date.now() };
   room.clients.set(socket, client);
-  const initialize = room.doc.getXmlFragment(FIELD).length === 0 && !room.initializer;
+  const initialize =
+    room.doc.getXmlFragment(FIELD).length === 0 && !room.initializer && canSeed(room);
   if (initialize) room.initializer = socket;
   send(socket, readyMessage(room, initialize));
   send(socket, awarenessMessage(room, Array.from(room.awareness.getStates().keys())));
@@ -199,14 +212,11 @@ const attach = (socket: WebSocket, room: Room, uuid: string, actor: string, sess
     }
     if (room.initializer === socket) {
       room.initializer = undefined;
-      const next = room.clients.keys().next().value;
-      if (next && room.doc.getXmlFragment(FIELD).length === 0) {
-        room.initializer = next;
-        send(next, readyMessage(room, true));
-      }
+      promote(room);
     }
     if (!room.clients.size && rooms.get(uuid) === room) {
       rooms.delete(uuid);
+      void room.replica?.close();
       room.awareness.destroy();
       room.doc.destroy();
     }
@@ -268,6 +278,7 @@ export const liveRecheck = () =>
 
 setInterval(() => {
   void liveRecheck();
+  sweepReplicas().catch((error) => console.error("[live] replica sweep failed:", error));
   rooms.forEach((room) => room.clients.forEach((client, socket) => {
     if (!client.alive) socket.terminate();
     else {

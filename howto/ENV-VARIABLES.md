@@ -39,6 +39,7 @@ OIDC_ADMIN_GROUPS=admins
 - `ENABLE_PWA_ZOOM=yes` Optional. Lets you zoom in the PWA, for accessibility. Zoom is off by default.
 - `JOTTY_BODY_SIZE_LIMIT=100mb` Optional. The biggest request body Server Actions accept (uploads, drawio attachments, avatars, etc.). Defaults to `100mb`. Accepts `b`, `kb`, `mb`, `gb` (e.g. `50mb`, `2gb`). The runtime patcher applies it when the container starts, see [Runtime Patches](./PATCHES.md).
 - `JOTTY_FREEBSD=1` Optional, and FreeBSD only. Turns on the FreeBSD compatibility patch, which stubs `@swc/core` (nobody publishes a native or WASM binary for FreeBSD) and makes Next.js use webpack instead of Turbopack. It does nothing on Linux, macOS or Windows, so leave it unset there. The runtime patcher applies it when the container starts, see [Runtime Patches](./PATCHES.md).
+- `JOTTY_NODE=node1` Optional. A unique name for this instance when several share one `data/` directory. Setting it turns on live editing across instances and gives this instance its own index, `data/.relations_node1.db`. See [Running more than one instance](./HA.md).
 
 ## SSO (optional)
 
