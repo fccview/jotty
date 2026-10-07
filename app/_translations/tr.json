@@ -1763,13 +1763,10 @@
     "docker": "Docker",
     "envVariables": "Ortam Değişkenleri",
     "mfa": "MFA (İki Faktörlü Doğrulama)",
-    "pwa": "PWA (Uygulama)",
     "encryption": "Şifreleme",
     "sso": "SSO (Tekli Giriş)",
     "ldap": "LDAP",
-    "translations": "Çeviriler",
-    "unraid": "Unraid",
-    "patches": "Yamalar"
+    "translations": "Çeviriler"
   },
   "notFound": {
     "title": "Sayfa Bulunamadı",

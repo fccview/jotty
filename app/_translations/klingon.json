@@ -1763,13 +1763,10 @@
     "docker": "Docker",
     "envVariables": "Env Variables",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "pegh",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Hol",
-    "unraid": "Unraid",
-    "patches": "Patches"
+    "translations": "Hol"
   },
   "notFound": {
     "title": "tu'be'lu'",

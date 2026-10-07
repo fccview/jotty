@@ -1763,13 +1763,10 @@
     "docker": "Docker",
     "envVariables": "Winds",
     "mfa": "Handshake",
-    "pwa": "Docking",
     "encryption": "Locker",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Lingos",
-    "unraid": "Unraid",
-    "patches": "Patches"
+    "translations": "Lingos"
   },
   "notFound": {
     "title": "Chart Leads Nowhere",

@@ -1776,13 +1776,10 @@
     "docker": "Docker",
     "envVariables": "Env Variables",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Encryption",
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Translations",
-    "unraid": "Unraid",
-    "patches": "Patches",
     "mcp": "MCP"
   },
   "notFound": {
@@ -1820,7 +1817,9 @@
     "linked": "Linked the mention in {title}",
     "linkFailed": "Couldn't link that mention",
     "kind": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Checklist",
       "wiki": "Wikilink"
     }
   },

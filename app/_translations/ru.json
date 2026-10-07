@@ -1763,13 +1763,10 @@
     "docker": "Docker",
     "envVariables": "Переменные окружения",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Шифрование",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Переводы",
-    "unraid": "Unraid",
-    "patches": "Патчи"
+    "translations": "Переводы"
   },
   "notFound": {
     "title": "Страница не найдена",
