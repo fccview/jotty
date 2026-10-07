@@ -33,7 +33,7 @@ import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/Share
 import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { leaveFolder } from "@/app/_server/actions/share/operations";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { canFill } from "@/app/_utils/sharing-utils";
 
@@ -79,6 +79,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
 
   const router = useRouter();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const folderRef = useRef<HTMLDivElement>(null);
 
   const getItemsInCategory = (categoryPath: string) =>
     allItems.filter(
@@ -224,6 +225,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
               )}
             >
               <div
+                ref={folderRef}
                 className={cn(
                   "flex items-center gap-2 px-3 py-2 text-md lg:text-sm rounded-jotty transition-colors w-full text-left",
                   hasContent ? "hover:bg-muted/50" : "text-muted-foreground",
@@ -289,6 +291,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
               </div>
 
               <DropdownMenu
+                contextTarget={folderRef}
                 align="right"
                 items={dropdownItems}
                 trigger={

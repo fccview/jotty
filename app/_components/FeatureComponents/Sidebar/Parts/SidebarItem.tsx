@@ -21,7 +21,7 @@ import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/Dropd
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
 import { togglePin } from "@/app/_server/actions/dashboard";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
@@ -65,6 +65,7 @@ export const SidebarItem = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const itemRef = useRef<HTMLAnchorElement>(null);
   const { globalSharing, appSettings } = useAppMode();
   const itemDetails = sharingInfo(globalSharing, item.uuid || "");
 
@@ -237,6 +238,7 @@ export const SidebarItem = ({
   return (
     <div className="flex items-center group/item" style={style}>
       <Link
+        ref={itemRef}
         href={itemHref}
         prefetch={false}
         onClick={handleClick}
@@ -298,6 +300,7 @@ export const SidebarItem = ({
       </Link>
 
       <DropdownMenu
+        contextTarget={itemRef}
         align="right"
         items={dropdownItems}
         trigger={
