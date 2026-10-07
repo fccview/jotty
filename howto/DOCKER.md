@@ -1,6 +1,6 @@
-# Docker
+# Self-hosting
 
-What each value in the jotty·page `docker-compose.yml` does, plus Unraid and runtime patches.
+Running jotty·page yourself: what each value in `docker-compose.yml` does, running more than one instance, Unraid and runtime patches.
 
 ## Basic docker-compose.yml
 
@@ -190,9 +190,9 @@ jotty·page can run as several instances against one shared `data/` directory, s
 
 ### Setup
 
-1. Mount the same `data/` directory into every instance.
+1. Mount the same `data/` directory into every instance. A local disk or network storage like NFS both work.
 2. Give every instance its own `JOTTY_NODE` name, for example `node1` and `node2`. Letters, numbers, `-` and `_` only. That alone turns clustering on. Each instance also gets its own search index, `data/.relations_<name>.db`, rebuilt from your notes at startup, because two instances writing one index corrupts it.
-3. Put every instance behind one address, and make your reverse proxy pass the `Host` header through untouched and forward WebSocket upgrades. If `Host` is rewritten, live editing quietly stops: the page loads and typing saves, but there are no avatars.
+3. Put the instances behind one address. Your proxy has to forward WebSocket upgrades and leave the `Host` header alone, because live editing refuses a connection whose `Host` doesn't match the page's address. When that happens the page still loads and typing still saves, but there are no avatars.
 
 ### What people see when an instance goes down
 
@@ -204,7 +204,7 @@ Nobody has to do anything. Always use the same address, because the unsaved draf
 
 ### Limits
 
-- Your servers' clocks and the shared storage's clock should agree within a few seconds.
+- Keep the servers' clocks in sync, for example with NTP, like any multi-server setup.
 - Only live note editing crosses instances. Tick a checklist item or rename a note and devices on the same instance see it straight away. Devices on another instance see it after a reload.
 - Each instance spots the others' changes by watching `data/`. That works when the instances share a disk on one machine. Network storage like NFS, SMB or EFS often doesn't report changes from another machine, so search, backlinks and the brain on that instance fall behind. Restart it and it rebuilds its index.
 

@@ -56,10 +56,10 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
   },
   {
     id: "docker",
-    name: t("help.docker"),
+    name: t("help.selfHosting"),
     filename: "DOCKER.md",
     icon: "laptop",
-    translationKey: "help.docker",
+    translationKey: "help.selfHosting",
   },
   {
     id: "env-variables",
