@@ -93,6 +93,14 @@ export const openReplica = async (
     written = Date.now();
   };
 
+  const absorb = async (file: string) => {
+    const raw = await fs.readFile(file, "utf-8").catch(unlessMissing(null));
+    if (!raw) return;
+    const payload = JSON.parse(raw) as Payload;
+    Y.applyUpdate(doc, fromBase64(payload.update), PEER);
+    applyAwarenessUpdate(awareness, fromBase64(payload.awareness), PEER);
+  };
+
   const pull = async () => {
     let peers = 0;
     for (const name of await listDir(dir)) {
@@ -104,11 +112,7 @@ export const openReplica = async (
       const version = `${stat.ino}:${stat.mtimeMs}`;
       if (seen.get(name) === version) continue;
       seen.set(name, version);
-      const raw = await fs.readFile(file, "utf-8").catch(unlessMissing(null));
-      if (!raw) continue;
-      const payload = JSON.parse(raw) as Payload;
-      Y.applyUpdate(doc, fromBase64(payload.update), PEER);
-      applyAwarenessUpdate(awareness, fromBase64(payload.awareness), PEER);
+      await absorb(file).catch((error) => console.error(`[live] skipping replica ${name}:`, error));
     }
     if (!peers && !replica.seeder) {
       replica.seeder = true;

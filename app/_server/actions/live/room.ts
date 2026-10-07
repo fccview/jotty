@@ -55,6 +55,7 @@ interface Room {
 type AwarenessChange = { added: number[]; updated: number[]; removed: number[] };
 
 const rooms = new Map<string, Room>();
+const closing = new Map<string, Promise<void>>();
 const wss = new WebSocketServer({ noServer: true, maxPayload: 8 * 1024 * 1024 });
 
 const COLOURS = ["#2563eb", "#be185d", "#047857", "#b45309", "#7c3aed"];
@@ -114,6 +115,7 @@ const closeSocket = (socket: WebSocket, error: unknown) =>
 const openRoom = async (uuid: string, filePath: string): Promise<Room> => {
   const existing = rooms.get(uuid);
   if (existing) return existing;
+  await closing.get(uuid);
   const contentWithoutMetadata = await readPlain(filePath);
   const doc = new Y.Doc();
   const awareness = new Awareness(doc);
@@ -222,7 +224,12 @@ const attach = (socket: WebSocket, room: Room, uuid: string, actor: string, sess
     }
     if (!room.clients.size && rooms.get(uuid) === room) {
       rooms.delete(uuid);
-      void room.replica?.close();
+      if (room.replica) {
+        const done: Promise<void> = room.replica.close().finally(() => {
+          if (closing.get(uuid) === done) closing.delete(uuid);
+        });
+        closing.set(uuid, done);
+      }
       room.awareness.destroy();
       room.doc.destroy();
     }
