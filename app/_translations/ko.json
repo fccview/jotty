@@ -1763,13 +1763,10 @@
     "docker": "도커",
     "envVariables": "환경 변수",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "암호화",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "번역",
-    "unraid": "Unraid",
-    "patches": "패치"
+    "translations": "번역"
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",

@@ -67,4 +67,14 @@ describe("placeMenu", () => {
     ).toBe("bottom-full mb-1 right-0");
     expect(menuPlacementClasses(preferred)).toBe("top-full mt-1 left-0");
   });
+  it.each([
+    [20, 100, MenuSide.Down, MenuAlign.Start],
+    [20, 760, MenuSide.Up, MenuAlign.Start],
+    [390, 100, MenuSide.Down, MenuAlign.End],
+    [390, 760, MenuSide.Up, MenuAlign.End],
+  ] as const)("places a cursor anchor at (%i, %i)", (x, y, side, align) => {
+    expect(
+      placeMenu({ top: y, bottom: y, left: x, right: x }, menu, bounds, preferred),
+    ).toEqual({ side, align });
+  });
 });

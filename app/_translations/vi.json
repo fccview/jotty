@@ -1763,13 +1763,10 @@
     "docker": "Docker",
     "envVariables": "Biến Env",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Mã hóa",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Bản dịch",
-    "unraid": "Unraid",
-    "patches": "Bản vá"
+    "translations": "Bản dịch"
   },
   "notFound": {
     "title": "Không tìm thấy trang",

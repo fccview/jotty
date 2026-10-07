@@ -1763,13 +1763,10 @@
     "docker": "Docker",
     "envVariables": "Zmienne środowiskowe",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Szyfrowanie",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Tłumaczenia",
-    "unraid": "Unraid",
-    "patches": "Łatki"
+    "translations": "Tłumaczenia"
   },
   "notFound": {
     "title": "Strona nie znaleziona",

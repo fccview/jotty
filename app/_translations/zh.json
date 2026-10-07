@@ -1763,13 +1763,10 @@
     "docker": "Docker",
     "envVariables": "环境变量",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "加密",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "翻译",
-    "unraid": "Unraid",
-    "patches": "补丁"
+    "translations": "翻译"
   },
   "notFound": {
     "title": "页面未找到",

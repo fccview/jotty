@@ -62,25 +62,11 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.docker",
   },
   {
-    id: "unraid",
-    name: t("help.unraid"),
-    filename: "UNRAID.md",
-    icon: "rain",
-    translationKey: "help.unraid",
-  },
-  {
     id: "env-variables",
     name: t("help.envVariables"),
     filename: "ENV-VARIABLES.md",
     icon: "key",
     translationKey: "help.envVariables",
-  },
-  {
-    id: "pwa",
-    name: t("help.pwa"),
-    filename: "PWA.md",
-    icon: "smartphone",
-    translationKey: "help.pwa",
   },
   {
     id: "encryption",
@@ -116,13 +102,6 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     filename: "TRANSLATIONS.md",
     icon: "translation",
     translationKey: "help.translations",
-  },
-  {
-    id: "patches",
-    name: t("help.patches"),
-    filename: "PATCHES.md",
-    icon: "patch",
-    translationKey: "help.patches",
   },
 ];
 
