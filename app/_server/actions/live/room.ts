@@ -133,7 +133,13 @@ const openRoom = async (uuid: string, filePath: string): Promise<Room> => {
     const ids = [...change.added, ...change.updated, ...change.removed];
     relay(room, awarenessMessage(room, ids), origin);
   });
-  room.replica = await openReplica(uuid, doc, awareness, () => promote(room));
+  try {
+    room.replica = await openReplica(uuid, doc, awareness, () => promote(room));
+  } catch (error) {
+    awareness.destroy();
+    doc.destroy();
+    throw error;
+  }
   rooms.set(uuid, room);
   return room;
 };

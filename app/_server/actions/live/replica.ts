@@ -10,11 +10,12 @@ import { fromBase64, toBase64 } from "lib0/buffer";
 import { DATA_DIR } from "@/app/_consts/files";
 import { atomicWrite } from "@/app/_server/actions/file/atomic";
 import { withFileLock } from "@/app/_server/actions/lib/file-lock";
+import { clusterNode } from "@/app/_utils/env-utils";
 
 const TICK_MS = 300;
 const REFRESH_MS = 2000;
 const STALE_MS = 10000;
-const NODE = process.env.JOTTY_NODE;
+const NODE = clusterNode();
 const NODE_FILE = `${NODE}.json`;
 const PEER = Symbol("peer");
 

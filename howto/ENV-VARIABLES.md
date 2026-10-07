@@ -30,6 +30,7 @@ OIDC_ADMIN_GROUPS=admins
 - `HTTPS=true` Optional. Turns on HTTPS mode, which marks session cookies as secure.
 - `APP_URL=https://your-jotty-domain.com` Forces the base URL of your jotty·page instance. Required for SSO, optional otherwise. If logging in breaks behind a reverse proxy, try setting it, since jotty then logs you in against this exact URL.
 - `INTERNAL_API_URL=http://localhost:3000` Optional. The URL jotty uses for API calls to itself inside the container. Defaults to `http://localhost:3000`. You only need it if session validation fails behind a reverse proxy.
+- `JOTTY_NODE=node1` Optional. A unique name for this instance when several share one `data/` directory. Letters, numbers, `-` and `_` only. Setting it turns on live editing across instances and gives this instance its own index, `data/.relations_node1.db`. See [Running more than one instance](./DOCKER.md#running-more-than-one-instance).
 - `SERVE_PUBLIC_IMAGES=yes` Optional. Lets anyone open uploaded images by their direct URL, without logging in.
 - `SERVE_PUBLIC_FILES=yes` Optional. Same, for uploaded files.
 - `SERVE_PUBLIC_VIDEOS=yes` Optional. Same, for uploaded videos.
@@ -39,7 +40,6 @@ OIDC_ADMIN_GROUPS=admins
 - `ENABLE_PWA_ZOOM=yes` Optional. Lets you zoom in the PWA, for accessibility. Zoom is off by default.
 - `JOTTY_BODY_SIZE_LIMIT=100mb` Optional. The biggest request body Server Actions accept (uploads, drawio attachments, avatars, etc.). Defaults to `100mb`. Accepts `b`, `kb`, `mb`, `gb` (e.g. `50mb`, `2gb`). The runtime patcher applies it when the container starts, see [Runtime Patches](./PATCHES.md).
 - `JOTTY_FREEBSD=1` Optional, and FreeBSD only. Turns on the FreeBSD compatibility patch, which stubs `@swc/core` (nobody publishes a native or WASM binary for FreeBSD) and makes Next.js use webpack instead of Turbopack. It does nothing on Linux, macOS or Windows, so leave it unset there. The runtime patcher applies it when the container starts, see [Runtime Patches](./PATCHES.md).
-- `JOTTY_NODE=node1` Optional. A unique name for this instance when several share one `data/` directory. Setting it turns on live editing across instances and gives this instance its own index, `data/.relations_node1.db`. See [Running more than one instance](./HA.md).
 
 ## SSO (optional)
 

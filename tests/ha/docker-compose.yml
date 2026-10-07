@@ -5,7 +5,7 @@ services:
       context: ../..
     network_mode: host
     volumes:
-      - ../../data:/app/data
+      - ./data:/app/data
     environment:
       JOTTY_NODE: node1
       PUID: "0"
@@ -15,7 +15,7 @@ services:
     image: jotty-ha:local
     network_mode: host
     volumes:
-      - ../../data:/app/data
+      - ./data:/app/data
     environment:
       JOTTY_NODE: node2
       PORT: "3001"

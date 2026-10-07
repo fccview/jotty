@@ -7,6 +7,7 @@ import {
   RELATIONS_SCHEMA_VERSION,
   RelationsStatus,
 } from "@/app/_consts/relations";
+import { clusterNode } from "@/app/_utils/env-utils";
 
 declare global {
   var __jottyRelations: { db: DatabaseSync; file: string; schema: number } | undefined;
@@ -62,8 +63,10 @@ const SCHEMA = `
   );
 `;
 
-const relationsName = () =>
-  process.env.JOTTY_NODE ? `.relations_${process.env.JOTTY_NODE}.db` : RELATIONS_DB_NAME;
+const relationsName = () => {
+  const node = clusterNode();
+  return node ? `.relations_${node}.db` : RELATIONS_DB_NAME;
+};
 
 export const relationsFile = (): string =>
   process.env.JOTTY_RELATIONS_DB ||
