@@ -132,7 +132,7 @@ export const NoteEditorContent = ({
   }
 
   return (
-    <div className="flex-1 h-full">
+    <div className="flex-1 min-h-full">
       {isEditorVisible ? (
         <TiptapEditor
           key={noteId}

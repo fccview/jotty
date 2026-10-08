@@ -92,7 +92,7 @@ export const EditChecklistModal = ({
 
     if (result.success && result.data) {
       if (!unarchive && result.data.uuid) {
-        router.push(itemHref(ItemTypes.CHECKLIST, result.data.uuid));
+        router.push(itemHref(ItemTypes.CHECKLIST, result.data.uuid), { scroll: false });
       }
 
       onUpdated();
