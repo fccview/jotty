@@ -30,6 +30,7 @@ OIDC_ADMIN_GROUPS=admins
 - `HTTPS=true` Optional. Turns on HTTPS mode, which marks session cookies as secure.
 - `APP_URL=https://your-jotty-domain.com` Forces the base URL of your jotty·page instance. Required for SSO, optional otherwise. If logging in breaks behind a reverse proxy, try setting it, since jotty then logs you in against this exact URL.
 - `INTERNAL_API_URL=http://localhost:3000` Optional. The URL jotty uses for API calls to itself inside the container. Defaults to `http://localhost:3000`. You only need it if session validation fails behind a reverse proxy.
+- `JOTTY_NODE=node1` Optional. A unique name for this instance when several share one `data/` directory. Letters, numbers, `-` and `_` only. Setting it turns on live editing across instances and gives this instance its own index, `data/.relations_node1.db`. See [Running more than one instance](./DOCKER.md#running-more-than-one-instance).
 - `SERVE_PUBLIC_IMAGES=yes` Optional. Lets anyone open uploaded images by their direct URL, without logging in.
 - `SERVE_PUBLIC_FILES=yes` Optional. Same, for uploaded files.
 - `SERVE_PUBLIC_VIDEOS=yes` Optional. Same, for uploaded videos.
