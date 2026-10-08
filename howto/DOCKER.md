@@ -186,12 +186,12 @@ api-docs:
 
 ## Running more than one instance
 
-jotty·page can run as several instances against one shared `data/` directory, so live editing keeps working when one of them goes down. Nothing extra is installed: no database, no message broker. The instances talk to each other through small throwaway files in `data/.replica/`, and your notes stay the only thing that is ever stored.
+jotty·page can run as several instances against one shared `data/` directory, so live editing keeps working when one of them goes down. Nothing extra is installed: no database, no message broker. The instances talk to each other through small throwaway files in `data/.replica/`. Each file holds the live text of one open note and who has it open. jotty deletes the file once everybody closes the note, so your notes in `data/` stay the only lasting copy.
 
 ### Setup
 
 1. Mount the same `data/` directory into every instance. A local disk or network storage like NFS both work.
-2. Give every instance its own `JOTTY_NODE` name, for example `node1` and `node2`. Letters, numbers, `-` and `_` only. That alone turns clustering on. Each instance also gets its own search index, `data/.relations_<name>.db`, rebuilt from your notes at startup, because two instances writing one index corrupts it.
+2. Give every instance its own `JOTTY_NODE` name, for example `node1` and `node2`. Letters, numbers, `-` and `_` only. That alone turns clustering on. Each instance also gets its own search index, `data/.relations_<name>.db`, rebuilt from your notes at startup, because two instances writing one index corrupts it. `JOTTY_RELATIONS_DB` overrides that name, so either leave it unset or give every instance its own path.
 3. Put the instances behind one address. Your proxy has to forward WebSocket upgrades and leave the `Host` header alone, because live editing refuses a connection whose `Host` doesn't match the page's address. When that happens the page still loads and typing still saves, but there are no avatars.
 
 ### What people see when an instance goes down
