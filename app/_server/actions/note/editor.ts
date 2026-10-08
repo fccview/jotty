@@ -124,9 +124,10 @@ const _editNote = async (
     const sanitizedContent = sanitizeMarkdown(content);
     const { metadata: incomingMeta, contentWithoutMetadata } =
       stripYaml(sanitizedContent);
-    const convertedContent = isEncrypted(contentWithoutMetadata)
-      ? contentWithoutMetadata
-      : await tidyItemLinks(contentWithoutMetadata, note.owner || actingUsername);
+    const body = contentWithoutMetadata.trim();
+    const convertedContent = isEncrypted(body)
+      ? body
+      : await tidyItemLinks(body, note.owner || actingUsername);
 
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;
