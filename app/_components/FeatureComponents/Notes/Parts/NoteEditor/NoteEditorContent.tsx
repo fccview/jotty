@@ -55,7 +55,7 @@ export const NoteEditorContent = ({
   const rootRef = useRef<HTMLDivElement>(null);
 
   const [modeSwitches, setModeSwitches] = useState(0);
-  const holdAnchor = useReadingAnchor(rootRef, `${isEditorVisible}:${modeSwitches}`);
+  const holdAnchor = useReadingAnchor(rootRef, String(modeSwitches));
 
   const handleModeChange = useCallback(() => {
     holdAnchor();
@@ -142,7 +142,7 @@ export const NoteEditorContent = ({
   }
 
   return (
-    <div ref={rootRef} className="flex-1 h-full">
+    <div ref={rootRef} className="flex-1 min-h-full">
       {isEditorVisible ? (
         <TiptapEditor
           key={noteId}

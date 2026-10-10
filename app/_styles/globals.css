@@ -804,7 +804,7 @@ p > code::after,
 }
 
 .ProseMirror {
-  height: 100%;
+  min-height: 100%;
 }
 
 .ProseMirror ul li:empty,
