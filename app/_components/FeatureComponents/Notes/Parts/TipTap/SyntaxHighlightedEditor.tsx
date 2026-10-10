@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-markup";
@@ -21,7 +21,17 @@ interface SyntaxHighlightedEditorProps {
   visualGuideColumns?: number[];
 }
 
+interface CodeEditorHandle {
+  session: { history: MarkdownUtils.MarkdownHistory };
+}
+
 const LINE_HEIGHT = 21;
+const PHYSICAL_KEY = /^(Key|Digit)(.)$/;
+
+const shortcutKey = (e: React.KeyboardEvent) => {
+  const physical = e.metaKey && e.altKey ? e.code.match(PHYSICAL_KEY) : null;
+  return (physical ? physical[2] : e.key).toLowerCase();
+};
 
 export const SyntaxHighlightedEditor = ({
   content,
@@ -35,13 +45,20 @@ export const SyntaxHighlightedEditor = ({
 }: SyntaxHighlightedEditorProps) => {
   const { user } = useAppMode();
   const editorRef = useRef<HTMLDivElement>(null);
+  const codeEditorRef = useRef<CodeEditorHandle>(null);
   const charWidthRef = useRef(0);
   const [editorWidth, setEditorWidth] = useState(0);
-  const pendingSelectionRef = useRef<{ start: number; end: number } | null>(
-    null
-  );
 
   usePrismTheme(user?.markdownTheme || "prism");
+
+  useEffect(
+    () => MarkdownUtils.bindMarkdownHistory(() => codeEditorRef.current?.session.history ?? null),
+    []
+  );
+
+  useLayoutEffect(() => {
+    MarkdownUtils.applyPendingCaret();
+  }, [content]);
 
   useEffect(() => {
     const el = document.createElement("span");
@@ -66,76 +83,32 @@ export const SyntaxHighlightedEditor = ({
     return Math.max(1, Math.ceil((line.length * charWidthRef.current) / editorWidth)) * LINE_HEIGHT;
   };
 
-  useEffect(() => {
-    if (pendingSelectionRef.current) {
-      const textarea = document.getElementById(
-        "markdown-editor-textarea"
-      ) as HTMLTextAreaElement;
-      if (textarea) {
-        const { start, end } = pendingSelectionRef.current;
-        const { scrollTop, scrollLeft } = textarea;
-
-        requestAnimationFrame(() => {
-          textarea.focus({ preventScroll: true });
-          textarea.setSelectionRange(start, end);
-          textarea.scrollTop = scrollTop;
-          textarea.scrollLeft = scrollLeft;
-        });
-      }
-      pendingSelectionRef.current = null;
-    }
-  }, [content]);
-
-  const executeFormat = (
-    textarea: HTMLTextAreaElement,
-    fn: (ta: HTMLTextAreaElement) => string
-  ) => {
-    const newContent = fn(textarea);
-    pendingSelectionRef.current = {
-      start: textarea.selectionStart,
-      end: textarea.selectionEnd,
-    };
-    onChange(newContent);
-  };
-
-  const applyListEdit = (
+  const applyEdit = (
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>,
-    textarea: HTMLTextAreaElement,
     newContent: string | null
   ) => {
     if (newContent === null) return;
     e.preventDefault();
-    const { scrollTop, scrollLeft, selectionStart, selectionEnd } = textarea;
     onChange(newContent);
-
-    requestAnimationFrame(() => {
-      const ta = document.getElementById(
-        "markdown-editor-textarea"
-      ) as HTMLTextAreaElement;
-      if (ta) {
-        ta.focus({ preventScroll: true });
-        ta.setSelectionRange(selectionStart, selectionEnd);
-        ta.scrollTop = scrollTop;
-        ta.scrollLeft = scrollLeft;
-      }
-    });
   };
 
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLTextAreaElement | HTMLDivElement>
   ) => {
     const isMod = e.metaKey || e.ctrlKey;
-    const textarea = document.getElementById(
-      "markdown-editor-textarea"
-    ) as HTMLTextAreaElement;
+    const textarea = MarkdownUtils.getMarkdownTextarea();
     if (!textarea) return;
+    const key = shortcutKey(e);
 
-    if (isMod && e.altKey && (e.key === "c" || e.key === "C")) {
+    if (isMod && e.altKey && key === "c") {
       e.preventDefault();
       if (onCodeBlockRequest) {
         onCodeBlockRequest();
       } else {
-        executeFormat(textarea, (ta) => MarkdownUtils.insertCodeBlock(ta, ""));
+        MarkdownUtils.runMarkdownEdit(
+          (ta) => MarkdownUtils.insertCodeBlock(ta, ""),
+          onChange
+        );
       }
       return;
     }
@@ -143,24 +116,24 @@ export const SyntaxHighlightedEditor = ({
     const match = FORMAT_SHORTCUTS.find(
       (s) =>
         isMod &&
-        s.key === e.key &&
+        s.key.toLowerCase() === key &&
         !!s.shift === e.shiftKey &&
         !!s.alt === e.altKey
     );
 
     if (match) {
       e.preventDefault();
-      executeFormat(textarea, match.action);
+      MarkdownUtils.runMarkdownEdit(match.action, onChange);
       return;
     }
 
-    if (isMod && e.shiftKey && !e.altKey && (e.key === "K" || e.key === "k")) {
+    if (isMod && e.shiftKey && !e.altKey && key === "k") {
       e.preventDefault();
       onLinkRequest?.(textarea.selectionStart !== textarea.selectionEnd);
     } else if (e.key === "Enter" && !isMod && !e.shiftKey && !e.altKey) {
-      applyListEdit(e, textarea, MarkdownUtils.handleListEnter(textarea));
+      applyEdit(e, MarkdownUtils.handleListEnter(textarea));
     } else if (e.key === "Tab" && !isMod && !e.shiftKey && !e.altKey) {
-      applyListEdit(e, textarea, MarkdownUtils.indentListItem(textarea));
+      applyEdit(e, MarkdownUtils.indentListItem(textarea));
     }
   };
 
@@ -170,9 +143,7 @@ export const SyntaxHighlightedEditor = ({
       : code;
 
   const handlePaste = (e: React.ClipboardEvent) => {
-    const textarea = document.getElementById(
-      "markdown-editor-textarea"
-    ) as HTMLTextAreaElement;
+    const textarea = MarkdownUtils.getMarkdownTextarea();
     if (!textarea) return;
     const pastedText = e.clipboardData.getData("text/plain");
     const newContent = MarkdownUtils.autolinkPastedContent(
@@ -223,15 +194,16 @@ export const SyntaxHighlightedEditor = ({
             </div>
           )}
           <Editor
+            ref={codeEditorRef}
             value={content}
             onValueChange={onChange}
             highlight={handleHighlight}
             padding={16}
             tabSize={4}
             insertSpaces={true}
-            className="markdown-code-editor flex-1 jotty-scrollable-content"
+            className={`${MarkdownUtils.MARKDOWN_EDITOR_CLASS} flex-1 jotty-scrollable-content`}
             style={{ minHeight: "400px" }}
-            textareaId="markdown-editor-textarea"
+            textareaId={MarkdownUtils.MARKDOWN_TEXTAREA_ID}
             textareaClassName="focus:outline-none bg-transparent"
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}

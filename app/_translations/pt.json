@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Eliminar utilizador \"{username}\"? Isto não pode ser desfeito.",
     "userDeletedSuccessfully": "Utilizador eliminado.",
     "failedToDeleteUser": "Falha ao eliminar utilizador",
-    "readOnlyFolder": "Esta pasta é só de leitura no servidor, por isso a alteração não foi guardada."
+    "readOnlyFolder": "Esta pasta é só de leitura no servidor, por isso a alteração não foi guardada.",
+    "itemLocked": "Este item não pode ser alterado até que o frontmatter seja corrigido.",
+    "frontmatterUnfixable": "O Jotty não conseguiu corrigir este frontmatter sozinho. Edite o arquivo manualmente e recarregue.",
+    "frontmatterNothingToFix": "Não há nada para corrigir no frontmatter deste item."
   },
   "pwa": {
     "installPromptTitle": "Instalar aplicação",
@@ -1757,16 +1760,12 @@
     "markdownGuide": "Guia Markdown",
     "brain": "Ligações e Brain",
     "customisations": "Personalizações",
-    "docker": "Docker",
     "envVariables": "Variáveis de ambiente",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Encriptação",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Traduções",
-    "unraid": "Unraid",
-    "patches": "Correções"
+    "translations": "Traduções"
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -1880,5 +1879,19 @@
     "deprecated": "obsoleto",
     "requestFailed": "Não chegou nenhuma resposta. Verifique a ligação e confirme se a alteração foi aplicada antes de tentar novamente.",
     "responseMeta": "{status} em {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Somente leitura até o Jotty conseguir adicionar o id",
+    "reasons": {
+      "empty": "O arquivo está vazio, então o Jotty ainda não gravou o id nele.",
+      "unparsable": "O frontmatter não é YAML válido, então o Jotty não consegue adicionar o id sem reescrevê-lo.",
+      "foreignUuid": "O frontmatter já tem um uuid que não é um id do Jotty, e o Jotty não vai sobrescrevê-lo."
+    },
+    "askEditor": "Alguém que possa editar este item pode corrigi-lo.",
+    "fix": "Tentar corrigir",
+    "confirmTitle": "Corrigir o frontmatter?",
+    "confirmMessage": "O Jotty vai reescrever o frontmatter no início deste arquivo. Ele coloca entre aspas os valores que não são YAML válido, troca tabulações por espaços, move para previousUuid um uuid que não seja do Jotty e adiciona o próprio uuid. O resto do arquivo continua igual. O Jotty não consegue desfazer isso, então guarde uma cópia se outro aplicativo lê este frontmatter. Você precisa de permissão para editar este item, e a pasta precisa permitir gravação.",
+    "confirm": "Corrigir o frontmatter",
+    "fixed": "Corrigido. Agora você pode editar este item."
   }
 }

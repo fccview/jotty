@@ -10,10 +10,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
-import {
-  convertHtmlToMarkdown,
-  convertMarkdownToHtml,
-} from "@/app/_utils/markdown-utils";
+import { markdownToEditorHtml } from "@/app/_utils/markdown/parse/to-html";
+import { serializeDoc } from "@/app/_utils/markdown/serialize";
 
 describe("noteUrlTransform", () => {
   it.each([
@@ -48,14 +46,22 @@ describe("noteUrlTransform", () => {
 
 describe("tel links through the editor round trip", () => {
   it("should keep tel: when markdown becomes editor html", () => {
-    expect(convertMarkdownToHtml("[Call](tel:+18005551212)")).toContain(
+    expect(markdownToEditorHtml("[Call](tel:+18005551212)")).toContain(
       'href="tel:+18005551212"',
     );
   });
 
   it("should keep tel: when editor html is saved back to markdown", () => {
     expect(
-      convertHtmlToMarkdown('<p><a href="tel:+18005551212">Call</a></p>'),
+      serializeDoc({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", marks: [{ type: "link", attrs: { href: "tel:+18005551212" } }], text: "Call" }],
+          },
+        ],
+      }),
     ).toBe("[Call](tel:+18005551212)");
   });
 });

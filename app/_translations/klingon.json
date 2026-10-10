@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "\"{username}\" DaQaw' DaneH'a'? SabHa'laHbe'.",
     "userDeletedSuccessfully": "lo'wI' Qaw' Qapla'!",
     "failedToDeleteUser": "lo'wI' Qaw' Qapla'be'",
-    "readOnlyFolder": "serverDaq qachvam laD neH, choH PollaHbe'lu'."
+    "readOnlyFolder": "serverDaq qachvam laD neH, choH PollaHbe'lu'.",
+    "itemLocked": "Dochvam choHlaHbe'. frontmatter DIr tI'nIS.",
+    "frontmatterUnfixable": "frontmatter tI'laHbe' Jotty. ghItlh De'wI' ghitlh, ghIq yIchu'qa'.",
+    "frontmatterNothingToFix": "frontmatter Dochvam tI'nISbe'."
   },
   "pwa": {
     "installPromptTitle": "De'wI' yIlan",
@@ -1757,16 +1760,12 @@
     "markdownGuide": "Markdown mIw",
     "brain": "rarmey & yab",
     "customisations": "Tigh",
-    "docker": "Docker",
     "envVariables": "Env Variables",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "pegh",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Hol",
-    "unraid": "Unraid",
-    "patches": "Patches"
+    "translations": "Hol"
   },
   "notFound": {
     "title": "tu'be'lu'",
@@ -1880,5 +1879,19 @@
     "deprecated": "ngo'",
     "requestFailed": "jang pagh chegh. rarwIj yInuD, 'ej choH chu'lu'pu''a' yInuD, ghIq yInIDqa'.",
     "responseMeta": "{status}, {ms} ms"
+  },
+  "lockedItem": {
+    "title": "laDlaH neH, mI'Daj chellaHpa' Jotty",
+    "reasons": {
+      "empty": "chIm ghitlh, vaj mI'Daj ghItlhbe'pu' Jotty.",
+      "unparsable": "frontmatter YAML lI'be'. ghItlhqa'be'chugh mI'Daj chellaHbe' Jotty.",
+      "foreignUuid": "uuid ghaj frontmatter 'ach Jotty mI' ghaHbe'. Qaw'be' Jotty."
+    },
+    "askEditor": "Dochvam choHlaHbogh ghot tI'laH.",
+    "fix": "tI'meH yInID",
+    "confirmTitle": "frontmatter DatI''a'?",
+    "confirmMessage": "ghitlh nachDaq frontmatter ghItlhqa' Jotty. YAML lI'be'bogh mI' quotes lan, tabs chImmeH tlhegh moj, Jotty mI' ghaHbe'bogh uuid previousUuid Daq lan, uuid chu' chel. ghitlh latlh choHbe'. DochHa'laHbe' Jotty, vaj frontmatter laDchugh latlh ghun, yIqaw'Ha'. Dochvam choHmeH chaw' DaghajnIS, 'ej ghItlhlaHnIS qachDaj.",
+    "confirm": "frontmatter yItI'",
+    "fixed": "tI'lu'ta'. DaH Dochvam DachoHlaH."
   }
 }

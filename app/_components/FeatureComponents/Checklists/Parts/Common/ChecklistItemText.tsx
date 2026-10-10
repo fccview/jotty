@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, ReactNode, SyntheticEvent } from "react";
-import { WIKILINK_REGEX } from "@/app/_consts/relations";
+import { WIKI_EMBED_MARK, WIKILINK_REGEX } from "@/app/_consts/relations";
 import { currentOrigins, parseItemHref } from "@/app/_utils/item-href-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
@@ -58,7 +58,7 @@ export const ChecklistItemText = ({
           />
         );
       }
-    } else if (wikiTarget !== undefined && linksEnabled) {
+    } else if (wikiTarget !== undefined && linksEnabled && text[at - 1] !== WIKI_EMBED_MARK) {
       piece = (
         <WikiLink
           target={wikiTarget.trim()}

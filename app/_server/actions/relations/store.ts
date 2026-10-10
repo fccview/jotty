@@ -7,6 +7,7 @@ import {
   RELATIONS_SCHEMA_VERSION,
   RelationsStatus,
 } from "@/app/_consts/relations";
+import { clusterNode } from "@/app/_utils/env-utils";
 
 declare global {
   var __jottyRelations: { db: DatabaseSync; file: string; schema: number } | undefined;
@@ -21,11 +22,14 @@ const SCHEMA = `
     type TEXT NOT NULL,
     title TEXT NOT NULL,
     title_key TEXT NOT NULL,
+    path_key TEXT NOT NULL DEFAULT '',
+    file_key TEXT NOT NULL DEFAULT '',
     encrypted INTEGER NOT NULL DEFAULT 0,
     created REAL NOT NULL DEFAULT 0,
     mtime REAL NOT NULL DEFAULT 0
   );
   CREATE INDEX IF NOT EXISTS items_title ON items(title_key);
+  CREATE INDEX IF NOT EXISTS items_file ON items(file_key);
   CREATE TABLE IF NOT EXISTS links (
     src TEXT NOT NULL,
     dst TEXT,
@@ -37,13 +41,12 @@ const SCHEMA = `
   CREATE INDEX IF NOT EXISTS links_src ON links(src);
   CREATE INDEX IF NOT EXISTS links_dst ON links(dst);
   CREATE INDEX IF NOT EXISTS links_text ON links(dst_text);
-  CREATE TABLE IF NOT EXISTS bindings (
-    src TEXT NOT NULL,
-    text TEXT NOT NULL,
-    dst TEXT NOT NULL,
-    PRIMARY KEY (src, text)
+  CREATE TABLE IF NOT EXISTS aliases (
+    uuid TEXT NOT NULL,
+    key TEXT NOT NULL,
+    PRIMARY KEY (uuid, key)
   );
-  CREATE INDEX IF NOT EXISTS bindings_dst ON bindings(dst);
+  CREATE INDEX IF NOT EXISTS aliases_key ON aliases(key);
   CREATE TABLE IF NOT EXISTS clashes (
     path TEXT PRIMARY KEY,
     uuid TEXT NOT NULL,
@@ -60,9 +63,14 @@ const SCHEMA = `
   );
 `;
 
+const relationsName = () => {
+  const node = clusterNode();
+  return node ? `.relations_${node}.db` : RELATIONS_DB_NAME;
+};
+
 export const relationsFile = (): string =>
   process.env.JOTTY_RELATIONS_DB ||
-  path.join(process.cwd(), DATA_DIR, RELATIONS_DB_NAME);
+  path.join(process.cwd(), DATA_DIR, relationsName());
 
 const _discard = (file: string) => {
   for (const suffix of ["", "-wal", "-shm"]) {

@@ -1,3 +1,4 @@
+import { StampRefusals } from "@/app/_consts/identity";
 import { ItemTypes } from "./enums";
 import { EncryptionMethod } from "./encryption";
 import { SharingPermissions } from "./core";
@@ -24,6 +25,7 @@ export interface Note {
   encryptionMethod?: EncryptionMethod;
   tags?: string[];
   extraMetadata?: Record<string, unknown>;
+  lockReason?: StampRefusals;
 }
 
 export interface NoteEditorViewModel {
@@ -48,6 +50,7 @@ export interface NoteEditorViewModel {
     isMarkdown: boolean,
     isDirty: boolean
   ) => void;
+  handleRemoteContentChange: (content: string, isMarkdown: boolean) => void;
   showUnsavedChangesModal: boolean;
   setShowUnsavedChangesModal: (show: boolean) => void;
   handleUnsavedChangesSave: () => void;

@@ -18,6 +18,7 @@ vi.mock("@/app/_server/actions/file", () => ({
   ensureDir: (...args: any[]) => mockEnsureDir(...args),
   serverWriteFile: (...args: any[]) => mockServerWriteFile(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: any[]) => (await mockServerReadFile(...args)) ?? null,
   serverDeleteFile: (...args: any[]) => mockServerDeleteFile(...args),
 }));
 

@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Supprimer l’utilisateur « {username} » ? Cette action est irréversible.",
     "userDeletedSuccessfully": "Utilisateur supprimé.",
     "failedToDeleteUser": "Échec de la suppression de l’utilisateur",
-    "readOnlyFolder": "Ce dossier est en lecture seule sur le serveur, la modification n’a donc pas pu être enregistrée."
+    "readOnlyFolder": "Ce dossier est en lecture seule sur le serveur, la modification n’a donc pas pu être enregistrée.",
+    "itemLocked": "Cet élément ne peut pas être modifié tant que son frontmatter n'est pas corrigé.",
+    "frontmatterUnfixable": "Jotty n'a pas pu corriger ce frontmatter tout seul. Modifiez le fichier à la main, puis rechargez.",
+    "frontmatterNothingToFix": "Il n'y a rien à corriger dans le frontmatter de cet élément."
   },
   "pwa": {
     "installPromptTitle": "Installer l’application",
@@ -1757,16 +1760,12 @@
     "markdownGuide": "Guide Markdown",
     "brain": "Liens et Brain",
     "customisations": "Personnalisations",
-    "docker": "Docker",
     "envVariables": "Variables d’environnement",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Chiffrement",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Traductions",
-    "unraid": "Unraid",
-    "patches": "Correctifs"
+    "translations": "Traductions"
   },
   "notFound": {
     "title": "Page non trouvée",
@@ -1880,5 +1879,19 @@
     "deprecated": "obsolète",
     "requestFailed": "Aucune réponse n’est revenue. Vérifiez votre connexion, et vérifiez si la modification a été appliquée avant de réessayer.",
     "responseMeta": "{status} en {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Lecture seule jusqu'à ce que Jotty puisse ajouter son identifiant",
+    "reasons": {
+      "empty": "Le fichier est vide, donc Jotty n'y a pas encore écrit son identifiant.",
+      "unparsable": "Son frontmatter n'est pas du YAML valide, donc Jotty ne peut pas ajouter son identifiant sans le réécrire.",
+      "foreignUuid": "Son frontmatter a déjà un uuid qui n'est pas un identifiant Jotty, et Jotty ne l'écrasera pas."
+    },
+    "askEditor": "Une personne qui peut modifier cet élément peut le corriger.",
+    "fix": "Essayer de corriger",
+    "confirmTitle": "Corriger le frontmatter ?",
+    "confirmMessage": "Jotty va réécrire le frontmatter en haut de ce fichier. Il met entre guillemets les valeurs qui ne sont pas du YAML valide, remplace les tabulations par des espaces, déplace dans previousUuid un uuid qui n'est pas un identifiant Jotty et ajoute son propre uuid. Le reste du fichier ne change pas. Jotty ne peut pas annuler cette opération, alors gardez une copie si une autre application lit ce frontmatter. Il faut le droit de modifier cet élément, et son dossier doit être accessible en écriture.",
+    "confirm": "Corriger le frontmatter",
+    "fixed": "Corrigé. Vous pouvez maintenant modifier cet élément."
   }
 }

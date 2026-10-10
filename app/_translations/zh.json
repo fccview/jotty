@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "删除用户 \"{username}\"？此操作无法撤销。",
     "userDeletedSuccessfully": "用户已删除。",
     "failedToDeleteUser": "删除用户失败",
-    "readOnlyFolder": "此文件夹在服务器上是只读的，无法保存更改。"
+    "readOnlyFolder": "此文件夹在服务器上是只读的，无法保存更改。",
+    "itemLocked": "修复前置元数据之前，无法更改此项目。",
+    "frontmatterUnfixable": "Jotty 无法自动修复此前置元数据。请手动编辑文件，然后重新加载。",
+    "frontmatterNothingToFix": "此项目的前置元数据无需修复。"
   },
   "pwa": {
     "installPromptTitle": "安装应用",
@@ -1757,16 +1760,12 @@
     "markdownGuide": "Markdown 指南",
     "brain": "链接与大脑",
     "customisations": "自定义",
-    "docker": "Docker",
     "envVariables": "环境变量",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "加密",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "翻译",
-    "unraid": "Unraid",
-    "patches": "补丁"
+    "translations": "翻译"
   },
   "notFound": {
     "title": "页面未找到",
@@ -1880,5 +1879,19 @@
     "deprecated": "已弃用",
     "requestFailed": "没有收到响应。请检查网络连接，并在重试之前确认更改是否已生效。",
     "responseMeta": "{status}，耗时 {ms} ms"
+  },
+  "lockedItem": {
+    "title": "在 Jotty 添加 id 之前为只读",
+    "reasons": {
+      "empty": "文件为空，Jotty 还没有把 id 写进去。",
+      "unparsable": "它的前置元数据不是有效的 YAML，Jotty 不重写就无法添加 id。",
+      "foreignUuid": "它的前置元数据里已有一个不是 Jotty id 的 uuid，Jotty 不会覆盖它。"
+    },
+    "askEditor": "有编辑权限的人可以修复它。",
+    "fix": "尝试修复",
+    "confirmTitle": "修复前置元数据？",
+    "confirmMessage": "Jotty 会重写此文件开头的前置元数据：给不是有效 YAML 的值加上引号，把制表符换成空格，把不是 Jotty id 的 uuid 移到 previousUuid，再添加自己的 uuid。文件其余部分保持不变。Jotty 无法撤销此操作，如果有其他应用读取这段前置元数据，请先保留一份副本。你需要此项目的编辑权限，并且它所在的文件夹必须可写。",
+    "confirm": "修复前置元数据",
+    "fixed": "已修复。现在可以编辑此项目了。"
   }
 }

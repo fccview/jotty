@@ -7,7 +7,7 @@ import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/P
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
-import { useEffect, useRef, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
@@ -17,7 +17,8 @@ import {
   isEncrypted,
 } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
-import { ItemTypes } from "@/app/_types/enums";
+import { useReadingAnchor } from "@/app/_hooks/useReadingAnchor";
+import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
 interface NoteEditorContentProps {
   isEditorVisible: boolean;
@@ -28,6 +29,7 @@ interface NoteEditorContentProps {
     isMarkdown: boolean,
     isDirty: boolean,
   ) => void;
+  onRemoteContentChange?: (content: string, isMarkdown: boolean) => void;
   noteId?: string;
   encrypted?: boolean;
   onOpenDecryptModal?: () => void;
@@ -39,6 +41,7 @@ export const NoteEditorContent = ({
   noteContent,
   editorContent,
   onEditorContentChange,
+  onRemoteContentChange,
   noteId,
   encrypted,
   onOpenDecryptModal,
@@ -49,6 +52,15 @@ export const NoteEditorContent = ({
   const { compactMode } = useSettings();
   const editorRef = useRef<TiptapEditorRef>(null);
   const isMinimalMode = useMinimalMode();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const [modeSwitches, setModeSwitches] = useState(0);
+  const holdAnchor = useReadingAnchor(rootRef, String(modeSwitches));
+
+  const handleModeChange = useCallback(() => {
+    holdAnchor();
+    setModeSwitches((count) => count + 1);
+  }, [holdAnchor]);
 
   useEffect(() => {
     if (
@@ -130,12 +142,16 @@ export const NoteEditorContent = ({
   }
 
   return (
-    <div className="flex-1 h-full">
+    <div ref={rootRef} className="flex-1 min-h-full">
       {isEditorVisible ? (
         <TiptapEditor
+          key={noteId}
+          collaborationUuid={!encrypted ? noteId : undefined}
           ref={editorRef}
           content={editorContent}
           onChange={onEditorContentChange}
+          onRemoteChange={onRemoteContentChange}
+          onModeChange={handleModeChange}
           tableSyntax={user?.tableSyntax}
           notes={notes}
           checklists={checklists}
@@ -150,6 +166,7 @@ export const NoteEditorContent = ({
           >
             <UnifiedMarkdownRenderer
               content={encrypted ? editorContent : noteContent || ""}
+              className={NOTE_PROSE_CLASS}
             />
             <ReferencedBySection />
           </div>

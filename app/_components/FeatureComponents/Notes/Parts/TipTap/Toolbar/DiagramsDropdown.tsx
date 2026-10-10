@@ -11,7 +11,7 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
 import { useTranslations } from "next-intl";
-import { insertMermaid } from "@/app/_utils/markdown-editor-utils";
+import { insertMermaid, runMarkdownEdit } from "@/app/_utils/markdown-editor-utils";
 
 interface DiagramsDropdownProps {
   editor: Editor | null;
@@ -32,11 +32,7 @@ export const DiagramsDropdown = ({ editor, isMarkdownMode = false, onMarkdownCha
     D --> E`;
 
     if (isMarkdownMode && onMarkdownChange) {
-      const textarea = document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
-      if (textarea) {
-        const newContent = insertMermaid(textarea, defaultMermaid);
-        onMarkdownChange(newContent);
-      }
+      runMarkdownEdit((textarea) => insertMermaid(textarea, defaultMermaid), onMarkdownChange);
     } else {
       (editor.chain().focus() as any).setMermaid(defaultMermaid).run();
     }

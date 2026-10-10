@@ -672,7 +672,17 @@
     "startTime": "Start",
     "endTime": "End",
     "addItemToColumn": "Add item to {column}",
-    "addItemPlaceholder": "New item..."
+    "addItemPlaceholder": "New item...",
+    "agentAvatar": "Agent {agent}",
+    "agentInvalid": "Agent names use 1-64 letters, digits, dots, dashes or underscores, with no spaces.",
+    "assigneeSearch": "Search users or name an agent...",
+    "assignAgentAs": "Assign agent {agent}",
+    "assigneeWillShare": "Will share the board",
+    "assigneeNoAccess": "Can't see this board",
+    "assigneeShareTitle": "Share this board?",
+    "assigneeShareMessage": "{user} can't see this board yet. Assigning them will share it with edit access.",
+    "assigneeShareConfirm": "Share and assign",
+    "assignFailed": "Could not change the assignee"
   },
   "profile": {
     "userProfile": "User",
@@ -1210,7 +1220,10 @@
     "deleteUserConfirmation": "Delete user \"{username}\"? This cannot be undone.",
     "userDeletedSuccessfully": "User deleted.",
     "failedToDeleteUser": "Failed to delete user",
-    "readOnlyFolder": "This folder is read-only on the server, so the change could not be saved."
+    "readOnlyFolder": "This folder is read-only on the server, so the change could not be saved.",
+    "itemLocked": "This item can't be changed until its frontmatter is fixed.",
+    "frontmatterUnfixable": "Jotty couldn't fix this frontmatter on its own. Edit the file by hand, then reload.",
+    "frontmatterNothingToFix": "There's nothing to fix in this item's frontmatter."
   },
   "pwa": {
     "installPromptTitle": "Install App",
@@ -1272,6 +1285,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Toggle rich editor mode",
     "toggleMarkdownMode": "Toggle markdown mode",
+    "editorMode": "Editor mode",
+    "currentEditorMode": "Currently editing in {mode}",
+    "switchToRichEditor": "Switch to rich editor",
+    "switchToMarkdown": "Switch to markdown",
     "quickControls": "Editor controls",
     "toggleBold": "Toggle bold",
     "toggleItalic": "Toggle italic",
@@ -1760,16 +1777,13 @@
     "markdownGuide": "Markdown Guide",
     "brain": "Links & Brain",
     "customisations": "Customisations",
-    "docker": "Docker",
+    "selfHosting": "Self-hosting",
     "envVariables": "Env Variables",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Encryption",
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Translations",
-    "unraid": "Unraid",
-    "patches": "Patches",
     "mcp": "MCP"
   },
   "notFound": {
@@ -1807,7 +1821,9 @@
     "linked": "Linked the mention in {title}",
     "linkFailed": "Couldn't link that mention",
     "kind": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Checklist",
       "wiki": "Wikilink"
     }
   },
@@ -1886,5 +1902,29 @@
     "deprecated": "deprecated",
     "requestFailed": "No response came back. Check your connection, and check whether the change went through before you try again.",
     "responseMeta": "{status} in {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Read-only until Jotty can add its id",
+    "reasons": {
+      "empty": "The file is empty, so Jotty hasn't written its id into it yet.",
+      "unparsable": "Its frontmatter isn't valid YAML, so Jotty can't add its id without rewriting it.",
+      "foreignUuid": "Its frontmatter already has a uuid that isn't a Jotty id, and Jotty won't overwrite it."
+    },
+    "askEditor": "Someone who can edit this item can fix it.",
+    "fix": "Try to fix this",
+    "confirmTitle": "Fix the frontmatter?",
+    "confirmMessage": "Jotty will rewrite the frontmatter at the top of this file. It quotes values that aren't valid YAML, swaps tabs for spaces, moves a uuid that isn't a Jotty id to previousUuid, and adds its own uuid. The rest of the file stays as it is. Jotty can't undo this, so keep a copy if another app reads this frontmatter. You need edit access to this item, and its folder must be writable.",
+    "confirm": "Fix the frontmatter",
+    "fixed": "Fixed. You can edit this item now."
+  },
+  "live": {
+    "currentlyEditing": "Currently editing",
+    "dropped": "Someone changed this note while you were offline, so your unsaved changes were dropped.",
+    "copyDropped": "Copy my changes",
+    "status": {
+      "offline": "Offline. If someone else changes this note before you reconnect, your unsaved changes will be dropped.",
+      "refused": "Live editing stopped because your access or this note changed. Refresh to continue.",
+      "unavailable": "Live editing isn't available, so you're editing on your own. Your changes still save."
+    }
   }
 }

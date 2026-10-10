@@ -147,6 +147,17 @@ export const serverReadFile = async (
   }
 };
 
+export const serverReadExisting = async (filePath: string): Promise<string | null> => {
+  try {
+    return await fs.readFile(filePath, "utf-8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") {
+      console.error("Could not read item file:", filePath, error);
+    }
+    return null;
+  }
+};
+
 const _tracking = () => import("@/app/_server/actions/relations/tracking");
 
 export const serverWriteFile = async (filePath: string, content: string) => {

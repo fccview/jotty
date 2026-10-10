@@ -1,0 +1,29 @@
+services:
+  node1:
+    image: jotty-ha:local
+    build:
+      context: ../..
+    network_mode: host
+    volumes:
+      - ./data:/app/data
+    environment:
+      JOTTY_NODE: node1
+      PUID: "0"
+      PGID: "0"
+
+  node2:
+    image: jotty-ha:local
+    network_mode: host
+    volumes:
+      - ./data:/app/data
+    environment:
+      JOTTY_NODE: node2
+      PORT: "3001"
+      PUID: "0"
+      PGID: "0"
+
+  lb:
+    image: nginx:alpine
+    network_mode: host
+    volumes:
+      - ./ha.nginx.conf:/etc/nginx/nginx.conf:ro

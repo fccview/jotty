@@ -546,19 +546,19 @@ describe('Users Actions', () => {
     })
 
     it('creates the first user as both admin and superAdmin', async () => {
-      mockFs.readFile.mockResolvedValue('[]')
+      mockReadJsonFile.mockResolvedValue([])
       await ensureUser('alice', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       expect(written).toHaveLength(1)
       expect(written[0]).toMatchObject({ username: 'alice', isAdmin: true, isSuperAdmin: true })
     })
 
     it('creates a subsequent user with isAdmin=false when false is passed', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
-      ]))
+      ])
       await ensureUser('bob', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const bob = written.find((u: any) => u.username === 'bob')
       expect(bob).toBeDefined()
       expect(bob.isAdmin).toBe(false)
@@ -566,47 +566,53 @@ describe('Users Actions', () => {
     })
 
     it('creates a subsequent user with isAdmin=true when true is passed', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
-      ]))
+      ])
       await ensureUser('bob', true)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const bob = written.find((u: any) => u.username === 'bob')
       expect(bob.isAdmin).toBe(true)
     })
 
     it('promotes an existing non-admin user to admin when isAdmin=true', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
         { username: 'alice', passwordHash: '', isAdmin: false },
-      ]))
+      ])
       await ensureUser('alice', true)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const alice = written.find((u: any) => u.username === 'alice')
       expect(alice.isAdmin).toBe(true)
     })
 
     it('does NOT demote an existing admin user when isAdmin=false', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'alice', passwordHash: '', isAdmin: true },
-      ]))
+      ])
       await ensureUser('alice', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const alice = written.find((u: any) => u.username === 'alice')
       expect(alice.isAdmin).toBe(true)
     })
 
     it('does not create a duplicate entry if called with an existing username', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'alice', passwordHash: '', isAdmin: false },
-      ]))
+      ])
       await ensureUser('alice', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       expect(written.filter((u: any) => u.username === 'alice')).toHaveLength(1)
     })
 
+    it('refuses to overwrite a users file it cannot read', async () => {
+      mockReadJsonFile.mockResolvedValue(null)
+      await expect(ensureUser('alice', false)).rejects.toThrow()
+      expect(mockWriteJsonFile).not.toHaveBeenCalled()
+    })
+
     it('creates the checklist and notes directories for the user', async () => {
-      mockFs.readFile.mockResolvedValue('[]')
+      mockReadJsonFile.mockResolvedValue([])
       await ensureUser('alice', false)
       const mkdirPaths = mockFs.mkdir.mock.calls.map((c: any[]) => c[0] as string)
       expect(mkdirPaths.some((p) => p.includes('checklists') && p.includes('alice'))).toBe(true)

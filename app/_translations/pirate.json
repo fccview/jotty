@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Execute \"{username}\"?",
     "userDeletedSuccessfully": "Swabbie fed to sharks!",
     "failedToDeleteUser": "Sword jammed",
-    "readOnlyFolder": "This hold be read-only on the ship's server, so the change couldn't be stowed."
+    "readOnlyFolder": "This hold be read-only on the ship's server, so the change couldn't be stowed.",
+    "itemLocked": "This here booty can't be touched till its frontmatter be patched up.",
+    "frontmatterUnfixable": "Jotty couldn't patch this frontmatter on its own, matey. Fix the scroll by hand, then reload.",
+    "frontmatterNothingToFix": "There be nothin' to patch in this booty's frontmatter."
   },
   "pwa": {
     "installPromptTitle": "Dock the Ship",
@@ -1757,16 +1760,12 @@
     "markdownGuide": "Rune Guide",
     "brain": "Links & Brain",
     "customisations": "Tweaks",
-    "docker": "Docker",
     "envVariables": "Winds",
     "mfa": "Handshake",
-    "pwa": "Docking",
     "encryption": "Locker",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Lingos",
-    "unraid": "Unraid",
-    "patches": "Patches"
+    "translations": "Lingos"
   },
   "notFound": {
     "title": "Chart Leads Nowhere",
@@ -1880,5 +1879,19 @@
     "deprecated": "deprecated",
     "requestFailed": "No word came back. Check yer connection, an' check whether the change made it aboard before ye try again.",
     "responseMeta": "{status} in {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Lashed down till Jotty can brand it with its id",
+    "reasons": {
+      "empty": "The scroll be empty, so Jotty ain't branded its id on it yet.",
+      "unparsable": "Its frontmatter ain't proper YAML, so Jotty can't add its id without rewritin' the lot.",
+      "foreignUuid": "Its frontmatter already carries a uuid that ain't a Jotty id, and Jotty won't scuttle it."
+    },
+    "askEditor": "A sailor who can edit this booty can patch it up.",
+    "fix": "Try to patch this",
+    "confirmTitle": "Patch the frontmatter?",
+    "confirmMessage": "Jotty will rewrite the frontmatter atop this scroll. It quotes values that ain't proper YAML, swaps tabs for spaces, stows a uuid that ain't a Jotty id in previousUuid, and adds its own uuid. The rest o' the scroll stays as it be. Jotty can't undo this, so keep a copy if another ship reads this frontmatter. Ye need leave to edit this booty, and its folder must be writable.",
+    "confirm": "Patch the frontmatter",
+    "fixed": "Patched! Ye can edit this booty now."
   }
 }

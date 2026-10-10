@@ -46,30 +46,8 @@ export const ListMenuDropdown = ({
 
   if (!editor) return null;
 
-  const applyMarkdown = (fn: (ta: HTMLTextAreaElement) => string) => {
-    const textarea = document.getElementById(
-      "markdown-editor-textarea"
-    ) as HTMLTextAreaElement;
-    if (textarea && onMarkdownChange) {
-      const scrollTop = textarea.scrollTop;
-      const scrollLeft = textarea.scrollLeft;
-      const newContent = fn(textarea);
-      const selectionStart = textarea.selectionStart;
-      const selectionEnd = textarea.selectionEnd;
-      onMarkdownChange(newContent);
-      requestAnimationFrame(() => {
-        const ta = document.getElementById(
-          "markdown-editor-textarea"
-        ) as HTMLTextAreaElement;
-        if (ta) {
-          ta.focus({ preventScroll: true });
-          ta.setSelectionRange(selectionStart, selectionEnd);
-          ta.scrollTop = scrollTop;
-          ta.scrollLeft = scrollLeft;
-        }
-      });
-    }
-  };
+  const applyMarkdown = (fn: (ta: HTMLTextAreaElement) => string) =>
+    MarkdownUtils.runMarkdownEdit(fn, onMarkdownChange);
 
   const getCurrentListType = (): "bulletList" | "orderedList" | null => {
     const { $from } = editor.state.selection;

@@ -1,11 +1,6 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  convertMarkdownToHtml,
-  convertHtmlToMarkdownUnified,
-  processMarkdownContent,
-} from "@/app/_utils/markdown-utils";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
@@ -22,6 +17,8 @@ import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
+import { markSaved } from "@/app/_hooks/useLiveSession";
+import { AUTOSAVE_DEFAULT_MS, autosaveDelay } from "@/app/_utils/autosave-utils";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseNoteEditorProps {
@@ -47,19 +44,9 @@ export const useNoteEditor = ({
   const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
-  const [editorContent, setEditorContent] = useState(() => {
-    const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-    if (note.encrypted) {
-      return contentWithoutMetadata;
-    }
-    if (isMinimalMode) {
-      return contentWithoutMetadata;
-    }
-    if (defaultEditorIsMarkdown) {
-      return contentWithoutMetadata;
-    }
-    return convertMarkdownToHtml(contentWithoutMetadata);
-  });
+  const [editorContent, setEditorContent] = useState(
+    () => extractYamlMetadata(note.content || "").contentWithoutMetadata,
+  );
   const [isMarkdownMode, setIsMarkdownMode] = useState(
     isMinimalMode || defaultEditorIsMarkdown
   );
@@ -117,14 +104,9 @@ export const useNoteEditor = ({
     setHasUnsavedChanges: setProviderUnsaved,
   } = useNavigationGuard();
   const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dirtySinceRef = useRef<number | null>(null);
 
-  const derivedMarkdownContent = useMemo(
-    () =>
-      isMarkdownMode
-        ? processMarkdownContent(editorContent)
-        : convertHtmlToMarkdownUnified(editorContent, user?.tableSyntax),
-    [editorContent, isMarkdownMode, user?.tableSyntax]
-  );
+  const derivedMarkdownContent = editorContent;
 
   useEffect(() => {
     setTitle(note.title);
@@ -132,20 +114,8 @@ export const useNoteEditor = ({
     setContentIsDirty(false);
 
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-
-    if (note.encrypted) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else if (isMinimalMode) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else if (defaultEditorIsMarkdown) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else {
-      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
-      setIsMarkdownMode(false);
-    }
+    setEditorContent(contentWithoutMetadata);
+    setIsMarkdownMode(Boolean(note.encrypted) || isMinimalMode || defaultEditorIsMarkdown);
 
     if (searchParams?.get("editor") !== "true") {
       setIsEditing(false);
@@ -280,6 +250,10 @@ export const useNoteEditor = ({
 
       const result = await updateNote(formData, useAutosave);
 
+      if (result.success && !isEditingEncrypted && note.uuid) {
+        markSaved(note.uuid, cleanContent);
+      }
+
       if (!result.success) {
         showToast({
           type: "error",
@@ -301,7 +275,7 @@ export const useNoteEditor = ({
         setContentIsDirty(false);
         setProviderUnsaved(false);
 
-        router.push(itemHref(ItemTypes.NOTE, note.uuid!));
+        router.push(itemHref(ItemTypes.NOTE, note.uuid!), { scroll: false });
       }
     },
     [
@@ -318,9 +292,14 @@ export const useNoteEditor = ({
     ]
   );
 
+  const handleSaveRef = useRef(handleSave);
+  handleSaveRef.current = handleSave;
+
   useEffect(() => {
     if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
     const isEditMode = notesDefaultMode === "edit" || isEditing;
+
+    if (!hasUnsavedChanges) dirtySinceRef.current = null;
 
     if (
       user?.notesAutoSaveInterval !== 0 &&
@@ -329,15 +308,21 @@ export const useNoteEditor = ({
       hasUnsavedChanges &&
       !isEditingEncrypted
     ) {
+      const now = Date.now();
+      dirtySinceRef.current ??= now;
+      const interval = user?.notesAutoSaveInterval || AUTOSAVE_DEFAULT_MS;
       autosaveTimeoutRef.current = setTimeout(() => {
+        dirtySinceRef.current = null;
         setStatus((prev) => ({ ...prev, isAutoSaving: true }));
         const isAutosave = autosaveNotes ? true : false;
-        handleSave(isAutosave).finally(() => {
-          setStatus((prev) => ({ ...prev, isAutoSaving: false }));
-          setHasUnsavedChanges(false);
-          setContentIsDirty(false);
-        });
-      }, user?.notesAutoSaveInterval || 5000);
+        handleSaveRef.current(isAutosave)
+          .catch((error) => console.error("[note] autosave failed:", error))
+          .finally(() => {
+            setStatus((prev) => ({ ...prev, isAutoSaving: false }));
+            setHasUnsavedChanges(false);
+            setContentIsDirty(false);
+          });
+      }, autosaveDelay(interval, dirtySinceRef.current, now));
     }
     return () => {
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
@@ -369,6 +354,11 @@ export const useNoteEditor = ({
     setContentIsDirty(isDirty);
   };
 
+  const handleRemoteContentChange = (content: string, isMarkdown: boolean) => {
+    setEditorContent(content);
+    setIsMarkdownMode(isMarkdown);
+  };
+
   const handleEdit = () => setIsEditing(true);
   const handleCancel = () => {
     setIsEditing(false);
@@ -377,16 +367,8 @@ export const useNoteEditor = ({
     setContentIsDirty(false);
     setProviderUnsaved(false);
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-    if (isMinimalMode) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else if (defaultEditorIsMarkdown) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else {
-      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
-      setIsMarkdownMode(false);
-    }
+    setEditorContent(contentWithoutMetadata);
+    setIsMarkdownMode(isMinimalMode || defaultEditorIsMarkdown);
   };
 
   const confirmDelete = async () => {
@@ -504,6 +486,7 @@ export const useNoteEditor = ({
     handleSave,
     handleDelete: () => setShowDeleteModal(true),
     handleEditorContentChange,
+    handleRemoteContentChange,
     derivedMarkdownContent,
     showUnsavedChangesModal,
     setShowUnsavedChangesModal,

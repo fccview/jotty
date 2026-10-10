@@ -16,6 +16,7 @@ import {
 import { useNotesStore } from "@/app/_utils/notes-store";
 import { VisualGuideRuler } from "./VisualGuideRuler";
 import { EditorSettingsDropdown } from "./Toolbar/EditorSettingsDropdown";
+import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
 interface MinimalModeEditorProps {
   isEditing: boolean;
@@ -80,7 +81,7 @@ export const MinimalModeEditor = ({
             compactMode ? "max-w-[900px] mx-auto" : ""
           }`}
         >
-          <UnifiedMarkdownRenderer content={noteContent} />
+          <UnifiedMarkdownRenderer content={noteContent} className={NOTE_PROSE_CLASS} />
         </div>
       </>
     );
@@ -149,7 +150,7 @@ export const MinimalModeEditor = ({
               compactMode ? "max-w-[900px] mx-auto" : ""
             }`}
           >
-            <UnifiedMarkdownRenderer content={markdownContent} />
+            <UnifiedMarkdownRenderer content={markdownContent} className={NOTE_PROSE_CLASS} />
           </div>
         ) : (
           <div className="lg:p-4 h-full">

@@ -88,7 +88,7 @@ A self-hosted app for your checklists and notes.
 My recommended way to run `jotty·page` is with Docker. You can also use:
 
 - The [Proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh) for Proxmox VE
-- The [Unraid template](howto/UNRAID.md) for Unraid Community Applications
+- The [Unraid template](howto/DOCKER.md#unraid) for Unraid Community Applications
 
 Running it without Docker, from source or from the prebuilt tarball, needs Node.js 22.15 or later in the 22.x series, or Node.js 23.11 or later.
 
@@ -249,8 +249,7 @@ I will always detail these migrations in the release notes. I _highly recommend_
 
 You can completely customize your PWA by creating an override manifest file. This allows you to change the app name, description, icons, colors, and more. Custom themes and emojis can be managed through the admin UI.
 
-📖 **For the complete customisation documentation, see [howto/CUSTOMISATIONS.md](howto/CUSTOMISATIONS.md)**
-📖 **For better understanding on how the PWA works see [howto/PWA.md](howto/PWA.md)**
+📖 **For the complete customisation and PWA documentation, see [howto/CUSTOMISATIONS.md](howto/CUSTOMISATIONS.md)**
 
 ## Community shouts
 

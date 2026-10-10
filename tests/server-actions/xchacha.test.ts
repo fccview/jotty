@@ -46,7 +46,25 @@ vi.mock("libsodium-wrappers-sumo", () => ({
   },
 }));
 
+import sodium from "libsodium-wrappers-sumo";
 import { encryptXChaCha, decryptXChaCha } from "@/app/_server/actions/xchacha";
+
+const sealed = (extra: Record<string, unknown> = {}) =>
+  JSON.stringify({
+    alg: "xchacha20",
+    ...extra,
+    salt: "00".repeat(16),
+    nonce: "00".repeat(24),
+    data: "010203",
+  });
+
+const decryptWith = (extra?: Record<string, unknown>) =>
+  decryptXChaCha(createFormData({ encryptedContent: sealed(extra), passphrase: "pw" }));
+
+const pwhashCost = () => {
+  const [, , , opslimit, memlimit] = vi.mocked(sodium.crypto_pwhash).mock.calls[0];
+  return { opslimit, memlimit };
+};
 
 describe("XChaCha Actions", () => {
   it("should refuse to run without a session", async () => {
@@ -196,6 +214,35 @@ describe("XChaCha Actions", () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.decryptedContent).toBe("decrypted content");
+    });
+
+    it("uses the interactive Argon2 cost when the payload names none", async () => {
+      const result = await decryptWith();
+
+      expect(result.success).toBe(true);
+      expect(pwhashCost()).toEqual({ opslimit: 2, memlimit: 64 * 1024 * 1024 });
+    });
+
+    it("uses the Argon2 cost written by the Android client's low memory fallback", async () => {
+      const result = await decryptWith({ t: 2, m: 32768, p: 1 });
+
+      expect(result.success).toBe(true);
+      expect(pwhashCost()).toEqual({ opslimit: 2, memlimit: 32 * 1024 * 1024 });
+    });
+
+    it.each([
+      { t: 0, m: 65536, p: 1 },
+      { t: 99, m: 65536, p: 1 },
+      { t: 2, m: 1024, p: 1 },
+      { t: 2, m: 4194304, p: 1 },
+      { t: 2, m: 65536, p: 2 },
+      { t: "2", m: 65536, p: 1 },
+      { t: 2.5, m: 65536, p: 1 },
+    ])("refuses Argon2 cost $t/$m/$p without deriving a key", async (cost) => {
+      const result = await decryptWith(cost);
+
+      expect(result).toEqual({ success: false, error: "Invalid encrypted format" });
+      expect(sodium.crypto_pwhash).not.toHaveBeenCalled();
     });
   });
 

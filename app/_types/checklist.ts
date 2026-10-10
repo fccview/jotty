@@ -1,3 +1,4 @@
+import { StampRefusals } from "@/app/_consts/identity";
 import { ItemTypes } from "./enums";
 import { SharingPermissions } from "./core";
 
@@ -75,6 +76,7 @@ export interface Item {
   priority?: KanbanPriority;
   score?: number;
   assignee?: string;
+  agent?: string;
   reminder?: KanbanReminder;
 }
 
@@ -106,5 +108,7 @@ export interface Checklist {
   rawContent?: string;
   statuses?: KanbanStatus[];
   tags?: string[];
+  specNote?: string;
   extraMetadata?: Record<string, unknown>;
+  lockReason?: StampRefusals;
 }

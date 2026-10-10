@@ -1,6 +1,6 @@
-# Docker Compose configuration
+# Self-hosting
 
-What each value in the jotty·page `docker-compose.yml` does.
+Running jotty·page yourself: what each value in `docker-compose.yml` does, running more than one instance, Unraid and runtime patches.
 
 ## Basic docker-compose.yml
 
@@ -184,6 +184,30 @@ api-docs:
     - api-docs
 ```
 
+## Running more than one instance
+
+jotty·page can run as several instances against one shared `data/` directory, so live editing keeps working when one of them goes down. Nothing extra is installed: no database, no message broker. The instances talk to each other through small throwaway files in `data/.replica/`. Each file holds the live text of one open note and who has it open. jotty deletes the file once everybody closes the note, so your notes in `data/` stay the only lasting copy.
+
+### Setup
+
+1. Mount the same `data/` directory into every instance. A local disk or network storage like NFS both work.
+2. Give every instance its own `JOTTY_NODE` name, for example `node1` and `node2`. Letters, numbers, `-` and `_` only. That alone turns clustering on. Each instance also gets its own search index, `data/.relations_<name>.db`, rebuilt from your notes at startup, because two instances writing one index corrupts it. `JOTTY_RELATIONS_DB` overrides that name, so either leave it unset or give every instance its own path.
+3. Put the instances behind one address. Your proxy has to forward WebSocket upgrades and leave the `Host` header alone, because live editing refuses a connection whose `Host` doesn't match the page's address. When that happens the page still loads and typing still saves, but there are no avatars.
+
+### What people see when an instance goes down
+
+- The editor shows **Offline** and keeps accepting typing.
+- The browser reconnects by itself, and the proxy sends it to a surviving instance.
+- Typing done while offline is merged back in. If somebody saved the note in the meantime and nobody had it open, jotty offers the offline text back with **Copy my changes** instead of overwriting.
+
+Nobody has to do anything. Always use the same address, because the unsaved draft is kept per address.
+
+### Limits
+
+- Keep the servers' clocks in sync, for example with NTP, like any multi-server setup.
+- Only live note editing crosses instances. Tick a checklist item or rename a note and devices on the same instance see it straight away. Devices on another instance see it after a reload.
+- Each instance spots the others' changes by watching `data/`. That works when the instances share a disk on one machine. Network storage like NFS, SMB or EFS often doesn't report changes from another machine, so search, backlinks and the brain on that instance fall behind. Restart it and it rebuilds its index.
+
 ## Platform
 
 ```yaml
@@ -215,3 +239,130 @@ Environment=PGID=1000
 Environment=APP_URL=https://EXTERNAL_URL
 UserNS=keep-id
 ```
+
+## Unraid
+
+You can install jotty·page on Unraid from a template. It's on its way to the Community Applications store, and until then you can grab it **[here](https://github.com/fccview/unraid-templates/raw/main/templates/jotty.xml)**.
+
+### Installation
+
+#### From Community Applications (coming soon)
+
+1. Open the **Apps** tab in Unraid.
+2. Search for "jotty".
+3. Click **Install** on the jotty·page template.
+4. Fill in the settings below.
+5. Click **Apply**.
+
+### Configuration
+
+#### Ports
+
+- Host port `1122` is the default. Change it to any free port.
+- Container port `3000` stays as it is.
+
+Then open `http://[UNRAID-IP]:1122`.
+
+#### Storage paths
+
+The default location is `/mnt/user/appdata/jotty/`.
+
+- `/data` holds checklists, notes, users and encryption keys.
+- `/config` holds custom themes and configuration.
+- `/cache` is the Next.js cache. It's optional, and you can remove it to save space.
+
+> [!IMPORTANT]
+> Back up `/data`. Everything your users wrote lives there, and nothing else can bring it back.
+
+#### User and group
+
+- PUID `99` is Unraid's nobody user.
+- PGID `100` is Unraid's users group.
+- Extra Parameters is set to `--user 99:100`.
+
+To run as a different user or group, remove `--user 99:100` from Extra Parameters and change PUID and PGID.
+
+#### Environment variables
+
+The full list is in [ENV-VARIABLES.md](ENV-VARIABLES.md).
+
+### Image tags
+
+- `latest` is the stable release. Use this one.
+- `develop` is the development branch, a beta pre-release.
+
+## Runtime patches
+
+Some upstream bugs can only be fixed by rewriting a file inside `node_modules` after install. Next.js standalone builds ignoring `serverActions.bodySizeLimit` is one of them. jotty·page has a small patch runner for this. It runs every time the container starts, before the server boots.
+
+### Where patches live
+
+- `patches/` holds the patches that ship with the image. Each one is a small JS module that exports `{ name, apply(ctx) }`. They run in alphabetical order.
+- `user_patches/` is optional and mounted from your host. Any `.js` file you put here runs **after** the built-in patches, so you can add your own tweaks without rebuilding the image.
+
+### Adding your own patches
+
+1. Create a `user_patches/` folder next to your `docker-compose.yml`.
+2. Put a `.js` file in it, e.g. `user_patches/my-tweak.js`:
+
+   ```js
+   const fs = require("fs");
+   const path = require("path");
+
+   module.exports = {
+     name: "my-tweak",
+     apply: (ctx) => {
+       /* ctx.projectRoot points at /app inside the container
+          do whatever you need; return a short status string */
+       return "applied";
+     },
+   };
+   ```
+
+3. Mount it in `docker-compose.yml`:
+
+   ```yaml
+   volumes:
+     - ./user_patches:/app/user_patches:ro
+   ```
+
+4. Restart the container. Each patch logs its result to stdout on every start.
+
+Patches run on every restart, so write them to be **idempotent**. Check whether the file already has the value you want (an anchored regex or a lookahead does the job) before you write, and running the same patch twice changes nothing the second time.
+
+### Built-in patches
+
+<details>
+<summary><code>body-size-limit_20260427.js</code>, raises the 1MB Server Actions body cap</summary>
+
+In standalone builds Next.js 16 ignores `serverActions.bodySizeLimit` from `next.config` and keeps the hard-coded 1MB cap in `app-page*.runtime.prod.js`. This patch rewrites that cap, so server actions (file uploads, drawio attachments, avatar uploads, etc.) accept bigger payloads.
+
+- Set it with the `JOTTY_BODY_SIZE_LIMIT` env var.
+- Defaults to `100mb`.
+- Accepts `b`, `kb`, `mb`, `gb` (e.g. `50mb`, `2gb`).
+- Tracking issue: [#422](https://github.com/fccview/jotty/issues/422)
+
+```yaml
+environment:
+  - JOTTY_BODY_SIZE_LIMIT=250mb
+```
+
+</details>
+
+<details>
+<summary><code>freebsd_20260427.js</code>, FreeBSD compatibility (stubs <code>@swc/core</code>, forces webpack)</summary>
+
+`@swc/core` has no prebuilt native binary for FreeBSD and no published WASM fallback, so anything that imports it (next-intl, @serwist/turbopack) crashes on require. Turbopack doesn't work there for the same reason. The patch does two things:
+
+1. Stubs `node_modules/@swc/core/binding.js`, both the hoisted and the nested copies, so the imports succeed. The stub methods only throw if something calls them, and nothing in jotty does.
+2. Patches `parseBundlerArgs()` in `next/dist/lib/bundler.js` to force the webpack bundler, so Next never tries to load Turbopack.
+
+- It only runs when `JOTTY_FREEBSD` is set. Without it the patch doesn't read or touch anything under `node_modules`.
+- It's off by default. On Linux, macOS or Windows, leave it unset.
+
+```yaml
+environment:
+  - JOTTY_FREEBSD=1
+```
+
+</details>

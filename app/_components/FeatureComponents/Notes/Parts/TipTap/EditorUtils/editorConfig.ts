@@ -1,4 +1,9 @@
 import { ReactNodeViewRenderer } from "@tiptap/react";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+import type { Doc } from "yjs";
+import type { Awareness } from "y-protocols/awareness";
+import { liveCaret, liveSelection, type AvatarOf } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorUtils/liveCaret";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -29,9 +34,13 @@ import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Part
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
 import { CalloutExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
+import { RawBlockExtension, RawInlineExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/RawMarkdownExtension";
+import { AtomGuard } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtomGuard";
+import { MarkdownPaste } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MarkdownPaste";
 import { BoldItalicInput } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/BoldItalicInput";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { getContrastColor } from "@/app/_utils/color-utils";
+import { SOFT_BREAK_ATTR } from "@/app/_utils/markdown/consts";
 
 interface OverlayCallbacks {
   onImageClick: (position: any) => void;
@@ -60,7 +69,8 @@ export const createEditorExtensions = (
   callbacks: OverlayCallbacks,
   editorSettings?: EditorSettings,
   editorData?: EditorData,
-  t?: (key: string) => string
+  t?: (key: string) => string,
+  live?: { doc: Doc; awareness: Awareness; avatarOf: AvatarOf } | null,
 ) => {
   const settings = editorSettings || {
     enableSlashCommands: true,
@@ -77,11 +87,13 @@ export const createEditorExtensions = (
       listItem: false,
       bulletList: false,
       hardBreak: false,
+      ...(live && { undoRedo: false as const }),
       code: {
         HTMLAttributes: { spellcheck: "false" },
       },
     }),
     BoldItalicInput,
+    MarkdownPaste,
     ...generateCustomHtmlExtensions(),
     DetailsExtension,
     CalloutExtension,
@@ -135,7 +147,17 @@ export const createEditorExtensions = (
     InternalLink,
     TagLink,
     TextUnderlineIcon,
-    HardBreak,
+    HardBreak.extend({
+      addAttributes() {
+        return {
+          soft: {
+            default: false,
+            parseHTML: (element) => element.hasAttribute(SOFT_BREAK_ATTR),
+            renderHTML: (attributes) => (attributes.soft ? { [SOFT_BREAK_ATTR]: "" } : {}),
+          },
+        };
+      },
+    }),
     CodeBlock.extend({
       addNodeView() {
         return ReactNodeViewRenderer(CodeBlockNodeView);
@@ -186,6 +208,13 @@ export const createEditorExtensions = (
       drawioProxyEnabled: settings.drawioProxyEnabled || false,
     }),
     ExcalidrawExtension,
+    RawBlockExtension,
+    RawInlineExtension,
+    AtomGuard.configure({
+      types: [RawBlockExtension, RawInlineExtension, MermaidExtension, DrawioExtension, ExcalidrawExtension].map(
+        (extension) => extension.name,
+      ),
+    }),
     Table.extend({
       content: "tableRow+",
     }).configure({
@@ -227,6 +256,15 @@ export const createEditorExtensions = (
     BulletList.extend({
       content: "listItem+",
     }),
+    ...(live ? [
+      Collaboration.configure({ document: live.doc }),
+      CollaborationCaret.configure({
+        provider: { awareness: live.awareness },
+        user: { name: editorData?.username || "" },
+        render: liveCaret(live.avatarOf),
+        selectionRender: liveSelection,
+      }),
+    ] : []),
   ];
 
   return extensions;

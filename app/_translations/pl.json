@@ -1207,7 +1207,10 @@
     "deleteUserConfirmation": "Czy chcesz usunąć użytkownika „{username}”? Ta czynność nie może zostać cofnięta.",
     "userDeletedSuccessfully": "Użytkownik usunięty.",
     "failedToDeleteUser": "Nie udało się usunąć użytkownika",
-    "readOnlyFolder": "Ten folder jest na serwerze tylko do odczytu, więc zmiany nie dało się zapisać."
+    "readOnlyFolder": "Ten folder jest na serwerze tylko do odczytu, więc zmiany nie dało się zapisać.",
+    "itemLocked": "Tego elementu nie można zmienić, dopóki jego frontmatter nie zostanie naprawiony.",
+    "frontmatterUnfixable": "Jotty nie udało się samodzielnie naprawić tego frontmattera. Popraw plik ręcznie i odśwież stronę.",
+    "frontmatterNothingToFix": "We frontmatterze tego elementu nie ma nic do naprawienia."
   },
   "pwa": {
     "installPromptTitle": "Zainstaluj aplikację",
@@ -1757,16 +1760,12 @@
     "markdownGuide": "Przewodnik po Markdownie",
     "brain": "Linki i Mózg",
     "customisations": "Dostosowania",
-    "docker": "Docker",
     "envVariables": "Zmienne środowiskowe",
     "mfa": "MFA",
-    "pwa": "PWA",
     "encryption": "Szyfrowanie",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Tłumaczenia",
-    "unraid": "Unraid",
-    "patches": "Łatki"
+    "translations": "Tłumaczenia"
   },
   "notFound": {
     "title": "Strona nie znaleziona",
@@ -1880,5 +1879,19 @@
     "deprecated": "przestarzałe",
     "requestFailed": "Nie przyszła żadna odpowiedź. Sprawdź połączenie i to, czy zmiana została zapisana, zanim spróbujesz ponownie.",
     "responseMeta": "{status} w {ms} ms"
+  },
+  "lockedItem": {
+    "title": "Tylko do odczytu, dopóki Jotty nie doda swojego identyfikatora",
+    "reasons": {
+      "empty": "Plik jest pusty, więc Jotty jeszcze nie zapisało w nim swojego identyfikatora.",
+      "unparsable": "Jego frontmatter nie jest poprawnym YAML, więc Jotty nie może dodać identyfikatora bez przepisania go.",
+      "foreignUuid": "Jego frontmatter ma już uuid, który nie jest identyfikatorem Jotty, a Jotty go nie nadpisze."
+    },
+    "askEditor": "Może to naprawić ktoś, kto ma prawo edycji tego elementu.",
+    "fix": "Spróbuj to naprawić",
+    "confirmTitle": "Naprawić frontmatter?",
+    "confirmMessage": "Jotty przepisze frontmatter na początku tego pliku. Wartości, które nie są poprawnym YAML, ujmie w cudzysłów, tabulatory zamieni na spacje, uuid niebędący identyfikatorem Jotty przeniesie do previousUuid i doda własne uuid. Reszta pliku się nie zmieni. Jotty nie może tego cofnąć, więc zrób kopię, jeśli inna aplikacja czyta ten frontmatter. Potrzebujesz prawa edycji tego elementu, a jego folder musi umożliwiać zapis.",
+    "confirm": "Napraw frontmatter",
+    "fixed": "Naprawiono. Możesz teraz edytować ten element."
   }
 }

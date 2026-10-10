@@ -7,10 +7,8 @@ import {
   Heading02Icon,
   QuoteUpIcon,
   Attachment01Icon,
-  File02Icon,
   ViewIcon,
   ViewOffSlashIcon,
-  Tv02Icon,
   TextUnderlineIcon,
   Image02Icon,
 } from "hugeicons-react";
@@ -28,9 +26,11 @@ import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Pa
 import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
 import { EditorSettingsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/EditorSettingsDropdown";
 import { useTranslations } from "next-intl";
+import { EditorModeSwitch } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/EditorModeSwitch";
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
 import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
-import { insertTextAtCursor } from "@/app/_utils/markdown-editor-utils";
+import { insertTextAtCursor, runMarkdownEdit } from "@/app/_utils/markdown-editor-utils";
+import { useMarkdownFormats } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useMarkdownFormats";
 import {
   QuickBarPortal,
   QuickBarSlots,
@@ -40,6 +40,7 @@ import {
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 const mod = isMac ? "⌘" : "Ctrl";
 const alt = isMac ? "⌥" : "Alt";
+const modeShortcut = `${mod}+Shift+${alt}+M`;
 
 type ToolbarProps = {
   editor: Editor | null;
@@ -78,10 +79,6 @@ export const TiptapToolbar = ({
   const [selectedImageHeight, setSelectedImageHeight] = useState<
     number | undefined
   >();
-
-  const getMarkdownTextarea = (): HTMLTextAreaElement | null => {
-    return document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
-  };
 
   useEffect(() => {
     if (linkRequestPending) {
@@ -126,13 +123,27 @@ export const TiptapToolbar = ({
     },
   }) ?? { isInList: false, isNested: false, isInBulletList: false, isInOrderedList: false, currentItemIsEmpty: false };
 
+  const markdownFormats = useMarkdownFormats(isMarkdownMode);
+
   if (!editor) {
     return null;
   }
 
+  const toolbarListState = isMarkdownMode
+    ? {
+        ...listState,
+        isInList: markdownFormats.bulletList || markdownFormats.orderedList || markdownFormats.taskList,
+        isInBulletList: markdownFormats.bulletList,
+        isInOrderedList: markdownFormats.orderedList,
+      }
+    : listState;
+
+  const activeVariant = (rich: () => boolean, markdown: boolean) =>
+    (isMarkdownMode ? markdown : rich()) ? "secondary" : "ghost";
+
   const setLink = () => {
     if (isMarkdownMode) {
-      const textarea = getMarkdownTextarea();
+      const textarea = MarkdownUtils.getMarkdownTextarea();
       const hasSelection = textarea && textarea.selectionStart !== textarea.selectionEnd;
 
       if (hasSelection) {
@@ -159,12 +170,7 @@ export const TiptapToolbar = ({
     if (text) {
       setShowLinkModal(true);
       if (isMarkdownMode) {
-        const textarea = getMarkdownTextarea();
-        if (textarea) {
-          const { start } = MarkdownUtils.getTextareaSelection(textarea);
-          textarea.value = textarea.value.substring(0, start) + text + textarea.value.substring(start);
-          textarea.setSelectionRange(start, start + text.length);
-        }
+        handleMarkdownButtonClick((textarea) => MarkdownUtils.insertSelectedText(textarea, text));
       } else {
         editor.chain().focus().insertContent(text).run();
         const { from } = editor.state.selection;
@@ -269,26 +275,8 @@ export const TiptapToolbar = ({
     editor.commands.setTextSelection({ from, to });
   };
 
-  const handleMarkdownButtonClick = (markdownFn: (textarea: HTMLTextAreaElement) => string) => {
-    const textarea = getMarkdownTextarea();
-    if (textarea && onMarkdownChange) {
-      const scrollTop = textarea.scrollTop;
-      const scrollLeft = textarea.scrollLeft;
-      const newContent = markdownFn(textarea);
-      const selectionStart = textarea.selectionStart;
-      const selectionEnd = textarea.selectionEnd;
-      onMarkdownChange(newContent);
-      requestAnimationFrame(() => {
-        const ta = getMarkdownTextarea();
-        if (ta) {
-          ta.focus({ preventScroll: true });
-          ta.setSelectionRange(selectionStart, selectionEnd);
-          ta.scrollTop = scrollTop;
-          ta.scrollLeft = scrollLeft;
-        }
-      });
-    }
-  };
+  const handleMarkdownButtonClick = (markdownFn: (textarea: HTMLTextAreaElement) => string) =>
+    runMarkdownEdit(markdownFn, onMarkdownChange);
 
   const handleDualModeButton = (
     richCommand: () => void,
@@ -324,26 +312,12 @@ export const TiptapToolbar = ({
               <PrismThemeDropdown isMarkdownMode={isMarkdownMode} />
             </div>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={toggleMode}
-            className="flex-shrink-0 hidden lg:flex"
-            title={t('editor.toggleEditorMode')}
-          >
-            {isMarkdownMode ? (
-              <>
-                <Tv02Icon className="h-4 w-4 mr-2" />
-                <span>{t('editor.richEditor')}</span>
-              </>
-            ) : (
-              <>
-                <File02Icon className="h-4 w-4 mr-2" />
-                <span>{t('editor.markdown')}</span>
-              </>
-            )}
-          </Button>
+          <EditorModeSwitch
+            isMarkdownMode={isMarkdownMode}
+            onToggle={toggleMode}
+            shortcut={modeShortcut}
+            className="hidden lg:inline-flex"
+          />
         </div>
 
         <QuickBarPortal
@@ -367,31 +341,12 @@ export const TiptapToolbar = ({
               )}
             </Button>
           )}
-          <Button
-            variant={!isMarkdownMode ? "default" : "ghost"}
-            size="icon"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={toggleMode}
-            title={t('editor.toggleRichEditorMode')}
-            aria-label={t('editor.toggleRichEditorMode')}
-            aria-pressed={!isMarkdownMode}
-            className={quickBarButton}
-          >
-            <Tv02Icon className="h-5 w-5" />
-          </Button>
-
-          <Button
-            variant={isMarkdownMode ? "default" : "ghost"}
-            size="icon"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={toggleMode}
-            title={t('editor.toggleMarkdownMode')}
-            aria-label={t('editor.toggleMarkdownMode')}
-            aria-pressed={isMarkdownMode}
-            className={quickBarButton}
-          >
-            <File02Icon className="h-5 w-5" />
-          </Button>
+          <EditorModeSwitch
+            isMarkdownMode={isMarkdownMode}
+            onToggle={toggleMode}
+            shortcut={modeShortcut}
+            compact
+          />
         </QuickBarPortal>
 
         <div
@@ -401,7 +356,7 @@ export const TiptapToolbar = ({
           )}
         >
           <Button
-            variant={editor && editor.isActive("bold") ? "secondary" : "ghost"}
+            variant={activeVariant(() => editor.isActive("bold"), markdownFormats.bold)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
@@ -415,7 +370,7 @@ export const TiptapToolbar = ({
             <TextBoldIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor && editor.isActive("italic") ? "secondary" : "ghost"}
+            variant={activeVariant(() => editor.isActive("italic"), markdownFormats.italic)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
@@ -429,7 +384,7 @@ export const TiptapToolbar = ({
             <TextItalicIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor && editor.isActive("underline") ? "secondary" : "ghost"}
+            variant={activeVariant(() => editor.isActive("underline"), markdownFormats.underline)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
@@ -443,7 +398,7 @@ export const TiptapToolbar = ({
             <TextUnderlineIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor && editor.isActive("strike") ? "secondary" : "ghost"}
+            variant={activeVariant(() => editor.isActive("strike"), markdownFormats.strike)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
@@ -457,7 +412,7 @@ export const TiptapToolbar = ({
             <TextStrikethroughIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor && editor.isActive("code") ? "secondary" : "ghost"}
+            variant={activeVariant(() => editor.isActive("code"), markdownFormats.code)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
@@ -478,9 +433,7 @@ export const TiptapToolbar = ({
             </>
           )}
           <Button
-            variant={
-              editor && editor.isActive("heading", { level: 2 }) ? "secondary" : "ghost"
-            }
+            variant={activeVariant(() => editor.isActive("heading", { level: 2 }), markdownFormats.heading === 2)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
@@ -497,10 +450,10 @@ export const TiptapToolbar = ({
             editor={editor}
             isMarkdownMode={isMarkdownMode}
             onMarkdownChange={onMarkdownChange}
-            listState={listState}
+            listState={toolbarListState}
           />
           <Button
-            variant={editor && editor.isActive("blockquote") ? "secondary" : "ghost"}
+            variant={activeVariant(() => editor.isActive("blockquote"), markdownFormats.blockquote)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() =>
@@ -514,7 +467,7 @@ export const TiptapToolbar = ({
             <QuoteUpIcon className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor && editor.isActive("link") ? "secondary" : "ghost"}
+            variant={activeVariant(() => editor.isActive("link"), markdownFormats.link)}
             size="sm"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => handleButtonClick(setLink)}
