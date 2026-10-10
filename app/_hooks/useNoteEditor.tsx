@@ -306,7 +306,7 @@ export const useNoteEditor = ({
         setContentIsDirty(false);
         setProviderUnsaved(false);
 
-        router.push(itemHref(ItemTypes.NOTE, note.uuid!));
+        router.push(itemHref(ItemTypes.NOTE, note.uuid!), { scroll: false });
       }
     },
     [

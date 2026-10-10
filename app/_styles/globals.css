@@ -466,7 +466,7 @@ p > code {
 }
 
 .ProseMirror {
-  height: 100%;
+  min-height: 100%;
 }
 
 .ProseMirror ul,
