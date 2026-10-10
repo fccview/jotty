@@ -35,6 +35,7 @@ import { useAssignee } from "@/app/_hooks/kanban/useAssignee";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { formatTimerTime } from "@/app/_utils/kanban/index";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
 interface KanbanCardDetailProps {
   checklist: Checklist;
@@ -465,7 +466,7 @@ export const KanbanCardDetail = ({
               {descriptionMarkdown ? (
                 <UnifiedMarkdownRenderer
                   content={descriptionMarkdown}
-                  className="text-card-foreground prose-sm max-w-none leading-relaxed"
+                  className={`text-card-foreground ${NOTE_PROSE_CLASS}`}
                   showStats={false}
                 />
               ) : (

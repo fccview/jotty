@@ -35,6 +35,8 @@ import { base64ToSvg, base64ToText } from "@/app/_utils/base64-utils";
 import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
 import { BOUNCED_ELEMENTS } from "@/app/_consts/notes";
 import { tagOutsideCode } from "@/app/_utils/markdown-utils";
+import { rehypeTableWhitespace } from "@/app/_utils/rehype-table-whitespace";
+import { useInlineCodeCopy } from "@/app/_hooks/useInlineCodeCopy";
 
 type WikiLinkComponents = Record<
   typeof WIKILINK_TAG,
@@ -50,6 +52,18 @@ import {
 } from "hugeicons-react";
 
 const TRAILING_NEWLINE = /\n$/;
+const NESTED_LISTS = new Set(["ul", "ol"]);
+
+type HastProps = { node?: { tagName?: string }; type?: string; checked?: boolean };
+
+const isCheckbox = (child: unknown): child is ReactElement<HastProps> =>
+  isValidElement<HastProps>(child) &&
+  child.props.node?.tagName === "input" &&
+  child.props.type === "checkbox";
+
+const isNestedList = (child: unknown) =>
+  isValidElement<HastProps>(child) &&
+  NESTED_LISTS.has(child.props.node?.tagName || "");
 
 const getRawTextFromChildren = (children: React.ReactNode): string => {
   let text = "";
@@ -82,6 +96,7 @@ export const UnifiedMarkdownRenderer = ({
   const [isClient, setIsClient] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState<string | null>(null);
   const t = useTranslations();
+  const copyInlineCode = useInlineCodeCopy();
   const { user } = useAppMode();
   const ActiveCodeBlockRenderer =
     user?.codeBlockStyle === "themed"
@@ -281,17 +296,9 @@ export const UnifiedMarkdownRenderer = ({
         </a>
       );
     },
-    input({ type, checked, ...props }) {
+    input({ node, type, checked, ...props }) {
       if (type === "checkbox") {
-        return (
-          <input
-            type="checkbox"
-            checked={checked}
-            disabled
-            className="cursor-default"
-            {...props}
-          />
-        );
+        return <input type="checkbox" checked={checked} disabled {...props} />;
       }
       return <input type={type} {...props} />;
     },
@@ -382,13 +389,11 @@ export const UnifiedMarkdownRenderer = ({
 
         return (
           <div className={`callout callout-${calloutType}`}>
-            <div className="flex gap-3">
-              <div
-                className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}
-              >
-                <CalloutIcon className="h-5 w-5" />
+            <div className="callout-wrapper">
+              <div className={`callout-icon callout-icon-${calloutType}`}>
+                <CalloutIcon />
               </div>
-              <div className="flex-1 min-w-0">{modifiedChildren}</div>
+              <div className="callout-content">{modifiedChildren}</div>
             </div>
           </div>
         );
@@ -401,10 +406,7 @@ export const UnifiedMarkdownRenderer = ({
 
       if (isTaskList) {
         return (
-          <ul
-            className={`list-none !pl-0 space-y-1 ${className || ""}`}
-            {...props}
-          >
+          <ul className={className} {...props}>
             {children}
           </ul>
         );
@@ -419,10 +421,22 @@ export const UnifiedMarkdownRenderer = ({
     li({ node, className, children, ...props }) {
       const isTaskItem = className?.includes("task-list-item");
 
-      if (isTaskItem) {
+      const [box, ...rest] = Children.toArray(children);
+
+      if (isTaskItem && isCheckbox(box)) {
+        const nested = rest.filter(isNestedList);
+        const text = rest.filter((child) => !isNestedList(child));
         return (
-          <li className={`${className || ""}`} {...props}>
-            {children}
+          <li
+            className={className}
+            data-checked={String(Boolean(box.props.checked))}
+            {...props}
+          >
+            {box}
+            <div>
+              <p>{text}</p>
+              {nested}
+            </div>
           </li>
         );
       }
@@ -531,13 +545,11 @@ export const UnifiedMarkdownRenderer = ({
           }[calloutType] || Idea01Icon;
         return (
           <div {...restProps} className={`callout callout-${calloutType}`}>
-            <div className="flex gap-3">
-              <div
-                className={`flex-shrink-0 pt-0.5 callout-icon-${calloutType}`}
-              >
-                <CalloutIcon className="h-5 w-5" />
+            <div className="callout-wrapper">
+              <div className={`callout-icon callout-icon-${calloutType}`}>
+                <CalloutIcon />
               </div>
-              <div className="flex-1 min-w-0">{children}</div>
+              <div className="callout-content">{children}</div>
             </div>
           </div>
         );
@@ -563,11 +575,12 @@ export const UnifiedMarkdownRenderer = ({
   return (
     <>
       <div
-        className={`prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal [&_table]:border-collapse [&_table]:w-full [&_table]:my-4 [&_th]:border [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:bg-muted [&_th]:font-semibold [&_th]:text-left [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_tr:nth-child(even)]:bg-muted/50 ${className}`}
+        className={`prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl dark:prose-invert [&_ul]:list-disc [&_ol]:list-decimal jotty-copyable-code ${className}`}
+        onClick={copyInlineCode}
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkWikilinks]}
-          rehypePlugins={[rehypeSlug, rehypeRaw]}
+          rehypePlugins={[rehypeSlug, rehypeRaw, rehypeTableWhitespace]}
           components={components}
           urlTransform={noteUrlTransform}
           disallowedElements={BOUNCED_ELEMENTS}

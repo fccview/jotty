@@ -1,5 +1,4 @@
 import { Mark, mergeAttributes } from "@tiptap/core";
-import TurndownService from "turndown";
 
 export interface CustomHtmlMarkDefinition {
   name: string;
@@ -14,10 +13,6 @@ export const customHtmlMarks: CustomHtmlMarkDefinition[] = [
     tag: "mark",
     classes: "bg-yellow-200 px-1 py-0.5 rounded-jotty",
     attributesToPreserve: ["style"],
-  },
-  {
-    name: "underline",
-    tag: "u",
   },
   {
     name: "kbd",
@@ -118,47 +113,6 @@ export const generateCustomHtmlExtensions = (): Mark[] => {
           mergeAttributes(HTMLAttributes, { class: markDef.classes || "" }),
           0,
         ];
-      },
-    });
-  });
-};
-
-export const addCustomHtmlTurndownRules = (service: TurndownService) => {
-  customHtmlMarks.forEach((markDef) => {
-    service.addRule(markDef.name, {
-      filter: (node) => {
-        if (markDef.name === "fontFamily") {
-          return (
-            node.nodeName.toLowerCase() === "span" &&
-            (node as HTMLElement).style.fontFamily !== ""
-          );
-        }
-        return node.nodeName.toLowerCase() === markDef.tag;
-      },
-      replacement: (content, node) => {
-        const element = node as HTMLElement;
-
-        if (markDef.name === "fontFamily") {
-          const fontFamily = element.style.fontFamily;
-          if (!fontFamily) return content;
-          const normalizedFont = fontFamily.replace(/"/g, "'");
-          return `<span style="font-family: ${normalizedFont}">${content}</span>`;
-        }
-
-        let attrsString = "";
-
-        if (markDef.attributesToPreserve) {
-          attrsString = markDef.attributesToPreserve
-            .map((attrName) => {
-              const value = element.getAttribute(attrName);
-              return value ? `${attrName}="${value}"` : "";
-            })
-            .filter(Boolean)
-            .join(" ");
-        }
-
-        const finalAttrs = attrsString ? ` ${attrsString}` : "";
-        return `<${markDef.tag}${finalAttrs}>${content}</${markDef.tag}>`;
       },
     });
   });

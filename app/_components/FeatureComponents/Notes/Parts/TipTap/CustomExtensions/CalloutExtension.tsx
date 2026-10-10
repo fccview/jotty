@@ -56,28 +56,26 @@ const CalloutNodeView: FC<CalloutNodeViewComponentProps> = ({
 
   return (
     <NodeViewWrapper
-      className={`callout callout-${calloutType} my-4`}
+      className={`callout callout-${calloutType}`}
       data-type="callout"
       data-callout-type={calloutType}
     >
-      <div className="flex gap-3">
-        <div className="flex-shrink-0 select-none pt-0.5">
+      <div className="callout-wrapper">
+        <div className="flex-none select-none">
           <DropdownMenu
             trigger={
               <div
-                className={`callout-icon-button p-1 rounded-jotty hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer callout-icon-${calloutType}`}
+                className={`callout-icon callout-icon-button callout-icon-${calloutType}`}
                 title={t("editor.changeCalloutType")}
               >
-                <IconComponent className="h-5 w-5" />
+                <IconComponent />
               </div>
             }
             items={dropdownItems}
             align="left"
           />
         </div>
-        <div className="flex-1 min-w-0">
-          <NodeViewContent className="callout-content" />
-        </div>
+        <NodeViewContent className="callout-content" />
       </div>
     </NodeViewWrapper>
   );

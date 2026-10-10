@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 
+const STATS_SEPARATOR = "·";
+
 interface NoteFooterStatsProps {
   content: string;
 }
@@ -70,12 +72,16 @@ export const NoteFooterStats = ({ content }: NoteFooterStatsProps) => {
   }
 
   return (
-    <div className="mt-8 pt-4 border-t border-border no-print">
-      <div className="flex flex-wrap gap-4 text-md lg:text-sm text-muted-foreground">
-        <span>{t("notes.wordCount", { count: stats.wordCount })}</span>
-        <span>{t("notes.charCount", { count: stats.charCount })}</span>
-        <span>{t("notes.readingTime", { count: stats.readingTime })}</span>
-      </div>
+    <div className="jotty-note-stats mt-12 pt-4 border-t border-border no-print">
+      <span>{t("notes.wordCount", { count: stats.wordCount })}</span>
+      <span className="jotty-note-stats-sep" aria-hidden="true">
+        {STATS_SEPARATOR}
+      </span>
+      <span>{t("notes.charCount", { count: stats.charCount })}</span>
+      <span className="jotty-note-stats-sep" aria-hidden="true">
+        {STATS_SEPARATOR}
+      </span>
+      <span>{t("notes.readingTime", { count: stats.readingTime })}</span>
     </div>
   );
 };

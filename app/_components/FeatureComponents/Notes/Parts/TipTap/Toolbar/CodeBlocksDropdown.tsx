@@ -7,7 +7,7 @@ import { codeblockLangs } from "@/app/_utils/code-block-utils";
 import { useState, useMemo } from "react";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
 import { useTranslations } from "next-intl";
-import { insertCodeBlock } from "@/app/_utils/markdown-editor-utils";
+import { insertCodeBlock, runMarkdownEdit } from "@/app/_utils/markdown-editor-utils";
 
 interface CodeBlockDropdownProps {
   editor: Editor | null;
@@ -40,13 +40,7 @@ export const CodeBlockDropdown = ({
 
   const setCodeBlock = (language: string) => {
     if (isMarkdownMode && onMarkdownChange) {
-      const textarea = document.getElementById(
-        "markdown-editor-textarea"
-      ) as HTMLTextAreaElement;
-      if (textarea) {
-        const newContent = insertCodeBlock(textarea, language);
-        onMarkdownChange(newContent);
-      }
+      runMarkdownEdit((textarea) => insertCodeBlock(textarea, language), onMarkdownChange);
     } else {
       editor.chain().focus().toggleCodeBlock({ language }).run();
     }

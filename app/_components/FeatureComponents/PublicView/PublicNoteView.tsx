@@ -14,6 +14,7 @@ import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modal
 import { detectEncryptionMethod } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
 import { PublicUser } from "@/app/_utils/user-sanitize-utils";
+import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -106,6 +107,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
           ) : (
             <UnifiedMarkdownRenderer
               content={decryptedContent || note.content}
+              className={NOTE_PROSE_CLASS}
             />
           )}
         </div>

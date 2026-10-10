@@ -47,17 +47,8 @@ export const ExtraItemsDropdown = ({
     setIsMac(/(Mac|iPhone|iPod|iPad)/i.test(navigator.platform));
   }, []);
 
-  const getMarkdownTextarea = (): HTMLTextAreaElement | null => {
-    return document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
-  };
-
-  const handleMarkdownInsert = (fn: (textarea: HTMLTextAreaElement) => string) => {
-    const textarea = getMarkdownTextarea();
-    if (textarea && onMarkdownChange) {
-      const newContent = fn(textarea);
-      onMarkdownChange(newContent);
-    }
-  };
+  const handleMarkdownInsert = (fn: (textarea: HTMLTextAreaElement) => string) =>
+    MarkdownUtils.runMarkdownEdit(fn, onMarkdownChange);
 
   const addImage = () => {
     setShowImageModal(true);

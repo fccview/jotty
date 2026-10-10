@@ -102,6 +102,15 @@ describe("Tag Utils", () => {
       expect(extractHashtagsFromContent(content)).toContain("work/development");
     });
 
+    it("should ignore colours inside html attributes", () => {
+      const content = '<span style="color: #ff0000">red</span> and <mark style="background-color: #ffff00">x</mark> #real';
+      expect(extractHashtagsFromContent(content)).toEqual(["real"]);
+    });
+
+    it("should still find a tag right after an html tag", () => {
+      expect(extractHashtagsFromContent("line<br>#after")).toContain("after");
+    });
+
     it("should extract data-tag attributes", () => {
       const content = '<span data-tag="important">Tag</span>';
       expect(extractHashtagsFromContent(content)).toContain("important");

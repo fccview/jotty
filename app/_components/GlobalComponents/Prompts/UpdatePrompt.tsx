@@ -8,7 +8,6 @@ import { useGitHubRelease } from "@/app/_hooks/useGitHubRelease";
 import { readPackageVersion } from "@/app/_server/actions/config";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
-import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { useTranslations } from "next-intl";
 
 export const UpdatePrompt = () => {
@@ -113,7 +112,7 @@ export const UpdatePrompt = () => {
             <div className="prose prose-sm max-w-none dark:prose-invert">
               {releaseNotes && (
                 <UnifiedMarkdownRenderer
-                  content={convertMarkdownToHtml(releaseNotes)}
+                  content={releaseNotes}
                 />
               )}
             </div>

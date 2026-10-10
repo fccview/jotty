@@ -9,10 +9,8 @@ import {
   tripleStarRegex,
   tripleUnderscoreRegex,
 } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/BoldItalicInput";
-import {
-  convertHtmlToMarkdown,
-  convertMarkdownToHtml,
-} from "@/app/_utils/markdown-utils";
+import { markdownToEditorHtml } from "@/app/_utils/markdown/parse/to-html";
+import { serializeDoc } from "@/app/_utils/markdown/serialize";
 
 describe("Bold italic input", () => {
   it.each([
@@ -37,12 +35,23 @@ describe("Bold italic input", () => {
 
   it("should store bold italic as ***text***", () => {
     expect(
-      convertHtmlToMarkdown("<p>Today is a <strong><em>good day</em></strong></p>")
+      serializeDoc({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "Today is a " },
+              { type: "text", marks: [{ type: "bold" }, { type: "italic" }], text: "good day" },
+            ],
+          },
+        ],
+      })
     ).toBe("Today is a ***good day***");
   });
 
   it("should read ***text*** back as bold italic", () => {
-    const html = convertMarkdownToHtml("Today is a ***good day***");
+    const html = markdownToEditorHtml("Today is a ***good day***");
     expect(html).toMatch(/<(em|strong)><(strong|em)>good day<\/\2><\/\1>/);
     expect(html).toContain("<strong>");
     expect(html).toContain("<em>");
