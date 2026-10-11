@@ -10,7 +10,11 @@ import { TableSyntax } from "@/app/_types";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useFileUpload } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useFileUpload";
-import { insertTextAtCursor, keepCaretThrough, runMarkdownEdit } from "@/app/_utils/markdown-editor-utils";
+import {
+  insertTextAtCursor,
+  keepCaretThrough,
+  runMarkdownEdit,
+} from "@/app/_utils/markdown-editor-utils";
 import { useMarkdownSync } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useMarkdownSync";
 import { useImageResize } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useImageResize";
 import { useTableToolbar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useTableToolbar";
@@ -28,7 +32,11 @@ import { useTranslations } from "next-intl";
 import { menuCeilingProps } from "@/app/_utils/menu-placement-utils";
 import { isChangeOrigin } from "@tiptap/extension-collaboration";
 import { prosemirrorToYXmlFragment, yUndoPluginKey } from "@tiptap/y-tiptap";
-import { LIVE_FIELD, saveDraft, useLiveSession } from "@/app/_hooks/useLiveSession";
+import {
+  LIVE_FIELD,
+  saveDraft,
+  useLiveSession,
+} from "@/app/_hooks/useLiveSession";
 import { LiveStatusBar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/LiveStatusBar";
 import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
@@ -59,7 +67,16 @@ export interface TiptapEditorRef {
 
 export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
   (
-    { content, onChange, onRemoteChange, onModeChange, tableSyntax, notes, checklists, collaborationUuid },
+    {
+      content,
+      onChange,
+      onRemoteChange,
+      onModeChange,
+      tableSyntax,
+      notes,
+      checklists,
+      collaborationUuid,
+    },
     ref,
   ) => {
     const { user, appSettings, tagsIndex, usersPublicData } = useAppMode();
@@ -79,11 +96,15 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const peopleRef = useRef(usersPublicData);
     peopleRef.current = usersPublicData;
     const avatarOf = useCallback(
-      (name: string) => peopleRef.current.find((entry) => entry.username === name)?.avatarUrl || undefined,
+      (name: string) =>
+        peopleRef.current.find((entry) => entry.username === name)?.avatarUrl ||
+        undefined,
       [],
     );
 
-    const [isMarkdownMode, setIsMarkdownMode] = useState(defaultEditorIsMarkdown);
+    const [isMarkdownMode, setIsMarkdownMode] = useState(
+      defaultEditorIsMarkdown,
+    );
     const [markdownContent, setMarkdownContent] = useState(content);
     const [showBubbleMenu, setShowBubbleMenu] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
@@ -282,17 +303,24 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
 
     useEffect(() => () => clearTimeout(draftTimeoutRef.current), []);
 
-    const changeMarkdown = useCallback((newContent: string) => {
-      if (isDirtyRef.current && newContent === markdownRef.current) return;
-      setMarkdownContent(newContent);
-      if (live && editor && !editor.isDestroyed) sync.show(editor, newContent);
-      isDirtyRef.current = true;
-      emit(newContent, true, true);
-    }, [editor, live?.doc, sync, emit]);
+    const changeMarkdown = useCallback(
+      (newContent: string) => {
+        if (isDirtyRef.current && newContent === markdownRef.current) return;
+        setMarkdownContent(newContent);
+        if (live && editor && !editor.isDestroyed)
+          sync.show(editor, newContent);
+        isDirtyRef.current = true;
+        emit(newContent, true, true);
+      },
+      [editor, live?.doc, sync, emit],
+    );
 
     const insertSnippet = useCallback(
       (snippet: string) =>
-        runMarkdownEdit((textarea) => insertTextAtCursor(textarea, `\n${snippet}`, ""), changeMarkdown),
+        runMarkdownEdit(
+          (textarea) => insertTextAtCursor(textarea, `\n${snippet}`, ""),
+          changeMarkdown,
+        ),
       [changeMarkdown],
     );
 
@@ -335,7 +363,8 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
             file,
             {
               onImageUpload: (url) => insertSnippet(`![${file.name}](${url})`),
-              onFileUpload: (data) => insertSnippet(`[📎 ${data.fileName}](${data.url})`),
+              onFileUpload: (data) =>
+                insertSnippet(`[📎 ${data.fileName}](${data.url})`),
             },
             true,
           );
@@ -348,7 +377,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       <div className="flex flex-col h-full pb-0">
         {live && <LiveStatusBar live={live} />}
         <div
-          className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10 py-2`}
+          className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10`}
           {...menuCeilingProps}
         >
           <TiptapToolbar
@@ -384,7 +413,10 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
               compactMode ? "max-w-[900px] mx-auto" : ""
             }`}
           >
-            <UnifiedMarkdownRenderer content={markdownContent} className={NOTE_PROSE_CLASS} />
+            <UnifiedMarkdownRenderer
+              content={markdownContent}
+              className={NOTE_PROSE_CLASS}
+            />
           </div>
         ) : isMarkdownMode ? (
           <MarkdownEditor
