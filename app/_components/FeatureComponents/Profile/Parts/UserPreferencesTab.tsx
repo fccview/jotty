@@ -30,6 +30,7 @@ import {
   QuickCreateNotes,
   HideConnectionIndicator,
   HideStatusOnCards,
+  HomeWidget,
   HideMobileStatusDropdown,
   HideTimeTrackingOnCards,
   CodeBlockStyle,
@@ -49,6 +50,7 @@ import {
   checklistSettingsSchema,
   kanbanSettingsSchema,
   generalSettingsSchema,
+  homeWidgetsSettingsSchema,
 } from "@/app/_schemas/user-schemas";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 
@@ -56,7 +58,8 @@ type SettingsSchema =
   | typeof generalSettingsSchema
   | typeof editorSettingsSchema
   | typeof checklistSettingsSchema
-  | typeof kanbanSettingsSchema;
+  | typeof kanbanSettingsSchema
+  | typeof homeWidgetsSettingsSchema;
 
 interface SettingsTabProps {
   noteCategories: Category[];
@@ -93,7 +96,18 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   hideTimeTrackingOnCards: user?.hideTimeTrackingOnCards || "disable",
   codeBlockStyle: user?.codeBlockStyle || "default",
   searchMode: user?.searchMode || DEFAULT_SEARCH_MODE,
+  homeWelcome: user?.homeWelcome || "enable",
+  homePickUp: user?.homePickUp || "enable",
+  homePinboard: user?.homePinboard || "enable",
+  homeTags: user?.homeTags || "enable",
 });
+
+const HOME_WIDGETS: { key: "homeWelcome" | "homePickUp" | "homePinboard" | "homeTags"; label: string; description?: string }[] = [
+  { key: "homeWelcome", label: "settings.homeWelcome" },
+  { key: "homePickUp", label: "settings.homePickUp" },
+  { key: "homePinboard", label: "settings.homePinboard", description: "settings.homePinboardDescription" },
+  { key: "homeTags", label: "settings.homeTags" },
+];
 
 const sectionSchema = (
   keys: (keyof User)[],
@@ -146,6 +160,10 @@ const SETTING_SCHEMAS: Partial<Record<keyof User, SettingsSchema>> = {
   ...sectionSchema(
     ["hideStatusOnCards", "hideMobileStatusDropdown", "hideTimeTrackingOnCards"],
     kanbanSettingsSchema
+  ),
+  ...sectionSchema(
+    ["homeWelcome", "homePickUp", "homePinboard", "homeTags"],
+    homeWidgetsSettingsSchema
   ),
 };
 
@@ -972,6 +990,31 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
             {t('settings.newItemInsertionDescription')}
           </p>
         </div>
+      </FormWrapper>
+
+      <FormWrapper
+        title={t("settings.homeWidgetsSection")}
+        collapsible
+        defaultOpen={false}
+      >
+        {HOME_WIDGETS.map(({ key, label, description }) => (
+          <div key={key} className="space-y-2">
+            <Label htmlFor={key}>{t(label)}</Label>
+            <Dropdown
+              id={key}
+              value={currentSettings[key] || "enable"}
+              onChange={(value) => handleSettingChange(key, value as HomeWidget)}
+              options={[
+                { id: "enable", name: t("common.enabled") },
+                { id: "disable", name: t("common.disabled") },
+              ]}
+              className="w-full"
+            />
+            {description && (
+              <p className="text-md lg:text-sm text-muted-foreground">{t(description)}</p>
+            )}
+          </div>
+        ))}
       </FormWrapper>
 
       <FormWrapper

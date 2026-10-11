@@ -250,7 +250,14 @@
     "reconnecting": "Yeniden bağlanıyor...",
     "hide": "Gizle",
     "thisEntry": "bu giriş",
-    "preview": "Önizleme"
+    "preview": "Önizleme",
+    "justNowShort": "şimdi",
+    "minutesShort": "{count}dk",
+    "hoursShort": "{count}sa",
+    "daysShort": "{count}g",
+    "weeksShort": "{count}hf",
+    "monthsShort": "{count}ay",
+    "yearsShort": "{count}y"
   },
   "history": {
     "noteHistory": "Not Geçmişi",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Listenin başı",
     "newItemInsertionBottom": "Listenin sonu",
     "selectShowChecklistEmojis": "Emoji görünürlüğünü seçin",
-    "showChecklistEmojisDescription": "Metnine göre liste öğelerinin yanında otomatik emoji gösterir."
+    "showChecklistEmojisDescription": "Metnine göre liste öğelerinin yanında otomatik emoji gösterir.",
+    "homeWidgetsSection": "Ana sayfa bileşenleri",
+    "homeWelcome": "Karşılama afişi",
+    "homePickUp": "Kaldığınız yerden devam edin",
+    "homePinboard": "Pano",
+    "homePinboardDescription": "Devre dışı bırakıldığında sabitlenmiş öğeler en üstte normal kartlar olarak gösterilir.",
+    "homeTags": "Etiketler"
   },
   "admin": {
     "title": "Yönetici",
@@ -1904,5 +1917,117 @@
     "confirmMessage": "Jotty bu dosyanın başındaki frontmatter'ı yeniden yazacak. Geçerli YAML olmayan değerleri tırnak içine alır, sekmeleri boşluğa çevirir, Jotty kimliği olmayan bir uuid'yi previousUuid alanına taşır ve kendi uuid'sini ekler. Dosyanın geri kalanı olduğu gibi kalır. Jotty bunu geri alamaz, bu yüzden başka bir uygulama bu frontmatter'ı okuyorsa bir kopya saklayın. Bu öğeyi düzenleme iznine ihtiyacınız var ve klasörü yazılabilir olmalı.",
     "confirm": "Frontmatter'ı düzelt",
     "fixed": "Düzeltildi. Artık bu öğeyi düzenleyebilirsiniz."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Hâlâ ayakta mısınız, {name}?",
+      "morning": "Günaydın, {name}.",
+      "afternoon": "İyi günler, {name}.",
+      "evening": "İyi akşamlar, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} not} other {{notes} not}}, {pinned} sabitlenmiş, {encrypted} şifreli.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} liste} other {{lists} liste}}, {boardsCount, plural, one {{boards} pano} other {{boards} pano}}, işaretlenecek {open} öğe.",
+    "pickUp": "Kaldığınız yerden devam edin",
+    "continueWriting": "Yazmaya devam et",
+    "openList": "Listeyi aç",
+    "openBoard": "Panoyu aç",
+    "tag": "Etiket",
+    "clearFilter": "Filtreyi temizle",
+    "newNoteIn": "{name} içinde yeni not",
+    "newChecklistIn": "{name} içinde yeni liste",
+    "tagCount": "#{tag}, {count, plural, one {# öğe} other {# öğe}}",
+    "topTags": "En çok kullanılan {count}",
+    "allTags": "Tüm {count} etiket",
+    "more": "+{count} daha",
+    "showFewer": "Daha az göster",
+    "pinnedOf": "{total} sabitlenmişten {shown}",
+    "pinnedTotal": "{total} sabitlenmiş",
+    "showAllPinned": "Tümünü göster ({total})",
+    "bucket": "1 kare = {count} öğe",
+    "tickedOf": "{total} öğeden {done} işaretli",
+    "emptyList": "Henüz bir şey yok.",
+    "hours": "{count} sa",
+    "shallNotPass": "Önizleme geçemez.",
+    "notePrompts": [
+      "Bana İsmail deyin.",
+      "Karanlık ve fırtınalı bir geceydi.",
+      "Bir varmış, bir yokmuş...",
+      "Bize düşen tek şey, bize verilen zamanla ne yapacağımıza karar vermek.",
+      "Yaz bunu! Yaz bunu!",
+      "Akıl almaz!",
+      "Söyle, dost, ve gir.",
+      "Uzun ve mutlu yaşa.",
+      "Panik yapma.",
+      "Yardım et Obi-Wan Kenobi. Tek umudum sensin.",
+      "Hayat, ıı, bir yolunu bulur.",
+      "Ben Groot'um."
+    ],
+    "listPrompts": [
+      "Yap ya da yapma. Denemek yok.",
+      "Bir planın işe yaramasını seviyorum.",
+      "Yüzmeye devam et.",
+      "Houston, bir sorunumuz var.",
+      "Hadi işe koyulalım.",
+      "Net gözler, dolu kalpler, kaybetmek yok.",
+      "Kış geliyor.",
+      "Koş, Forrest, koş!",
+      "Bir oyun oynayalım mı?",
+      "Büyük güç, büyük sorumluluk getirir.",
+      "Direnmek boşuna.",
+      "Göreviniz, eğer kabul ederseniz..."
+    ],
+    "allDone": [
+      "Fesat tamamlandı.",
+      "Yalnız gitmek tehlikeli... ah dur, zaten bitirdiniz.",
+      "Tüm görevleriniz bitti'ye ait olmaktadır.",
+      "Hoşça kal, ve tüm işaretler için teşekkürler.",
+      "Yol budur.",
+      "Başarım açıldı: hiçbir şey kalmadı.",
+      "Pasta bir yalan değildi.",
+      "Uzun ve ertelemeli yaşa.",
+      "Korkarım yapacak bir şey kalmadı, Dave.",
+      "Fus Ro Bitti.",
+      "Bitiş seninle olsun.",
+      "Bölüm tamamlandı. Devam etmek için jeton atın.",
+      "exit 0. Temiz çalıştı, hata yok.",
+      "Kış gelmiyor. İşiniz bitti.",
+      "Öylece daha fazla kutu işaretlenmez."
+    ],
+    "sentence": "Bana <category></category><scope></scope> içinden <type></type> göster, <sort></sort>.",
+    "everyCategory": "tüm kategoriler",
+    "andInside": " ve içindekiler",
+    "only": " (yalnızca)",
+    "categoriesMore": "{first} + {count} daha",
+    "filters": {
+      "notes": {
+        "all": "tüm notları",
+        "recent": "son notları",
+        "pinned": "sabitlenmiş notları"
+      },
+      "checklists": {
+        "all": "tüm listeleri",
+        "completed": "tamamlanmış listeleri",
+        "incomplete": "tamamlanmamış listeleri",
+        "pinned": "sabitlenmiş listeleri",
+        "task": "görev listelerini",
+        "simple": "basit listeleri"
+      },
+      "boards": {
+        "all": "tüm panoları",
+        "completed": "tamamlanmış panoları",
+        "incomplete": "tamamlanmamış panoları",
+        "pinned": "sabitlenmiş panoları",
+        "todo": "yapılacakları olan panoları",
+        "in-progress": "devam eden panoları"
+      }
+    },
+    "sorts": {
+      "updated": "en yeniler önce",
+      "oldest": "en eskiler önce",
+      "az": "A'dan Z'ye"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} not} other {{notes} not}}, {pinned} sabitlenmiş",
+    "checklistsKicker": "{total} kutudan {done} tanesi işaretli",
+    "kanbanKicker": "{boardsCount, plural, one {{boards} panoda} other {{boards} panoda}} {cardsCount, plural, one {{cards} kart} other {{cards} kart}}, {inProgress} devam ediyor"
   }
 }

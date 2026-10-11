@@ -250,7 +250,14 @@
     "reconnecting": "Reconnexion...",
     "hide": "Masquer",
     "thisEntry": "cette entrée",
-    "preview": "Aperçu"
+    "preview": "Aperçu",
+    "justNowShort": "à l'instant",
+    "minutesShort": "{count}min",
+    "hoursShort": "{count}h",
+    "daysShort": "{count}j",
+    "weeksShort": "{count}sem",
+    "monthsShort": "{count}mois",
+    "yearsShort": "{count}a"
   },
   "history": {
     "noteHistory": "Historique de la note",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Haut de la liste",
     "newItemInsertionBottom": "Bas de la liste",
     "selectShowChecklistEmojis": "Choisir la visibilité des émojis",
-    "showChecklistEmojisDescription": "Affiche un émoji automatique à côté des éléments de liste selon leur texte."
+    "showChecklistEmojisDescription": "Affiche un émoji automatique à côté des éléments de liste selon leur texte.",
+    "homeWidgetsSection": "Widgets d'accueil",
+    "homeWelcome": "Bannière de bienvenue",
+    "homePickUp": "Reprenez là où vous vous étiez arrêté",
+    "homePinboard": "Tableau d'épingles",
+    "homePinboardDescription": "Si désactivé, les éléments épinglés s'affichent comme des cartes normales en haut.",
+    "homeTags": "Tags"
   },
   "admin": {
     "title": "Admin",
@@ -1904,5 +1917,117 @@
     "confirmMessage": "Jotty va réécrire le frontmatter en haut de ce fichier. Il met entre guillemets les valeurs qui ne sont pas du YAML valide, remplace les tabulations par des espaces, déplace dans previousUuid un uuid qui n'est pas un identifiant Jotty et ajoute son propre uuid. Le reste du fichier ne change pas. Jotty ne peut pas annuler cette opération, alors gardez une copie si une autre application lit ce frontmatter. Il faut le droit de modifier cet élément, et son dossier doit être accessible en écriture.",
     "confirm": "Corriger le frontmatter",
     "fixed": "Corrigé. Vous pouvez maintenant modifier cet élément."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Toujours debout, {name}.",
+      "morning": "Bonjour, {name}.",
+      "afternoon": "Bon après-midi, {name}.",
+      "evening": "Bonsoir, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} note} other {{notes} notes}}, {pinned} épinglées, {encrypted} chiffrées.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} liste} other {{lists} listes}}, {boardsCount, plural, one {{boards} tableau} other {{boards} tableaux}}, {open} à cocher.",
+    "pickUp": "Reprenez là où vous vous étiez arrêté",
+    "continueWriting": "Continuer à écrire",
+    "openList": "Ouvrir la liste",
+    "openBoard": "Ouvrir le tableau",
+    "tag": "Tag",
+    "clearFilter": "Effacer le filtre",
+    "newNoteIn": "Nouvelle note dans {name}",
+    "newChecklistIn": "Nouvelle liste dans {name}",
+    "tagCount": "#{tag}, {count, plural, one {# élément} other {# éléments}}",
+    "topTags": "Top {count} par utilisation",
+    "allTags": "Les {count} tags",
+    "more": "+{count} de plus",
+    "showFewer": "Afficher moins",
+    "pinnedOf": "{shown} sur {total} épinglées",
+    "pinnedTotal": "{total} épinglées",
+    "showAllPinned": "Tout afficher ({total})",
+    "bucket": "1 case = {count} éléments",
+    "tickedOf": "{done} sur {total} cochés",
+    "emptyList": "Rien pour l'instant.",
+    "hours": "{count} h",
+    "shallNotPass": "L'aperçu ne passera pas.",
+    "notePrompts": [
+      "Appelez-moi Ismaël.",
+      "C'était une nuit sombre et orageuse.",
+      "Il était une fois...",
+      "Tout ce que nous avons à décider, c'est ce que nous devons faire du temps qui nous est imparti.",
+      "Notez ça ! Notez ça !",
+      "Inconcevable !",
+      "Parlez, ami, et entrez.",
+      "Longue vie et prospérité.",
+      "Pas de panique.",
+      "Aidez-moi, Obi-Wan Kenobi. Vous êtes mon seul espoir.",
+      "La vie, euh, trouve toujours un chemin.",
+      "Je s'appelle Groot."
+    ],
+    "listPrompts": [
+      "Fais-le ou ne le fais pas. Il n'y a pas d'essai.",
+      "J'adore quand un plan se déroule sans accroc.",
+      "Continue de nager.",
+      "Houston, nous avons un problème.",
+      "Au travail.",
+      "Les yeux clairs, le cœur plein, on ne peut pas perdre.",
+      "L'hiver vient.",
+      "Cours, Forrest, cours !",
+      "Voulez-vous jouer à un jeu ?",
+      "Un grand pouvoir implique de grandes responsabilités.",
+      "La résistance est inutile.",
+      "Votre mission, si toutefois vous l'acceptez..."
+    ],
+    "allDone": [
+      "Méfait accompli.",
+      "C'est dangereux d'y aller seul... ah, mais vous avez fini.",
+      "Toutes vos tâches sont appartiennent à terminé.",
+      "Salut, et encore merci pour les coches.",
+      "C'est la voie.",
+      "Succès débloqué : plus rien à faire.",
+      "Le gâteau n'était pas un mensonge.",
+      "Longue vie et procrastination.",
+      "J'ai bien peur qu'il n'y ait plus rien à faire, Dave.",
+      "Fus Ro Fini.",
+      "Que la fin soit avec vous.",
+      "Niveau terminé. Insérez une pièce pour continuer.",
+      "exit 0. Exécution propre, aucune erreur.",
+      "L'hiver ne vient pas. Vous avez fini.",
+      "On ne coche pas aussi facilement d'autres cases."
+    ],
+    "sentence": "Afficher <type></type> de <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "toutes les catégories",
+    "andInside": " et tout son contenu",
+    "only": " uniquement",
+    "categoriesMore": "{first} + {count} autres",
+    "filters": {
+      "notes": {
+        "all": "toutes les notes",
+        "recent": "les notes récentes",
+        "pinned": "les notes épinglées"
+      },
+      "checklists": {
+        "all": "toutes les listes",
+        "completed": "les listes terminées",
+        "incomplete": "les listes inachevées",
+        "pinned": "les listes épinglées",
+        "task": "les listes de tâches",
+        "simple": "les listes simples"
+      },
+      "boards": {
+        "all": "tous les tableaux",
+        "completed": "les tableaux terminés",
+        "incomplete": "les tableaux inachevés",
+        "pinned": "les tableaux épinglés",
+        "todo": "les tableaux avec des tâches à faire",
+        "in-progress": "les tableaux en cours"
+      }
+    },
+    "sorts": {
+      "updated": "du plus récent au plus ancien",
+      "oldest": "du plus ancien au plus récent",
+      "az": "de A à Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} note} other {{notes} notes}}, {pinned} épinglées",
+    "checklistsKicker": "{done} cases cochées sur {total}",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} carte} other {{cards} cartes}} sur {boardsCount, plural, one {{boards} tableau} other {{boards} tableaux}}, {inProgress} en cours"
   }
 }

@@ -7,22 +7,17 @@ import { TagsHome } from "@/app/_components/FeatureComponents/Home/Parts/TagsHom
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { Checklist, Category, Note, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useShortcut } from "@/app/_providers/ShortcutsProvider";
+import { CreatePrefill, useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
 import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
-
-interface SharingStatus {
-  isShared: boolean;
-  isPubliclyShared: boolean;
-  sharedWith: string[];
-}
 
 interface HomeClientProps {
   initialLists: Checklist[];
   initialCategories: Category[];
   initialDocs: Note[];
   initialDocsCategories: Category[];
+  openItems: number;
   user: SanitisedUser | null;
 }
 
@@ -31,6 +26,7 @@ export const HomeClient = ({
   initialCategories,
   initialDocs,
   initialDocsCategories,
+  openItems,
   user,
 }: HomeClientProps) => {
   const router = useRouter();
@@ -42,11 +38,14 @@ export const HomeClient = ({
     openCreateCategoryModal,
   } = useShortcut();
 
-  const handleOpenCreateModal = (initialCategory?: string) => {
+  const handleOpenCreateModal = (
+    initialCategory?: string,
+    prefill?: CreatePrefill,
+  ) => {
     if (mode === Modes.NOTES) {
-      openCreateNoteModal(initialCategory || undefined);
+      openCreateNoteModal(initialCategory || undefined, prefill);
     } else {
-      openCreateChecklistModal(initialCategory || undefined);
+      openCreateChecklistModal(initialCategory || undefined, prefill);
     }
   };
 
@@ -68,7 +67,8 @@ export const HomeClient = ({
         <ChecklistHome
           lists={initialLists}
           user={user}
-          onCreateModal={handleOpenCreateModal}
+          openItems={openItems}
+          onCreate={handleOpenCreateModal}
           onSelectChecklist={(list) => {
             if (!list.uuid) return;
             router.push(itemHref(ItemTypes.CHECKLIST, list.uuid));
@@ -79,9 +79,8 @@ export const HomeClient = ({
       {mode === Modes.NOTES && (
         <NotesHome
           notes={initialDocs}
-          categories={initialDocsCategories}
           user={user}
-          onCreateModal={handleOpenCreateModal}
+          onCreate={handleOpenCreateModal}
           onSelectNote={(note) => {
             if (!note.uuid) return;
             router.push(itemHref(ItemTypes.NOTE, note.uuid));

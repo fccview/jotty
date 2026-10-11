@@ -10,7 +10,8 @@ import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridI
 import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
-import Masonry from "react-masonry-css";
+import { ItemViews } from "@/app/_components/GlobalComponents/Cards/ItemViews";
+import { NOTE_PAGE_COLUMNS } from "@/app/_consts/masonry";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
@@ -33,14 +34,6 @@ interface TagsHomeProps {
   onCreateModal: () => void;
 }
 
-const breakpointColumnsObj = {
-  default: 3,
-  1280: 3,
-  1024: 2,
-  768: 2,
-  640: 1,
-};
-
 export const TagsHome = ({
   notes: initialNotes,
   checklists: initialChecklists,
@@ -48,8 +41,7 @@ export const TagsHome = ({
 }: TagsHomeProps) => {
   const t = useTranslations();
   const router = useRouter();
-  const { selectedFilter, setSelectedFilter, tagsIndex, userSharedItems } =
-    useAppMode();
+  const { selectedFilter, setSelectedFilter, tagsIndex } = useAppMode();
   const { viewMode } = useSettings();
   const [, startTransition] = useTransition();
   const [displayNotes, setDisplayNotes] = useState<Note[]>(initialNotes);
@@ -120,20 +112,6 @@ export const TagsHome = ({
     return tagsIndex[selectedFilter.value]?.displayName || selectedFilter.value;
   }, [selectedFilter, tagsIndex]);
 
-  const getNoteSharer = (note: Note) => {
-    const sharedItem = userSharedItems?.notes?.find(
-      (item) => item.uuid && item.uuid === note.uuid,
-    );
-    return sharedItem?.sharer;
-  };
-
-  const getListSharer = (list: Checklist) => {
-    const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.uuid && item.uuid === list.uuid,
-    );
-    return sharedItem?.sharer;
-  };
-
   const handleSelectNote = (note: Note) => {
     if (!note.uuid) return;
     router.push(itemHref(ItemTypes.NOTE, note.uuid));
@@ -158,84 +136,6 @@ export const TagsHome = ({
     );
   }
 
-  const renderItem = (tagged: TaggedItem, keyPrefix: string) => {
-    if (tagged.itemType === "note") {
-      const note = tagged.item as Note;
-      if (viewMode === "card") {
-        return (
-          <div
-            key={`${keyPrefix}-note-${note.category}-${note.uuid}`}
-            className="mb-6"
-          >
-            <NoteCard
-              note={note}
-              onSelect={handleSelectNote}
-              isPinned={false}
-              sharer={getNoteSharer(note)}
-            />
-          </div>
-        );
-      }
-      if (viewMode === "list") {
-        return (
-          <NoteListItem
-            key={`${keyPrefix}-note-${note.category}-${note.uuid}`}
-            note={note}
-            onSelect={handleSelectNote}
-            isPinned={false}
-            sharer={getNoteSharer(note)}
-          />
-        );
-      }
-      return (
-        <NoteGridItem
-          key={`${keyPrefix}-note-${note.category}-${note.uuid}`}
-          note={note}
-          onSelect={handleSelectNote}
-          isPinned={false}
-          sharer={getNoteSharer(note)}
-        />
-      );
-    }
-
-    const list = tagged.item as Checklist;
-    if (viewMode === "card") {
-      return (
-        <div
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid}`}
-          className="mb-6"
-        >
-          <ChecklistCard
-            list={list}
-            onSelect={handleSelectChecklist}
-            isPinned={false}
-            sharer={getListSharer(list)}
-          />
-        </div>
-      );
-    }
-    if (viewMode === "list") {
-      return (
-        <ChecklistListItem
-          key={`${keyPrefix}-cl-${list.category}-${list.uuid}`}
-          list={list}
-          onSelect={handleSelectChecklist}
-          isPinned={false}
-          sharer={getListSharer(list)}
-        />
-      );
-    }
-    return (
-      <ChecklistGridItem
-        key={`${keyPrefix}-cl-${list.category}-${list.uuid}`}
-        list={list}
-        onSelect={handleSelectChecklist}
-        isPinned={false}
-        sharer={getListSharer(list)}
-      />
-    );
-  };
-
   return (
     <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter bg-background h-full hide-scrollbar">
       <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
@@ -259,27 +159,33 @@ export const TagsHome = ({
 
         {combinedItems.length > 0 && (
           <>
-            {viewMode === "card" && (
-              <Masonry
-                breakpointCols={breakpointColumnsObj}
-                className="flex w-auto -ml-6"
-                columnClassName="pl-6 bg-clip-padding"
-              >
-                {windowedItems.map((item) => renderItem(item, "tags"))}
-              </Masonry>
-            )}
-
-            {viewMode === "list" && (
-              <div className="space-y-3">
-                {windowedItems.map((item) => renderItem(item, "tags"))}
-              </div>
-            )}
-
-            {viewMode === "grid" && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {windowedItems.map((item) => renderItem(item, "tags"))}
-              </div>
-            )}
+            <ItemViews
+              items={windowedItems}
+              view={viewMode}
+              keyOf={(tagged) => `${tagged.itemType}-${tagged.item.uuid}`}
+              columns={NOTE_PAGE_COLUMNS}
+              renderCard={(tagged) =>
+                tagged.itemType === "note" ? (
+                  <NoteCard note={tagged.item} onSelect={handleSelectNote} />
+                ) : (
+                  <ChecklistCard list={tagged.item} onSelect={handleSelectChecklist} />
+                )
+              }
+              renderRow={(tagged) =>
+                tagged.itemType === "note" ? (
+                  <NoteListItem note={tagged.item} onSelect={handleSelectNote} />
+                ) : (
+                  <ChecklistListItem list={tagged.item} onSelect={handleSelectChecklist} />
+                )
+              }
+              renderTile={(tagged) =>
+                tagged.itemType === "note" ? (
+                  <NoteGridItem note={tagged.item} onSelect={handleSelectNote} />
+                ) : (
+                  <ChecklistGridItem list={tagged.item} onSelect={handleSelectChecklist} />
+                )
+              }
+            />
 
             {hasMore && (
               <div ref={sentinelRef} className="h-4 min-h-4" aria-hidden />

@@ -6,12 +6,47 @@ import { updateList } from "../checklist";
 import { updateNote } from "../note";
 import { getNoteById } from "../note/queries";
 import { getCurrentUser } from "../users";
-import { getUserIndex } from "../users/helpers";
-import { readJsonFile, writeJsonFile } from "../file";
-import { ARCHIVED_DIR_NAME, USERS_FILE } from "@/app/_consts/files";
+import { mutateUsers } from "../users/records";
+import { broadcast } from "../ws/broadcast";
+import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { isPinnedEntry } from "@/app/_utils/global-utils";
 import { isLockedUuid } from "@/app/_server/actions/share/queries";
 import { lockedNotice } from "@/app/_server/actions/lib/read-only-message";
+
+const PIN_KEYS = {
+  [ItemTypes.CHECKLIST]: "pinnedLists",
+  [ItemTypes.NOTE]: "pinnedNotes",
+} as const;
+
+const _pinKey = (type: ItemType) =>
+  type === ItemTypes.CHECKLIST ? PIN_KEYS[ItemTypes.CHECKLIST] : PIN_KEYS[ItemTypes.NOTE];
+
+const _reorderPins = (pinned: string[], order: string[]): string[] => {
+  const moved = order
+    .map((uuid) => pinned.find((entry) => isPinnedEntry(entry, uuid)))
+    .filter((entry): entry is string => Boolean(entry));
+  const untouched = pinned.filter((entry) => !moved.includes(entry));
+  return Array.from(new Set([...moved, ...untouched]));
+};
+
+const _mutatePins = async (
+  username: string,
+  type: ItemType,
+  change: (pinned: string[]) => string[],
+): Promise<boolean> => {
+  const key = _pinKey(type);
+  const saved = await mutateUsers((users) => {
+    const user = users.find((entry) => entry.username === username);
+    if (!user) return null;
+    user[key] = change(user[key] || []);
+    return true;
+  });
+
+  if (!saved) return false;
+
+  await broadcast({ type: "settings", action: "updated", username });
+  return true;
+};
 
 export const togglePin = async (
   uuid: string,
@@ -27,31 +62,15 @@ export const togglePin = async (
       return { success: false, error: await lockedNotice() };
     }
 
-    const allUsers = await readJsonFile(USERS_FILE);
-    const userIndex = await getUserIndex(currentUser.username);
+    const saved = await _mutatePins(currentUser.username, type, (pinned) =>
+      pinned.some((entry) => isPinnedEntry(entry, uuid))
+        ? pinned.filter((entry) => !isPinnedEntry(entry, uuid))
+        : [...pinned, uuid],
+    );
 
-    const user = allUsers[userIndex];
-
-    if (type === ItemTypes.CHECKLIST) {
-      const pinnedLists: string[] = user.pinnedLists || [];
-      const isPinned = pinnedLists.some((entry) => isPinnedEntry(entry, uuid));
-
-      user.pinnedLists = isPinned
-        ? pinnedLists.filter((entry) => !isPinnedEntry(entry, uuid))
-        : [...pinnedLists, uuid];
-    } else {
-      const pinnedNotes: string[] = user.pinnedNotes || [];
-      const isPinned = pinnedNotes.some((entry) => isPinnedEntry(entry, uuid));
-
-      user.pinnedNotes = isPinned
-        ? pinnedNotes.filter((entry) => !isPinnedEntry(entry, uuid))
-        : [...pinnedNotes, uuid];
-    }
-
-    allUsers[userIndex] = user;
-    await writeJsonFile(allUsers, USERS_FILE);
-
-    return { success: true, data: null };
+    return saved
+      ? { success: true, data: null }
+      : { success: false, error: "Failed to toggle pin" };
   } catch (error) {
     console.error(`Error toggling pin for ${type}:`, error);
     return { success: false, error: "Failed to toggle pin" };
@@ -68,21 +87,13 @@ export const updatePinnedOrder = async (
       return { success: false, error: "Not authenticated" };
     }
 
-    const allUsers = await readJsonFile(USERS_FILE);
-    const userIndex = await getUserIndex(currentUser.username);
+    const saved = await _mutatePins(currentUser.username, type, (pinned) =>
+      _reorderPins(pinned, newOrder),
+    );
 
-    const user = allUsers[userIndex];
-
-    if (type === ItemTypes.CHECKLIST) {
-      user.pinnedLists = newOrder;
-    } else {
-      user.pinnedNotes = newOrder;
-    }
-
-    allUsers[userIndex] = user;
-    await writeJsonFile(allUsers, USERS_FILE);
-
-    return { success: true, data: null };
+    return saved
+      ? { success: true, data: null }
+      : { success: false, error: "Failed to update pinned order" };
   } catch (error) {
     console.error(`Error updating pinned order for ${type}:`, error);
     return { success: false, error: "Failed to update pinned order" };

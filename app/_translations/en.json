@@ -250,7 +250,14 @@
     "reconnecting": "Reconnecting...",
     "hide": "Hide",
     "thisEntry": "this entry",
-    "preview": "Preview"
+    "preview": "Preview",
+    "justNowShort": "now",
+    "minutesShort": "{count}m",
+    "hoursShort": "{count}h",
+    "daysShort": "{count}d",
+    "weeksShort": "{count}w",
+    "monthsShort": "{count}mo",
+    "yearsShort": "{count}y"
   },
   "history": {
     "noteHistory": "Note History",
@@ -973,7 +980,13 @@
     "newItemInsertionTop": "Top of the list",
     "newItemInsertionBottom": "Bottom of the list",
     "selectShowChecklistEmojis": "Select emoji visibility",
-    "showChecklistEmojisDescription": "Show an automatic emoji next to checklist items based on their text."
+    "showChecklistEmojisDescription": "Show an automatic emoji next to checklist items based on their text.",
+    "homeWidgetsSection": "Home Widgets",
+    "homeWelcome": "Welcome banner",
+    "homePickUp": "Pick up where you left off",
+    "homePinboard": "Pinboard",
+    "homePinboardDescription": "When disabled, pinned items show as regular cards at the top.",
+    "homeTags": "Tags"
   },
   "admin": {
     "title": "Admin",
@@ -1937,5 +1950,117 @@
       "refused": "Live editing stopped because your access or this note changed. Refresh to continue.",
       "unavailable": "Live editing isn't available, so you're editing on your own. Your changes still save."
     }
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Still up, {name}.",
+      "morning": "Morning, {name}.",
+      "afternoon": "Afternoon, {name}.",
+      "evening": "Evening, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} note} other {{notes} notes}}, {pinned} pinned, {encrypted} encrypted.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} list} other {{lists} lists}}, {boardsCount, plural, one {{boards} board} other {{boards} boards}}, {open} left to tick.",
+    "pickUp": "Pick up where you left off",
+    "continueWriting": "Continue writing",
+    "openList": "Open list",
+    "openBoard": "Open board",
+    "tag": "Tag",
+    "clearFilter": "Clear filter",
+    "newNoteIn": "New note in {name}",
+    "newChecklistIn": "New checklist in {name}",
+    "tagCount": "#{tag}, {count, plural, one {# item} other {# items}}",
+    "topTags": "Top {count} by use",
+    "allTags": "All {count} tags",
+    "more": "+{count} more",
+    "showFewer": "Show fewer",
+    "pinnedOf": "{shown} of {total} pinned",
+    "pinnedTotal": "{total} pinned",
+    "showAllPinned": "Show all {total}",
+    "bucket": "1 square = {count} items",
+    "tickedOf": "{done} of {total} ticked",
+    "emptyList": "Nothing on it yet.",
+    "hours": "{count} hrs",
+    "shallNotPass": "Preview shall not pass.",
+    "notePrompts": [
+      "Call me Ishmael.",
+      "It was a dark and stormy night.",
+      "Once upon a time...",
+      "All we have to decide is what to do with the time that is given us.",
+      "Write that down! Write that down!",
+      "Inconceivable!",
+      "Speak, friend, and enter.",
+      "Live long and prosper.",
+      "Don't panic.",
+      "Help me, Obi-Wan Kenobi. You're my only hope.",
+      "Life, uh, finds a way.",
+      "I am Groot."
+    ],
+    "listPrompts": [
+      "Do or do not. There is no try.",
+      "I love it when a plan comes together.",
+      "Just keep swimming.",
+      "Houston, we have a problem.",
+      "Let's get down to business.",
+      "Clear eyes, full hearts, can't lose.",
+      "Winter is coming.",
+      "Run, Forrest, run!",
+      "Shall we play a game?",
+      "With great power comes great responsibility.",
+      "Resistance is futile.",
+      "Your mission, should you choose to accept it..."
+    ],
+    "allDone": [
+      "Mischief managed.",
+      "It's dangerous to go alone... oh wait, you're done.",
+      "All your tasks are belong to done.",
+      "So long, and thanks for all the ticks.",
+      "This is the way.",
+      "Achievement unlocked: nothing left.",
+      "The cake was not a lie.",
+      "Live long and procrastinate.",
+      "I'm afraid there's nothing left to do, Dave.",
+      "Fus Ro Done.",
+      "May the done be with you.",
+      "Level clear. Insert coin to continue.",
+      "exit 0. Clean run, no errors.",
+      "Winter is not coming. You're done.",
+      "One does not simply tick more boxes."
+    ],
+    "sentence": "Show me <type></type> from <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "every category",
+    "andInside": " and everything inside",
+    "only": " only",
+    "categoriesMore": "{first} + {count} more",
+    "filters": {
+      "notes": {
+        "all": "all notes",
+        "recent": "recent notes",
+        "pinned": "pinned notes"
+      },
+      "checklists": {
+        "all": "all lists",
+        "completed": "finished lists",
+        "incomplete": "unfinished lists",
+        "pinned": "pinned lists",
+        "task": "task lists",
+        "simple": "simple lists"
+      },
+      "boards": {
+        "all": "all boards",
+        "completed": "finished boards",
+        "incomplete": "unfinished boards",
+        "pinned": "pinned boards",
+        "todo": "boards with to-dos",
+        "in-progress": "boards in progress"
+      }
+    },
+    "sorts": {
+      "updated": "newest first",
+      "oldest": "oldest first",
+      "az": "A to Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} note} other {{notes} notes}}, {pinned} pinned",
+    "checklistsKicker": "{done} of {total} boxes ticked",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} card} other {{cards} cards}} on {boardsCount, plural, one {{boards} board} other {{boards} boards}}, {inProgress} in progress"
   }
 }

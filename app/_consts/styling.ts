@@ -30,3 +30,8 @@ export const clampKanbanColumnWidth = (value?: number): number => {
     Math.max(MIN_KANBAN_COLUMN_WIDTH, value),
   );
 };
+
+export const SMALL_RADIUS_CLASS =
+  "rounded-[min(calc(var(--jotty-radius,var(--jotty-radius-admin,0.25rem))*0.5),4px)]";
+export const TICK_RADIUS_CLASS =
+  "rounded-[min(calc(var(--jotty-radius,var(--jotty-radius-admin,0.25rem))*0.6),3px)]";

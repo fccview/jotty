@@ -59,6 +59,11 @@ export const formatRelativeTime = (dateString: string, t?: (key: string, options
   return t ? formatWithTranslation(unit, value, t) : formatEnglishFallback(unit, value);
 };
 
+export const formatShortTime = (dateString: string, t: (key: string, options?: any) => string): string => {
+  const { unit, value } = getTimeUnit(dateString);
+  return t(`common.${unit}Short`, { count: value });
+};
+
 export const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString();
 };

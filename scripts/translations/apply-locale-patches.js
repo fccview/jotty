@@ -22,7 +22,7 @@ const deepMerge = (target, source) => {
   return target;
 };
 
-const translationsDir = path.join(__dirname, "..", "app", "_translations");
+const translationsDir = path.join(__dirname, "..", "..", "app", "_translations");
 
 for (const [locale, patch] of Object.entries(patches)) {
   const filePath = path.join(translationsDir, `${locale}.json`);

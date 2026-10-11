@@ -31,6 +31,10 @@ export const EDITABLE_SETTING_KEYS: ReadonlyArray<keyof User> = [
   "codeBlockStyle",
   "newItemInsertion",
   "searchMode",
+  "homeWelcome",
+  "homePickUp",
+  "homePinboard",
+  "homeTags",
 ] as const;
 
 export const EDITABLE_ENCRYPTION_KEYS = [

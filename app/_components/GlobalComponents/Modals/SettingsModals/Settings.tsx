@@ -6,9 +6,6 @@ import {
   File02Icon,
   ArrowHorizontalIcon,
   CheckmarkSquare04Icon,
-  SchoolReportCardIcon,
-  ListViewIcon,
-  GridViewIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -23,6 +20,7 @@ import { RadiusSlider } from "@/app/_components/GlobalComponents/FormElements/Ra
 import { ColumnWidthSlider } from "@/app/_components/GlobalComponents/FormElements/ColumnWidthSlider";
 import { clampRadius, clampKanbanColumnWidth } from "@/app/_consts/styling";
 import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
+import { VIEW_MODE_OPTIONS } from "@/app/_consts/view-modes";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -157,45 +155,20 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           {t("settingsModal.viewMode")}
         </h3>
         <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => setViewMode("card")}
-            className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
-              viewMode === "card"
-                ? "border-primary color-primary"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <SchoolReportCardIcon className="h-5 w-5" />
-            <span className="text-md lg:text-xs font-medium">
-              {t("settingsModal.viewModeCard")}
-            </span>
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
-              viewMode === "list"
-                ? "border-primary color-primary"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <ListViewIcon className="h-5 w-5" />
-            <span className="text-md lg:text-xs font-medium">
-              {t("settingsModal.viewModeList")}
-            </span>
-          </button>
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
-              viewMode === "grid"
-                ? "border-primary color-primary"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <GridViewIcon className="h-5 w-5" />
-            <span className="text-md lg:text-xs font-medium">
-              {t("settingsModal.viewModeGrid")}
-            </span>
-          </button>
+          {VIEW_MODE_OPTIONS.map(({ id, icon: Icon, labelKey }) => (
+            <button
+              key={id}
+              onClick={() => setViewMode(id)}
+              className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
+                viewMode === id
+                  ? "border-primary color-primary"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-md lg:text-xs font-medium">{t(labelKey)}</span>
+            </button>
+          ))}
         </div>
       </div>
 

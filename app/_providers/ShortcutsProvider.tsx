@@ -15,7 +15,7 @@ import { CreateNoteModal } from "@/app/_components/GlobalComponents/Modals/Notes
 import { CreateListModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/CreateListModal";
 import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/CreateCategoryModal";
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
-import { Category, SanitisedUser, User } from "@/app/_types";
+import { Category, ChecklistType, SanitisedUser, User } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
@@ -26,10 +26,15 @@ import { generateDateTimeTitle } from "../_utils/date-utils";
 import { useTranslations } from "next-intl";
 import { useToast } from "./ToastProvider";
 
+export interface CreatePrefill {
+  title?: string;
+  type?: ChecklistType;
+}
+
 interface ShortcutContextType {
-  openCreateNoteModal: (initialCategory?: string) => void;
+  openCreateNoteModal: (initialCategory?: string, prefill?: CreatePrefill) => void;
   openCreateCategoryModal: (parentCategory?: string) => void;
-  openCreateChecklistModal: (initialCategory?: string) => void;
+  openCreateChecklistModal: (initialCategory?: string, prefill?: CreatePrefill) => void;
   isSearchOpen: boolean;
   openSearch: () => void;
   closeSearch: () => void;
@@ -70,17 +75,18 @@ export const ShortcutProvider = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const [initialCategory, setInitialCategory] = useState<string>("");
+  const [prefill, setPrefill] = useState<CreatePrefill>({});
   const [initialParentCategory, setInitialParentCategory] =
     useState<string>("");
 
   const quickCreate = useCallback(
-    async (category?: string) => {
+    async (category?: string, title?: string) => {
       if (quickLock.current || isOpeningNote) return;
       quickLock.current = true;
 
       try {
         const formData = new FormData();
-        formData.append("title", generateDateTimeTitle());
+        formData.append("title", title || generateDateTimeTitle());
         formData.append(
           "category",
           category || user?.quickCreateNotesCategory || ""
@@ -119,22 +125,27 @@ export const ShortcutProvider = ({
   );
 
   const openCreateNoteModal = useCallback(
-    (category?: string) => {
+    (category?: string, nextPrefill: CreatePrefill = {}) => {
       if (user?.quickCreateNotes === "enable") {
-        checkNavigation(() => quickCreate(category));
+        checkNavigation(() => quickCreate(category, nextPrefill.title));
         return;
       }
 
       setInitialCategory(category || "");
+      setPrefill(nextPrefill);
       setShowCreateNoteModal(true);
     },
     [user?.quickCreateNotes, checkNavigation, quickCreate]
   );
 
-  const openCreateChecklistModal = useCallback((category?: string) => {
-    setInitialCategory(category || "");
-    setShowCreateChecklistModal(true);
-  }, []);
+  const openCreateChecklistModal = useCallback(
+    (category?: string, nextPrefill: CreatePrefill = {}) => {
+      setInitialCategory(category || "");
+      setPrefill(nextPrefill);
+      setShowCreateChecklistModal(true);
+    },
+    []
+  );
 
   const openCreateCategoryModal = useCallback((parentCategory?: string) => {
     setInitialParentCategory(parentCategory || "");
@@ -276,6 +287,7 @@ export const ShortcutProvider = ({
           }}
           categories={noteCategories}
           initialCategory={initialCategory}
+          initialTitle={prefill.title}
         />
       )}
       {showCreateChecklistModal && (
@@ -290,6 +302,8 @@ export const ShortcutProvider = ({
           }}
           categories={checklistCategories}
           initialCategory={initialCategory}
+          initialTitle={prefill.title}
+          initialType={prefill.type}
         />
       )}
       {showCreateCategoryModal && (

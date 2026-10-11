@@ -1,23 +1,18 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { ReactNode } from "react";
 import { ArrowDown01Icon, MoreHorizontalIcon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { Logo } from "../Layout/Logo/Logo";
-import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
-import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
-import {
-  MenuAlign,
-  MenuSide,
-  menuPlacementClasses,
-} from "@/app/_utils/menu-placement-utils";
+import { Popover } from "./Popover";
 
-interface DropdownOption {
+export interface DropdownOption {
   id: number | string;
   name: React.ReactNode;
   icon?: React.ComponentType<{ className?: string }>;
   colors?: { background: string; primary: string } | null;
   className?: string;
+  meta?: ReactNode;
 }
 
 interface DropdownProps {
@@ -30,7 +25,54 @@ interface DropdownProps {
   placeholder?: string;
   iconDropdown?: boolean;
   direction?: "down" | "up";
+  trigger?: (state: { isOpen: boolean; toggle: () => void; selected?: DropdownOption }) => ReactNode;
+  menuClassName?: string;
 }
+
+const OptionLogo = ({ colors, className }: { colors: { background: string; primary: string }; className: string }) => (
+  <Logo
+    className={className}
+    style={{
+      backgroundColor: `rgb(${colors.background})`,
+      border: `1px solid rgb(${colors.primary})`,
+    }}
+    pathStyle={{ fill: `rgb(${colors.primary})` }}
+  />
+);
+
+export const DropdownOptions = ({
+  options,
+  value,
+  onSelect,
+}: {
+  options: DropdownOption[];
+  value: string | number;
+  onSelect: (id: string) => void;
+}) => (
+  <div className="py-1">
+    {options.map((option) => (
+      <button
+        key={option.id}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onSelect(option.id.toString());
+        }}
+        className={cn(
+          "w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm text-left hover:bg-accent hover:text-accent-foreground",
+          option.id === value && "bg-accent text-accent-foreground",
+          option.className
+        )}
+      >
+        {option.icon && <option.icon className="h-4 w-4" />}
+        <span className="flex-1">{option.name}</span>
+        {option.meta}
+        {option.colors && <OptionLogo colors={option.colors} className="h-5 w-5 ml-auto" />}
+      </button>
+    ))}
+  </div>
+);
 
 export const Dropdown = ({
   value,
@@ -42,143 +84,89 @@ export const Dropdown = ({
   placeholder = "",
   iconDropdown = false,
   direction = "down",
+  trigger,
+  menuClassName,
 }: DropdownProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const placement = useMenuPlacement(
-    isOpen && !disabled,
-    dropdownRef,
-    menuRef,
-    direction === "up" ? MenuSide.Up : MenuSide.Down,
-    isDesktop ? MenuAlign.Start : MenuAlign.End,
-  );
-
   const selectedOption = options.find((opt) => opt.id === value);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleSelect = (e: React.MouseEvent, optionId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onChange(optionId);
-    setIsOpen(false);
-  };
-
   return (
-    <div className={`jotty-dropdown relative ${className}`} ref={dropdownRef}>
-      {iconDropdown ? (
-        <div
-          className="jotty-dropdown-icon flex items-center gap-2 cursor-pointer"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <MoreHorizontalIcon
-            className={cn(
-              `h-4 w-4 transition-transform text-muted-foreground`,
-              isOpen ? "rotate-180" : "",
-              disabled && "opacity-50 text-muted-foreground"
-            )}
-          />
-        </div>
-      ) : (
-        <button
-          id={id}
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            if (!disabled) {
-              setIsOpen(!isOpen);
-            }
-          }}
-          className={cn(
-            "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-jotty border border-border transition-colors",
-            disabled
-              ? "bg-muted text-muted-foreground cursor-not-allowed"
-              : "hover:bg-muted/50",
-            isOpen && "bg-muted/50"
-          )}
-          disabled={disabled}
-        >
-          <div className="flex items-center gap-2">
-            {selectedOption?.icon && (
-              <selectedOption.icon className="h-4 w-4" />
-            )}
-            <span className="text-md lg:text-sm font-medium">
-              {selectedOption?.name || placeholder}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {selectedOption?.colors && (
-              <Logo
-                className="h-5 w-5"
-                style={{
-                  backgroundColor: `rgb(${selectedOption.colors.background})`,
-                  border: `1px solid rgb(${selectedOption.colors.primary})`,
-                }}
-                pathStyle={{ fill: `rgb(${selectedOption.colors.primary})` }}
-              />
-            )}
-            <ArrowDown01Icon
-              className={cn(
-                `h-4 w-4 transition-transform`,
-                isOpen ? "rotate-180" : "",
-                disabled && "opacity-50"
-              )}
-            />
-          </div>
-        </button>
+    <Popover
+      className={cn("jotty-dropdown", className)}
+      direction={direction}
+      disabled={disabled}
+      menuClassName={cn(
+        trigger ? "min-w-[220px]" : "w-full min-w-[200px] max-h-48 overflow-y-auto",
+        menuClassName
       )}
+      trigger={({ isOpen, toggle }) => {
+        if (trigger) return trigger({ isOpen, toggle, selected: selectedOption });
 
-      {isOpen && !disabled && (
-        <div
-          ref={menuRef}
-          className={cn(
-            "jotty-dropdown-menu absolute z-50 w-full min-w-[200px] bg-card border border-border rounded-jotty shadow-lg max-h-48 overflow-y-auto",
-            menuPlacementClasses(placement)
-          )}
-        >
-          <div className="py-1">
-            {options.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={(e) => handleSelect(e, option.id.toString())}
+        if (iconDropdown) {
+          return (
+            <div
+              className="jotty-dropdown-icon flex items-center gap-2 cursor-pointer"
+              onClick={toggle}
+            >
+              <MoreHorizontalIcon
                 className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm hover:bg-accent hover:text-accent-foreground",
-                  option.id === value && "bg-accent text-accent-foreground",
-                  option.className
+                  `h-4 w-4 transition-transform text-muted-foreground`,
+                  isOpen ? "rotate-180" : "",
+                  disabled && "opacity-50 text-muted-foreground"
                 )}
-              >
-                {option.icon && <option.icon className="h-4 w-4" />}
-                <span>{option.name}</span>
-                {option.colors && (
-                  <Logo
-                    className="h-5 w-5 ml-auto"
-                    style={{
-                      backgroundColor: `rgb(${option.colors.background})`,
-                      border: `1px solid rgb(${option.colors.primary})`,
-                    }}
-                    pathStyle={{ fill: `rgb(${option.colors.primary})` }}
-                  />
+              />
+            </div>
+          );
+        }
+
+        return (
+          <button
+            id={id}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              toggle();
+            }}
+            className={cn(
+              "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-jotty border border-border transition-colors",
+              disabled
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "hover:bg-muted/50",
+              isOpen && "bg-muted/50"
+            )}
+            disabled={disabled}
+          >
+            <div className="flex items-center gap-2">
+              {selectedOption?.icon && <selectedOption.icon className="h-4 w-4" />}
+              <span className="text-md lg:text-sm font-medium">
+                {selectedOption?.name || placeholder}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {selectedOption?.colors && (
+                <OptionLogo colors={selectedOption.colors} className="h-5 w-5" />
+              )}
+              <ArrowDown01Icon
+                className={cn(
+                  `h-4 w-4 transition-transform`,
+                  isOpen ? "rotate-180" : "",
+                  disabled && "opacity-50"
                 )}
-              </button>
-            ))}
-          </div>
-        </div>
+              />
+            </div>
+          </button>
+        );
+      }}
+    >
+      {(close) => (
+        <DropdownOptions
+          options={options}
+          value={value}
+          onSelect={(optionId) => {
+            onChange(optionId);
+            close();
+          }}
+        />
       )}
-    </div>
+    </Popover>
   );
 };

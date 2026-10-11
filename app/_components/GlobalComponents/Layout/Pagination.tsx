@@ -8,6 +8,7 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { useTranslations } from "next-intl";
+import { cn } from "@/app/_utils/global-utils";
 
 interface PaginationProps {
   currentPage: number;
@@ -16,7 +17,7 @@ interface PaginationProps {
   itemsPerPage?: number;
   onItemsPerPageChange?: (itemsPerPage: number) => void;
   totalItems?: number;
-  variant?: "default" | "compact" | "sidebar";
+  variant?: "default" | "compact" | "sidebar" | "footer";
   className?: string;
   dropdownDirection?: "down" | "up";
 }
@@ -69,6 +70,69 @@ export const Pagination = ({
   }));
 
   const isSidebar = variant === "sidebar";
+
+  if (variant === "footer") {
+    return (
+      <div className={cn("jotty-pagination-footer mt-8 pt-5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4", className)}>
+        <p className="text-md lg:text-sm text-muted-foreground order-2 sm:order-1">
+          {t("common.page")}{" "}
+          <span className="font-mono text-foreground">
+            {t("common.pageOfPages", { currentPage, totalPages })}
+          </span>
+        </p>
+        <div className="flex items-center gap-1 order-1 sm:order-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="h-8 text-xs"
+          >
+            <ArrowLeft01Icon className="h-3 w-3 mr-1" />
+            {t("common.previous")}
+          </Button>
+          <span className="hidden sm:flex items-center gap-1 mx-1">
+            {getVisiblePages().map((page, index) =>
+              page === "..." ? (
+                <span key={`gap-${index}`} className="w-6 text-center text-xs text-muted-foreground">
+                  <MoreHorizontalIcon className="h-3 w-3 mx-auto" />
+                </span>
+              ) : (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => onPageChange(Number(page))}
+                  className="h-8 min-w-8 px-1.5 text-xs font-mono"
+                >
+                  {page}
+                </Button>
+              ),
+            )}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="h-8 text-xs"
+          >
+            {t("common.next")}
+            <ArrowRight01Icon className="h-3 w-3 ml-1" />
+          </Button>
+        </div>
+        {itemsPerPage && onItemsPerPageChange && (
+          <Dropdown
+            value={itemsPerPage.toString()}
+            options={itemsPerPageOptions}
+            onChange={(value) => onItemsPerPageChange(parseInt(value))}
+            className="order-3 w-40"
+            direction="up"
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={className}>

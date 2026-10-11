@@ -250,7 +250,14 @@
     "reconnecting": "Ponowne łączenie...",
     "hide": "Ukryj",
     "thisEntry": "ten wpis",
-    "preview": "Podgląd"
+    "preview": "Podgląd",
+    "justNowShort": "teraz",
+    "minutesShort": "{count}min",
+    "hoursShort": "{count}h",
+    "daysShort": "{count}d",
+    "weeksShort": "{count}tyg",
+    "monthsShort": "{count}mies",
+    "yearsShort": "{count}r"
   },
   "history": {
     "noteHistory": "Historia notatki",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Góra listy",
     "newItemInsertionBottom": "Dół listy",
     "selectShowChecklistEmojis": "Wybierz widoczność emotikonów",
-    "showChecklistEmojisDescription": "Pokazuje automatyczne emoji obok pozycji listy na podstawie ich tekstu."
+    "showChecklistEmojisDescription": "Pokazuje automatyczne emoji obok pozycji listy na podstawie ich tekstu.",
+    "homeWidgetsSection": "Widżety strony głównej",
+    "homeWelcome": "Baner powitalny",
+    "homePickUp": "Kontynuuj od miejsca, w którym przerwano",
+    "homePinboard": "Tablica przypiętych",
+    "homePinboardDescription": "Po wyłączeniu przypięte elementy są wyświetlane u góry jako zwykłe karty.",
+    "homeTags": "Tagi"
   },
   "admin": {
     "title": "Admin",
@@ -1904,5 +1917,117 @@
     "confirmMessage": "Jotty przepisze frontmatter na początku tego pliku. Wartości, które nie są poprawnym YAML, ujmie w cudzysłów, tabulatory zamieni na spacje, uuid niebędący identyfikatorem Jotty przeniesie do previousUuid i doda własne uuid. Reszta pliku się nie zmieni. Jotty nie może tego cofnąć, więc zrób kopię, jeśli inna aplikacja czyta ten frontmatter. Potrzebujesz prawa edycji tego elementu, a jego folder musi umożliwiać zapis.",
     "confirm": "Napraw frontmatter",
     "fixed": "Naprawiono. Możesz teraz edytować ten element."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Jeszcze nie śpisz, {name}?",
+      "morning": "Dzień dobry, {name}.",
+      "afternoon": "Miłego popołudnia, {name}.",
+      "evening": "Dobry wieczór, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} notatka} few {{notes} notatki} many {{notes} notatek} other {{notes} notatki}}, przypięte: {pinned}, zaszyfrowane: {encrypted}.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} lista} few {{lists} listy} many {{lists} list} other {{lists} listy}}, {boardsCount, plural, one {{boards} tablica} few {{boards} tablice} many {{boards} tablic} other {{boards} tablicy}}, do odhaczenia: {open}.",
+    "pickUp": "Kontynuuj od miejsca, w którym przerwano",
+    "continueWriting": "Pisz dalej",
+    "openList": "Otwórz listę",
+    "openBoard": "Otwórz tablicę",
+    "tag": "Tag",
+    "clearFilter": "Wyczyść filtr",
+    "newNoteIn": "Nowa notatka w {name}",
+    "newChecklistIn": "Nowa lista w {name}",
+    "tagCount": "#{tag}, {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementu}}",
+    "topTags": "Top {count} wg użycia",
+    "allTags": "Wszystkie tagi ({count})",
+    "more": "+{count} więcej",
+    "showFewer": "Pokaż mniej",
+    "pinnedOf": "Przypięte: {shown} z {total}",
+    "pinnedTotal": "Przypięte: {total}",
+    "showAllPinned": "Pokaż wszystkie ({total})",
+    "bucket": "1 kwadrat = {count} elementów",
+    "tickedOf": "Odhaczone: {done} z {total}",
+    "emptyList": "Jeszcze nic tu nie ma.",
+    "hours": "{count} godz.",
+    "shallNotPass": "Podgląd nie przejdzie.",
+    "notePrompts": [
+      "Mówcie mi Izmael.",
+      "Była ciemna i burzliwa noc.",
+      "Dawno, dawno temu...",
+      "Musimy tylko zdecydować, co zrobić z czasem, który nam dano.",
+      "Zapisz to! Zapisz to!",
+      "Niewyobrażalne!",
+      "Powiedz, przyjacielu, i wejdź.",
+      "Żyj długo i pomyślnie.",
+      "Nie panikuj.",
+      "Pomóż mi, Obi-Wanie Kenobi. Jesteś moją jedyną nadzieją.",
+      "Życie, eee, znajdzie sposób.",
+      "Jam jest Groot."
+    ],
+    "listPrompts": [
+      "Rób albo nie rób. Nie ma próbowania.",
+      "Uwielbiam, kiedy plan się udaje.",
+      "Płyń dalej.",
+      "Houston, mamy problem.",
+      "Zabierzmy się do roboty.",
+      "Jasne oczy, pełne serca, nie możemy przegrać.",
+      "Nadchodzi zima.",
+      "Biegnij, Forrest, biegnij!",
+      "Zagramy w grę?",
+      "Z wielką mocą wiąże się wielka odpowiedzialność.",
+      "Opór jest daremny.",
+      "Twoja misja, jeśli zdecydujesz się ją przyjąć..."
+    ],
+    "allDone": [
+      "Koniec psot.",
+      "Niebezpiecznie iść samemu... a nie, już skończone.",
+      "Wszystkie twoje zadania należą są do zrobionych.",
+      "Cześć i dzięki za wszystkie ptaszki.",
+      "Taka jest droga.",
+      "Osiągnięcie odblokowane: nic nie zostało.",
+      "Ciasto nie było kłamstwem.",
+      "Żyj długo i odkładaj na później.",
+      "Obawiam się, że nie ma już nic do zrobienia, Dave.",
+      "Fus Ro Gotowe.",
+      "Niech zrobione będzie z tobą.",
+      "Poziom ukończony. Wrzuć monetę, aby kontynuować.",
+      "exit 0. Czysty przebieg, bez błędów.",
+      "Zima nie nadchodzi. Skończone.",
+      "Nie można tak po prostu odhaczyć kolejnych pól."
+    ],
+    "sentence": "Pokaż mi <type></type> w <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "każdej kategorii",
+    "andInside": " i wszystkim w środku",
+    "only": " wyłącznie",
+    "categoriesMore": "{first} + {count} więcej",
+    "filters": {
+      "notes": {
+        "all": "wszystkie notatki",
+        "recent": "ostatnie notatki",
+        "pinned": "przypięte notatki"
+      },
+      "checklists": {
+        "all": "wszystkie listy",
+        "completed": "ukończone listy",
+        "incomplete": "nieukończone listy",
+        "pinned": "przypięte listy",
+        "task": "listy zadań",
+        "simple": "proste listy"
+      },
+      "boards": {
+        "all": "wszystkie tablice",
+        "completed": "ukończone tablice",
+        "incomplete": "nieukończone tablice",
+        "pinned": "przypięte tablice",
+        "todo": "tablice z zadaniami do zrobienia",
+        "in-progress": "tablice w trakcie"
+      }
+    },
+    "sorts": {
+      "updated": "od najnowszych",
+      "oldest": "od najstarszych",
+      "az": "od A do Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} notatka} few {{notes} notatki} many {{notes} notatek} other {{notes} notatki}}, przypięte: {pinned}",
+    "checklistsKicker": "Odhaczone pola: {done} z {total}",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} karta} few {{cards} karty} many {{cards} kart} other {{cards} karty}} na {boardsCount, plural, one {{boards} tablicy} few {{boards} tablicach} many {{boards} tablicach} other {{boards} tablicy}}, w trakcie: {inProgress}"
   }
 }

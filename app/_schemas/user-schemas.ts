@@ -100,6 +100,19 @@ export const kanbanSettingsSchema = z.object({
     .optional(),
 });
 
+const homeWidgetSchema = z
+  .enum(["enable", "disable"], {
+    message: "Home widgets must be either 'enable' or 'disable'",
+  })
+  .optional();
+
+export const homeWidgetsSettingsSchema = z.object({
+  homeWelcome: homeWidgetSchema,
+  homePickUp: homeWidgetSchema,
+  homePinboard: homeWidgetSchema,
+  homeTags: homeWidgetSchema,
+});
+
 export const fileSettingsSchema = z.object({
   fileRenameMode: z.enum(["dash-case", "minimal", "none"], {
     message: "File rename mode must be 'dash-case', 'minimal', or 'none'",
@@ -148,5 +161,6 @@ export type UserSettingsInput = z.infer<typeof userSettingsSchema>;
 export type EditorSettingsInput = z.infer<typeof editorSettingsSchema>;
 export type ChecklistSettingsInput = z.infer<typeof checklistSettingsSchema>;
 export type KanbanSettingsInput = z.infer<typeof kanbanSettingsSchema>;
+export type HomeWidgetsSettingsInput = z.infer<typeof homeWidgetsSettingsSchema>;
 export type FileSettingsInput = z.infer<typeof fileSettingsSchema>;
 export type GeneralSettingsInput = z.infer<typeof generalSettingsSchema>;

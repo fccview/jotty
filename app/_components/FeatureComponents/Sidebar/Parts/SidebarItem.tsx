@@ -31,7 +31,7 @@ import { deleteNote } from "@/app/_server/actions/note";
 import { leaveItem } from "@/app/_server/actions/share/operations";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
+import { useItemSharing } from "@/app/_hooks/useItemSharing";
 import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
 import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { useTranslations } from "next-intl";
@@ -66,21 +66,16 @@ export const SidebarItem = ({
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const itemRef = useRef<HTMLAnchorElement>(null);
-  const { globalSharing, appSettings } = useAppMode();
-  const itemDetails = sharingInfo(globalSharing, item.uuid || "");
-
-  const isPubliclyShared = itemDetails.isPublic;
+  const { appSettings } = useAppMode();
+  const { grants, isPublic: isPubliclyShared } = useItemSharing(
+    item.uuid,
+    mode === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS,
+  );
   const isOwned = user?.username === item.owner;
   const isShareable = isOwned;
   const isLocked = Boolean(item.lockReason);
   const canEdit = !isLocked && (isOwned || item.permissions?.canEdit === true);
   const canDelete = isOwned || item.permissions?.canDelete === true;
-
-  const grants = shareGrants(
-    globalSharing,
-    item.uuid || "",
-    mode === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS,
-  );
 
   const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 

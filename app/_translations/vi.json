@@ -250,7 +250,14 @@
     "reconnecting": "Đang kết nối lại...",
     "hide": "Ẩn",
     "thisEntry": "mục này",
-    "preview": "Xem trước"
+    "preview": "Xem trước",
+    "justNowShort": "vừa xong",
+    "minutesShort": "{count} phút",
+    "hoursShort": "{count} giờ",
+    "daysShort": "{count} ngày",
+    "weeksShort": "{count} tuần",
+    "monthsShort": "{count} th",
+    "yearsShort": "{count} năm"
   },
   "history": {
     "noteHistory": "Lịch sử ghi chú",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Đầu danh sách",
     "newItemInsertionBottom": "Cuối danh sách",
     "selectShowChecklistEmojis": "Chọn hiển thị biểu tượng cảm xúc",
-    "showChecklistEmojisDescription": "Hiển thị biểu tượng cảm xúc tự động bên cạnh các mục danh sách kiểm tra, dựa trên nội dung của chúng."
+    "showChecklistEmojisDescription": "Hiển thị biểu tượng cảm xúc tự động bên cạnh các mục danh sách kiểm tra, dựa trên nội dung của chúng.",
+    "homeWidgetsSection": "Tiện ích trang chủ",
+    "homeWelcome": "Biểu ngữ chào mừng",
+    "homePickUp": "Tiếp tục từ chỗ bạn đã dừng",
+    "homePinboard": "Bảng ghim",
+    "homePinboardDescription": "Khi tắt, các mục đã ghim sẽ hiển thị như thẻ thông thường ở trên cùng.",
+    "homeTags": "Thẻ"
   },
   "admin": {
     "title": "Quản trị viên",
@@ -1904,5 +1917,117 @@
     "confirmMessage": "Jotty sẽ viết lại frontmatter ở đầu tệp này. Jotty đặt các giá trị không phải YAML hợp lệ trong dấu ngoặc kép, đổi tab thành dấu cách, chuyển uuid không phải id của Jotty sang previousUuid và thêm uuid riêng. Phần còn lại của tệp giữ nguyên. Jotty không thể hoàn tác việc này, nên hãy giữ một bản sao nếu ứng dụng khác đọc frontmatter này. Bạn cần quyền chỉnh sửa mục này và thư mục của nó phải cho phép ghi.",
     "confirm": "Sửa frontmatter",
     "fixed": "Đã sửa. Giờ bạn có thể chỉnh sửa mục này."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Vẫn còn thức à, {name}.",
+      "morning": "Chào buổi sáng, {name}.",
+      "afternoon": "Chào buổi chiều, {name}.",
+      "evening": "Chào buổi tối, {name}."
+    },
+    "notesSummary": "{notesCount, plural, other {{notes} ghi chú}}, {pinned} đã ghim, {encrypted} đã mã hóa.",
+    "checklistsSummary": "{listsCount, plural, other {{lists} danh sách}}, {boardsCount, plural, other {{boards} bảng}}, còn {open} mục cần đánh dấu.",
+    "pickUp": "Tiếp tục từ chỗ bạn đã dừng",
+    "continueWriting": "Tiếp tục viết",
+    "openList": "Mở danh sách",
+    "openBoard": "Mở bảng",
+    "tag": "Thẻ",
+    "clearFilter": "Xóa bộ lọc",
+    "newNoteIn": "Ghi chú mới trong {name}",
+    "newChecklistIn": "Danh sách mới trong {name}",
+    "tagCount": "#{tag}, {count, plural, other {# mục}}",
+    "topTags": "{count} thẻ dùng nhiều nhất",
+    "allTags": "Tất cả {count} thẻ",
+    "more": "+{count} nữa",
+    "showFewer": "Ẩn bớt",
+    "pinnedOf": "Đã ghim {shown}/{total}",
+    "pinnedTotal": "{total} đã ghim",
+    "showAllPinned": "Hiện tất cả {total}",
+    "bucket": "1 ô = {count} mục",
+    "tickedOf": "Đã đánh dấu {done}/{total}",
+    "emptyList": "Chưa có gì.",
+    "hours": "{count} giờ",
+    "shallNotPass": "Bản xem trước không được qua.",
+    "notePrompts": [
+      "Hãy gọi tôi là Ishmael.",
+      "Đó là một đêm tối tăm và giông bão.",
+      "Ngày xửa ngày xưa...",
+      "Tất cả những gì ta phải quyết định là làm gì với thời gian được trao cho ta.",
+      "Ghi lại đi! Ghi lại đi!",
+      "Không thể tưởng tượng nổi!",
+      "Nói, bạn hỡi, và bước vào.",
+      "Sống lâu và thịnh vượng.",
+      "Đừng hoảng sợ.",
+      "Giúp tôi với, Obi-Wan Kenobi. Ông là hy vọng duy nhất của tôi.",
+      "Sự sống, ờ, sẽ tìm ra cách.",
+      "Tôi là Groot."
+    ],
+    "listPrompts": [
+      "Làm hoặc không làm. Không có thử.",
+      "Tôi thích khi kế hoạch thành công.",
+      "Cứ bơi tiếp thôi.",
+      "Houston, chúng ta có vấn đề.",
+      "Bắt tay vào việc nào.",
+      "Mắt sáng, tim đầy, không thể thua.",
+      "Mùa đông đang đến.",
+      "Chạy đi, Forrest, chạy đi!",
+      "Chơi một trò chơi nhé?",
+      "Sức mạnh càng lớn, trách nhiệm càng cao.",
+      "Kháng cự là vô ích.",
+      "Nhiệm vụ của bạn, nếu bạn chọn chấp nhận nó..."
+    ],
+    "allDone": [
+      "Quậy phá xong xuôi.",
+      "Đi một mình nguy hiểm lắm... à khoan, bạn xong rồi.",
+      "Tất cả nhiệm vụ của bạn là thuộc về xong.",
+      "Tạm biệt, và cảm ơn vì tất cả những dấu tích.",
+      "Đây là con đường.",
+      "Mở khóa thành tựu: không còn gì nữa.",
+      "Chiếc bánh không phải là lời nói dối.",
+      "Sống lâu và trì hoãn.",
+      "Tôi e là không còn gì để làm nữa, Dave.",
+      "Fus Ro Xong.",
+      "Nguyện việc xong ở bên bạn.",
+      "Qua màn. Bỏ xu để chơi tiếp.",
+      "exit 0. Chạy sạch, không lỗi.",
+      "Mùa đông không đến đâu. Bạn xong rồi.",
+      "Đâu thể cứ thế mà đánh dấu thêm ô."
+    ],
+    "sentence": "Hiển thị cho tôi <type></type> từ <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "mọi danh mục",
+    "andInside": " và mọi thứ bên trong",
+    "only": " mà thôi",
+    "categoriesMore": "{first} + {count} nữa",
+    "filters": {
+      "notes": {
+        "all": "tất cả ghi chú",
+        "recent": "ghi chú gần đây",
+        "pinned": "ghi chú đã ghim"
+      },
+      "checklists": {
+        "all": "tất cả danh sách",
+        "completed": "danh sách đã xong",
+        "incomplete": "danh sách chưa xong",
+        "pinned": "danh sách đã ghim",
+        "task": "danh sách nhiệm vụ",
+        "simple": "danh sách đơn giản"
+      },
+      "boards": {
+        "all": "tất cả bảng",
+        "completed": "bảng đã xong",
+        "incomplete": "bảng chưa xong",
+        "pinned": "bảng đã ghim",
+        "todo": "bảng có việc cần làm",
+        "in-progress": "bảng đang tiến hành"
+      }
+    },
+    "sorts": {
+      "updated": "mới nhất trước",
+      "oldest": "cũ nhất trước",
+      "az": "từ A đến Z"
+    },
+    "notesKicker": "{notesCount, plural, other {{notes} ghi chú}}, {pinned} đã ghim",
+    "checklistsKicker": "Đã đánh dấu {done}/{total} ô",
+    "kanbanKicker": "{cardsCount, plural, other {{cards} thẻ}} trên {boardsCount, plural, other {{boards} bảng}}, {inProgress} đang tiến hành"
   }
 }

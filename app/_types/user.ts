@@ -46,6 +46,7 @@ export type HideTimeTrackingOnCards = "enable" | "disable";
 export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
 export type NewItemInsertion = "top" | "bottom";
+export type HomeWidget = "enable" | "disable";
 
 export interface User {
   username: string;
@@ -88,6 +89,10 @@ export interface User {
   codeBlockStyle?: CodeBlockStyle;
   newItemInsertion?: NewItemInsertion;
   searchMode?: SearchModes;
+  homeWelcome?: HomeWidget;
+  homePickUp?: HomeWidget;
+  homePinboard?: HomeWidget;
+  homeTags?: HomeWidget;
   mfaEnabled?: boolean;
   mfaSecret?: string;
   mfaRecoveryCode?: string;

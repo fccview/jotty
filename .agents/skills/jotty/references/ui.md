@@ -27,7 +27,7 @@ Existing:
 - `settings-store` holds theme and `viewMode` (card / list / grid), persisted
 - `sidebar-store` collapsed categories/tags, persisted
 - `notes-store` and `editor-activity-store` for editor UI flags
-- `home-filter-store`, `modal-store`, `dnd/drag-store`
+- `modal-store`, `dnd/drag-store`
 
 `modal-store` writes `localStorage` itself, not zustand persist. Extend one of these if the need overlaps. A new store needs a reason.
 

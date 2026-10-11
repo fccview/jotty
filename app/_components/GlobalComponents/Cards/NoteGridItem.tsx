@@ -1,24 +1,19 @@
 "use client";
 
-import {
-  File02Icon,
-  PinIcon,
-  PinOffIcon,
-  LockKeyIcon,
-} from "hugeicons-react";
+import { File02Icon } from "hugeicons-react";
 import { Note } from "@/app/_types";
-import { useMemo } from "react";
-import { parseNoteContent } from "@/app/_utils/client-parser-utils";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useTranslations } from "next-intl";
+import { cn } from "@/app/_utils/global-utils";
+import { formatShortTime } from "@/app/_utils/date-utils";
+import { categoryLeaf } from "@/app/_utils/category-path-utils";
+import { WizardIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/WizardIcon";
+import { PinToggle } from "./Parts/PinToggle";
 
 interface NoteGridItemProps {
   note: Note;
   onSelect: (note: Note) => void;
   isPinned?: boolean;
   onTogglePin?: (note: Note) => void;
-  sharer?: string;
-  isDraggable?: boolean;
 }
 
 export const NoteGridItem = ({
@@ -26,100 +21,45 @@ export const NoteGridItem = ({
   onSelect,
   isPinned = false,
   onTogglePin,
-  sharer,
-  isDraggable = false,
 }: NoteGridItemProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: note.uuid,
-    disabled: !isDraggable,
-  });
-
-  const parsedData = useMemo(() => {
-    if (!note) {
-      return null;
-    }
-
-    if ("rawContent" in note) {
-      return parseNoteContent((note as any).rawContent, note.id);
-    }
-    return null;
-  }, [note]);
-
-  const displayTitle = parsedData?.title || note?.title;
-  const isEncrypted = parsedData?.encrypted ?? note?.encrypted ?? false;
-
-  const categoryName = useMemo(() => {
-    return note?.category ? note?.category.split("/").pop() : null;
-  }, [note?.category]);
-
-  if (!note) {
-    return null;
-  }
-
-  const style = isDragging
-    ? { opacity: 0.4 }
-    : {
-      transform: CSS.Transform.toString(transform),
-      transition,
-    };
-
-  const itemStyle = {
-    ...style,
-    ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
-  };
-
+  const t = useTranslations();
   return (
     <div
-      ref={setNodeRef}
-      style={itemStyle}
-      {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className="group relative"
+      className="jotty-note-grid-item group relative bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
     >
-      {onTogglePin && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePin(note);
-          }}
-          className={`absolute -top-1 -right-1 z-10 ${isPinned ? "opacity-100" : "opacity-100 lg:opacity-0"
-            } group-hover:opacity-100 transition-opacity p-1 bg-background rounded-full border border-border`}
+      <div className="flex items-start justify-between gap-1">
+        <span
+          className={cn(
+            "inline-flex h-8 w-8 items-center justify-center rounded-jotty shrink-0",
+            note.encrypted ? "bg-primary/[0.15] text-primary" : "bg-muted text-primary",
+          )}
         >
-          {isPinned ? (
-            <PinOffIcon className="h-3 w-3 text-muted-foreground" />
+          {note.encrypted ? (
+            <WizardIcon className="h-5 w-5" />
           ) : (
-            <PinIcon className="h-3 w-3 text-muted-foreground" />
+            <File02Icon className="h-4 w-4" />
           )}
-        </button>
-      )}
-
-      <div
-        className="flex flex-col items-center cursor-pointer p-2.5"
+        </span>
+        {onTogglePin && (
+          <PinToggle
+            isPinned={isPinned}
+            onToggle={() => onTogglePin(note)}
+            className="p-1 -mr-1 -mt-1"
+          />
+        )}
+      </div>
+      <button
+        type="button"
         onClick={() => onSelect(note)}
+        className="mt-3 text-left font-medium text-md lg:text-sm leading-snug text-foreground group-hover:text-primary line-clamp-2"
       >
-        <div className="relative mb-2">
-          <File02Icon className="h-16 w-16 text-primary !stroke-1" />
-          {isEncrypted && (
-            <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center">
-              <LockKeyIcon className="h-4 w-4" />
-            </div>
-          )}
-        </div>
-
-        <h3 className="font-medium text-md lg:text-sm text-center text-foreground line-clamp-2 w-full px-1">
-          {displayTitle}
-        </h3>
-
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-          {sharer && <span className="truncate">{sharer}</span>}
-          {!sharer && categoryName && <span className="truncate">{categoryName}</span>}
-        </div>
+        {note.title}
+      </button>
+      <div className="mt-auto pt-2 flex items-center justify-between gap-2 font-mono text-[11px] text-muted-foreground">
+        <span className="truncate">
+          {categoryLeaf(note.category, t("notes.uncategorized"))}
+        </span>
+        <span>{formatShortTime(note.updatedAt, t)}</span>
       </div>
     </div>
   );

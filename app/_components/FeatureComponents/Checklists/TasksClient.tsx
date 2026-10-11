@@ -7,6 +7,7 @@ import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useTranslations } from "next-intl";
 import { MobileHeader } from "../../GlobalComponents/Layout/MobileHeader";
+import { BoardFilter } from "@/app/_consts/browse";
 
 interface TasksClientProps {
     categories: Category[];
@@ -14,7 +15,7 @@ interface TasksClientProps {
     children: React.ReactNode;
 }
 
-type TaskFilter = "all" | "completed" | "incomplete" | "pinned" | "todo" | "in-progress";
+type TaskFilter = BoardFilter;
 
 interface TasksFilterContextType {
     taskFilter: TaskFilter;

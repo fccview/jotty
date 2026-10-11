@@ -25,4 +25,5 @@ export interface GetChecklistsOptions {
   offset?: number;
   pinnedPaths?: string[];
   preserveOrder?: boolean;
+  countOpenItems?: boolean;
 }

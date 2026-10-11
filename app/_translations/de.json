@@ -250,7 +250,14 @@
     "reconnecting": "Verbindung wird wieder hergestellt...",
     "hide": "Ausblenden",
     "thisEntry": "diesen Eintrag",
-    "preview": "Vorschau"
+    "preview": "Vorschau",
+    "justNowShort": "jetzt",
+    "minutesShort": "{count}m",
+    "hoursShort": "{count}h",
+    "daysShort": "{count}T",
+    "weeksShort": "{count}W",
+    "monthsShort": "{count}Mo",
+    "yearsShort": "{count}J"
   },
   "history": {
     "noteHistory": "Notizverlauf",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Anfang der Liste",
     "newItemInsertionBottom": "Ende der Liste",
     "selectShowChecklistEmojis": "Emoji-Sichtbarkeit wählen",
-    "showChecklistEmojisDescription": "Zeigt anhand des Textes automatisch ein Emoji neben Checklisteneinträgen."
+    "showChecklistEmojisDescription": "Zeigt anhand des Textes automatisch ein Emoji neben Checklisteneinträgen.",
+    "homeWidgetsSection": "Startseiten-Widgets",
+    "homeWelcome": "Begrüßungsbanner",
+    "homePickUp": "Mach da weiter, wo du aufgehört hast",
+    "homePinboard": "Pinnwand",
+    "homePinboardDescription": "Wenn deaktiviert, erscheinen angepinnte Elemente als normale Karten ganz oben.",
+    "homeTags": "Tags"
   },
   "admin": {
     "title": "Administration",
@@ -1904,5 +1917,117 @@
     "confirmMessage": "Jotty schreibt das Frontmatter am Anfang dieser Datei neu. Werte, die kein gültiges YAML sind, bekommen Anführungszeichen, Tabs werden zu Leerzeichen, eine uuid, die keine Jotty-ID ist, wandert nach previousUuid, und Jotty fügt eine eigene uuid hinzu. Der Rest der Datei bleibt, wie er ist. Jotty kann das nicht rückgängig machen. Leg also eine Kopie an, wenn eine andere App dieses Frontmatter liest. Du brauchst Bearbeitungsrechte für dieses Element, und sein Ordner muss beschreibbar sein.",
     "confirm": "Frontmatter reparieren",
     "fixed": "Repariert. Du kannst dieses Element jetzt bearbeiten."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Noch wach, {name}.",
+      "morning": "Guten Morgen, {name}.",
+      "afternoon": "Guten Tag, {name}.",
+      "evening": "Guten Abend, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} Notiz} other {{notes} Notizen}}, {pinned} angepinnt, {encrypted} verschlüsselt.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} Liste} other {{lists} Listen}}, {boardsCount, plural, one {{boards} Board} other {{boards} Boards}}, {open} noch abzuhaken.",
+    "pickUp": "Mach da weiter, wo du aufgehört hast",
+    "continueWriting": "Weiterschreiben",
+    "openList": "Liste öffnen",
+    "openBoard": "Board öffnen",
+    "tag": "Tag",
+    "clearFilter": "Filter zurücksetzen",
+    "newNoteIn": "Neue Notiz in {name}",
+    "newChecklistIn": "Neue Aufgabenliste in {name}",
+    "tagCount": "#{tag}, {count, plural, one {# Element} other {# Elemente}}",
+    "topTags": "Top {count} nach Nutzung",
+    "allTags": "Alle {count} Tags",
+    "more": "+{count} weitere",
+    "showFewer": "Weniger anzeigen",
+    "pinnedOf": "{shown} von {total} angepinnt",
+    "pinnedTotal": "{total} angepinnt",
+    "showAllPinned": "Alle {total} anzeigen",
+    "bucket": "1 Kästchen = {count} Elemente",
+    "tickedOf": "{done} von {total} abgehakt",
+    "emptyList": "Noch nichts drauf.",
+    "hours": "{count} Std.",
+    "shallNotPass": "Die Vorschau kommt nicht vorbei.",
+    "notePrompts": [
+      "Nennt mich Ismael.",
+      "Es war eine dunkle und stürmische Nacht.",
+      "Es war einmal...",
+      "Wir müssen nur entscheiden, was wir mit der Zeit anfangen wollen, die uns gegeben ist.",
+      "Schreib das auf! Schreib das auf!",
+      "Unvorstellbar!",
+      "Sprich, Freund, und tritt ein.",
+      "Lebe lang und in Frieden.",
+      "Keine Panik.",
+      "Hilf mir, Obi-Wan Kenobi. Du bist meine einzige Hoffnung.",
+      "Das Leben, äh, findet einen Weg.",
+      "Ich bin Groot."
+    ],
+    "listPrompts": [
+      "Tu es oder tu es nicht. Es gibt kein Versuchen.",
+      "Ich liebe es, wenn ein Plan funktioniert.",
+      "Einfach schwimmen.",
+      "Houston, wir haben ein Problem.",
+      "Ran an die Arbeit.",
+      "Klarer Blick, volles Herz, wir können nicht verlieren.",
+      "Der Winter naht.",
+      "Lauf, Forrest, lauf!",
+      "Wollen wir ein Spiel spielen?",
+      "Aus großer Kraft folgt große Verantwortung.",
+      "Widerstand ist zwecklos.",
+      "Ihr Auftrag, falls Sie ihn annehmen..."
+    ],
+    "allDone": [
+      "Unfug erledigt.",
+      "Es ist gefährlich, allein zu gehen... ach, du bist ja schon fertig.",
+      "All eure Aufgaben sind gehören erledigt.",
+      "Macht's gut, und danke für die Häkchen.",
+      "Das ist der Weg.",
+      "Erfolg freigeschaltet: nichts mehr übrig.",
+      "Der Kuchen war keine Lüge.",
+      "Lebe lang und schieb es auf.",
+      "Ich fürchte, es gibt nichts mehr zu tun, Dave.",
+      "Fus Ro Fertig.",
+      "Möge das Erledigte mit dir sein.",
+      "Level geschafft. Münze einwerfen zum Fortfahren.",
+      "exit 0. Sauberer Lauf, keine Fehler.",
+      "Der Winter naht nicht. Du bist fertig.",
+      "Man hakt nicht einfach noch mehr Kästchen ab."
+    ],
+    "sentence": "Zeig mir <type></type> aus <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "allen Kategorien",
+    "andInside": " samt allem darin",
+    "only": " allein",
+    "categoriesMore": "{first} + {count} weitere",
+    "filters": {
+      "notes": {
+        "all": "alle Notizen",
+        "recent": "aktuelle Notizen",
+        "pinned": "angepinnte Notizen"
+      },
+      "checklists": {
+        "all": "alle Listen",
+        "completed": "erledigte Listen",
+        "incomplete": "offene Listen",
+        "pinned": "angepinnte Listen",
+        "task": "Aufgabenlisten",
+        "simple": "einfache Listen"
+      },
+      "boards": {
+        "all": "alle Boards",
+        "completed": "erledigte Boards",
+        "incomplete": "offene Boards",
+        "pinned": "angepinnte Boards",
+        "todo": "Boards mit To-dos",
+        "in-progress": "Boards in Bearbeitung"
+      }
+    },
+    "sorts": {
+      "updated": "neueste zuerst",
+      "oldest": "älteste zuerst",
+      "az": "A bis Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} Notiz} other {{notes} Notizen}}, {pinned} angepinnt",
+    "checklistsKicker": "{done} von {total} Kästchen abgehakt",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} Karte} other {{cards} Karten}} auf {boardsCount, plural, one {{boards} Board} other {{boards} Boards}}, {inProgress} in Bearbeitung"
   }
 }

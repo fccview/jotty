@@ -49,31 +49,27 @@ export const formatTime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
+export const leafItems = (items: Item[]): Item[] =>
+  items.flatMap((item) => {
+    if (item.isArchived) return [];
+    if (item.children && item.children.length > 0) {
+      return leafItems(item.children);
+    }
+    return [item];
+  });
+
 export const countItems = (
   items: Item[],
   checklistType?: string,
-): { total: number; completed: number } =>
-  items.reduce(
-    (acc, item) => {
-      if (item.isArchived) return acc;
-
-      if (item.children && item.children.length > 0) {
-        const childCounts = countItems(item.children, checklistType);
-        return {
-          total: acc.total + childCounts.total,
-          completed: acc.completed + childCounts.completed,
-        };
-      }
-
-      return {
-        total: acc.total + 1,
-        completed: isItemCompleted(item, checklistType || "")
-          ? acc.completed + 1
-          : acc.completed,
-      };
-    },
-    { total: 0, completed: 0 },
-  );
+): { total: number; completed: number } => {
+  const leaves = leafItems(items);
+  return {
+    total: leaves.length,
+    completed: leaves.filter((item) =>
+      isItemCompleted(item, checklistType || ""),
+    ).length,
+  };
+};
 
 export const getCompletionRate = (
   items: Item[],

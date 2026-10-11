@@ -1,473 +1,299 @@
 "use client";
 
-import {
-  Add01Icon,
-  CheckmarkSquare04Icon,
-  ArrowRight04Icon,
-  Cancel01Icon,
-} from "hugeicons-react";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Checklist, SanitisedUser } from "@/app/_types";
-import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
-import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
-import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { useChecklistHome } from "@/app/_hooks/useChecklistHome";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { Checklist, SanitisedUser, TagInfo } from "@/app/_types";
+import { isKanbanType, ItemTypes } from "@/app/_types/enums";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { cn } from "@/app/_utils/global-utils";
+import { CreatePrefill } from "@/app/_providers/ShortcutsProvider";
 import { useSettings } from "@/app/_utils/settings-store";
-import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/ChecklistListItem";
-import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
-import {
-  useMemo,
-  useState,
-  useEffect,
-  useTransition,
-  useCallback,
-} from "react";
 import { getChecklistsForDisplay } from "@/app/_server/actions/checklist";
-import { useInfiniteScroll } from "@/app/_hooks/useInfiniteScroll";
-import { FILTER_PAGE_SIZE } from "@/app/_consts/files";
+import { useFilteredFeed } from "@/app/_hooks/useFilteredFeed";
+import { usePins } from "@/app/_hooks/usePins";
+import { useGreeting } from "@/app/_hooks/useGreeting";
+import { useHomeWidgets } from "@/app/_hooks/useHomeWidgets";
+import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
+import { categoryLeaf } from "@/app/_utils/category-path-utils";
+import { BOARD_CARD_COLUMNS, LIST_CARD_COLUMNS } from "@/app/_consts/masonry";
+import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
+import { ChecklistItems } from "@/app/_components/GlobalComponents/Cards/ChecklistItems";
+import { SectionHeading } from "@/app/_components/GlobalComponents/Layout/SectionHeading";
+import { ViewModeSwitch } from "@/app/_components/GlobalComponents/Buttons/ViewModeSwitch";
+import { ShowAllButton } from "@/app/_components/GlobalComponents/Buttons/ShowAllButton";
+import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
+import {
+  EmptyIllustration,
+  EmptyIllustrations,
+} from "@/app/_components/GlobalComponents/Cards/Parts/EmptyIllustration";
 import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
-import { isKanbanType } from "@/app/_types/enums";
+import { HomeHero } from "./HomeHero";
+import { HomeFilterHero } from "./HomeFilterHero";
+import { QuickCapture } from "./QuickCapture";
+import { ChecklistPickUp } from "./ChecklistPickUp";
+import { Pinboard } from "./Pinboard";
+import {
+  PINNED_LISTS_GRID,
+  PINBOARD_BESIDE_TAGS_GRID,
+  PINBOARD_GRID,
+} from "@/app/_consts/pinboard";
+import { TagCloud } from "./TagCloud";
+
+const PROMPTS = "browse.listPrompts";
+
+const byUpdated = (a: Checklist, b: Checklist) =>
+  new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
 
 interface ChecklistHomeProps {
   lists: Checklist[];
   user: SanitisedUser | null;
-  onCreateModal: () => void;
-  onSelectChecklist?: (list: Checklist) => void;
+  openItems: number;
+  onCreate: (category?: string, prefill?: CreatePrefill) => void;
+  onSelectChecklist: (list: Checklist) => void;
 }
 
 export const ChecklistHome = ({
-  lists: initialLists,
+  lists,
   user,
-  onCreateModal,
+  openItems,
+  onCreate,
   onSelectChecklist,
 }: ChecklistHomeProps) => {
   const t = useTranslations();
+  const compact = useCompactNumber();
+  const { viewMode } = useSettings();
   const {
-    userSharedItems,
     selectedFilter,
     setSelectedFilter,
-    checklists: allChecklistsMetadata,
+    tagsIndex,
+    tagsEnabled,
+    checklists: allLists,
   } = useAppMode();
-  const selectedCategory =
-    selectedFilter?.type === "category" ? selectedFilter.value : null;
-  const { viewMode } = useSettings();
-  const [isPending, startTransition] = useTransition();
-  const [firstPage, setFirstPage] = useState<Checklist[]>([]);
+  const { date, greeting } = useGreeting(user?.username);
+  const widgets = useHomeWidgets(user);
+  const feed = useFilteredFeed<Checklist>(
+    selectedFilter,
+    getChecklistsForDisplay,
+  );
+  const pins = usePins(lists, user?.pinnedLists, ItemTypes.CHECKLIST);
 
-  useEffect(() => {
-    if (!selectedFilter || selectedFilter.type !== "category") {
-      setFirstPage([]);
-      return;
-    }
+  const lastEdited = useMemo(() => {
+    const sorted = [...lists].sort(byUpdated);
+    return sorted.find((list) => !isKanbanType(list.type)) || sorted[0];
+  }, [lists]);
 
-    startTransition(async () => {
-      const result = await getChecklistsForDisplay(
-        selectedFilter,
-        FILTER_PAGE_SIZE,
-        0,
-      );
-      if (result.success && result.data) {
-        setFirstPage(result.data as Checklist[]);
-      }
-    });
-  }, [selectedFilter]);
+  const { boards, simple } = useMemo(() => {
+    const rest = selectedFilter
+      ? feed.items
+      : lists
+          .filter(
+            (list) => !pins.isPinned(list) && list.uuid !== lastEdited?.uuid,
+          )
+          .sort(byUpdated);
+    return {
+      boards: rest.filter((list) => isKanbanType(list.type)),
+      simple: rest.filter((list) => !isKanbanType(list.type)),
+    };
+  }, [selectedFilter, feed.items, lists, pins, lastEdited]);
 
-  const fetchPage = useCallback(
-    (offset: number) =>
-      getChecklistsForDisplay(selectedFilter!, FILTER_PAGE_SIZE, offset).then(
-        (res) => ({
-          data: (res.success && res.data ? res.data : []) as Checklist[],
-        }),
-      ),
-    [selectedFilter],
+  const tags = useMemo(() => Object.values(tagsIndex || {}), [tagsIndex]);
+  const listCount = useCallback(
+    (tag: TagInfo) => tag.checklistUuids.length,
+    [],
   );
 
-  const {
-    items: infiniteItems,
-    sentinelRef,
-    isLoading: isLoadingMore,
-    hasMore,
-  } = useInfiniteScroll({
-    initialItems: firstPage,
-    fetchPage,
-    pageSize: FILTER_PAGE_SIZE,
-    resetKey: selectedCategory ?? null,
-  });
+  const capture = (category?: string) => (title: string) =>
+    onCreate(category, title ? { title } : undefined);
 
-  const displayLists = selectedCategory ? infiniteItems : initialLists;
-
-  const {
-    sensors,
-    handleDragStart,
-    handleDragEnd,
-    pinned,
-    recent,
-    taskLists,
-    simpleLists,
-    handleTogglePin,
-    isListPinned,
-    activeList,
-    draggedItemWidth,
-  } = useChecklistHome({ lists: displayLists, user });
-
-  const filteredTaskLists = useMemo(() => {
-    if (!selectedCategory) return taskLists;
-    return displayLists
-      .filter((list) => isKanbanType(list.type))
-      .filter((list) => !pinned.some((p) => p.id === list.id));
-  }, [taskLists, displayLists, selectedCategory, pinned]);
-
-  const filteredSimpleLists = useMemo(() => {
-    if (!selectedCategory) return simpleLists;
-    return displayLists
-      .filter((list) => !isKanbanType(list.type))
-      .filter((list) => !pinned.some((p) => p.id === list.id));
-  }, [simpleLists, displayLists, selectedCategory, pinned]);
-
-  const categoryDisplayName =
-    selectedCategory?.split("/").pop() || selectedCategory;
-
-  const getListSharer = (list: Checklist) => {
-    const sharedItem = userSharedItems?.checklists?.find(
-      (item) => item.uuid === list.uuid,
-    );
-    return sharedItem?.sharer;
-  };
-
-  const hasAnyChecklists =
-    allChecklistsMetadata && allChecklistsMetadata.length > 0;
-
-  if (!hasAnyChecklists) {
+  if (!allLists?.length) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full overflow-y-auto bg-background jotty-scrollable-content jotty-quick-nav-gutter">
         <EmptyState
+          illustration={
+            <EmptyIllustration variant={EmptyIllustrations.CHECKLISTS} />
+          }
           title={t("checklists.noChecklistsYet")}
           description={t("checklists.createFirstChecklist")}
           buttonText={t("checklists.newChecklist")}
-          onButtonClick={() => onCreateModal()}
-          icon={
-            <CheckmarkSquare04Icon className="h-10 w-10 text-muted-foreground" />
-          }
+          onButtonClick={() => onCreate()}
         />
       </div>
     );
   }
 
+  const boardCount = allLists.filter((list) => isKanbanType(list.type)).length;
+  const simpleCount = allLists.length - boardCount;
+  const filterName =
+    selectedFilter?.type === "category"
+      ? categoryLeaf(selectedFilter.value, selectedFilter.value)
+      : selectedFilter?.value || "";
+  const showTags =
+    widgets.tags &&
+    tagsEnabled &&
+    !selectedFilter &&
+    tags.some((tag) => tag.checklistUuids.length > 0);
+  const showPins = pins.pinned.length > 0 && !selectedFilter;
+
   return (
     <div className="h-full overflow-y-auto bg-background jotty-scrollable-content jotty-quick-nav-gutter">
-      <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              {selectedCategory ? categoryDisplayName : t("checklists.title")}
-            </h1>
-            {selectedCategory && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedFilter(null)}
-                className="mt-1"
-              >
-                <Cancel01Icon className="h-3 w-3" />
-              </Button>
+      <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-12 lg:px-8">
+        {selectedFilter ? (
+          <div className="mb-10 lg:mb-14">
+            <HomeFilterHero
+              filter={selectedFilter}
+              name={filterName}
+              promptsKey={PROMPTS}
+              createLabel={t("browse.newChecklistIn", { name: filterName })}
+              onCapture={capture(selectedFilter.value)}
+              onClear={() => setSelectedFilter(null)}
+            />
+          </div>
+        ) : (
+          (widgets.welcome || (widgets.pickUp && lastEdited)) && (
+            <div
+              className={cn(
+                "grid gap-4 mb-10 lg:mb-14",
+                widgets.welcome &&
+                  widgets.pickUp &&
+                  lastEdited &&
+                  "xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]",
+              )}
+            >
+              {widgets.welcome && (
+                <HomeHero
+                  kicker={date}
+                  title={greeting}
+                  summary={t("browse.checklistsSummary", {
+                    listsCount: simpleCount,
+                    lists: compact(simpleCount),
+                    boardsCount: boardCount,
+                    boards: compact(boardCount),
+                    open: compact(openItems),
+                  })}
+                >
+                  <QuickCapture
+                    promptsKey={PROMPTS}
+                    buttonLabel={t("checklists.newChecklist")}
+                    onCapture={capture()}
+                  />
+                </HomeHero>
+              )}
+              {widgets.pickUp && lastEdited && (
+                <ChecklistPickUp
+                  list={lastEdited}
+                  onOpen={() => onSelectChecklist(lastEdited)}
+                />
+              )}
+            </div>
+          )
+        )}
+
+        {(showPins || showTags) && (
+          <div
+            className={
+              showPins && showTags && widgets.pinboard
+                ? "grid gap-4 mb-10 lg:mb-14 items-start xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]"
+                : "grid gap-4 mb-10 lg:mb-14 items-start"
+            }
+          >
+            {showPins && (
+              <Pinboard
+                items={pins.pinned}
+                isBoard={widgets.pinboard}
+                type={ItemTypes.CHECKLIST}
+                gridClassName={
+                  !widgets.pinboard
+                    ? PINNED_LISTS_GRID
+                    : showTags
+                      ? PINBOARD_BESIDE_TAGS_GRID
+                      : PINBOARD_GRID
+                }
+                renderItem={(list) => (
+                  <ChecklistCard
+                    list={list}
+                    compact={widgets.pinboard}
+                    onSelect={onSelectChecklist}
+                    isPinned
+                    onTogglePin={pins.toggle}
+                  />
+                )}
+              />
+            )}
+            {showTags && (
+              <TagCloud
+                tags={tags}
+                countOf={listCount}
+                onSelect={(tag) =>
+                  setSelectedFilter({ type: "tag", value: tag.name })
+                }
+              />
             )}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => (window.location.href = "/checklists")}
-              size="sm"
-              className="flex-1 sm:size-lg h-14 lg:h-9"
-            >
-              <span className="hidden sm:inline">
-                {t("checklists.allLists")}
-              </span>
-              <span className="sm:hidden">{t("common.all")}</span>
-            </Button>
-            <Button
-              onClick={() => onCreateModal()}
-              size="sm"
-              className="flex-1 sm:size-lg h-14 lg:h-9"
-            >
-              <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">
-                {t("checklists.newChecklist")}
-              </span>
-              <span className="sm:hidden">{t("common.new")}</span>
-            </Button>
-          </div>
-        </div>
+        )}
 
-        {selectedCategory && firstPage.length === 0 && isPending && (
+        {feed.isLoadingFirst && (
           <div className="flex items-center justify-center min-h-[240px]">
             <JottyIcon className="h-16 w-16 text-primary" animated={true} />
           </div>
         )}
 
-        {pinned.length > 0 && (
-          <div className="mb-8 lg:mb-12 overflow-hidden">
-            <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                {t("common.pinned")}
-              </h2>
-              <div className="flex-1 h-px bg-border"></div>
-            </div>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={pinned.map((list) => list.uuid)}
-                strategy={verticalListSortingStrategy}
+        <div className="space-y-10 lg:space-y-14">
+          {boards.length > 0 && (
+            <div>
+              <SectionHeading
+                title={
+                  selectedFilter ? t("kanban.title") : t("kanban.recentBoards")
+                }
               >
-                {viewMode === "card" && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {pinned.map((list) => (
-                      <ChecklistCard
-                        key={`pinned-${list.category}-${list.uuid}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={true}
-                        onTogglePin={handleTogglePin}
-                        isDraggable={true}
-                        sharer={getListSharer(list)}
-                      />
-                    ))}
-                  </div>
-                )}
+                <ViewModeSwitch />
+                <ShowAllButton
+                  href="/kanban"
+                  label={t("kanban.showAllBoards")}
+                />
+              </SectionHeading>
+              <ChecklistItems
+                lists={boards}
+                view={viewMode}
+                columns={BOARD_CARD_COLUMNS}
+                onSelect={onSelectChecklist}
+                isPinned={pins.isPinned}
+                onTogglePin={pins.toggle}
+              />
+            </div>
+          )}
 
-                {viewMode === "list" && (
-                  <div className="space-y-3">
-                    {pinned.map((list) => (
-                      <ChecklistListItem
-                        key={`pinned-${list.category}-${list.uuid}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={true}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                        isDraggable={true}
-                      />
-                    ))}
-                  </div>
-                )}
+          {simple.length > 0 && (
+            <div>
+              <SectionHeading
+                title={
+                  selectedFilter
+                    ? t("checklists.title")
+                    : t("checklists.recent")
+                }
+              >
+                {!boards.length && <ViewModeSwitch />}
+                <ShowAllButton href="/checklists" label={t("common.showAll")} />
+              </SectionHeading>
+              <ChecklistItems
+                lists={simple}
+                view={viewMode}
+                columns={LIST_CARD_COLUMNS}
+                onSelect={onSelectChecklist}
+                isPinned={pins.isPinned}
+                onTogglePin={pins.toggle}
+              />
+            </div>
+          )}
 
-                {viewMode === "grid" && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {pinned.map((list) => (
-                      <ChecklistGridItem
-                        key={`pinned-${list.category}-${list.uuid}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={true}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                        isDraggable={true}
-                      />
-                    ))}
-                  </div>
-                )}
-              </SortableContext>
-
-              <DragOverlay>
-                {activeList ? (
-                  <>
-                    {viewMode === "card" && (
-                      <ChecklistCard
-                        list={activeList}
-                        onSelect={() => {}}
-                        isPinned={true}
-                        isDraggable={false}
-                        sharer={getListSharer(activeList)}
-                        fixedWidth={draggedItemWidth || undefined}
-                      />
-                    )}
-                    {viewMode === "list" && (
-                      <ChecklistListItem
-                        list={activeList}
-                        onSelect={() => {}}
-                        isPinned={true}
-                        sharer={getListSharer(activeList)}
-                      />
-                    )}
-                    {viewMode === "grid" && (
-                      <ChecklistGridItem
-                        list={activeList}
-                        onSelect={() => {}}
-                        isPinned={true}
-                        sharer={getListSharer(activeList)}
-                      />
-                    )}
-                  </>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-          </div>
-        )}
-
-        {(selectedCategory
-          ? filteredTaskLists.length > 0 || filteredSimpleLists.length > 0
-          : recent.length > 0) && (
-          <div className="space-y-6 sm:space-y-8">
-            {filteredTaskLists.length > 0 && (
-              <div>
-                <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    {selectedCategory
-                      ? t("kanban.title")
-                      : t("kanban.recentBoards")}
-                  </h2>
-                  <div className="flex-1 h-px bg-border"></div>
-                  <Button
-                    variant="outline"
-                    onClick={() => (window.location.href = "/kanban")}
-                    size="sm"
-                    className="ml-2"
-                  >
-                    <span className="hidden sm:inline">
-                      {t("kanban.showAllBoards")}
-                    </span>
-                    <span className="sm:hidden">{t("common.all")}</span>
-                    <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
-                  </Button>
-                </div>
-                {viewMode === "card" && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredTaskLists.map((list) => (
-                      <ChecklistCard
-                        key={`task-${list.category}-${list.id}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={isListPinned(list)}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {viewMode === "list" && (
-                  <div className="space-y-3">
-                    {filteredTaskLists.map((list) => (
-                      <ChecklistListItem
-                        key={`task-${list.category}-${list.id}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={isListPinned(list)}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {viewMode === "grid" && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {filteredTaskLists.map((list) => (
-                      <ChecklistGridItem
-                        key={`task-${list.category}-${list.id}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={isListPinned(list)}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {filteredSimpleLists.length > 0 && (
-              <div>
-                <div className="flex items-center gap-3 mb-4 sm:mb-6">
-                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                    {selectedCategory
-                      ? t("checklists.title")
-                      : t("checklists.recent")}
-                  </h2>
-                  <div className="flex-1 h-px bg-border"></div>
-                  <Button
-                    variant="outline"
-                    onClick={() => (window.location.href = "/checklists")}
-                    size="sm"
-                    className="ml-2"
-                  >
-                    <span className="hidden sm:inline">
-                      {t("common.showAll")}
-                    </span>
-                    <span className="sm:hidden">{t("common.all")}</span>
-                    <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
-                  </Button>
-                </div>
-                {viewMode === "card" && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredSimpleLists.map((list) => (
-                      <ChecklistCard
-                        key={`simple-${list.category}-${list.id}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={isListPinned(list)}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {viewMode === "list" && (
-                  <div className="space-y-3">
-                    {filteredSimpleLists.map((list) => (
-                      <ChecklistListItem
-                        key={`simple-${list.category}-${list.id}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={isListPinned(list)}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {viewMode === "grid" && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {filteredSimpleLists.map((list) => (
-                      <ChecklistGridItem
-                        key={`simple-${list.category}-${list.id}`}
-                        list={list}
-                        onSelect={onSelectChecklist!}
-                        isPinned={isListPinned(list)}
-                        onTogglePin={handleTogglePin}
-                        sharer={getListSharer(list)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {selectedCategory && hasMore && (
-                  <div ref={sentinelRef} className="h-4 min-h-4" aria-hidden />
-                )}
-                {selectedCategory && isLoadingMore && (
-                  <div className="py-4 flex justify-center">
-                    <JottyIcon
-                      className="h-10 w-10 text-primary"
-                      animated={true}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+          {selectedFilter && feed.hasMore && (
+            <div ref={feed.sentinelRef} className="h-4 min-h-4" aria-hidden />
+          )}
+          {selectedFilter && feed.isLoadingMore && (
+            <div className="py-4 flex justify-center">
+              <JottyIcon className="h-10 w-10 text-primary" animated={true} />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

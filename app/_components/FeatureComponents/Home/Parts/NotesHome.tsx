@@ -1,395 +1,246 @@
 "use client";
 
-import {
-  Add01Icon,
-  File02Icon,
-  ArrowRight04Icon,
-  Cancel01Icon,
-} from "hugeicons-react";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Note, Category, SanitisedUser } from "@/app/_types";
-import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
-import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
-import Masonry from "react-masonry-css";
-import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { useNotesHome } from "@/app/_hooks/useNotesHome";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { Note, SanitisedUser, TagInfo } from "@/app/_types";
+import { ItemTypes } from "@/app/_types/enums";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { cn } from "@/app/_utils/global-utils";
+import { CreatePrefill } from "@/app/_providers/ShortcutsProvider";
 import { useSettings } from "@/app/_utils/settings-store";
-import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
-import { NoteGridItem } from "@/app/_components/GlobalComponents/Cards/NoteGridItem";
-import {
-  useMemo,
-  useState,
-  useEffect,
-  useTransition,
-  useCallback,
-} from "react";
 import { getNotesForDisplay } from "@/app/_server/actions/note";
-import { useInfiniteScroll } from "@/app/_hooks/useInfiniteScroll";
-import { FILTER_PAGE_SIZE } from "@/app/_consts/files";
+import { useFilteredFeed } from "@/app/_hooks/useFilteredFeed";
+import { usePins } from "@/app/_hooks/usePins";
+import { useGreeting } from "@/app/_hooks/useGreeting";
+import { useHomeWidgets } from "@/app/_hooks/useHomeWidgets";
+import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
+import { categoryLeaf } from "@/app/_utils/category-path-utils";
+import { NOTE_CARD_COLUMNS } from "@/app/_consts/masonry";
+import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
+import { NoteItems } from "@/app/_components/GlobalComponents/Cards/NoteItems";
+import { SectionHeading } from "@/app/_components/GlobalComponents/Layout/SectionHeading";
+import { ViewModeSwitch } from "@/app/_components/GlobalComponents/Buttons/ViewModeSwitch";
+import { ShowAllButton } from "@/app/_components/GlobalComponents/Buttons/ShowAllButton";
+import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
+import {
+  EmptyIllustration,
+  EmptyIllustrations,
+} from "@/app/_components/GlobalComponents/Cards/Parts/EmptyIllustration";
 import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
+import { HomeHero } from "./HomeHero";
+import { HomeFilterHero } from "./HomeFilterHero";
+import { QuickCapture } from "./QuickCapture";
+import { NotePickUp } from "./NotePickUp";
+import { Pinboard } from "./Pinboard";
+import {
+  PINNED_NOTES_GRID,
+  PINBOARD_BESIDE_TAGS_GRID,
+  PINBOARD_GRID,
+} from "@/app/_consts/pinboard";
+import { TagCloud } from "./TagCloud";
+
+const PROMPTS = "browse.notePrompts";
 
 interface NotesHomeProps {
   notes: Note[];
-  categories: Category[];
   user: SanitisedUser | null;
-  onCreateModal: () => void;
+  onCreate: (category?: string, prefill?: CreatePrefill) => void;
   onSelectNote: (note: Note) => void;
 }
 
 export const NotesHome = ({
-  notes: initialNotes,
-  categories,
+  notes,
   user,
-  onCreateModal,
+  onCreate,
   onSelectNote,
 }: NotesHomeProps) => {
   const t = useTranslations();
+  const compact = useCompactNumber();
+  const { viewMode } = useSettings();
   const {
-    userSharedItems,
     selectedFilter,
     setSelectedFilter,
     tagsIndex,
-    notes: allNotesMetadata,
+    tagsEnabled,
+    notes: allNotes,
   } = useAppMode();
-  const { viewMode } = useSettings();
-  const [isPending, startTransition] = useTransition();
-  const [firstPage, setFirstPage] = useState<Note[]>([]);
+  const { date, greeting } = useGreeting(user?.username);
+  const widgets = useHomeWidgets(user);
+  const feed = useFilteredFeed<Note>(selectedFilter, getNotesForDisplay);
+  const pins = usePins(notes, user?.pinnedNotes, ItemTypes.NOTE);
 
-  useEffect(() => {
-    if (!selectedFilter) {
-      setFirstPage([]);
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await getNotesForDisplay(
-        selectedFilter,
-        FILTER_PAGE_SIZE,
-        0,
-      );
-      if (result.success && result.data) {
-        setFirstPage(result.data as Note[]);
-      }
-    });
-  }, [selectedFilter]);
-
-  const fetchPage = useCallback(
-    (offset: number) =>
-      getNotesForDisplay(selectedFilter!, FILTER_PAGE_SIZE, offset).then(
-        (res) => ({
-          data: (res.success && res.data ? res.data : []) as Note[],
-        }),
-      ),
-    [selectedFilter],
+  const lastEdited = useMemo(
+    () =>
+      [...notes].sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )[0],
+    [notes],
   );
 
-  const {
-    items: infiniteItems,
-    sentinelRef,
-    isLoading: isLoadingMore,
-    hasMore,
-  } = useInfiniteScroll({
-    initialItems: firstPage,
-    fetchPage,
-    pageSize: FILTER_PAGE_SIZE,
-    resetKey: selectedFilter
-      ? `${selectedFilter.type}-${selectedFilter.value}`
-      : null,
-  });
+  const recent = useMemo(() => {
+    if (selectedFilter) return feed.items;
+    return notes
+      .filter((note) => !pins.isPinned(note) && note.uuid !== lastEdited?.uuid)
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      );
+  }, [selectedFilter, feed.items, notes, pins, lastEdited]);
 
-  const displayNotes = selectedFilter ? infiniteItems : initialNotes;
+  const tags = useMemo(() => Object.values(tagsIndex || {}), [tagsIndex]);
+  const noteCount = useCallback((tag: TagInfo) => tag.noteUuids.length, []);
+  const hasTags = tagsEnabled && tags.some((tag) => tag.noteUuids.length > 0);
 
-  const {
-    sensors,
-    handleDragStart,
-    handleDragEnd,
-    pinned,
-    recent,
-    breakpointColumnsObj,
-    handleTogglePin,
-    isNotePinned,
-    activeNote,
-    draggedItemWidth,
-  } = useNotesHome({ notes: displayNotes, categories, user });
+  const capture = (category?: string) => (title: string) =>
+    onCreate(category, title ? { title } : undefined);
 
-  const filteredRecent = useMemo(() => {
-    if (!selectedFilter) return recent;
-    return displayNotes.filter(
-      (note) => !pinned.some((p) => Boolean(p.uuid) && p.uuid === note.uuid),
-    );
-  }, [displayNotes, recent, selectedFilter, pinned]);
-
-  const filterDisplayName = useMemo(() => {
-    if (!selectedFilter) return null;
-    if (selectedFilter.type === "category") {
-      return selectedFilter.value.split("/").pop() || selectedFilter.value;
-    }
-    return tagsIndex[selectedFilter.value]?.displayName || selectedFilter.value;
-  }, [selectedFilter, tagsIndex]);
-
-  const getNoteSharer = (note: Note) => {
-    const sharedItem = userSharedItems?.notes?.find(
-      (item) => Boolean(item.uuid) && item.uuid === note.uuid,
-    );
-    return sharedItem?.sharer;
-  };
-
-  const hasAnyNotes = allNotesMetadata && allNotesMetadata.length > 0;
-
-  if (!hasAnyNotes) {
+  if (!allNotes?.length) {
     return (
       <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter bg-background h-full">
         <EmptyState
-          icon={<File02Icon className="h-10 w-10 text-muted-foreground" />}
+          illustration={
+            <EmptyIllustration variant={EmptyIllustrations.NOTES} />
+          }
           title={t("notes.noNotesYet")}
           description={t("notes.createFirstNote")}
           buttonText={t("notes.createNewNote")}
-          onButtonClick={() => onCreateModal()}
+          onButtonClick={() => onCreate()}
         />
       </div>
     );
   }
 
+  const encrypted = allNotes.filter((note) => note.encrypted).length;
+  const filterName =
+    selectedFilter?.type === "category"
+      ? categoryLeaf(selectedFilter.value, selectedFilter.value)
+      : selectedFilter?.value || "";
+  const showTags = widgets.tags && hasTags && !selectedFilter;
+  const showPins = pins.pinned.length > 0 && !selectedFilter;
+
   return (
     <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter bg-background h-full">
-      <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-8 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 lg:mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-foreground tracking-tight">
-              {selectedFilter ? filterDisplayName : t("notes.title")}
-            </h1>
-            {selectedFilter && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedFilter(null)}
-                className="mt-1"
-              >
-                <Cancel01Icon className="h-3 w-3" />
-              </Button>
+      <div className="max-w-full pt-6 pb-4 px-4 lg:pt-8 lg:pb-12 lg:px-8">
+        {selectedFilter ? (
+          <div className="mb-10 lg:mb-14">
+            <HomeFilterHero
+              filter={selectedFilter}
+              name={filterName}
+              promptsKey={PROMPTS}
+              createLabel={t("browse.newNoteIn", { name: filterName })}
+              onCapture={capture(selectedFilter.value)}
+              onClear={() => setSelectedFilter(null)}
+            />
+          </div>
+        ) : (
+          (widgets.welcome || (widgets.pickUp && lastEdited)) && (
+            <div
+              className={cn(
+                "grid gap-4 mb-10 lg:mb-14",
+                widgets.welcome &&
+                  widgets.pickUp &&
+                  lastEdited &&
+                  "xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]",
+              )}
+            >
+              {widgets.welcome && (
+                <HomeHero
+                  kicker={date}
+                  title={greeting}
+                  summary={t("browse.notesSummary", {
+                    notesCount: allNotes.length,
+                    notes: compact(allNotes.length),
+                    pinned: compact(pins.pinned.length),
+                    encrypted: compact(encrypted),
+                  })}
+                >
+                  <QuickCapture
+                    promptsKey={PROMPTS}
+                    buttonLabel={t("notes.newNote")}
+                    onCapture={capture()}
+                  />
+                </HomeHero>
+              )}
+              {widgets.pickUp && lastEdited && (
+                <NotePickUp
+                  note={lastEdited}
+                  onOpen={() => onSelectNote(lastEdited)}
+                />
+              )}
+            </div>
+          )
+        )}
+
+        {(showPins || showTags) && (
+          <div
+            className={
+              showPins && showTags && widgets.pinboard
+                ? "grid gap-4 mb-10 lg:mb-14 items-start xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]"
+                : "grid gap-4 mb-10 lg:mb-14 items-start"
+            }
+          >
+            {showPins && (
+              <Pinboard
+                items={pins.pinned}
+                isBoard={widgets.pinboard}
+                type={ItemTypes.NOTE}
+                gridClassName={
+                  !widgets.pinboard
+                    ? PINNED_NOTES_GRID
+                    : showTags
+                      ? PINBOARD_BESIDE_TAGS_GRID
+                      : PINBOARD_GRID
+                }
+                renderItem={(note, position) => (
+                  <NoteCard
+                    note={note}
+                    pinPosition={widgets.pinboard ? position : undefined}
+                    onSelect={onSelectNote}
+                    isPinned
+                    onTogglePin={pins.toggle}
+                  />
+                )}
+              />
+            )}
+            {showTags && (
+              <TagCloud
+                tags={tags}
+                countOf={noteCount}
+                onSelect={(tag) =>
+                  setSelectedFilter({ type: "tag", value: tag.name })
+                }
+              />
             )}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => (window.location.href = "/notes")}
-              size="sm"
-              className="flex-1 sm:size-lg h-14 lg:h-9"
-            >
-              <span className="hidden sm:inline">{t("notes.allNotes")}</span>
-              <span className="sm:hidden">All</span>
-            </Button>
-            <Button
-              onClick={() => onCreateModal()}
-              size="sm"
-              className="flex-1 sm:size-lg h-14 lg:h-9"
-            >
-              <Add01Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{t("notes.newNote")}</span>
-              <span className="sm:hidden">{t("common.new")}</span>
-            </Button>
-          </div>
-        </div>
+        )}
 
-        {selectedFilter && firstPage.length === 0 && isPending && (
+        {feed.isLoadingFirst && (
           <div className="flex items-center justify-center min-h-[240px]">
             <JottyIcon className="h-16 w-16 text-primary" animated={true} />
           </div>
         )}
 
-        {pinned.length > 0 && (
-          <div className="mb-8 lg:mb-12 overflow-hidden">
-            <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                {t("common.pinned")}
-              </h2>
-              <div className="flex-1 h-px bg-border"></div>
-            </div>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={pinned.map((note) => note.uuid)}
-                strategy={verticalListSortingStrategy}
-              >
-                {viewMode === "card" && (
-                  <Masonry
-                    breakpointCols={breakpointColumnsObj}
-                    className="flex w-auto -ml-6"
-                    columnClassName="pl-6 bg-clip-padding"
-                  >
-                    {pinned.map((note) => (
-                      <div
-                        key={`pinned-${note.category}-${note.uuid}`}
-                        className="mb-6"
-                      >
-                        <NoteCard
-                          note={note}
-                          onSelect={onSelectNote}
-                          isPinned={true}
-                          onTogglePin={handleTogglePin}
-                          isDraggable={true}
-                          sharer={getNoteSharer(note)}
-                        />
-                      </div>
-                    ))}
-                  </Masonry>
-                )}
-
-                {viewMode === "list" && (
-                  <div className="space-y-3">
-                    {pinned.map((note) => (
-                      <NoteListItem
-                        key={`pinned-${note.category}-${note.uuid}`}
-                        note={note}
-                        onSelect={onSelectNote}
-                        isPinned={true}
-                        onTogglePin={handleTogglePin}
-                        sharer={getNoteSharer(note)}
-                        isDraggable={true}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {viewMode === "grid" && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {pinned.map((note) => (
-                      <NoteGridItem
-                        key={`pinned-${note.category}-${note.uuid}`}
-                        note={note}
-                        onSelect={onSelectNote}
-                        isPinned={true}
-                        onTogglePin={handleTogglePin}
-                        sharer={getNoteSharer(note)}
-                        isDraggable={true}
-                      />
-                    ))}
-                  </div>
-                )}
-              </SortableContext>
-
-              <DragOverlay>
-                {activeNote ? (
-                  <>
-                    {viewMode === "card" && (
-                      <NoteCard
-                        note={activeNote}
-                        onSelect={() => {}}
-                        isPinned={true}
-                        isDraggable={false}
-                        sharer={getNoteSharer(activeNote)}
-                        fixedWidth={draggedItemWidth || undefined}
-                      />
-                    )}
-                    {viewMode === "list" && (
-                      <NoteListItem
-                        note={activeNote}
-                        onSelect={() => {}}
-                        isPinned={true}
-                        sharer={getNoteSharer(activeNote)}
-                      />
-                    )}
-                    {viewMode === "grid" && (
-                      <NoteGridItem
-                        note={activeNote}
-                        onSelect={() => {}}
-                        isPinned={true}
-                        sharer={getNoteSharer(activeNote)}
-                      />
-                    )}
-                  </>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
-          </div>
-        )}
-
-        {filteredRecent.length > 0 && (
+        {recent.length > 0 && (
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                {selectedFilter ? t("notes.title") : t("notes.recent")}
-              </h2>
-              <div className="flex-1 h-px bg-border"></div>
-              <Button
-                variant="outline"
-                onClick={() => (window.location.href = "/notes")}
-                size="sm"
-                className="ml-2"
-              >
-                <span className="hidden sm:inline">{t("common.showAll")}</span>
-                <span className="sm:hidden">{t("common.all")}</span>
-                <ArrowRight04Icon className="h-4 w-4 ml-1 sm:ml-2" />
-              </Button>
-            </div>
-
-            {viewMode === "card" && (
-              <Masonry
-                breakpointCols={breakpointColumnsObj}
-                className="flex w-auto -ml-6"
-                columnClassName="pl-6 bg-clip-padding"
-              >
-                {filteredRecent.map((note) => (
-                  <div
-                    key={`recent-${note.category}-${note.id}`}
-                    className="mb-6"
-                  >
-                    <NoteCard
-                      note={note}
-                      onSelect={onSelectNote}
-                      isPinned={isNotePinned(note)}
-                      onTogglePin={handleTogglePin}
-                      sharer={getNoteSharer(note)}
-                    />
-                  </div>
-                ))}
-              </Masonry>
+            <SectionHeading
+              title={selectedFilter ? t("notes.title") : t("notes.recent")}
+            >
+              <ViewModeSwitch />
+              <ShowAllButton href="/notes" label={t("common.showAll")} />
+            </SectionHeading>
+            <NoteItems
+              notes={recent}
+              view={viewMode}
+              columns={NOTE_CARD_COLUMNS}
+              onSelect={onSelectNote}
+              isPinned={pins.isPinned}
+              onTogglePin={pins.toggle}
+            />
+            {selectedFilter && feed.hasMore && (
+              <div ref={feed.sentinelRef} className="h-4 min-h-4" aria-hidden />
             )}
-
-            {viewMode === "list" && (
-              <div className="space-y-3">
-                {filteredRecent.map((note) => (
-                  <NoteListItem
-                    key={`recent-${note.category}-${note.id}`}
-                    note={note}
-                    onSelect={onSelectNote}
-                    isPinned={isNotePinned(note)}
-                    onTogglePin={handleTogglePin}
-                    sharer={getNoteSharer(note)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {viewMode === "grid" && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {filteredRecent.map((note) => (
-                  <NoteGridItem
-                    key={`recent-${note.category}-${note.id}`}
-                    note={note}
-                    onSelect={onSelectNote}
-                    isPinned={isNotePinned(note)}
-                    onTogglePin={handleTogglePin}
-                    sharer={getNoteSharer(note)}
-                  />
-                ))}
-              </div>
-            )}
-
-            {selectedFilter && hasMore && (
-              <div ref={sentinelRef} className="h-4 min-h-4" aria-hidden />
-            )}
-            {selectedFilter && isLoadingMore && (
+            {selectedFilter && feed.isLoadingMore && (
               <div className="py-4 flex justify-center">
                 <JottyIcon className="h-10 w-10 text-primary" animated={true} />
               </div>

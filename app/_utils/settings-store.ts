@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ViewMode } from "@/app/_consts/view-modes";
 
 type BuiltInTheme =
   | "system"
@@ -41,7 +42,7 @@ interface SettingsState {
   autosaveNotes: boolean;
   showMarkdownPreview: boolean;
   showCompletedSuggestions: boolean;
-  viewMode: 'card' | 'list' | 'grid';
+  viewMode: ViewMode;
   borderRadius: number | null;
   kanbanColumnWidth: number | null;
   setBorderRadius: (radius: number | null) => void;
@@ -52,7 +53,7 @@ interface SettingsState {
   setShowMarkdownPreview: (show: boolean) => void;
   setShowCompletedSuggestions: (show: boolean) => void;
   setCompactMode: (compact: boolean) => void;
-  setViewMode: (mode: 'card' | 'list' | 'grid') => void;
+  setViewMode: (mode: ViewMode) => void;
   getResolvedTheme: (
     isRwMarkable: boolean,
     userPreferredTheme?: string
