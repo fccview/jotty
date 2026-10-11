@@ -19,6 +19,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useReadingAnchor } from "@/app/_hooks/useReadingAnchor";
 import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
+import { cn } from "@/app/_utils/global-utils";
 
 interface NoteEditorContentProps {
   isEditorVisible: boolean;
@@ -142,7 +143,10 @@ export const NoteEditorContent = ({
   }
 
   return (
-    <div ref={rootRef} className="flex-1 min-h-full">
+    <div
+      ref={rootRef}
+      className={cn("flex-1 min-h-full", isEditorVisible && "flex flex-col")}
+    >
       {isEditorVisible ? (
         <TiptapEditor
           key={noteId}

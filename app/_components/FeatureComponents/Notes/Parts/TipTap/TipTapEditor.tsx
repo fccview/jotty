@@ -374,7 +374,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     );
 
     return (
-      <div className="flex flex-col h-full pb-0">
+      <div className="flex flex-col flex-1 h-full pb-0">
         {live && <LiveStatusBar live={live} />}
         <div
           className={`bg-background border-b border-border px-4 flex items-center justify-between sticky top-0 z-10`}
