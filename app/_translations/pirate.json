@@ -1370,7 +1370,18 @@
     "calloutSuccess": "Victory",
     "calloutDanger": "Danger",
     "ruler": "Ruler",
-    "lineNumbers": "Line numbers"
+    "lineNumbers": "Line numbers",
+    "inlineCode": "Inline code, arr",
+    "moreTools": "More riggin'",
+    "moreToolsCount": "More riggin' ({count} stowed in the hold)",
+    "diagramDarkMode": "Show it by moonlight",
+    "diagramLightMode": "Show it by daylight",
+    "diagramLoadFailed": "Arr, the chart-drawin' contraption won't come aboard. Check yer riggin' an' try again.",
+    "diagramSaveFailed": "Blimey, couldn't stow the chart. Yer scribblin' be still open.",
+    "diagramDataUnreadable": "This chart's markings be unreadable, so ye can't be changin' it here.",
+    "drawioEditor": "Draw.io chart table",
+    "diagramRichModeOnly": "Fancy sailin' only",
+    "diagramUnavailableInMarkdown": "Not fer markdown waters"
   },
   "sharing": {
     "share": "Divvy",

@@ -1370,7 +1370,18 @@
     "calloutSuccess": "Gelukt",
     "calloutDanger": "Gevaar",
     "ruler": "Liniaal",
-    "lineNumbers": "Lijnnummers"
+    "lineNumbers": "Lijnnummers",
+    "inlineCode": "Inline code",
+    "moreTools": "Meer gereedschap",
+    "moreToolsCount": "Meer gereedschap ({count} hier opgeborgen)",
+    "diagramDarkMode": "Weergeven in donkere modus",
+    "diagramLightMode": "Weergeven in lichte modus",
+    "diagramLoadFailed": "De diagrameditor kon niet worden geladen. Controleer je verbinding en probeer het opnieuw.",
+    "diagramSaveFailed": "Het diagram kon niet worden opgeslagen. Je tekening is nog open.",
+    "diagramDataUnreadable": "De gegevens van dit diagram konden niet worden gelezen, dus het kan hier niet worden bewerkt.",
+    "drawioEditor": "Draw.io-editor",
+    "diagramRichModeOnly": "Alleen in rich-modus",
+    "diagramUnavailableInMarkdown": "Niet beschikbaar in markdown-modus"
   },
   "sharing": {
     "share": "Delen",

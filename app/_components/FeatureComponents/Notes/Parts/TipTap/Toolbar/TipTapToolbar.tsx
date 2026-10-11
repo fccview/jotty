@@ -11,16 +11,21 @@ import {
   ViewOffSlashIcon,
   TextUnderlineIcon,
   Image02Icon,
+  TextIcon,
+  LeftToRightListBulletIcon,
+  GravityIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 import { ImageSizeModal } from "@/app/_components/GlobalComponents/Modals/ImageSizeModal";
-import { CodeBlockDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
-import { DiagramsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
-import { ListMenuDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ListMenuDropdown";
+import { CodeBlockDropdown, CodeBlockMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
+import { DiagramsDropdown, DiagramsMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
+import { ListMenu, ListMenuDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ListMenuDropdown";
 import { TableInsertModal } from "@/app/_components/FeatureComponents/Notes/Parts/Table/TableInsertModal";
-import { FontFamilyDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
-import { useState, useEffect } from "react";
+import { FontFamilyDropdown, FontFamilyMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/FontFamilyDropdown";
+import { OverflowToolbarRow } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/OverflowToolbarRow";
+import { ToolbarTool, toolbarSeparator } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/toolbarTools";
+import { ComponentType, useState, useEffect } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { ExtraItemsDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/ExtraItemsDropdown";
 import { PrismThemeDropdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/PrismThemeDropdown";
@@ -137,9 +142,6 @@ export const TiptapToolbar = ({
         isInOrderedList: markdownFormats.orderedList,
       }
     : listState;
-
-  const activeVariant = (rich: () => boolean, markdown: boolean) =>
-    (isMarkdownMode ? markdown : rich()) ? "secondary" : "ghost";
 
   const setLink = () => {
     if (isMarkdownMode) {
@@ -289,6 +291,164 @@ export const TiptapToolbar = ({
     }
   };
 
+  const isOn = (rich: () => boolean, markdown: boolean) =>
+    isMarkdownMode ? markdown : rich();
+
+  const buttonTool = (
+    key: string,
+    label: string,
+    hint: string,
+    Icon: ComponentType<{ className?: string }>,
+    isActive: boolean,
+    run: () => void
+  ): ToolbarTool => ({
+    key,
+    node: (
+      <Button
+        variant={isActive ? "secondary" : "ghost"}
+        size="sm"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={run}
+        title={hint}
+      >
+        <Icon className="h-4 w-4" />
+      </Button>
+    ),
+    overflow: { key, label, icon: <Icon className="h-4 w-4" />, isActive, onSelect: run },
+  });
+
+  const menuProps = { editor, isMarkdownMode, onMarkdownChange };
+
+  const tools: ToolbarTool[] = [
+    buttonTool(
+      "bold",
+      t("editor.bold"),
+      `${t("editor.toggleBold")} (${mod}+B)`,
+      TextBoldIcon,
+      isOn(() => editor.isActive("bold"), markdownFormats.bold),
+      () => handleDualModeButton(() => editor.chain().focus().toggleBold().run(), MarkdownUtils.insertBold)
+    ),
+    buttonTool(
+      "italic",
+      t("editor.italic"),
+      `${t("editor.toggleItalic")} (${mod}+I)`,
+      TextItalicIcon,
+      isOn(() => editor.isActive("italic"), markdownFormats.italic),
+      () => handleDualModeButton(() => editor.chain().focus().toggleItalic().run(), MarkdownUtils.insertItalic)
+    ),
+    buttonTool(
+      "underline",
+      t("editor.underline"),
+      `${t("editor.toggleUnderline")} (${mod}+U)`,
+      TextUnderlineIcon,
+      isOn(() => editor.isActive("underline"), markdownFormats.underline),
+      () => handleDualModeButton(() => editor.chain().focus().toggleUnderline().run(), MarkdownUtils.insertUnderline)
+    ),
+    buttonTool(
+      "strike",
+      t("editor.strikethrough"),
+      `${t("editor.toggleStrikethrough")} (${mod}+Shift+X)`,
+      TextStrikethroughIcon,
+      isOn(() => editor.isActive("strike"), markdownFormats.strike),
+      () => handleDualModeButton(() => editor.chain().focus().toggleStrike().run(), MarkdownUtils.insertStrikethrough)
+    ),
+    buttonTool(
+      "inlineCode",
+      t("editor.inlineCode"),
+      `${t("editor.toggleInlineCode")} (${mod}+E)`,
+      SourceCodeIcon,
+      isOn(() => editor.isActive("code"), markdownFormats.code),
+      () => handleDualModeButton(() => editor.chain().focus().toggleCode().run(), MarkdownUtils.insertInlineCode)
+    ),
+    ...(isMarkdownMode
+      ? []
+      : [
+          toolbarSeparator("fontStart"),
+          {
+            key: "font",
+            node: <FontFamilyDropdown editor={editor} />,
+            overflow: {
+              key: "font",
+              label: t("editor.fontFamily"),
+              icon: <TextIcon className="h-4 w-4" />,
+              menu: <FontFamilyMenu editor={editor} />,
+            },
+          },
+          toolbarSeparator("fontEnd"),
+        ]),
+    buttonTool(
+      "heading",
+      t("editor.heading2"),
+      `${t("editor.toggleHeading2")} (${mod}+${alt}+2)`,
+      Heading02Icon,
+      isOn(() => editor.isActive("heading", { level: 2 }), markdownFormats.heading === 2),
+      () =>
+        handleDualModeButton(
+          () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+          (textarea) => MarkdownUtils.insertHeading(textarea, 2)
+        )
+    ),
+    {
+      key: "lists",
+      node: <ListMenuDropdown {...menuProps} listState={toolbarListState} />,
+      overflow: {
+        key: "lists",
+        label: t("editor.listOptions"),
+        icon: <LeftToRightListBulletIcon className="h-4 w-4" />,
+        isActive: toolbarListState.isInList,
+        menu: <ListMenu {...menuProps} />,
+      },
+    },
+    buttonTool(
+      "quote",
+      t("editor.quote"),
+      `${t("editor.toggleBlockquote")} (${mod}+Shift+B)`,
+      QuoteUpIcon,
+      isOn(() => editor.isActive("blockquote"), markdownFormats.blockquote),
+      () => handleDualModeButton(() => editor.chain().focus().toggleBlockquote().run(), MarkdownUtils.insertBlockquote)
+    ),
+    buttonTool(
+      "link",
+      t("editor.link"),
+      `${t("editor.toggleLink")} (${mod}+Shift+K)`,
+      Attachment01Icon,
+      isOn(() => editor.isActive("link"), markdownFormats.link),
+      () => handleButtonClick(setLink)
+    ),
+    ...(isImageSelected && !isMarkdownMode
+      ? [
+          buttonTool("imageSize", t("editor.editImageSize"), t("editor.editImageSize"), Image02Icon, true, () => {
+            setSelectedImageUrl(selectedImageAttrs.src || "");
+            setSelectedImageWidth(selectedImageAttrs.width);
+            setSelectedImageHeight(selectedImageAttrs.height);
+            setShowImageSizeModal(true);
+          }),
+        ]
+      : []),
+    toolbarSeparator("blocksStart"),
+    {
+      key: "codeBlock",
+      node: <CodeBlockDropdown {...menuProps} />,
+      overflow: {
+        key: "codeBlock",
+        label: t("editor.codeBlock"),
+        icon: <SourceCodeIcon className="h-4 w-4" />,
+        isActive: editor.isActive("codeBlock"),
+        menu: <CodeBlockMenu {...menuProps} />,
+      },
+    },
+    {
+      key: "diagrams",
+      node: <DiagramsDropdown {...menuProps} />,
+      overflow: {
+        key: "diagrams",
+        label: t("editor.diagrams"),
+        icon: <GravityIcon className="h-4 w-4" />,
+        menu: <DiagramsMenu {...menuProps} />,
+      },
+    },
+  ];
+
   return (
     <>
       <div
@@ -316,7 +476,7 @@ export const TiptapToolbar = ({
             isMarkdownMode={isMarkdownMode}
             onToggle={toggleMode}
             shortcut={modeShortcut}
-            className="hidden lg:inline-flex"
+            className="hidden lg:inline-grid"
           />
         </div>
 
@@ -349,174 +509,25 @@ export const TiptapToolbar = ({
           />
         </QuickBarPortal>
 
-        <div
-          className={cn(
-            "flex flex-1 min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap md:flex-wrap md:whitespace-normal",
-            "hide-scrollbar scroll-fade-right"
-          )}
-        >
-          <Button
-            variant={activeVariant(() => editor.isActive("bold"), markdownFormats.bold)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleBold().run(),
-                MarkdownUtils.insertBold
-              )
-            }
-            title={`${t('editor.toggleBold')} (${mod}+B)`}
-          >
-            <TextBoldIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeVariant(() => editor.isActive("italic"), markdownFormats.italic)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleItalic().run(),
-                MarkdownUtils.insertItalic
-              )
-            }
-            title={`${t('editor.toggleItalic')} (${mod}+I)`}
-          >
-            <TextItalicIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeVariant(() => editor.isActive("underline"), markdownFormats.underline)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleUnderline().run(),
-                MarkdownUtils.insertUnderline
-              )
-            }
-            title={`${t('editor.toggleUnderline')} (${mod}+U)`}
-          >
-            <TextUnderlineIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeVariant(() => editor.isActive("strike"), markdownFormats.strike)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleStrike().run(),
-                MarkdownUtils.insertStrikethrough
-              )
-            }
-            title={`${t('editor.toggleStrikethrough')} (${mod}+Shift+X)`}
-          >
-            <TextStrikethroughIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeVariant(() => editor.isActive("code"), markdownFormats.code)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleCode().run(),
-                MarkdownUtils.insertInlineCode
-              )
-            }
-            title={`${t('editor.toggleInlineCode')} (${mod}+E)`}
-          >
-            <SourceCodeIcon className="h-4 w-4" />
-          </Button>
-          {!isMarkdownMode && (
-            <>
-              <div className="w-px h-6 bg-border mx-2" />
-              <FontFamilyDropdown editor={editor} />
-              <div className="w-px h-6 bg-border mx-2" />
-            </>
-          )}
-          <Button
-            variant={activeVariant(() => editor.isActive("heading", { level: 2 }), markdownFormats.heading === 2)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-                (textarea) => MarkdownUtils.insertHeading(textarea, 2)
-              )
-            }
-            title={`${t('editor.toggleHeading2')} (${mod}+${alt}+2)`}
-          >
-            <Heading02Icon className="h-4 w-4" />
-          </Button>
-          <ListMenuDropdown
-            editor={editor}
-            isMarkdownMode={isMarkdownMode}
-            onMarkdownChange={onMarkdownChange}
-            listState={toolbarListState}
-          />
-          <Button
-            variant={activeVariant(() => editor.isActive("blockquote"), markdownFormats.blockquote)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() =>
-              handleDualModeButton(
-                () => editor.chain().focus().toggleBlockquote().run(),
-                MarkdownUtils.insertBlockquote
-              )
-            }
-            title={`${t('editor.toggleBlockquote')} (${mod}+Shift+B)`}
-          >
-            <QuoteUpIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeVariant(() => editor.isActive("link"), markdownFormats.link)}
-            size="sm"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => handleButtonClick(setLink)}
-            title={`${t('editor.toggleLink')} (${mod}+Shift+K)`}
-          >
-            <Attachment01Icon className="h-4 w-4" />
-          </Button>
-          {isImageSelected && !isMarkdownMode && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                setSelectedImageUrl(selectedImageAttrs.src || "");
-                setSelectedImageWidth(selectedImageAttrs.width);
-                setSelectedImageHeight(selectedImageAttrs.height);
+        <OverflowToolbarRow
+          tools={tools}
+          renderMore={(hidden) => (
+            <ExtraItemsDropdown
+              editor={editor}
+              isMarkdownMode={isMarkdownMode}
+              onMarkdownChange={onMarkdownChange}
+              onFileModalOpen={() => setShowFileModal(true)}
+              onTableModalOpen={() => setShowTableModal(true)}
+              onImageSizeModalOpen={(url) => {
+                setSelectedImageUrl(url);
+                setSelectedImageWidth(undefined);
+                setSelectedImageHeight(undefined);
                 setShowImageSizeModal(true);
               }}
-              title={t('editor.editImageSize')}
-            >
-              <Image02Icon className="h-4 w-4" />
-            </Button>
+              overflowTools={hidden}
+            />
           )}
-          <div className="w-px h-6 bg-border mx-2" />
-          <CodeBlockDropdown
-            editor={editor}
-            isMarkdownMode={isMarkdownMode}
-            onMarkdownChange={onMarkdownChange}
-          />
-          <DiagramsDropdown
-            editor={editor}
-            isMarkdownMode={isMarkdownMode}
-            onMarkdownChange={onMarkdownChange}
-          />
-          <div className="w-px h-6 bg-border mx-2" />
-          <ExtraItemsDropdown
-            editor={editor}
-            isMarkdownMode={isMarkdownMode}
-            onMarkdownChange={onMarkdownChange}
-            onFileModalOpen={() => setShowFileModal(true)}
-            onTableModalOpen={() => setShowTableModal(true)}
-            onImageSizeModalOpen={(url) => {
-              setSelectedImageUrl(url);
-              setSelectedImageWidth(undefined);
-              setSelectedImageHeight(undefined);
-              setShowImageSizeModal(true);
-            }}
-          />
-        </div>
+        />
       </div>
 
       <FileModal

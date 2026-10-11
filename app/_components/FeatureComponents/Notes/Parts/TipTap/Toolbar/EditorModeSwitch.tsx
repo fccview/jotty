@@ -1,7 +1,5 @@
 "use client";
 
-import { ComponentType } from "react";
-import { File02Icon, Tv02Icon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/app/_utils/global-utils";
 
@@ -20,7 +18,8 @@ interface EditorModeSwitchProps {
 
 interface ModeOption {
   mode: EditorModes;
-  icon: ComponentType<{ className?: string }>;
+  glyph: string;
+  glyphClassName: string;
   labelKey: string;
   switchKey: string;
 }
@@ -28,13 +27,15 @@ interface ModeOption {
 const modeOptions: ModeOption[] = [
   {
     mode: EditorModes.RICH,
-    icon: Tv02Icon,
+    glyph: "Aa",
+    glyphClassName: "font-serif italic",
     labelKey: "editor.richEditor",
     switchKey: "editor.switchToRichEditor",
   },
   {
     mode: EditorModes.MARKDOWN,
-    icon: File02Icon,
+    glyph: "#",
+    glyphClassName: "font-mono font-bold",
     labelKey: "editor.markdown",
     switchKey: "editor.switchToMarkdown",
   },
@@ -55,11 +56,19 @@ export const EditorModeSwitch = ({
       role="radiogroup"
       aria-label={t("editor.editorMode")}
       className={cn(
-        "jotty-editor-mode-switch inline-flex flex-shrink-0 items-center gap-0.5 rounded-jotty border border-border bg-muted/60 p-0.5",
+        "jotty-editor-mode-switch relative inline-grid flex-shrink-0 grid-cols-2 items-center gap-0.5 rounded-jotty border border-border bg-muted/60 p-0.5",
         className
       )}
     >
-      {modeOptions.map(({ mode, icon: Icon, labelKey, switchKey }) => {
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute inset-y-0.5 left-0.5 w-[calc(50%-0.1875rem)] rounded-jotty bg-primary shadow-sm",
+          "transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:transition-none",
+          isMarkdownMode && "translate-x-[calc(100%+0.125rem)]"
+        )}
+      />
+      {modeOptions.map(({ mode, glyph, glyphClassName, labelKey, switchKey }) => {
         const isActive = mode === current;
         const label = t(labelKey);
         const hint = isActive
@@ -77,16 +86,16 @@ export const EditorModeSwitch = ({
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => !isActive && onToggle()}
             className={cn(
-              "inline-flex items-center justify-center gap-1.5 rounded-jotty font-medium transition-colors",
+              "relative z-10 inline-flex items-center justify-center rounded-jotty text-sm transition-colors duration-200",
+              glyphClassName,
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              compact ? "h-9 w-10" : "h-8 px-2.5 text-sm",
+              compact ? "h-8 w-9" : "h-7 w-8",
               isActive
-                ? "bg-background text-foreground shadow-sm cursor-default"
+                ? "text-primary-foreground cursor-default"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Icon className={compact ? "h-5 w-5" : "h-4 w-4"} />
-            {!compact && <span>{label}</span>}
+            <span aria-hidden="true">{glyph}</span>
           </button>
         );
       })}

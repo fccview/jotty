@@ -1370,7 +1370,18 @@
     "calloutSuccess": "성공",
     "calloutDanger": "위험",
     "ruler": "자",
-    "lineNumbers": "줄 번호"
+    "lineNumbers": "줄 번호",
+    "inlineCode": "인라인 코드",
+    "moreTools": "도구 더 보기",
+    "moreToolsCount": "도구 더 보기 (여기에 {count}개 보관됨)",
+    "diagramDarkMode": "다크 모드로 보기",
+    "diagramLightMode": "라이트 모드로 보기",
+    "diagramLoadFailed": "다이어그램 편집기를 불러올 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+    "diagramSaveFailed": "다이어그램을 저장할 수 없습니다. 그림은 아직 열려 있습니다.",
+    "diagramDataUnreadable": "이 다이어그램의 데이터를 읽을 수 없어 여기서 편집할 수 없습니다.",
+    "drawioEditor": "Draw.io 편집기",
+    "diagramRichModeOnly": "리치 모드 전용",
+    "diagramUnavailableInMarkdown": "마크다운 모드에서는 사용할 수 없음"
   },
   "sharing": {
     "share": "공유",

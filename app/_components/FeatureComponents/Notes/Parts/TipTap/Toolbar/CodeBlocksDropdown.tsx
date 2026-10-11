@@ -15,7 +15,7 @@ interface CodeBlockDropdownProps {
   onMarkdownChange?: (content: string) => void;
 }
 
-export const CodeBlockDropdown = ({
+export const CodeBlockMenu = ({
   editor,
   isMarkdownMode = false,
   onMarkdownChange,
@@ -47,23 +47,8 @@ export const CodeBlockDropdown = ({
     setSearchTerm("");
   };
 
-  const isCodeBlockActive = editor && editor.isActive("codeBlock");
-
-  const trigger = (
-    <Button
-      variant={isCodeBlockActive ? "secondary" : "ghost"}
-      size="sm"
-      onMouseDown={(e) => e.preventDefault()}
-      className="flex items-center gap-1"
-      title={t("editor.code")}
-    >
-      <SourceCodeIcon className="h-4 w-4" />
-      <ArrowDown01Icon className="h-3 w-3" />
-    </Button>
-  );
-
   return (
-    <ToolbarDropdown trigger={trigger} direction="right">
+    <>
       <div className="p-2 border-b border-border">
         <div className="relative">
           <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -99,6 +84,33 @@ export const CodeBlockDropdown = ({
           </div>
         )}
       </div>
+    </>
+  );
+};
+
+export const CodeBlockDropdown = (props: CodeBlockDropdownProps) => {
+  const t = useTranslations();
+  const { editor } = props;
+  if (!editor) return null;
+
+  const isCodeBlockActive = editor && editor.isActive("codeBlock");
+
+  const trigger = (
+    <Button
+      variant={isCodeBlockActive ? "secondary" : "ghost"}
+      size="sm"
+      onMouseDown={(e) => e.preventDefault()}
+      className="flex items-center gap-1"
+      title={t("editor.code")}
+    >
+      <SourceCodeIcon className="h-4 w-4" />
+      <ArrowDown01Icon className="h-3 w-3" />
+    </Button>
+  );
+
+  return (
+    <ToolbarDropdown trigger={trigger} direction="right">
+      <CodeBlockMenu {...props} />
     </ToolbarDropdown>
   );
 };

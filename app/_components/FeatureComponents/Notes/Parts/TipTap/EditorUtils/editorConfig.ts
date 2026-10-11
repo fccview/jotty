@@ -33,6 +33,7 @@ import { TagLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/
 import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
+import { DEFAULT_DRAWIO_URL } from "@/app/_consts/diagrams";
 import { CalloutExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
 import { RawBlockExtension, RawInlineExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/RawMarkdownExtension";
 import { AtomGuard } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtomGuard";
@@ -204,7 +205,7 @@ export const createEditorExtensions = (
     }),
     MermaidExtension,
     DrawioExtension.configure({
-      drawioUrl: settings.drawioUrl || "https://embed.diagrams.net",
+      drawioUrl: settings.drawioUrl || DEFAULT_DRAWIO_URL,
       drawioProxyEnabled: settings.drawioProxyEnabled || false,
     }),
     ExcalidrawExtension,

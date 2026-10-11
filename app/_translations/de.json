@@ -1370,7 +1370,18 @@
     "calloutSuccess": "Erfolg",
     "calloutDanger": "Gefahr",
     "ruler": "Lineal",
-    "lineNumbers": "Zeilennummern"
+    "lineNumbers": "Zeilennummern",
+    "inlineCode": "Inline-Code",
+    "moreTools": "Weitere Werkzeuge",
+    "moreToolsCount": "Weitere Werkzeuge ({count} hier versteckt)",
+    "diagramDarkMode": "Im dunklen Modus anzeigen",
+    "diagramLightMode": "Im hellen Modus anzeigen",
+    "diagramLoadFailed": "Der Diagramm-Editor konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
+    "diagramSaveFailed": "Das Diagramm konnte nicht gespeichert werden. Deine Zeichnung ist noch geöffnet.",
+    "diagramDataUnreadable": "Die Daten dieses Diagramms konnten nicht gelesen werden, daher kann es hier nicht bearbeitet werden.",
+    "drawioEditor": "Draw.io-Editor",
+    "diagramRichModeOnly": "Nur im Rich-Modus",
+    "diagramUnavailableInMarkdown": "Im Markdown-Modus nicht verfügbar"
   },
   "sharing": {
     "share": "Freigeben",

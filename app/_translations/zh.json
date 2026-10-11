@@ -1370,7 +1370,18 @@
     "calloutSuccess": "成功",
     "calloutDanger": "危险",
     "ruler": "统治者",
-    "lineNumbers": "行号"
+    "lineNumbers": "行号",
+    "inlineCode": "行内代码",
+    "moreTools": "更多工具",
+    "moreToolsCount": "更多工具（这里收着 {count} 个）",
+    "diagramDarkMode": "以深色模式显示",
+    "diagramLightMode": "以浅色模式显示",
+    "diagramLoadFailed": "无法加载图表编辑器。请检查网络连接后重试。",
+    "diagramSaveFailed": "无法保存图表。你的绘图仍处于打开状态。",
+    "diagramDataUnreadable": "无法读取此图表的数据，因此无法在此编辑。",
+    "drawioEditor": "Draw.io 编辑器",
+    "diagramRichModeOnly": "仅限富文本模式",
+    "diagramUnavailableInMarkdown": "Markdown 模式下不可用"
   },
   "sharing": {
     "share": "共享",

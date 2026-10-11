@@ -20,7 +20,7 @@ export const mermaidRule: HastRule = {
     node.tagName = "div";
     node.properties = {
       "data-mermaid": "",
-      "data-mermaid-content": content.replace(/\n$/, ""),
+      "data-mermaid-content": content,
     };
     node.children = [{ type: "text", value: "[Mermaid Diagram]" }];
   },

@@ -1357,6 +1357,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Edit diagram",
     "deleteDiagram": "Delete diagram",
+    "diagramDarkMode": "Show in dark mode",
+    "diagramLightMode": "Show in light mode",
+    "diagramLoadFailed": "Couldn't load the diagram editor. Check your connection and try again.",
+    "diagramSaveFailed": "Couldn't save the diagram. Your drawing is still open.",
+    "diagramDataUnreadable": "This diagram's data couldn't be read, so it can't be edited here.",
+    "drawioEditor": "Draw.io editor",
+    "diagramRichModeOnly": "Rich mode only",
+    "diagramUnavailableInMarkdown": "Not available in markdown mode",
     "enterMermaidCode": "Enter Mermaid diagram code...",
     "widthPx": "Width (px)",
     "heightPx": "Height (px)",
@@ -1387,7 +1395,10 @@
     "calloutSuccess": "Success",
     "calloutDanger": "Danger",
     "ruler": "Ruler",
-    "lineNumbers": "Line numbers"
+    "lineNumbers": "Line numbers",
+    "inlineCode": "Inline code",
+    "moreTools": "More tools",
+    "moreToolsCount": "More tools ({count} tucked in here)"
   },
   "sharing": {
     "share": "Share",

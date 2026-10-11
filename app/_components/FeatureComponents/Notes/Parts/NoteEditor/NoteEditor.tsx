@@ -5,7 +5,7 @@ import { UnsavedChangesModal } from "@/app/_components/GlobalComponents/Modals/C
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { NoteEditorHeader } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorHeader";
 import { NoteEditorContent } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorContent";
-import { useLayoutEffect, useRef, type SyntheticEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, type SyntheticEvent } from "react";
 import { TableOfContents } from "../TableOfContents";
 import { useSearchParams } from "next/navigation";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
@@ -24,6 +24,8 @@ export interface NoteEditorProps {
 const NOTE_BODY = ".ProseMirror, .prose";
 const BLANK_TEXT = /[\s\u200b]/g;
 const SCROLL_EVENT = "scroll";
+const SETTLING_EVENTS = new Set([SCROLL_EVENT, "wheel"]);
+const SCROLL_SETTLE_MS = 120;
 const SNAP_X = 8;
 const SNAP_Y = 20;
 
@@ -58,9 +60,9 @@ export const NoteEditor = ({
   const restoring = useRef(false);
   const position = useRef<{ offset: number; y: number } | null>(null);
 
-  const remember = ({ type }: SyntheticEvent) => {
-    if (type !== SCROLL_EVENT) restoring.current = false;
-    if (restoring.current) return;
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const measure = () => {
     const pane = contentRef.current;
     const body = pane?.querySelector(NOTE_BODY);
     if (!body || !pane) return;
@@ -79,6 +81,24 @@ export const NoteEditor = ({
     const bounds = caret?.getClientRect() ?? hit?.getBoundingClientRect();
     if (bounds?.height) position.current = { offset, y: bounds.top };
   };
+
+  const remember = ({ type }: SyntheticEvent) => {
+    if (type !== SCROLL_EVENT) restoring.current = false;
+    if (restoring.current) return;
+    if (settleTimer.current) clearTimeout(settleTimer.current);
+    if (SETTLING_EVENTS.has(type)) {
+      settleTimer.current = setTimeout(measure, SCROLL_SETTLE_MS);
+      return;
+    }
+    measure();
+  };
+
+  useEffect(
+    () => () => {
+      if (settleTimer.current) clearTimeout(settleTimer.current);
+    },
+    []
+  );
 
   useLayoutEffect(() => {
     const pane = contentRef.current;

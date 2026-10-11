@@ -1370,7 +1370,18 @@
     "calloutSuccess": "Sukces",
     "calloutDanger": "Zagrożenie",
     "ruler": "Linijka",
-    "lineNumbers": "Numery linii"
+    "lineNumbers": "Numery linii",
+    "inlineCode": "Kod w linii",
+    "moreTools": "Więcej narzędzi",
+    "moreToolsCount": "Więcej narzędzi (schowanych tutaj: {count})",
+    "diagramDarkMode": "Pokaż w trybie ciemnym",
+    "diagramLightMode": "Pokaż w trybie jasnym",
+    "diagramLoadFailed": "Nie udało się wczytać edytora diagramów. Sprawdź połączenie i spróbuj ponownie.",
+    "diagramSaveFailed": "Nie udało się zapisać diagramu. Twój rysunek jest nadal otwarty.",
+    "diagramDataUnreadable": "Nie udało się odczytać danych tego diagramu, więc nie można go tutaj edytować.",
+    "drawioEditor": "Edytor Draw.io",
+    "diagramRichModeOnly": "Tylko w trybie rozszerzonym",
+    "diagramUnavailableInMarkdown": "Niedostępne w trybie markdown"
   },
   "sharing": {
     "share": "Udostępnij",

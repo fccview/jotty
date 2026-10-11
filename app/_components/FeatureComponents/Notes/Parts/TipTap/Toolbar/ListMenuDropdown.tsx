@@ -13,10 +13,13 @@ import { ToolbarDropdown } from "./ToolbarDropdown";
 import { useTranslations } from "next-intl";
 import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
 
-interface ListMenuDropdownProps {
+interface ListMenuProps {
   editor: Editor | null;
   isMarkdownMode: boolean;
   onMarkdownChange?: (content: string) => void;
+}
+
+interface ListMenuDropdownProps extends ListMenuProps {
   listState: {
     isInList: boolean;
     isNested: boolean;
@@ -26,12 +29,11 @@ interface ListMenuDropdownProps {
   };
 }
 
-export const ListMenuDropdown = ({
+export const ListMenu = ({
   editor,
   isMarkdownMode,
   onMarkdownChange,
-  listState,
-}: ListMenuDropdownProps) => {
+}: ListMenuProps) => {
   const t = useTranslations();
 
   const canSink = useEditorState({
@@ -108,6 +110,52 @@ export const ListMenuDropdown = ({
     editor.chain().focus().liftListItem("listItem").run();
   };
 
+  return (
+    <div className="py-1">
+      <button
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={handleBulletList}
+      >
+        <LeftToRightListBulletIcon className="h-4 w-4 shrink-0" />
+        <span>{t("editor.toggleBulletList")}</span>
+      </button>
+      <button
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={handleOrderedList}
+      >
+        <LeftToRightListNumberIcon className="h-4 w-4 shrink-0" />
+        <span>{t("editor.toggleOrderedList")}</span>
+      </button>
+      <div className="my-1 border-t border-border" />
+      <button
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={handleIndent}
+        disabled={!isMarkdownMode && !canSink}
+      >
+        <TextIndentMoreIcon className="h-4 w-4 shrink-0" />
+        <span>{t("editor.indentListItem")}</span>
+      </button>
+      <button
+        className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={handleOutdent}
+        disabled={!isMarkdownMode && !canLift}
+      >
+        <TextIndentLessIcon className="h-4 w-4 shrink-0" />
+        <span>{t("editor.outdentListItem")}</span>
+      </button>
+    </div>
+  );
+};
+
+export const ListMenuDropdown = ({
+  listState,
+  ...menuProps
+}: ListMenuDropdownProps) => {
+  const t = useTranslations();
   const isActive = listState.isInList;
 
   const trigger = (
@@ -125,43 +173,7 @@ export const ListMenuDropdown = ({
 
   return (
     <ToolbarDropdown trigger={trigger}>
-      <div className="py-1">
-        <button
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleBulletList}
-        >
-          <LeftToRightListBulletIcon className="h-4 w-4 shrink-0" />
-          <span>{t("editor.toggleBulletList")}</span>
-        </button>
-        <button
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleOrderedList}
-        >
-          <LeftToRightListNumberIcon className="h-4 w-4 shrink-0" />
-          <span>{t("editor.toggleOrderedList")}</span>
-        </button>
-        <div className="my-1 border-t border-border" />
-        <button
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleIndent}
-          disabled={!isMarkdownMode && !canSink}
-        >
-          <TextIndentMoreIcon className="h-4 w-4 shrink-0" />
-          <span>{t("editor.indentListItem")}</span>
-        </button>
-        <button
-          className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-accent text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={handleOutdent}
-          disabled={!isMarkdownMode && !canLift}
-        >
-          <TextIndentLessIcon className="h-4 w-4 shrink-0" />
-          <span>{t("editor.outdentListItem")}</span>
-        </button>
-      </div>
+      <ListMenu {...menuProps} />
     </ToolbarDropdown>
   );
 };

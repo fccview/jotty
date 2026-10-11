@@ -31,7 +31,9 @@ import { remarkWikilinks, WIKILINK_TAG } from "@/app/_utils/wikilink-utils";
 import { WikiLink } from "./WikiLink";
 import { matchCallout } from "@/app/_utils/callout-utils";
 import { CalloutType } from "@/app/_consts/callouts";
-import { base64ToSvg, base64ToText } from "@/app/_utils/base64-utils";
+import { DiagramKind, DiagramTheme } from "@/app/_utils/markdown/diagram-comment";
+import { diagramProps } from "@/app/_utils/diagram-props-utils";
+import { rehypeDiagrams } from "@/app/_utils/markdown/rehype-diagrams";
 import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
 import { BOUNCED_ELEMENTS } from "@/app/_consts/notes";
 import { tagOutsideCode } from "@/app/_utils/markdown-utils";
@@ -104,45 +106,7 @@ export const UnifiedMarkdownRenderer = ({
       : CodeBlockRenderer;
   const { contentWithoutMetadata } = extractYamlMetadata(content);
 
-  let processedContent = contentWithoutMetadata.replace(
-    /<!--\s*drawio-diagram\s+data:\s*([^\n]+)\s+svg:\s*([^\n]+)(?:\s+theme:\s*([^\n]+))?\s*-->/g,
-    (match, dataBase64, svgBase64, theme) => {
-      try {
-        const diagramData = base64ToText(dataBase64.trim());
-        const themeMode = theme ? theme.trim() : "light";
-        return `<div data-drawio="" data-drawio-data="${diagramData.replace(
-          /"/g,
-          "&quot;",
-        )}" data-drawio-svg="${svgBase64.trim()}" data-drawio-theme="${themeMode}">[Draw.io Diagram]</div>`;
-      } catch (e) {
-        console.error("Failed to decode drawio diagram:", e);
-        return match;
-      }
-    },
-  );
-
-  processedContent = processedContent.replace(
-    /<!--\s*excalidraw-diagram\s+data:\s*([^\n]+)(?:\s+svg:\s*([^\n]+))?(?:\s+theme:\s*([^\n]+))?\s*-->/g,
-    (match, dataBase64, svgBase64, theme) => {
-      try {
-        const diagramData = base64ToText(dataBase64.trim());
-        const svgData = svgBase64 ? base64ToText(svgBase64.trim()) : "";
-        const themeMode = theme ? theme.trim() : "light";
-        return `<div data-excalidraw="" data-excalidraw-data="${diagramData.replace(
-          /"/g,
-          "&quot;",
-        )}" data-excalidraw-svg="${svgData.replace(
-          /"/g,
-          "&quot;",
-        )}" data-excalidraw-theme="${themeMode}">[Excalidraw Diagram]</div>`;
-      } catch (e) {
-        console.error("Failed to decode excalidraw diagram:", e);
-        return match;
-      }
-    },
-  );
-
-  processedContent = tagOutsideCode(processedContent);
+  const processedContent = tagOutsideCode(contentWithoutMetadata);
 
   useEffect(() => {
     setIsClient(true);
@@ -448,62 +412,14 @@ export const UnifiedMarkdownRenderer = ({
       );
     },
     div({ node, ...props }: any) {
-      const isDrawio =
-        props["data-drawio"] !== undefined ||
-        props.dataDrawio !== undefined ||
-        (node &&
-          node.properties &&
-          node.properties["data-drawio"] !== undefined);
-
-      if (isDrawio) {
-        const rawSvgData =
-          props["data-drawio-svg"] ||
-          props.dataDrawioSvg ||
-          node?.properties?.["data-drawio-svg"];
-        let decodedSvgData = rawSvgData;
-        try {
-          if (rawSvgData && !rawSvgData.trim().startsWith("<")) {
-            decodedSvgData = base64ToSvg(rawSvgData);
-          }
-        } catch (e) {
-          console.error("Failed to decode drawio preview:", e);
-        }
-        const themeMode = forceLightMode
-          ? "light"
-          : props["data-drawio-theme"] ||
-            props.dataDrawioTheme ||
-            node?.properties?.["data-drawio-theme"] ||
-            "light";
-        return (
-          <DrawioRenderer svgData={decodedSvgData} themeMode={themeMode} />
-        );
-      }
-
-      const isExcalidraw =
-        props["data-excalidraw"] !== undefined ||
-        props.dataExcalidraw !== undefined ||
-        (node &&
-          node.properties &&
-          node.properties["data-excalidraw"] !== undefined);
-
-      if (isExcalidraw) {
-        const excalidrawSvgData =
-          props["data-excalidraw-svg"] ||
-          props.dataExcalidrawSvg ||
-          node?.properties?.["data-excalidraw-svg"] ||
-          "";
-        const themeMode = forceLightMode
-          ? "light"
-          : props["data-excalidraw-theme"] ||
-            props.dataExcalidrawTheme ||
-            node?.properties?.["data-excalidraw-theme"] ||
-            "light";
-
-        return (
-          <ExcalidrawRenderer
-            svgData={excalidrawSvgData}
-            themeMode={themeMode}
-          />
+      const diagram = diagramProps(props, node);
+      if (diagram) {
+        if (!diagram.svg && !diagram.data) return null;
+        const themeMode = forceLightMode ? DiagramTheme.Light : diagram.theme;
+        return diagram.kind === DiagramKind.Drawio ? (
+          <DrawioRenderer svgData={diagram.svg} themeMode={themeMode} />
+        ) : (
+          <ExcalidrawRenderer svgData={diagram.svg} themeMode={themeMode} />
         );
       }
 
@@ -580,7 +496,7 @@ export const UnifiedMarkdownRenderer = ({
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkWikilinks]}
-          rehypePlugins={[rehypeSlug, rehypeRaw, rehypeTableWhitespace]}
+          rehypePlugins={[rehypeSlug, rehypeRaw, rehypeDiagrams, rehypeTableWhitespace]}
           components={components}
           urlTransform={noteUrlTransform}
           disallowedElements={BOUNCED_ELEMENTS}

@@ -1,5 +1,5 @@
 import { MERMAID_LANGUAGE, PLAIN_CODE_LANGUAGE } from "@/app/_utils/markdown/consts";
-import { utf8ToBase64 } from "@/app/_utils/base64-utils";
+import { DiagramKind, writeDiagramComment } from "@/app/_utils/markdown/diagram-comment";
 import { NodeName, type BlockWriter, type NodeJson } from "./types";
 
 const textContent = (node: NodeJson): string =>
@@ -18,16 +18,12 @@ export const codeBlock: BlockWriter = (node) => {
 
 export const mermaid: BlockWriter = (node) => fence(String(node.attrs?.content || ""), MERMAID_LANGUAGE);
 
-const diagram = (marker: string): BlockWriter => (node) => {
-  const data = utf8ToBase64(String(node.attrs?.diagramData || ""));
-  const svg = utf8ToBase64(String(node.attrs?.svgData || ""));
-  const theme = node.attrs?.themeMode || "light";
-  return `<!-- ${marker}\ndata: ${data}\nsvg: ${svg}\ntheme: ${theme}\n-->`;
-};
+const diagram = (kind: DiagramKind): BlockWriter => (node) =>
+  writeDiagramComment(kind, node.attrs || {});
 
 export const CODE_BLOCKS = {
   [NodeName.CodeBlock]: codeBlock,
   [NodeName.Mermaid]: mermaid,
-  [NodeName.Drawio]: diagram("drawio-diagram"),
-  [NodeName.Excalidraw]: diagram("excalidraw-diagram"),
+  [NodeName.Drawio]: diagram(DiagramKind.Drawio),
+  [NodeName.Excalidraw]: diagram(DiagramKind.Excalidraw),
 };

@@ -1,4 +1,5 @@
 import { Extension } from "@tiptap/core";
+import { DEFAULT_MERMAID_DIAGRAM } from "@/app/_consts/diagrams";
 import Suggestion from "@tiptap/suggestion";
 import {
   Heading01Icon,
@@ -168,18 +169,7 @@ const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
     description: t("editor.createMermaidDiagram"),
     icon: <SharedWifiIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
-      const defaultMermaid = `graph TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Option 1]
-    B -->|No| D[Option 2]
-    C --> E[End]
-    D --> E`;
-      editor
-        .chain()
-        .focus()
-        .deleteRange(range)
-        .setMermaid(defaultMermaid)
-        .run();
+      editor.chain().focus().deleteRange(range).setMermaid(DEFAULT_MERMAID_DIAGRAM).run();
     },
   },
   {

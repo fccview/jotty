@@ -10,6 +10,10 @@ import {
   SPAN_STYLES,
   VOID_INLINE_TAGS,
 } from "@/app/_utils/markdown/consts";
+import { isReadableDiagramBlock, startsDiagramComment } from "@/app/_utils/markdown/diagram-comment";
+
+const isKnownBlock = (html: string) =>
+  startsDiagramComment(html) ? isReadableDiagramBlock(html) : KNOWN_BLOCK_HTML.test(html);
 
 const RAW_BLOCK_TYPES = new Set(["definition", "footnoteDefinition"]);
 const RAW_INLINE_TYPES = new Set([
@@ -146,7 +150,7 @@ export const remarkRawFallback = () => (tree: Root, file: VFile) => {
     if (child.type !== "html") return;
 
     if (BLOCK_PARENTS.has(parent.type)) {
-      if (!KNOWN_BLOCK_HTML.test(child.value)) {
+      if (!isKnownBlock(child.value)) {
         parent.children[index] = asHtml(rawBlockHtml(child.value));
       }
       return SKIP;
