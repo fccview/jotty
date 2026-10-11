@@ -23,8 +23,8 @@ import { headers } from "next/headers";
 import {
   themeInitScript,
   getThemeBackgroundColor,
-  rgbToHex,
 } from "./_consts/themes";
+import { THEME_COLOR_META } from "./_utils/theme-color-utils";
 import { loadCustomThemes } from "./_server/actions/config";
 import { getUserChecklists } from "./_server/actions/checklist/queries";
 import { getUserNotes } from "./_server/actions/note/queries";
@@ -36,7 +36,7 @@ import {
   globalShares,
 } from "./_server/actions/share/queries";
 import { generateWebManifest } from "./_utils/global-utils";
-import { writeJsonFile } from "./_server/actions/file";
+import { readJsonFile, writeJsonFile } from "./_server/actions/file";
 import path from "path";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -45,6 +45,9 @@ import { KonamiProvider } from "./_providers/KonamiProvider";
 import { WebSocketProvider } from "./_providers/WebSocketProvider";
 import { isEnvEnabled } from "./_utils/env-utils";
 import { ADMIN_BORDER_RADIUS_VAR, radiusToRem } from "./_consts/styling";
+
+const serverThemeId = (isRwMarkable?: boolean, preferredTheme?: string) =>
+  isRwMarkable ? "rwmarkable-dark" : preferredTheme || "dark";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
@@ -66,11 +69,9 @@ export const generateMetadata = async (): Promise<Metadata> => {
   const app192x192Icon =
     settings?.["192x192Icon"] || "/app-icons/android-chrome-192x192.png";
 
-  const defaultTheme = settings?.isRwMarkable
-    ? "rwmarkable-dark"
-    : user?.preferredTheme || "dark";
-
-  const themeColor = getThemeBackgroundColor(defaultTheme);
+  const themeColor = getThemeBackgroundColor(
+    serverThemeId(settings?.isRwMarkable, user?.preferredTheme),
+  );
 
   const manifest = JSON.parse(
     generateWebManifest(
@@ -87,7 +88,11 @@ export const generateMetadata = async (): Promise<Metadata> => {
   );
 
   try {
-    await writeJsonFile(manifest, path.join("data", "site.webmanifest"));
+    const manifestPath = path.join("data", "site.webmanifest");
+    const stored = await readJsonFile(manifestPath);
+    if (JSON.stringify(stored) !== JSON.stringify(manifest)) {
+      await writeJsonFile(manifest, manifestPath);
+    }
   } catch (error) {
     console.error(
       "Your data and/or config folders seem to be using the wrong permissions, please fix them by following the instructions here: https://github.com/fccview/jotty/blob/main/howto/DOCKER.md and/or setting the correct env variables from here: https://github.com/fccview/jotty/blob/main/howto/ENV-VARIABLES.md",
@@ -127,22 +132,12 @@ export const generateMetadata = async (): Promise<Metadata> => {
   };
 };
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: rgbToHex("12 20 53"),
-};
-
 export async function generateViewport(): Promise<Viewport> {
-  const settings = await getSettings();
-  const defaultTheme = settings?.isRwMarkable ? "rwmarkable-dark" : "dark";
-  const themeColor = getThemeBackgroundColor(defaultTheme);
   const pwaZoomEnabled = isEnvEnabled(process.env.ENABLE_PWA_ZOOM);
 
   return {
     width: "device-width",
     initialScale: 1,
-    themeColor,
     viewportFit: "cover",
     ...(!pwaZoomEnabled && { maximumScale: 1, userScalable: false }),
   };
@@ -246,6 +241,12 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={appName} />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta
+          name={THEME_COLOR_META}
+          content={getThemeBackgroundColor(
+            serverThemeId(settings?.isRwMarkable, user?.preferredTheme),
+          )}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: themeInitScript(
