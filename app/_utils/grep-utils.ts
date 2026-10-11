@@ -17,7 +17,7 @@ import path from "path";
 import fs from "fs/promises";
 import yaml from "js-yaml";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
-import { isPathUuid, pathUuid } from "@/app/_server/actions/lib/read-only";
+import { isPathUuid, pathUuid, uuidOf } from "@/app/_server/actions/lib/read-only";
 import { boxedShell } from "@/app/_utils/shell-utils";
 import { rankClaims, warnClash } from "@/app/_server/actions/lib/uuid-keeper";
 
@@ -81,9 +81,7 @@ export const grepFindFileByField = async (
 
 const _storedUuid = async (filePath: string): Promise<string | undefined> => {
   try {
-    const { uuid } = extractYamlMetadata(await fs.readFile(filePath, "utf-8"))
-      .metadata;
-    return typeof uuid === "string" && uuid ? uuid : undefined;
+    return uuidOf(extractYamlMetadata(await fs.readFile(filePath, "utf-8")).metadata.uuid);
   } catch (error) {
     console.error("Failed to read frontmatter for derived uuid:", filePath, error);
     return undefined;

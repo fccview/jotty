@@ -21,7 +21,7 @@ import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/Dropd
 import { AppMode, Checklist, Note } from "@/app/_types";
 import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
 import { togglePin } from "@/app/_server/actions/dashboard";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
@@ -65,13 +65,15 @@ export const SidebarItem = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const itemRef = useRef<HTMLAnchorElement>(null);
   const { globalSharing, appSettings } = useAppMode();
   const itemDetails = sharingInfo(globalSharing, item.uuid || "");
 
   const isPubliclyShared = itemDetails.isPublic;
   const isOwned = user?.username === item.owner;
   const isShareable = isOwned;
-  const canEdit = isOwned || item.permissions?.canEdit === true;
+  const isLocked = Boolean(item.lockReason);
+  const canEdit = !isLocked && (isOwned || item.permissions?.canEdit === true);
   const canDelete = isOwned || item.permissions?.canDelete === true;
 
   const grants = shareGrants(
@@ -156,7 +158,7 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(isShareable
+    ...(isShareable && !isLocked
       ? [
           {
             label: t("sharing.share"),
@@ -201,7 +203,7 @@ export const SidebarItem = ({
       ) : (
         <PinIcon className="h-4 w-4" />
       ),
-      disabled: isTogglingPin === item.uuid,
+      disabled: isTogglingPin === item.uuid || isLocked,
     },
     ...(item.category !== ARCHIVED_DIR_NAME && canEdit
       ? [
@@ -236,6 +238,7 @@ export const SidebarItem = ({
   return (
     <div className="flex items-center group/item" style={style}>
       <Link
+        ref={itemRef}
         href={itemHref}
         prefetch={false}
         onClick={handleClick}
@@ -297,6 +300,7 @@ export const SidebarItem = ({
       </Link>
 
       <DropdownMenu
+        contextTarget={itemRef}
         align="right"
         items={dropdownItems}
         trigger={

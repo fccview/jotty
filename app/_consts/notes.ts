@@ -112,3 +112,5 @@ export const BOUNCED_ELEMENTS = [
 ];
 
 export const SVG_FRAME_ATTR = "data-svg-frame";
+
+export const NOTE_PROSE_CLASS = "jotty-note-prose";

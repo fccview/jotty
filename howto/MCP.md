@@ -119,7 +119,7 @@ Two tools deal with duplicate UUIDs. They usually show up when a script copies a
 | `list_duplicate_uuids` | Which UUIDs more than one file uses, and which file keeps each one |
 | `repair_duplicate_uuid` | Gives the newer file, or the one you pick, a new UUID. Links whose text names that file move with it. Links that could mean either file stay put, and the tool lists them |
 
-The assistant can read these guides too. `list_docs` lists them and `read_doc` returns one as markdown, so it can check how Jotty works instead of guessing.
+The assistant can read these guides too. `jotty_docs` lists them and returns one as markdown, so it can check how Jotty works instead of guessing. `mcp_docs` does the same for two guides that ship with the MCP server for the assistant: `tools` describes every tool, and `agents` explains how to coordinate a team of AI agents on a Kanban board.
 
 Three more tools reach everything else:
 

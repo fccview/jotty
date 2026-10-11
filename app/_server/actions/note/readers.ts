@@ -9,7 +9,6 @@ import {
 import {
   createdAtOf,
   extractYamlMetadata,
-  generateUuid,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
 import {
@@ -22,7 +21,8 @@ import { orderByUuids } from "@/app/_utils/order-utils";
 import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
 import { boxedShell } from "@/app/_utils/shell-utils";
-import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { claimOf, claimUuid, lacksUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
@@ -136,10 +136,8 @@ export const readNotesRecursively = async (
           ? (metadata.tags as string[])
           : [];
 
-        const uuid =
-          typeof metadata?.uuid === "string"
-            ? metadata.uuid
-            : await stampUuid(filePath);
+        const claim = await claimOf(metadata?.uuid, filePath);
+        const uuid = claim?.uuid;
 
         if (!uuid) {
           console.warn("Skipping note without a resolvable uuid:", filePath);
@@ -149,6 +147,7 @@ export const readNotesRecursively = async (
         return {
           id,
           uuid,
+          ...(claim?.refusal && { lockReason: claim.refusal }),
           title: await titleFromFile(metadata, filePath, id),
           category: categoryPath,
           createdAt: createdAtOf(metadata, stats.birthtime),
@@ -168,10 +167,8 @@ export const readNotesRecursively = async (
           : [];
         const excerpt = await grepExtractExcerpt(filePath, excerptLength);
 
-        const uuid =
-          typeof metadata?.uuid === "string"
-            ? metadata.uuid
-            : await stampUuid(filePath);
+        const claim = await claimOf(metadata?.uuid, filePath);
+        const uuid = claim?.uuid;
 
         if (!uuid) {
           console.warn("Skipping note without a resolvable uuid:", filePath);
@@ -181,6 +178,7 @@ export const readNotesRecursively = async (
         return {
           id,
           uuid,
+          ...(claim?.refusal && { lockReason: claim.refusal }),
           title: await titleFromFile(metadata, filePath, id),
           content: excerpt,
           category: categoryPath,
@@ -196,11 +194,11 @@ export const readNotesRecursively = async (
         const content = await serverReadFile(filePath);
         if (isRaw) {
           const { metadata } = extractYamlMetadata(content);
-          const uuid =
-            metadata.uuid || (await stampUuid(filePath)) || generateUuid();
+          const claim = await claimOf(metadata.uuid, filePath);
           return {
             id,
-            uuid,
+            uuid: claim?.uuid || pathUuid(filePath),
+            ...(claim?.refusal && { lockReason: claim.refusal }),
             title: id,
             content: "",
             category: categoryPath,
@@ -225,7 +223,12 @@ export const readNotesRecursively = async (
             fileName,
           );
           if (!lacksUuid(content)) return note;
-          return { ...note, uuid: (await stampUuid(filePath)) || note.uuid };
+          const claim = await claimUuid(filePath);
+          return {
+            ...note,
+            uuid: claim?.uuid || pathUuid(filePath),
+            ...(claim?.refusal && { lockReason: claim.refusal }),
+          };
         }
       }
     } catch (e) {

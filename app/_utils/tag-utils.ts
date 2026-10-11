@@ -126,8 +126,8 @@ export const extractHashtagsFromContent = (content: string): string[] => {
   }
 
   const codeBlockRegex =
-    /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>/gi;
-  const contentWithoutCode = content.replace(codeBlockRegex, "");
+    /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>|<!--[\s\S]*?-->|<[a-zA-Z\/][^>]*>/gi;
+  const contentWithoutCode = content.replace(codeBlockRegex, " ");
 
   const hashtagRegex = /(?:^|[\s(])#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
   while ((match = hashtagRegex.exec(contentWithoutCode)) !== null) {

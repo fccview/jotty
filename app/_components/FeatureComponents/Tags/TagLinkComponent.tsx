@@ -94,11 +94,9 @@ export const TagLinkComponent = ({ node }: TagLinkComponentProps) => {
       {typeof document !== "undefined" && popupEl
         ? createPortal(popupEl, document.body)
         : null}
-      <span
-        data-tag={tag}
-        className="text-primary underline underline-offset-2 hover:no-underline"
-      >
-        #{tag}
+      <span data-tag={tag}>
+        <span className="tag-hash">#</span>
+        {tag}
       </span>
     </NodeViewWrapper>
   );
@@ -183,11 +181,9 @@ export const TagLinkViewComponent = ({ tag }: TagLinkViewComponentProps) => {
       {typeof document !== "undefined" && popupEl
         ? createPortal(popupEl, document.body)
         : null}
-      <span
-        data-tag={tag}
-        className="text-primary underline underline-offset-2 hover:no-underline"
-      >
-        #{tag}
+      <span data-tag={tag}>
+        <span className="tag-hash">#</span>
+        {tag}
       </span>
     </span>
   );

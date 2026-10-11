@@ -7,6 +7,7 @@ interface ToolbarDropdownProps {
   trigger: ReactNode;
   children: ReactNode;
   direction?: "left" | "right";
+  onOpenChange?: (isOpen: boolean) => void;
 }
 
 const PORTAL_ID = "toolbar-dropdown-portal-root";
@@ -15,6 +16,7 @@ export const ToolbarDropdown = ({
   trigger,
   children,
   direction = "left",
+  onOpenChange,
 }: ToolbarDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -36,6 +38,10 @@ export const ToolbarDropdown = ({
     }
     setPortalElement(portalRoot);
   }, []);
+
+  useEffect(() => {
+    onOpenChange?.(isOpen);
+  }, [isOpen, onOpenChange]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

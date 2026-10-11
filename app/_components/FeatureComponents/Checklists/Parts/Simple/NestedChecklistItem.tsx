@@ -161,7 +161,7 @@ const NestedChecklistItemComponent = ({
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
       inputRef.current.select();
     }
   }, [isEditing]);

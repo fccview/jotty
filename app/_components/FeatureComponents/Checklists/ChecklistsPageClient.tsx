@@ -271,7 +271,7 @@ export const ChecklistsPageClient = ({
                   isPinned={user?.pinnedLists?.some((entry) =>
                     isPinnedEntry(entry, list.uuid),
                   )}
-                  onTogglePin={() => handleTogglePin(list)}
+                  onTogglePin={list.lockReason ? undefined : () => handleTogglePin(list)}
                 />
               ))}
             </div>
@@ -289,7 +289,7 @@ export const ChecklistsPageClient = ({
                   isPinned={user?.pinnedLists?.some((entry) =>
                     isPinnedEntry(entry, list.uuid),
                   )}
-                  onTogglePin={() => handleTogglePin(list)}
+                  onTogglePin={list.lockReason ? undefined : () => handleTogglePin(list)}
                 />
               ))}
             </div>
@@ -307,7 +307,7 @@ export const ChecklistsPageClient = ({
                   isPinned={user?.pinnedLists?.some((entry) =>
                     isPinnedEntry(entry, list.uuid),
                   )}
-                  onTogglePin={() => handleTogglePin(list)}
+                  onTogglePin={list.lockReason ? undefined : () => handleTogglePin(list)}
                 />
               ))}
             </div>

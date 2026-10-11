@@ -17,10 +17,7 @@ import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
 import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import {
-  refreshWikilinks,
-  tidyItemLinks,
-} from "@/app/_server/actions/relations/tidy";
+import { tidyItemLinks } from "@/app/_server/actions/relations/tidy";
 import { canReach } from "@/app/_server/actions/share/queries";
 import {
   extractYamlMetadata as stripYaml,
@@ -127,12 +124,10 @@ const _editNote = async (
     const sanitizedContent = sanitizeMarkdown(content);
     const { metadata: incomingMeta, contentWithoutMetadata } =
       stripYaml(sanitizedContent);
-    const convertedContent = isEncrypted(contentWithoutMetadata)
-      ? contentWithoutMetadata
-      : refreshWikilinks(
-          await tidyItemLinks(contentWithoutMetadata, note.owner || actingUsername),
-          note.uuid,
-        );
+    const body = contentWithoutMetadata.trim();
+    const convertedContent = isEncrypted(body)
+      ? body
+      : await tidyItemLinks(body, note.owner || actingUsername);
 
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;

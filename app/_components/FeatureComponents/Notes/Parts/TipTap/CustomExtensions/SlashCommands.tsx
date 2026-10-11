@@ -1,7 +1,6 @@
 import { Extension } from "@tiptap/core";
-import { ReactRenderer } from "@tiptap/react";
+import { DEFAULT_MERMAID_DIAGRAM } from "@/app/_consts/diagrams";
 import Suggestion from "@tiptap/suggestion";
-import tippy from "tippy.js";
 import {
   Heading01Icon,
   Heading02Icon,
@@ -25,6 +24,7 @@ import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { PluginKey } from "@tiptap/pm/state";
+import { suggestionPopup } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/suggestionPopup";
 import { itemHref } from "@/app/_utils/global-utils";
 
 const WIKILINK_OPEN = "[[";
@@ -169,18 +169,7 @@ const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
     description: t("editor.createMermaidDiagram"),
     icon: <SharedWifiIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
-      const defaultMermaid = `graph TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Option 1]
-    B -->|No| D[Option 2]
-    C --> E[End]
-    D --> E`;
-      editor
-        .chain()
-        .focus()
-        .deleteRange(range)
-        .setMermaid(defaultMermaid)
-        .run();
+      editor.chain().focus().deleteRange(range).setMermaid(DEFAULT_MERMAID_DIAGRAM).run();
     },
   },
   {
@@ -235,81 +224,7 @@ export const SlashCommands = Extension.create({
               item.description.toLowerCase().includes(query.toLowerCase())
           );
         },
-        render: () => {
-          let component: ReactRenderer;
-          let popup: any;
-
-          return {
-            onStart: (props: any) => {
-              component = new ReactRenderer(SlashCommandsList, {
-                props,
-                editor: props.editor,
-              });
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const referenceElement = document.createElement("div");
-              referenceElement.style.position = "absolute";
-              referenceElement.style.pointerEvents = "none";
-              referenceElement.style.zIndex = "10";
-              document.body.appendChild(referenceElement);
-
-              const rect = props.clientRect();
-              referenceElement.style.left = `${rect.left}px`;
-              referenceElement.style.top = `${rect.top}px`;
-
-              popup = tippy(referenceElement, {
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: "manual",
-                placement: "bottom-start",
-                theme: "light",
-                maxWidth: "none",
-                appendTo: () => document.body,
-              });
-
-              (popup as any).referenceElement = referenceElement;
-            },
-
-            onUpdate(props: any) {
-              component.updateProps(props);
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const rect = props.clientRect();
-              const referenceElement = (popup as any).referenceElement;
-              if (referenceElement) {
-                referenceElement.style.left = `${rect.left}px`;
-                referenceElement.style.top = `${rect.top}px`;
-              }
-            },
-
-            onKeyDown(props: any) {
-              if (props.event.key === "Escape") {
-                popup[0].hide();
-                return true;
-              }
-
-              return (component.ref as any)?.onKeyDown?.(props.event);
-            },
-
-            onExit() {
-              if (popup && popup[0]) {
-                popup[0].destroy();
-                const referenceElement = (popup as any).referenceElement;
-                if (referenceElement && referenceElement.parentNode) {
-                  referenceElement.parentNode.removeChild(referenceElement);
-                }
-              }
-              component.destroy();
-            },
-          };
-        },
+        render: suggestionPopup(SlashCommandsList),
       },
       atSuggestion: {
         char: "@",
@@ -353,7 +268,7 @@ export const SlashCommands = Extension.create({
               ...checklist,
               type: ItemTypes.CHECKLIST as const,
             })),
-          ];
+          ].filter((item) => !item.lockReason);
 
           if (!query.trim()) return allItems;
 
@@ -365,81 +280,7 @@ export const SlashCommands = Extension.create({
               item.category?.toLowerCase().includes(lowerCaseQuery)
           );
         },
-        render: () => {
-          let component: ReactRenderer;
-          let popup: any;
-
-          return {
-            onStart: (props: any) => {
-              component = new ReactRenderer(AtMentionsList, {
-                props,
-                editor: props.editor,
-              });
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const referenceElement = document.createElement("div");
-              referenceElement.style.position = "absolute";
-              referenceElement.style.pointerEvents = "none";
-              referenceElement.style.zIndex = "10";
-              document.body.appendChild(referenceElement);
-
-              const rect = props.clientRect();
-              referenceElement.style.left = `${rect.left}px`;
-              referenceElement.style.top = `${rect.top}px`;
-
-              popup = tippy(referenceElement, {
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: "manual",
-                placement: "bottom-start",
-                theme: "light",
-                maxWidth: "none",
-                appendTo: () => document.body,
-              });
-
-              (popup as any).referenceElement = referenceElement;
-            },
-
-            onUpdate(props: any) {
-              component.updateProps(props);
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const rect = props.clientRect();
-              const referenceElement = (popup as any).referenceElement;
-              if (referenceElement) {
-                referenceElement.style.left = `${rect.left}px`;
-                referenceElement.style.top = `${rect.top}px`;
-              }
-            },
-
-            onKeyDown(props: any) {
-              if (props.event.key === "Escape") {
-                popup[0].hide();
-                return true;
-              }
-
-              return (component.ref as any)?.onKeyDown?.(props.event);
-            },
-
-            onExit() {
-              if (popup && popup[0]) {
-                popup[0].destroy();
-                const referenceElement = (popup as any).referenceElement;
-                if (referenceElement && referenceElement.parentNode) {
-                  referenceElement.parentNode.removeChild(referenceElement);
-                }
-              }
-              component.destroy();
-            },
-          };
-        },
+        render: suggestionPopup(AtMentionsList),
       },
       hashSuggestion: {
         char: "#",
@@ -489,81 +330,7 @@ export const SlashCommands = Extension.create({
 
           return results;
         },
-        render: () => {
-          let component: ReactRenderer;
-          let popup: any;
-
-          return {
-            onStart: (props: any) => {
-              component = new ReactRenderer(TagMentionsList, {
-                props,
-                editor: props.editor,
-              });
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const referenceElement = document.createElement("div");
-              referenceElement.style.position = "absolute";
-              referenceElement.style.pointerEvents = "none";
-              referenceElement.style.zIndex = "10";
-              document.body.appendChild(referenceElement);
-
-              const rect = props.clientRect();
-              referenceElement.style.left = `${rect.left}px`;
-              referenceElement.style.top = `${rect.top}px`;
-
-              popup = tippy(referenceElement, {
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: "manual",
-                placement: "bottom-start",
-                theme: "light",
-                maxWidth: "none",
-                appendTo: () => document.body,
-              });
-
-              (popup as any).referenceElement = referenceElement;
-            },
-
-            onUpdate(props: any) {
-              component.updateProps(props);
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const rect = props.clientRect();
-              const referenceElement = (popup as any).referenceElement;
-              if (referenceElement) {
-                referenceElement.style.left = `${rect.left}px`;
-                referenceElement.style.top = `${rect.top}px`;
-              }
-            },
-
-            onKeyDown(props: any) {
-              if (props.event.key === "Escape") {
-                popup[0].hide();
-                return true;
-              }
-
-              return (component.ref as any)?.onKeyDown?.(props.event);
-            },
-
-            onExit() {
-              if (popup && popup[0]) {
-                popup[0].destroy();
-                const referenceElement = (popup as any).referenceElement;
-                if (referenceElement && referenceElement.parentNode) {
-                  referenceElement.parentNode.removeChild(referenceElement);
-                }
-              }
-              component.destroy();
-            },
-          };
-        },
+        render: suggestionPopup(TagMentionsList),
       },
     };
   },

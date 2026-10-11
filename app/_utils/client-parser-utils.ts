@@ -11,7 +11,13 @@ import {
 import { ChecklistsTypes, isKanbanType, TaskStatus } from "@/app/_types/enums";
 import { parseRecurrenceFromMarkdown } from "@/app/_utils/recurrence-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
-import { extractYamlMetadata, strayMeta } from "./yaml-metadata-utils";
+import { AGENT_SEGMENT } from "@/app/_consts/agents";
+import {
+  BoardMetaKeys,
+  extractYamlMetadata,
+  LIST_META_KEYS,
+  strayMeta,
+} from "./yaml-metadata-utils";
 import { titleOf } from "./title-utils";
 
 export const parseChecklistContent = (
@@ -25,6 +31,7 @@ export const parseChecklistContent = (
   statuses?: KanbanStatus[];
   tags?: string[];
   sharedWith?: string | string[];
+  specNote?: string;
   extraMetadata?: Record<string, unknown>;
 } => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(rawContent);
@@ -121,6 +128,7 @@ export const parseChecklistContent = (
           let priority: KanbanPriority | undefined;
           let score: number | undefined;
           let assignee: string | undefined;
+          let agent: string | undefined;
           let reminder: KanbanReminder | undefined;
 
           metadataParts.forEach((meta) => {
@@ -161,6 +169,8 @@ export const parseChecklistContent = (
               if (!Number.isNaN(parsed)) score = parsed;
             } else if (meta.startsWith("assignee:")) {
               assignee = meta.substring(9) || undefined;
+            } else if (meta.startsWith(AGENT_SEGMENT)) {
+              agent = meta.substring(AGENT_SEGMENT.length).trim() || undefined;
             } else if (meta.startsWith("reminder:")) {
               try {
                 reminder = JSON.parse(meta.substring(9)) as KanbanReminder;
@@ -186,6 +196,7 @@ export const parseChecklistContent = (
             ...(priority ? { priority } : {}),
             ...(score !== undefined ? { score } : {}),
             ...(assignee ? { assignee } : {}),
+            ...(agent ? { agent } : {}),
             ...(reminder ? { reminder } : {}),
           };
         } else {
@@ -288,7 +299,10 @@ export const parseChecklistContent = (
     ...(metadata[SHARED_WITH_KEY] !== undefined && {
       sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
     }),
-    extraMetadata: strayMeta(metadata),
+    ...(typeof metadata[BoardMetaKeys.SPEC_NOTE] === "string" && {
+      specNote: metadata[BoardMetaKeys.SPEC_NOTE] as string,
+    }),
+    extraMetadata: strayMeta(metadata, LIST_META_KEYS),
   };
 };
 

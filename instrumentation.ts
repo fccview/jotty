@@ -4,6 +4,7 @@ export async function register() {
 
     if (isDev) {
       const { WebSocketServer } = await import("ws");
+      const http = await import("http");
       const fs = await import("fs");
       const path = await import("path");
       const crypto = await import("crypto");
@@ -48,7 +49,22 @@ export async function register() {
         { connectionId: string; username: string }
       >();
 
-      const wss = new WebSocketServer({ port: WS_PORT, host: "0.0.0.0" });
+      const wss = new WebSocketServer({ noServer: true });
+      const devServer = http.createServer();
+      devServer.on("upgrade", (req, socket, head) => {
+        if (!req.url?.startsWith("/_live/")) {
+          wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+          return;
+        }
+        const sessionId = parseCookies(req.headers.cookie)["session"];
+        const username = sessionId ? readSessions()[sessionId] : null;
+        if (!username || !globalThis.__jottyLiveUpgrade) {
+          socket.destroy();
+          return;
+        }
+        globalThis.__jottyLiveUpgrade(req, socket, head, username, sessionId);
+      });
+      devServer.listen(WS_PORT, "0.0.0.0");
 
       wss.on("connection", (ws, req) => {
         const cookies = parseCookies(req.headers.cookie);
@@ -108,6 +124,13 @@ export async function register() {
 
       console.log(`> WebSocket dev server running on ws://0.0.0.0:${WS_PORT}`);
     }
+
+    import("./app/_server/actions/live/room")
+      .then(({ liveUpgrade, liveRecheck }) => {
+        globalThis.__jottyLiveUpgrade = liveUpgrade;
+        globalThis.__jottyLiveRecheck = liveRecheck;
+      })
+      .catch((err) => console.error("[live] runtime failed to start:", err));
 
     if (!(globalThis as any).__jottyRelationsStarted) {
       (globalThis as any).__jottyRelationsStarted = true;

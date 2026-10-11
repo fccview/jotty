@@ -5,7 +5,9 @@ import { NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
+import { getUserModeDir, ensureDir, serverReadExisting } from "@/app/_server/actions/file";
+import { uuidOf } from "@/app/_server/actions/lib/read-only";
+import { lockOf } from "@/app/_server/actions/lib/unstamped";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
 import {
@@ -55,7 +57,6 @@ export const getNoteById = async (
   username?: string,
 ): Promise<Note | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
-  const { serverReadFile } = await import("@/app/_server/actions/file");
 
   if (!username) {
     const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
@@ -114,15 +115,17 @@ export const getNoteById = async (
     return undefined;
   }
 
-  const rawContent = await serverReadFile(filePath);
-  if (!rawContent) return undefined;
+  const rawContent = await serverReadExisting(filePath);
+  if (rawContent === null) return undefined;
+  const lockReason = await lockOf(filePath).catch(() => null);
 
   const stats = await fs.stat(filePath);
   const parsedData = parseNoteContent(rawContent, noteId);
 
   return {
     id: noteId,
-    uuid: parsedData.uuid || uuid,
+    uuid: uuidOf(parsedData.uuid) || uuid,
+    ...(lockReason && { lockReason }),
     title: parsedData.title,
     content: parsedData.content,
     category: noteCategory,

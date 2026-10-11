@@ -39,9 +39,9 @@ export const makeNote = async (
 
     const sanitizedContent = sanitizeMarkdown(rawContent);
     const { metadata, contentWithoutMetadata } = stripYaml(sanitizedContent);
-    const encryptionMethod =
-      detectEncryptionMethod(contentWithoutMetadata) || undefined;
-    const encrypted = isEncrypted(contentWithoutMetadata);
+    const body = contentWithoutMetadata.trim();
+    const encryptionMethod = detectEncryptionMethod(body) || undefined;
+    const encrypted = isEncrypted(body);
 
     const target = await targetDir(Modes.NOTES, actor.username, category);
 
@@ -52,8 +52,8 @@ export const makeNote = async (
     }
 
     const content = encrypted
-      ? contentWithoutMetadata
-      : await tidyItemLinks(contentWithoutMetadata, target.owner);
+      ? body
+      : await tidyItemLinks(body, target.owner);
 
     const verdict = await bouncer(
       target,

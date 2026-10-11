@@ -207,7 +207,7 @@ export const ChecklistHeader = ({
                       },
                     ]
                     : []),
-                  ...(onShare && permissions?.isOwner
+                  ...(onShare && permissions?.isOwner && !permissions?.isLocked
                     ? [
                       {
                         type: "item" as const,

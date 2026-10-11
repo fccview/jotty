@@ -6,7 +6,7 @@ vi.unmock("js-beautify");
 vi.unmock("@/app/_utils/markdown-utils");
 
 import { matchCallout } from "@/app/_utils/callout-utils";
-import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
+import { markdownToEditorHtml } from "@/app/_utils/markdown/parse/to-html";
 
 describe("Callout Utils", () => {
   describe("matchCallout", () => {
@@ -45,22 +45,22 @@ describe("Callout Utils", () => {
     });
   });
 
-  describe("convertMarkdownToHtml", () => {
+  describe("markdownToEditorHtml", () => {
     it("should render a legacy [!INFO] callout", () => {
-      const html = convertMarkdownToHtml("> [!INFO]\n> Old style");
+      const html = markdownToEditorHtml("> [!INFO]\n> Old style");
       expect(html).toContain('data-callout-type="info"');
       expect(html).toContain("Old style");
       expect(html).not.toContain("[!INFO]");
     });
 
     it("should render a github [!CAUTION] callout as danger", () => {
-      const html = convertMarkdownToHtml("> [!CAUTION]\n> Mind the gap");
+      const html = markdownToEditorHtml("> [!CAUTION]\n> Mind the gap");
       expect(html).toContain('data-callout-type="danger"');
       expect(html).not.toContain("[!CAUTION]");
     });
 
     it("should leave a plain blockquote alone", () => {
-      const html = convertMarkdownToHtml("> just a quote");
+      const html = markdownToEditorHtml("> just a quote");
       expect(html).toContain("<blockquote>");
       expect(html).not.toContain("callout");
     });

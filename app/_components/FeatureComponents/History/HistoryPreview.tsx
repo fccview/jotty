@@ -16,6 +16,7 @@ import {
 } from "@/app/_utils/history-utils";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
+import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
 type ViewMode = "preview" | "diff";
 
@@ -123,7 +124,7 @@ export const HistoryPreview = ({
         </div>
       ) : (
         <div className="max-h-[60vh] overflow-auto rounded-jotty border border-border bg-card p-4">
-          <UnifiedMarkdownRenderer content={selectedVersion?.content || ""} />
+          <UnifiedMarkdownRenderer content={selectedVersion?.content || ""} className={NOTE_PROSE_CLASS} />
         </div>
       )}
     </>

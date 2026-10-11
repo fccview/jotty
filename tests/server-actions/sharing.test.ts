@@ -34,6 +34,7 @@ vi.mock("@/app/_server/actions/share/category-info", () => ({
 
 vi.mock("@/app/_server/actions/file", () => ({
   serverReadFile: (...args: unknown[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: unknown[]) => (await mockServerReadFile(...args)) ?? null,
   serverWriteFile: (...args: unknown[]) => mockServerWriteFile(...args),
 }));
 

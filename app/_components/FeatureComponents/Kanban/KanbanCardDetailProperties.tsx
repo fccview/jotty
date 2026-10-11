@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { DatePicker, DateTimePicker } from "@/app/_components/GlobalComponents/FormElements/DatePicker";
 import { Item, KanbanPriority, KanbanStatus } from "@/app/_types";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
@@ -10,7 +8,7 @@ import {
   getPriorityDotColor,
   getPriorityLabel,
 } from "@/app/_utils/kanban/index";
-import { ArrowDown01Icon, ArrowRight01Icon, UserIcon } from "hugeicons-react";
+import { ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/app/_utils/global-utils";
 
@@ -20,21 +18,17 @@ interface KanbanCardDetailPropertiesProps {
   statusInput: string;
   priorityInput: KanbanPriority;
   scoreInput: string;
-  assigneeInput: string;
   reminderInput: string;
   targetDateInput: string;
   startDateInput: string;
   estimatedTimeInput: string;
-  availableUsers: { username: string; avatarUrl?: string }[];
   canEdit: boolean;
-  isShared: boolean;
   toLocalDateTimeValue: (iso: string) => string;
   toLocalDateValue: (iso: string) => string;
   onStatusChange: (status: string) => void;
   onPriorityChange: (p: KanbanPriority) => void;
   onScoreChange: (v: string) => void;
   onScoreSave: () => void;
-  onAssigneeChange: (v: string) => void;
   onReminderChange: (v: string) => void;
   onReminderSave: () => void;
   onTargetDateChange: (v: string) => void;
@@ -43,6 +37,7 @@ interface KanbanCardDetailPropertiesProps {
   onEstimatedTimeSave: () => void;
   formatDateTimeString: (v: string) => string;
   timeTracking?: ReactNode;
+  assigneePicker?: ReactNode;
 }
 
 interface PropertySectionProps {
@@ -83,21 +78,17 @@ export const KanbanCardDetailProperties = ({
   statusInput,
   priorityInput,
   scoreInput,
-  assigneeInput,
   reminderInput,
   targetDateInput,
   startDateInput,
   estimatedTimeInput,
-  availableUsers,
   canEdit,
-  isShared,
   toLocalDateTimeValue,
   toLocalDateValue,
   onStatusChange,
   onPriorityChange,
   onScoreChange,
   onScoreSave,
-  onAssigneeChange,
   onReminderChange,
   onReminderSave,
   onTargetDateChange,
@@ -106,6 +97,7 @@ export const KanbanCardDetailProperties = ({
   onEstimatedTimeSave,
   formatDateTimeString,
   timeTracking,
+  assigneePicker,
 }: KanbanCardDetailPropertiesProps) => {
   const t = useTranslations();
 
@@ -118,31 +110,6 @@ export const KanbanCardDetailProperties = ({
   ];
 
   const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
-
-  const assigneeOptions = [
-    {
-      id: "",
-      name: (
-        <span className="flex items-center gap-2 text-muted-foreground">
-          <UserIcon className="h-4 w-4" />
-          {t("kanban.unassigned")}
-        </span>
-      ),
-    },
-    ...availableUsers.map((user) => ({
-      id: user.username,
-      name: (
-        <span className="flex items-center gap-2">
-          <UserAvatar
-            username={user.username}
-            avatarUrl={user.avatarUrl}
-            size="xs"
-          />
-          {user.username}
-        </span>
-      ),
-    })),
-  ];
 
   const metadata = [];
   if (item.createdBy) {
@@ -233,15 +200,8 @@ export const KanbanCardDetailProperties = ({
             />
           </PropertySection>
 
-          {isShared && (
-            <PropertySection title={t("kanban.assignee")}>
-              <Dropdown
-                value={assigneeInput}
-                options={assigneeOptions}
-                onChange={onAssigneeChange}
-                placeholder={t("kanban.unassigned")}
-              />
-            </PropertySection>
+          {assigneePicker && (
+            <PropertySection title={t("kanban.assignee")}>{assigneePicker}</PropertySection>
           )}
 
           <PropertySection title={t("kanban.reminder")}>

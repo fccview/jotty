@@ -57,7 +57,9 @@ The cache watches `.md` and `.category-info.json`. If you add a new derived file
 
 Read, change, write back without a lock loses data. It has happened.
 
-- Users file: `patchUserFields` / the locked mutator in `users/records.ts` (`proper-lockfile`)
+- Any file lock: `withFileLock` in `lib/file-lock.ts`. It queues callers in memory before taking the `proper-lockfile` lock and logs a compromised lock instead of throwing. Don't call `lock()` directly, and never nest `withFileLock` on the same path: it waits on itself.
+- Users file: `patchUserFields` / `mutateUsers` in `users/records.ts`
+- Sessions: `mutateSessions` in `session/store.ts`
 - Category info: `runQueued` in `lib/concurrency.ts` via `patchCatInfo`
 - Note history git: `proper-lockfile` under `data/.locks/`
 - In-process single-flight: `singleFlight`, `runQueued`
@@ -68,12 +70,14 @@ Jotty is one Node process. Those in-process maps are enough until someone cluste
 
 ## Indexes
 
-`data/.relations.db` is the **relations** index, in `app/_server/actions/relations/`. It holds items, links between them, wikilink bindings and plain note text for "Mentioned in". It is derived and disposable: a missing, corrupt or old-schema file is discarded and rebuilt from the markdown on start, with the UI showing "Indexing relationships...". Bump `RELATIONS_SCHEMA_VERSION` when its shape changes. No migration, it just rebuilds.
+`data/.relations.db` is the **relations** index, in `app/_server/actions/relations/`. It holds items, links between them, frontmatter aliases and plain note text for "Mentioned in". It is derived and disposable: a missing, corrupt or old-schema file is discarded and rebuilt from the markdown on start, with the UI showing "Indexing relationships...". Bump `RELATIONS_SCHEMA_VERSION` when its shape changes. No migration, it just rebuilds.
 
 - Writes keep it current through the file helpers (`trackItemWrite` and friends in `relations/tracking.ts`). Use the helpers and you get it for free.
 - Changes made outside Jotty are caught by a recursive `fs.watch` on the notes and checklists roots, throttled to one pass a minute, which only stats the paths that changed. If the watcher can't start, reads fall back to a full mtime reconcile at most once a minute.
 - Encrypted notes are indexed by uuid and title only. Their body is never parsed.
-- `bindings` remembers which uuid each `[[wikilink]]` text first resolved to, per source note. That memory survives edits and rebuilds, and is lost only if the file is deleted.
+- Wikilinks resolve from the files alone (`relations/resolve.ts`). The order is title, filename, folder path, then frontmatter aliases, and the path breaks ties. Incremental indexing and a full rebuild must give the same answer. Never store a resolution choice the files can't reproduce.
+- Renaming or moving an item rewrites the `[[...]]` text in the notes and checklists that link to it (`relations/relink.ts`). Each rewrite runs in the source's own item lane, after the renamed item's write finishes. The rewritten file keeps the link on the item. The index doesn't.
+- An item with no stored uuid in a writable folder, whose frontmatter `stampUuid` refuses to touch, is locked (`lib/unstamped.ts`). `canReach` and `reachableFile` refuse EDIT and CREATE on it, and pins, shares, links and spec pins check `isLockedUuid` themselves. Its path id must never get recorded anywhere. `fixFrontmatter` is the only write it accepts.
 - Queries are permission scoped through `visibleItems(username)`. Never return rows the viewer can't see.
 
 Folder order and sharing live in `.category-info.json` (`order.items` is a uuid list).

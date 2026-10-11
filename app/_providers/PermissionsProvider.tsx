@@ -18,6 +18,8 @@ interface PermissionsContextType {
     canEdit: boolean;
     canDelete: boolean;
     isOwner: boolean;
+    canFix: boolean;
+    isLocked: boolean;
   } | null;
 }
 
@@ -34,7 +36,7 @@ export const PermissionsProvider = ({
 }) => {
   const { globalSharing, user } = useAppMode();
 
-  const permissionsResult = useMemo(() => {
+  const basePermissions = useMemo(() => {
     const isAdmin = user?.isAdmin || false;
     const isOwner =
       (!item.isShared && user?.username && user.username === item.owner) ||
@@ -103,6 +105,16 @@ export const PermissionsProvider = ({
     item.owner,
     item.isShared,
   ]);
+
+  const permissionsResult = useMemo(() => {
+    const isLocked = Boolean(item.lockReason);
+    return {
+      ...basePermissions,
+      canEdit: basePermissions.canEdit && !isLocked,
+      canFix: basePermissions.canEdit && isLocked,
+      isLocked,
+    };
+  }, [basePermissions, item.lockReason]);
 
   return (
     <PermissionsContext.Provider value={{ permissions: permissionsResult }}>

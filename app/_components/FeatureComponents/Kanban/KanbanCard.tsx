@@ -27,6 +27,7 @@ import { CircleIcon, Notification03Icon, UserIcon } from "hugeicons-react";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
 import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
+import { AgentChip } from "./AgentChip";
 import { TimeEntriesModal } from "./TimeEntriesModal";
 
 interface KanbanCardProps {
@@ -247,6 +248,14 @@ const KanbanCardComponent = ({
                   />
                   {item.assignee}
                 </span>
+              )}
+
+              {item.agent && (
+                <AgentChip
+                  agentId={item.agent}
+                  checklist={checklist}
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground"
+                />
               )}
             </div>
 

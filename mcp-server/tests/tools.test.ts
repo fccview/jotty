@@ -136,6 +136,11 @@ describe("runOperation", () => {
     expect(jotty.hits.length).toBe(before);
   });
 
+  it("names the tool, not the operation, when a curated tool gets a stray argument", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("getNote"), { id: "n-1" }, { curated: true });
+    expect(text(result)).toContain("get_note takes: noteId");
+  });
+
   it("hands back a download link instead of fetching a binary file", async () => {
     const before = jotty.hits.length;
     const result = await runOperation(makeCtx(jotty.url), spec, op("downloadExport"), { filename: "a.zip" });
@@ -154,7 +159,7 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
     const data = structured(result);
     expect(data.version).toBe("9.9.9");
-    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "connect_items", "list_duplicate_uuids"]);
+    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "assign_agent", "set_board_spec", "get_task_context", "list_agent_tasks", "connect_items", "list_duplicate_uuids"]);
     expect(data.unavailableTools).toContain("list_boards");
   });
 

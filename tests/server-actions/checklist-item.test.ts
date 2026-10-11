@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mockRevalidatePath, resetAllMocks, createFormData } from "../setup";
+import { INVALID_AGENT } from "@/app/_consts/agents";
 
 const mockGetUserModeDir = vi.fn();
 const mockEnsureDir = vi.fn();
@@ -188,6 +189,36 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const result = await updateItem(mockChecklist, formData);
 
       expect(result.success).toBe(true);
+    });
+
+    it("swaps a human assignee for an agent in one write", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemId: "item-1",
+        assignee: "",
+        agent: " Parser-Bot ",
+      });
+
+      const result = await updateItem(mockChecklist, formData);
+      const updatedItem = result.data?.items.find((i: any) => i.id === "item-1");
+
+      expect(result.success).toBe(true);
+      expect(updatedItem?.agent).toBe("parser-bot");
+      expect(updatedItem?.assignee).toBeUndefined();
+      expect(mockServerWriteFile).toHaveBeenCalledOnce();
+    });
+
+    it("refuses an agent name that could break the card line", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemId: "item-1",
+        agent: "bad | agent:x",
+      });
+
+      const result = await updateItem(mockChecklist, formData);
+
+      expect(result).toEqual({ success: false, error: INVALID_AGENT });
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
     });
 
     it("should return error when permission denied", async () => {

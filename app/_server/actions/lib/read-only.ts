@@ -27,6 +27,9 @@ export const pathUuid = (filePath: string): string => {
   return uuidv5(relative.split(path.sep).join("/"), PATH_UUID_NAMESPACE);
 };
 
+export const uuidOf = (value: unknown): string | undefined =>
+  typeof value === "string" && isUuid(value) ? value : undefined;
+
 export const isPathUuid = (uuid: string): boolean =>
   isUuid(uuid) && uuid.charAt(14) === PATH_UUID_VERSION;
 

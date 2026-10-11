@@ -6,7 +6,6 @@ import {
   TiptapEditorRef,
 } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
-import { convertHtmlToMarkdownUnified } from "@/app/_utils/markdown-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 
@@ -33,24 +32,13 @@ export const TaskDescriptionEditor = ({
     }
   }, [notes, checklists, user?.username, isMinimalMode]);
 
-  const handleEditorContentChange = (next: string, isMarkdownMode: boolean) => {
-    if (isMarkdownMode) {
-      onContentChange(next);
-      return;
-    }
-    // Visual mode emits HTML; normalise back to markdown for storage.
-    const html = next.trim().startsWith("<") ? next : `<p>${next}</p>`;
-    onContentChange(convertHtmlToMarkdownUnified(html, user?.tableSyntax));
-  };
 
   if (isMinimalMode) {
     return (
       <MinimalEditorPanel
         isEditing
         noteContent={content}
-        onEditorContentChange={(next, isMarkdown) =>
-          handleEditorContentChange(next, isMarkdown)
-        }
+        onEditorContentChange={(next) => onContentChange(next)}
         renderWrapper={(children) => (
           <div className="h-[40vh] min-h-[200px] lg:h-[48vh]">{children}</div>
         )}
@@ -63,9 +51,7 @@ export const TaskDescriptionEditor = ({
       <TiptapEditor
         ref={editorRef}
         content={content}
-        onChange={(next, isMarkdownMode) =>
-          handleEditorContentChange(next, isMarkdownMode)
-        }
+        onChange={(next) => onContentChange(next)}
         tableSyntax={user?.tableSyntax}
         notes={notes}
         checklists={checklists}

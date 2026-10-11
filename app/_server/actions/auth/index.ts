@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createHash, randomBytes } from "crypto";
 import path from "path";
-import { lock, unlock } from "proper-lockfile";
 import {
   createSession,
   readSessionData,
@@ -24,6 +23,8 @@ import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { logAuthEvent } from "../log";
 import { getUsername } from "../users";
 import { ensureUser } from "../users/ensure-user";
+import { touchUsersFile } from "../users/records";
+import { withFileLock } from "../lib/file-lock";
 import {
   isSecureEnv,
   getAuthMode,
@@ -43,6 +44,19 @@ interface User {
   failedLoginAttempts?: number;
   nextAllowedLoginAttempt?: string;
   mfaEnabled?: boolean;
+}
+
+interface LoginRefusal {
+  error: string;
+  attemptsRemaining?: number;
+  failedAttempts?: number;
+  lockedUntil?: string;
+  waitSeconds?: number;
+}
+
+interface LdapPass {
+  username: string;
+  isAdmin: boolean;
 }
 
 const hashPassword = (password: string): string => {
@@ -190,7 +204,96 @@ export const register = async (formData: FormData) => {
   redirect("/");
 };
 
-export const login = async (formData: FormData) => {
+const _judgeLogin = async (
+  username: string,
+  password: string,
+  rememberMe: boolean,
+): Promise<LoginRefusal | LdapPass | undefined> => {
+  const users = (await readJsonFile(USERS_FILE)) || [];
+  const user = users.find(
+    (u: User) => u.username.toLowerCase() === username.toLowerCase(),
+  );
+
+  const bruteforceProtectionDisabled =
+    process.env.DISABLE_BRUTEFORCE_PROTECTION === "true";
+
+  if (!bruteforceProtectionDisabled && user) {
+    const now = Date.now();
+    const nextAllowedTime = user.nextAllowedLoginAttempt
+      ? new Date(user.nextAllowedLoginAttempt).getTime()
+      : 0;
+
+    if (nextAllowedTime > now) {
+      const waitSeconds = Math.ceil((nextAllowedTime - now) / 1000);
+      await logAuthEvent(
+        "login",
+        username,
+        false,
+        `Rate limited - attempt ${(user.failedLoginAttempts || 0) + 1}`,
+      );
+      return {
+        error: "Too many failed attempts",
+        lockedUntil: user.nextAllowedLoginAttempt,
+        attemptsRemaining: 0,
+        waitSeconds,
+      };
+    }
+  }
+
+  if (getAuthMode() === "ldap") {
+    const ldapResult = await ldapLogin(username, password);
+
+    if (!ldapResult.ok) {
+      if (ldapResult.kind === "connection_error") {
+        await logAuthEvent("login", username, false, "LDAP connection error");
+        return { error: "Authentication service unavailable" };
+      }
+
+      if (ldapResult.kind === "unauthorized") {
+        redirect("/auth/login?error=unauthorized");
+      }
+
+      return await _handleFailedLogin(users, username, bruteforceProtectionDisabled);
+    }
+
+    return { username: ldapResult.username, isAdmin: ldapResult.isAdmin };
+  }
+
+  if (!user || user.passwordHash !== hashPassword(password)) {
+    return await _handleFailedLogin(users, username, bruteforceProtectionDisabled);
+  }
+
+  if (user.mfaEnabled) {
+    const pendingSessionId = _generateSessionId();
+    await _setSessionCookie(pendingSessionId, getMfaPendingCookieName(), 10 * 60);
+    await createSession(pendingSessionId, user.username, "pending-mfa", rememberMe);
+
+    redirect("/auth/verify-mfa");
+  }
+
+  const userIndex = users.findIndex(
+    (u: User) => u.username.toLowerCase() === username.toLowerCase(),
+  );
+  if (userIndex !== -1) {
+    users[userIndex].lastLogin = new Date().toISOString();
+    users[userIndex].failedLoginAttempts = 0;
+    users[userIndex].nextAllowedLoginAttempt = undefined;
+    await writeJsonFile(users, USERS_FILE);
+  }
+
+  const sessionId = _generateSessionId();
+  const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
+
+  await createSession(sessionId, user.username, "local", rememberMe);
+  await _setSessionCookie(sessionId, getSessionCookieName(), maxAge);
+  await logAuthEvent("login", user.username, true);
+
+  redirect("/");
+};
+
+export const login = async (
+  formData: FormData,
+): Promise<LoginRefusal | undefined> => {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
   const rememberMe = formData.get("rememberMe") === "true";
@@ -199,111 +302,21 @@ export const login = async (formData: FormData) => {
     return { error: "Username and password are required" };
   }
 
-  const usersFile = path.join(process.cwd(), "data", "users", "users.json");
-  await fs.mkdir(path.dirname(usersFile), { recursive: true });
-  try { await fs.access(usersFile); } catch { await fs.writeFile(usersFile, "[]", "utf-8"); }
-  await lock(usersFile);
-  let lockReleased = false;
+  const usersFile = await touchUsersFile();
+  const ldapUser = await withFileLock(usersFile, () =>
+    _judgeLogin(username, password, rememberMe),
+  );
+  if (!ldapUser || "error" in ldapUser) return ldapUser;
 
-  try {
-    const users = (await readJsonFile(USERS_FILE)) || [];
-    const user = users.find(
-      (u: User) => u.username.toLowerCase() === username.toLowerCase(),
-    );
+  await ensureUser(ldapUser.username, ldapUser.isAdmin);
 
-    const bruteforceProtectionDisabled =
-      process.env.DISABLE_BRUTEFORCE_PROTECTION === "true";
+  const ldapSessionId = _generateSessionId();
+  const ldapMaxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
+  await createSession(ldapSessionId, ldapUser.username, "ldap", rememberMe);
+  await _setSessionCookie(ldapSessionId, getSessionCookieName(), ldapMaxAge);
+  await logAuthEvent("login", ldapUser.username, true);
 
-    if (!bruteforceProtectionDisabled && user) {
-      const now = Date.now();
-      const nextAllowedTime = user.nextAllowedLoginAttempt
-        ? new Date(user.nextAllowedLoginAttempt).getTime()
-        : 0;
-
-      if (nextAllowedTime > now) {
-        const waitSeconds = Math.ceil((nextAllowedTime - now) / 1000);
-        await logAuthEvent(
-          "login",
-          username,
-          false,
-          `Rate limited - attempt ${(user.failedLoginAttempts || 0) + 1}`,
-        );
-        return {
-          error: "Too many failed attempts",
-          lockedUntil: user.nextAllowedLoginAttempt,
-          attemptsRemaining: 0,
-          waitSeconds,
-        };
-      }
-    }
-
-    if (getAuthMode() === "ldap") {
-      const ldapResult = await ldapLogin(username, password);
-
-      if (!ldapResult.ok) {
-        if (ldapResult.kind === "connection_error") {
-          await logAuthEvent("login", username, false, "LDAP connection error");
-          return { error: "Authentication service unavailable" };
-        }
-
-        if (ldapResult.kind === "unauthorized") {
-          lockReleased = true;
-          await unlock(usersFile);
-          redirect("/auth/login?error=unauthorized");
-        }
-
-        return await _handleFailedLogin(users, username, bruteforceProtectionDisabled);
-      }
-
-      lockReleased = true;
-      await unlock(usersFile);
-
-      await ensureUser(ldapResult.username, ldapResult.isAdmin);
-
-      const ldapSessionId = _generateSessionId();
-      const ldapMaxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
-      await createSession(ldapSessionId, ldapResult.username, "ldap", rememberMe);
-      await _setSessionCookie(ldapSessionId, getSessionCookieName(), ldapMaxAge);
-      await logAuthEvent("login", ldapResult.username, true);
-
-      redirect("/");
-    }
-
-    if (!user || user.passwordHash !== hashPassword(password)) {
-      return await _handleFailedLogin(users, username, bruteforceProtectionDisabled);
-    }
-
-    if (user.mfaEnabled) {
-      const pendingSessionId = _generateSessionId();
-      await _setSessionCookie(pendingSessionId, getMfaPendingCookieName(), 10 * 60);
-      await createSession(pendingSessionId, user.username, "pending-mfa", rememberMe);
-
-      redirect("/auth/verify-mfa");
-    }
-
-    const userIndex = users.findIndex(
-      (u: User) => u.username.toLowerCase() === username.toLowerCase(),
-    );
-    if (userIndex !== -1) {
-      users[userIndex].lastLogin = new Date().toISOString();
-      users[userIndex].failedLoginAttempts = 0;
-      users[userIndex].nextAllowedLoginAttempt = undefined;
-      await writeJsonFile(users, USERS_FILE);
-    }
-
-    const sessionId = _generateSessionId();
-    const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
-
-    await createSession(sessionId, user.username, "local", rememberMe);
-    await _setSessionCookie(sessionId, getSessionCookieName(), maxAge);
-    await logAuthEvent("login", user.username, true);
-
-    redirect("/");
-  } finally {
-    if (!lockReleased) {
-      await unlock(usersFile);
-    }
-  }
+  redirect("/");
 };
 
 export const logout = async () => {

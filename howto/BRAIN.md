@@ -26,15 +26,24 @@ Wikilinks understand the usual extras:
 
 ## How wikilinks find their note
 
-Jotty matches a wikilink by title against your own notes and checklists. Case and extra spaces don't matter.
+Jotty matches a wikilink against your own notes and checklists. Case and extra spaces don't matter. It tries these in order and takes the first that fits:
 
-- **The first match sticks.** Once `[[Plan]]` has found a note, it keeps pointing at that note. A new note called "Plan" later on doesn't take the link over.
-- **Two items with the same title.** The link goes to the older one.
-- **Renaming the target.** The link keeps working. The next time you save the note that contains the link, Jotty updates the text to the new title, so `[[Plan]]` becomes `[[Q3 plan]]`. Headings and shown text are kept. Only the note you are saving changes. Other notes catch up when they are next saved, and their links keep working until then.
+1. **Title**, from the note's frontmatter `title`, its first `# Heading`, or its filename.
+2. **Filename**, without `.md`, so `[[my-note]]` finds `my-note.md` even when its heading says something else.
+3. **Folder and filename**, like `[[Projects/My Note]]`. You can leave off the folders above, so `[[Projects/My Note]]` also finds `Work/Projects/My Note.md`.
+4. **Aliases**, from an `aliases` or `alias` list in the frontmatter.
+
+`[[My Note.md]]` works too.
+
+- **Two items match.** The link goes to the one whose folder and filename sort first. Add a matching note in a folder that sorts earlier and the link moves to it.
+- **Renaming or moving the target.** Jotty rewrites the wikilinks in your other notes and checklists right away, so `[[Plan]]` becomes `[[Q3 plan]]`. Headings and shown text stay. If another item already has the new title, Jotty writes the filename or folder path instead, so the link stays on the item you renamed.
 - **Pointing a link somewhere else.** Edit the text inside `[[ ]]` and save. Jotty looks up the new text again.
-- **Deleting the target.** Links move to the next item with that title, or become a "not written yet" button.
+- **Deleting the target.** Links move to the next matching item, or become a "not written yet" button.
 
-Wikilinks inside code blocks and inline code are left alone.
+Wikilinks inside code blocks and inline code are left alone. `![[...]]` embeds are shown as typed and don't count as links.
+
+> [!NOTE]
+> Jotty doesn't rewrite links inside encrypted notes or notes in read-only folders. Those links stop matching after a rename until you edit them. The same happens if a linking note is open in the editor during the rename: saving it puts the old link text back.
 
 ---
 
@@ -48,14 +57,24 @@ Titles shorter than three characters are skipped, because they would match almos
 
 ## Importing from Obsidian
 
-Copy your vault's Markdown files into a category and Jotty picks them up. Jotty reads the `[[wikilinks]]` in each note but never rewrites the body on import.
+Copy your vault's Markdown files into a category inside your own folder, for example `data/notes/<your username>/Vault/`. Files placed straight into `data/notes/` don't belong to anyone and won't show up.
+
+Jotty reads the `[[wikilinks]]` in each note, including Obsidian's filename, folder and alias forms. Importing never changes a note's body.
 
 Jotty adds two lines to each file's frontmatter the first time it sees it:
 
 - `uuid`, the id Jotty uses for the note's address
 - `createdAt`, so the note keeps its creation date
 
-After that, a wikilink only gets rewritten when you rename a note in Jotty and then save a note that links to it, as described above.
+Some files Jotty won't touch on its own:
+
+- empty files
+- frontmatter Obsidian accepts but strict YAML doesn't, like `title: Meeting: notes` or tab indents
+- a `uuid` field that holds something other than a Jotty id
+
+Those notes still show up and you can read them, but they stay read-only until they have an id. A banner at the top says why. Anyone who can edit the note can press **Try to fix this**. Jotty then quotes the values YAML rejects, swaps tabs for spaces, moves the old `uuid` to `previousUuid` and adds its own. It can't undo that, so keep a copy if Obsidian or a plugin depends on the frontmatter. If Jotty still can't read the frontmatter after that, it changes nothing and asks you to fix the file by hand.
+
+After import, a wikilink only gets rewritten when you rename or move the note it points at, as described above.
 
 ---
 
@@ -113,8 +132,8 @@ Jotty keeps the links in `data/.relations.db`, next to your notes. Your Markdown
 - Files changed outside Jotty are picked up within about a minute.
 - Anyone can rebuild their own index with the rebuild route in the [API](API.md). Admins can also rebuild another user's, or everyone's from **Admin > Content**.
 
-> [!NOTE]
-> A rebuild remembers which note each wikilink first matched. Deleting the file forgets that. Wikilinks whose target you renamed in Jotty, sitting in notes you haven't saved since, go back to matching by title.
+> [!TIP]
+> Everything in the index comes from your files, so deleting `data/.relations.db` is always safe. Jotty rebuilds it on start and links end up exactly where they were. If a wikilink is still a "not written yet" button after a rebuild, the text inside `[[ ]]` doesn't match any title, filename or alias. Edit the link to fix it.
 
 ---
 

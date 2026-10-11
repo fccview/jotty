@@ -13,7 +13,6 @@ import { parseMarkdown } from "@/app/_utils/checklist-utils";
 import {
   createdAtOf,
   extractYamlMetadata,
-  generateUuid,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
 import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
@@ -23,7 +22,8 @@ import { orderByUuids } from "@/app/_utils/order-utils";
 import { getChecklistType } from "./parsers";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { isKanbanType } from "@/app/_types/enums";
-import { lacksUuid, stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { claimOf, claimUuid, lacksUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
@@ -134,12 +134,15 @@ export const readListsRecursively = async (
             const tags = Array.isArray(metadata?.tags)
               ? (metadata.tags as string[])
               : [];
+            const claim = await claimOf(metadata?.uuid, filePath);
+            if (!claim) {
+              console.warn("Skipping checklist without a resolvable uuid:", filePath);
+              return null;
+            }
             return {
               id,
-              uuid:
-                typeof metadata?.uuid === "string"
-                  ? metadata.uuid
-                  : await stampUuid(filePath),
+              uuid: claim.uuid,
+              ...(claim.refusal && { lockReason: claim.refusal }),
               title: await titleFromFile(metadata, filePath, id),
               type: isKanbanType(metadata?.checklistType as string)
                 ? "kanban"
@@ -158,12 +161,12 @@ export const readListsRecursively = async (
           if (isRaw) {
             const { metadata } = extractYamlMetadata(content);
             const type = getChecklistType(content);
-            const uuid =
-              metadata.uuid || (await stampUuid(filePath)) || generateUuid();
+            const claim = await claimOf(metadata.uuid, filePath);
             return {
               id,
               title: id,
-              uuid,
+              uuid: claim?.uuid || pathUuid(filePath),
+              ...(claim?.refusal && { lockReason: claim.refusal }),
               type,
               category: categoryPath,
               items: [],
@@ -188,7 +191,12 @@ export const readListsRecursively = async (
             fileName,
           );
           if (!lacksUuid(content)) return list;
-          return { ...list, uuid: (await stampUuid(filePath)) || list.uuid };
+          const claim = await claimUuid(filePath);
+          return {
+            ...list,
+            uuid: claim?.uuid || pathUuid(filePath),
+            ...(claim?.refusal && { lockReason: claim.refusal }),
+          };
         } catch {
           return null;
         }

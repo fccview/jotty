@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/app/_utils/global-utils";
 import { Button } from "../Buttons/Button";
 import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
@@ -9,6 +10,8 @@ import {
   MenuSide,
   menuPlacementClasses,
 } from "@/app/_utils/menu-placement-utils";
+
+const MENU_MARGIN = 8;
 
 interface DropdownItem {
   type?: "item" | "divider";
@@ -23,29 +26,47 @@ interface DropdownMenuProps {
   trigger: React.ReactNode;
   items: DropdownItem[];
   align?: "left" | "right";
+  contextTarget?: React.RefObject<HTMLElement | null>;
 }
 
 export const DropdownMenu = ({
   trigger,
   items,
   align = "left",
+  contextTarget,
 }: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [point, setPoint] = useState<{ x: number; y: number } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useMemo(() => React.createRef<HTMLDivElement>(), [point]);
   const placement = useMenuPlacement(
     isOpen,
-    dropdownRef,
+    point ? cursorRef : dropdownRef,
     menuRef,
     MenuSide.Down,
-    align === "right" ? MenuAlign.End : MenuAlign.Start,
+    !point && align === "right" ? MenuAlign.End : MenuAlign.Start,
   );
+
+  useEffect(() => {
+    const target = contextTarget?.current;
+    if (!target) return;
+    const handleContext = (event: MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setPoint({ x: event.clientX, y: event.clientY });
+      setIsOpen(true);
+    };
+    target.addEventListener("contextmenu", handleContext);
+    return () => target.removeEventListener("contextmenu", handleContext);
+  }, [contextTarget]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        !menuRef.current?.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -55,24 +76,39 @@ export const DropdownMenu = ({
         setIsOpen(false);
       }
     };
+    const handleScroll = (event: Event) => {
+      if (!menuRef.current?.contains(event.target as Node)) setIsOpen(false);
+    };
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleEscape);
+      if (point) window.addEventListener("scroll", handleScroll, true);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("scroll", handleScroll, true);
     };
-  }, [isOpen]);
+  }, [isOpen, point]);
 
   const handleItemClick = (itemOnClick: () => void) => {
     itemOnClick();
     setIsOpen(false);
   };
 
-  const handleToggle = () => setIsOpen(!isOpen);
+  const handleToggle = () => {
+    setPoint(null);
+    setIsOpen(point ? true : !isOpen);
+  };
+
+  const renderMenu = (menu: React.ReactNode) => point ? createPortal(
+    <div ref={cursorRef} className="fixed z-[10000]" style={{ top: point.y, left: point.x }}>
+      {menu}
+    </div>,
+    document.body,
+  ) : menu;
 
   return (
     <div
@@ -83,13 +119,18 @@ export const DropdownMenu = ({
         {trigger}
       </div>
 
-      {isOpen && (
+      {isOpen && renderMenu(
         <div
           ref={menuRef}
           className={cn(
             "absolute min-w-56 w-fit bg-background border border-border rounded-jotty shadow-lg z-50 py-1",
-            menuPlacementClasses(placement)
+            menuPlacementClasses(placement),
+            point && "overflow-auto",
           )}
+          style={point ? {
+            maxHeight: Math.max(point.y, window.innerHeight - point.y) - MENU_MARGIN,
+            maxWidth: Math.max(point.x, window.innerWidth - point.x) - MENU_MARGIN,
+          } : undefined}
         >
           {items.map((item, index) => {
             if (item.type === "divider") {

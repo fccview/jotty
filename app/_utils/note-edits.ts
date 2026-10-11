@@ -22,15 +22,19 @@ const _asEol = (text: string, eol: string): string =>
 const _count = (haystack: string, needle: string): number =>
   haystack.split(needle).length - 1;
 
+const _endsLine = (body: string, needle: string, eol: string): boolean =>
+  needle.endsWith(eol) && !body.endsWith(eol);
+
 export const findReplace = (body: string, find: string, replace: string): TextEdit => {
   const eol = _eolOf(body);
   const needle = _asEol(find, eol);
-  const matches = _count(body, needle);
+  const haystack = _count(body, needle) === 0 && _endsLine(body, needle, eol) ? body + eol : body;
+  const matches = _count(haystack, needle);
   if (matches === 0) return { error: FIND_MISSING };
   if (matches > 1) return { error: FIND_AMBIGUOUS };
-  const at = body.indexOf(needle);
+  const at = haystack.indexOf(needle);
   const swapped = defangHtml(_asEol(replace, eol));
-  return { body: body.slice(0, at) + swapped + body.slice(at + needle.length) };
+  return { body: haystack.slice(0, at) + swapped + haystack.slice(at + needle.length) };
 };
 
 export const cleanTag = (tag: string): string | null => {

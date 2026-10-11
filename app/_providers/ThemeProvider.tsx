@@ -7,6 +7,7 @@ import { useAppMode } from "./AppModeProvider";
 import { useRadiusOverride } from "@/app/_hooks/useRadiusOverride";
 import { User } from "../_types";
 import { useTranslations } from "next-intl";
+import { syncThemeColorMeta } from "@/app/_utils/theme-color-utils";
 
 export const ThemeProvider = ({
   children,
@@ -144,6 +145,8 @@ export const ThemeProvider = ({
 
       customStyleElement.textContent = customCSS;
     }
+
+    syncThemeColorMeta();
   }, [resolvedTheme, customThemeColors, customCSS]);
 
   return <>{children}</>;

@@ -2,7 +2,8 @@ import { getSettings } from "@/app/_server/actions/config";
 import { spliceNote, type SpliceEdit } from "@/app/_server/actions/note/splice";
 import { unlinkItem } from "@/app/_utils/item-links";
 import { isUuid } from "@/app/_consts/identity";
-import { canReach } from "@/app/_server/actions/share/queries";
+import { canReach, isLockedUuid } from "@/app/_server/actions/share/queries";
+import { lockedNotice } from "@/app/_server/actions/lib/read-only-message";
 import { itemHref } from "@/app/_utils/global-utils";
 import { escapeLinkText } from "@/app/_utils/item-href-utils";
 import {
@@ -328,6 +329,7 @@ export const linkItems = async (
   const target = visible.get(targetUuid.toLowerCase());
   if (!target || !from) return { success: false, error: NOT_VISIBLE };
   if (from.uuid === target.uuid) return { success: false, error: "An item can't link to itself" };
+  if (await isLockedUuid(target.type, target.uuid)) return { success: false, error: await lockedNotice() };
 
   const allowed = await canReach(from.uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
   if (!allowed) return { success: false, error: DENIED };

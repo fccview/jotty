@@ -10,6 +10,7 @@ const mockGrepExcerpt = vi.fn();
 vi.mock("@/app/_server/actions/file", () => ({
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: any[]) => (await mockServerReadFile(...args)) ?? null,
   serverWriteFile: (...args: any[]) => mockFs.writeFile(...args),
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
 }));
@@ -137,7 +138,7 @@ describe("readNotesRecursively uuid contract", () => {
     mockServerReadDir.mockResolvedValue([fileEntry("kept.md")]);
     mockGrepFrontmatter.mockResolvedValue({
       title: "Kept",
-      uuid: "known-uuid",
+      uuid: "0b6c3c1e-1111-4222-8333-944455556666",
     });
 
     const notes = await readNotesRecursively(
@@ -151,7 +152,7 @@ describe("readNotesRecursively uuid contract", () => {
     );
 
     expect(notes).toHaveLength(1);
-    expect(notes[0].uuid).toBe("known-uuid");
+    expect(notes[0].uuid).toBe("0b6c3c1e-1111-4222-8333-944455556666");
     expect(mockFs.writeFile).not.toHaveBeenCalled();
   });
 
@@ -162,7 +163,7 @@ describe("readNotesRecursively uuid contract", () => {
     ]);
     mockGrepFrontmatter.mockImplementation(async (filePath: string) =>
       filePath.endsWith("good.md")
-        ? { title: "Good", uuid: "good-uuid" }
+        ? { title: "Good", uuid: "0c6c3c1e-1111-4222-8333-944455556666" }
         : { title: "Broken" },
     );
     mockServerReadFile.mockResolvedValue(null);

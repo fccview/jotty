@@ -28,6 +28,8 @@ import {
   grepListAllFiles,
 } from "@/app/_utils/grep-utils";
 import { modeFor } from "@/app/_utils/sharing-utils";
+import { isPathUuid } from "@/app/_server/actions/lib/read-only";
+import { isLockedItem } from "@/app/_server/actions/lib/unstamped";
 import { canReachFile, resolveAccess, sharersOf } from "./access";
 import { readCatInfo } from "./category-info";
 import { targetDir } from "./target";
@@ -45,6 +47,21 @@ const _fileFor = async (mode: Modes, uuid: string): Promise<string | null> => {
   return found ? found.filePath : null;
 };
 
+const LOCKED_PERMISSIONS: PermissionTypes[] = [PermissionTypes.EDIT, PermissionTypes.CREATE];
+
+const _locked = async (
+  itemType: ItemType,
+  uuid: string,
+  permission: PermissionTypes,
+): Promise<boolean> => {
+  if (!LOCKED_PERMISSIONS.includes(permission) || !isPathUuid(uuid)) return false;
+  const filePath = await _fileFor(modeFor(itemType), uuid);
+  return Boolean(filePath) && (await isLockedItem(uuid, filePath!));
+};
+
+export const isLockedUuid = (itemType: ItemType, uuid: string): Promise<boolean> =>
+  _locked(itemType, uuid, PermissionTypes.EDIT);
+
 export const canReach = async (
   uuid: string,
   itemType: ItemType,
@@ -53,6 +70,7 @@ export const canReach = async (
 ): Promise<boolean> => {
   try {
     if (!username) return false;
+    if (await _locked(itemType, uuid, permission)) return false;
     if (await canAccessAllContent()) return true;
 
     const mode = modeFor(itemType);
@@ -80,6 +98,7 @@ export const reachableFile = async (
     const filePath = await _fileFor(mode, uuid);
 
     if (!filePath) return null;
+    if (await _locked(itemType, uuid, permission)) return null;
     if (await canAccessAllContent()) return filePath;
 
     return (await canReachFile(mode, filePath, username, permission))

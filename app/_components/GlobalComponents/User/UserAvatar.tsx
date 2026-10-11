@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { getDeterministicColor } from "@/app/_utils/color-utils";
+import { initialsOf } from "@/app/_utils/avatar-utils";
 import { getPublicUser } from "@/app/_server/actions/users";
 
 interface UserAvatarProps {
@@ -35,14 +36,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     lg: "h-10 w-10 text-lg",
   };
 
-  const words = username.split(" ").filter(Boolean);
-  let initials = "";
-
-  if (words.length === 1) {
-    initials = username.substring(0, 2).toUpperCase();
-  } else if (words.length > 1) {
-    initials = (words[0][0] + words[1][0]).toUpperCase();
-  }
+  const initials = initialsOf(username);
 
   const backgroundColor = getDeterministicColor(username);
 

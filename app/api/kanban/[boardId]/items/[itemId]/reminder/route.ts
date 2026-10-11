@@ -5,7 +5,7 @@ import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS, okSchema } from "@/app/_schemas/api/common";
 import { BOARD_REFUSED, cardParams, cardReminderBody, cardChangedSchema } from "@/app/_schemas/api/kanban";
-import { boardFor, cardChanged } from "@/app/_utils/kanban/api-board";
+import { cardFor, cardChanged } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
 
@@ -29,13 +29,13 @@ export const PUT = defineRoute(
     },
   },
   async ({ request, user, params, body }) => {
-    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    const { board, card, refused } = await cardFor(request, params.boardId, user.username, params.itemId, PermissionTypes.EDIT);
     if (refused) return refused;
 
-    const result = await remindItem(user, board.uuid, params.itemId, JSON.stringify({ datetime: body.datetime }));
+    const result = await remindItem(user, board.uuid, card.id, JSON.stringify({ datetime: body.datetime }));
     if (result.error) return refuse(result.error, 400);
 
-    return cardChanged(result.data, params.itemId);
+    return cardChanged(result.data, card.id);
   },
 );
 
@@ -58,10 +58,10 @@ export const DELETE = defineRoute(
     },
   },
   async ({ request, user, params }) => {
-    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    const { board, card, refused } = await cardFor(request, params.boardId, user.username, params.itemId, PermissionTypes.EDIT);
     if (refused) return refused;
 
-    const result = await remindItem(user, board.uuid, params.itemId, "");
+    const result = await remindItem(user, board.uuid, card.id, "");
     if (result.error) return refuse(result.error, 400);
 
     return NextResponse.json({ success: true });

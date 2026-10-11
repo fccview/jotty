@@ -19,7 +19,7 @@ import { updateItem } from "@/app/_utils/item-tree-utils";
 import { applyStatus, completeParent } from "@/app/_utils/item-status-utils";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
-import { UNKNOWN_STATUS, boardColumns } from "@/app/_consts/kanban";
+import { boardColumns, unknownStatus } from "@/app/_consts/kanban";
 
 const _stampStatus = async (
   actor: SanitisedUser,
@@ -87,7 +87,7 @@ const _stampStatus = async (
     }
 
     if (status && !boardColumns(list.statuses).some((column) => column.id === status)) {
-      return { success: false, error: UNKNOWN_STATUS };
+      return { success: false, error: unknownStatus(list.statuses) };
     }
 
     const now = new Date().toISOString();

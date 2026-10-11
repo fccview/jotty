@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import { getEnvOrFile } from "@/app/_server/actions/file";
-import { lock, unlock } from "proper-lockfile";
 import { getAuthMode } from "@/app/_utils/env-utils";
 import { ensureUser } from "@/app/_server/actions/users/ensure-user";
 import { jwtVerify, createRemoteJWKSet, decodeJwt } from "jose";
@@ -359,29 +356,6 @@ export async function GET(request: NextRequest) {
     path: "/",
     maxAge: 30 * 24 * 60 * 60,
   });
-
-  const sessionsFile = path.join(
-    process.cwd(),
-    "data",
-    "users",
-    "sessions.json",
-  );
-  await fs.mkdir(path.dirname(sessionsFile), { recursive: true });
-
-  await lock(sessionsFile);
-  try {
-    let sessions: Record<string, string> = {};
-    try {
-      const content = await fs.readFile(sessionsFile, "utf-8");
-      if (content) {
-        sessions = JSON.parse(content);
-      }
-    } catch {}
-    sessions[sessionId] = username;
-    await fs.writeFile(sessionsFile, JSON.stringify(sessions, null, 2));
-  } finally {
-    await unlock(sessionsFile);
-  }
 
   await createSession(sessionId, username, "sso");
 

@@ -198,7 +198,7 @@ export const ChecklistHeading = ({
 
   useEffect(() => {
     if (autoFocus && inputRef.current && !isMobileDevice()) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
     }
   }, [focusKey, autoFocus]);
 
