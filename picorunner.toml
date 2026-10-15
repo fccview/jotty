@@ -1,0 +1,32 @@
+schema = 1
+name = "Jotty"
+
+[runtime]
+kind = "node"
+version = "24"
+package_manager = "yarn"
+
+[[setup.steps]]
+kind = "dependencies"
+locked = true
+
+[[setup.steps]]
+run = ["yarn", "build"]
+
+[launch]
+command = ["node", "server.js"]
+host = "127.0.0.1"
+host_env = "HOSTNAME"
+port = 3000
+port_env = "PORT"
+
+[launch.environment]
+HTTPS = "false"
+
+[health]
+type = "http"
+path = "/api/health"
+timeout_seconds = 120
+
+[persistence]
+paths = ["data", "config"]
