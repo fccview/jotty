@@ -92,6 +92,12 @@ My recommended way to run `jotty·page` is with Docker. You can also use:
 
 Running it without Docker, from source or from the prebuilt tarball, needs Node.js 22.15 or later in the 22.x series, or Node.js 23.11 or later.
 
+### PicoRunner
+
+[![Launch on PicoRunner](https://picorunner.com/badges/launch.svg)](https://picorunner.com/launch/?repository=https%3A%2F%2Fgithub.com%2Ffccview%2Fjotty)
+
+PicoRunner installs the locked Yarn dependencies, builds Jotty with Node.js 24, and runs its custom server on your computer's loopback interface, including WebSocket updates. Create your local admin account on the first visit. The manifest preserves `data/` and `config/` during managed updates; keep your own backups too.
+
 <a id="docker-compose"></a>
 
 ### Docker Compose (Recommended)
