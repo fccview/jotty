@@ -1,13 +1,13 @@
 "use client";
 
-import { File02Icon } from "hugeicons-react";
 import { Note } from "@/app/_types";
 import { useTranslations } from "next-intl";
-import { cn } from "@/app/_utils/global-utils";
 import { formatShortTime } from "@/app/_utils/date-utils";
 import { categoryLeaf } from "@/app/_utils/category-path-utils";
-import { WizardIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/WizardIcon";
+import { ItemTypes } from "@/app/_types/enums";
+import { isNoteEncrypted } from "@/app/_utils/note-display-utils";
 import { PinToggle } from "./Parts/PinToggle";
+import { ItemGlyph } from "./Parts/ItemGlyph";
 
 interface NoteGridItemProps {
   note: Note;
@@ -28,18 +28,7 @@ export const NoteGridItem = ({
       className="jotty-note-grid-item group relative bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
     >
       <div className="flex items-start justify-between gap-1">
-        <span
-          className={cn(
-            "inline-flex h-8 w-8 items-center justify-center rounded-jotty shrink-0",
-            note.encrypted ? "bg-primary/[0.15] text-primary" : "bg-muted text-primary",
-          )}
-        >
-          {note.encrypted ? (
-            <WizardIcon className="h-5 w-5" />
-          ) : (
-            <File02Icon className="h-4 w-4" />
-          )}
-        </span>
+<ItemGlyph type={ItemTypes.NOTE} isEncrypted={isNoteEncrypted(note)} />
         {onTogglePin && (
           <PinToggle
             isPinned={isPinned}

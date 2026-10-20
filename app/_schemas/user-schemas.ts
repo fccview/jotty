@@ -1,6 +1,13 @@
 import { z } from "zod";
-import { Modes } from "@/app/_types/enums";
+import { HomeWidget, Modes } from "@/app/_types/enums";
+import { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
+import { HOME_WIDGET_KEYS, HomeWidgetKey } from "@/app/_consts/home";
 import { SearchModes } from "@/app/_consts/search";
+import {
+  MAX_NOTE_FONT_SIZE,
+  MIN_NOTE_FONT_SIZE,
+  NOTE_FONT_SIZE_AUTO,
+} from "@/app/_consts/styling";
 
 export const userSettingsSchema = z.object({
   preferredTheme: z.string().min(1, "Theme is required"),
@@ -25,6 +32,18 @@ export const editorSettingsSchema = z.object({
   notesAutoSaveInterval: z
     .number()
     .min(0, "Notes auto save interval must be greater than 0"),
+  notesFontSize: z
+    .number()
+    .int()
+    .refine(
+      (size) =>
+        size === NOTE_FONT_SIZE_AUTO ||
+        (size >= MIN_NOTE_FONT_SIZE && size <= MAX_NOTE_FONT_SIZE),
+      {
+        message: `Notes font size must be between ${MIN_NOTE_FONT_SIZE} and ${MAX_NOTE_FONT_SIZE}`,
+      },
+    )
+    .optional(),
   disableRichEditor: z.enum(["enable", "disable"], {
     message: "Disable rich editor must be either 'enable' or 'disable'",
   }),
@@ -43,7 +62,7 @@ export const editorSettingsSchema = z.object({
       message: "Markdown theme must be a valid Prism theme",
     },
   ),
-  defaultNoteFilter: z.enum(["all", "recent", "pinned"], {
+  defaultNoteFilter: z.enum(NOTE_FILTERS, {
     message: "Default note filter must be 'all', 'recent', or 'pinned'",
   }),
   quickCreateNotes: z.enum(["enable", "disable"], {
@@ -66,7 +85,7 @@ export const checklistSettingsSchema = z.object({
     message: "Show checklist emojis must be either 'enable' or 'disable'",
   }),
   defaultChecklistFilter: z.enum(
-    ["all", "completed", "incomplete", "pinned", "task", "simple"],
+    CHECKLIST_FILTERS,
     {
       message:
         "Default checklist filter must be 'all', 'completed', 'incomplete', 'pinned', 'kanban', or 'simple'",
@@ -101,17 +120,16 @@ export const kanbanSettingsSchema = z.object({
 });
 
 const homeWidgetSchema = z
-  .enum(["enable", "disable"], {
+  .enum(HomeWidget, {
     message: "Home widgets must be either 'enable' or 'disable'",
   })
   .optional();
 
-export const homeWidgetsSettingsSchema = z.object({
-  homeWelcome: homeWidgetSchema,
-  homePickUp: homeWidgetSchema,
-  homePinboard: homeWidgetSchema,
-  homeTags: homeWidgetSchema,
-});
+export const homeWidgetsSettingsSchema = z.object(
+  Object.fromEntries(
+    HOME_WIDGET_KEYS.map((key) => [key, homeWidgetSchema]),
+  ) as Record<HomeWidgetKey, typeof homeWidgetSchema>,
+);
 
 export const fileSettingsSchema = z.object({
   fileRenameMode: z.enum(["dash-case", "minimal", "none"], {

@@ -11,7 +11,8 @@ import { ChecklistListItem } from "@/app/_components/GlobalComponents/Cards/Chec
 import { ChecklistGridItem } from "@/app/_components/GlobalComponents/Cards/ChecklistGridItem";
 import { EmptyState } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { ItemViews } from "@/app/_components/GlobalComponents/Cards/ItemViews";
-import { NOTE_PAGE_COLUMNS } from "@/app/_consts/masonry";
+import { NOTE_PAGE_COLUMNS } from "@/app/_consts/columns";
+import { newestFirst } from "@/app/_utils/order-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
@@ -89,11 +90,7 @@ export const TagsHome = ({
         item: checklist,
       })),
     ];
-    items.sort(
-      (a, b) =>
-        new Date(b.item.updatedAt).getTime() -
-        new Date(a.item.updatedAt).getTime(),
-    );
+    items.sort((a, b) => newestFirst(a.item, b.item));
     return items;
   }, [displayNotes, displayChecklists]);
 
@@ -126,7 +123,7 @@ export const TagsHome = ({
     return (
       <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter bg-background h-full">
         <EmptyState
-          icon={<GridIcon className="h-10 w-10 text-muted-foreground" />}
+          icon={GridIcon}
           title={t("notes.tags")}
           description={t("notes.noNotesYet")}
           buttonText={t("common.new")}

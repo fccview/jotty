@@ -2,13 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import { Category } from "@/app/_types";
-import { BrowseSort } from "@/app/_consts/browse";
-import { useBrowse } from "@/app/_hooks/useBrowse";
+import { BrowseScope, BrowseSort } from "@/app/_consts/browse";
+import { BrowseControls } from "@/app/_hooks/useBrowse";
 import { FilterSentence } from "./FilterSentence";
 import { FilterChips } from "./FilterChips";
 
 type BrowseState<F extends string> = Pick<
-  ReturnType<typeof useBrowse<{ title: string; updatedAt: string }, F>>,
+  BrowseControls<F>,
   | "filter"
   | "setFilter"
   | "countFor"
@@ -26,8 +26,8 @@ type BrowseState<F extends string> = Pick<
 >;
 
 interface BrowseFiltersProps<F extends string> {
-  scope: "notes" | "checklists" | "boards";
-  filters: F[];
+  scope: BrowseScope;
+  filters: readonly F[];
   defaultFilter: F;
   categories: Category[];
   browse: BrowseState<F>;

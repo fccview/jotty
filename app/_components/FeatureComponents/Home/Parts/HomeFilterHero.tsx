@@ -3,12 +3,12 @@
 import { useTranslations } from "next-intl";
 import { Cancel01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { FeedFilter } from "@/app/_hooks/useFilteredFeed";
+import { ContentFilter } from "@/app/_types";
 import { HomeHero } from "./HomeHero";
 import { QuickCapture } from "./QuickCapture";
 
 interface HomeFilterHeroProps {
-  filter: FeedFilter;
+  filter: ContentFilter;
   name: string;
   promptsKey: string;
   createLabel: string;

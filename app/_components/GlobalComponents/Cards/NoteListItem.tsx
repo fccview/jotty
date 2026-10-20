@@ -1,17 +1,16 @@
 "use client";
 
-import { File02Icon } from "hugeicons-react";
 import { Note } from "@/app/_types";
-import { Modes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/app/_utils/global-utils";
 import { formatShortTime } from "@/app/_utils/date-utils";
-import { noteStats } from "@/app/_utils/note-stats-utils";
+import { isNoteEncrypted, noteExcerptOf } from "@/app/_utils/note-display-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
-import { WizardIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/WizardIcon";
 import { PinToggle } from "./Parts/PinToggle";
 import { ItemShareMark } from "./Parts/ItemShareMark";
+import { ItemGlyph } from "./Parts/ItemGlyph";
 
 interface NoteListItemProps {
   note: Note;
@@ -33,10 +32,8 @@ export const NoteListItem = ({
   isBare = false,
 }: NoteListItemProps) => {
   const t = useTranslations();
-  const excerpt = useMemo(
-    () => (showExcerpt && !note.encrypted ? noteStats(note.content || "").excerpt : ""),
-    [showExcerpt, note.encrypted, note.content],
-  );
+  const isEncrypted = isNoteEncrypted(note);
+  const excerpt = useMemo(() => (showExcerpt ? noteExcerptOf(note) : ""), [showExcerpt, note]);
 
   return (
     <div
@@ -46,18 +43,7 @@ export const NoteListItem = ({
         isSelected ? "bg-primary/10" : "hover:bg-muted/40",
       )}
     >
-      <span
-        className={cn(
-          "mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-jotty shrink-0",
-          note.encrypted ? "bg-primary/[0.15] text-primary" : "bg-muted text-primary",
-        )}
-      >
-        {note.encrypted ? (
-          <WizardIcon className="h-5 w-5" />
-        ) : (
-          <File02Icon className="h-4 w-4" />
-        )}
-      </span>
+      <ItemGlyph type={ItemTypes.NOTE} isEncrypted={isEncrypted} className="mt-0.5" />
 
       <button
         type="button"
@@ -76,7 +62,7 @@ export const NoteListItem = ({
           {categoryTrail(note.category, t("notes.uncategorized"))}
         </span>
         {showExcerpt &&
-          (note.encrypted ? (
+          (isEncrypted ? (
             <span className="block text-xs text-muted-foreground mt-1">
               {t("encryption.thisNoteIsEncrypted")}
             </span>

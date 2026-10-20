@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown01Icon, ArrowRight01Icon, Tick02Icon } from "hugeicons-react";
 import { Category } from "@/app/_types";
@@ -10,6 +10,7 @@ import { SMALL_RADIUS_CLASS } from "@/app/_consts/styling";
 
 const INDENT = 16;
 const BASE_PADDING = 8;
+const NO_CHILDREN: Category[] = [];
 
 interface CategoryCheckTreeProps {
   categories: Category[];
@@ -127,10 +128,18 @@ export const CategoryCheckTree = ({
   const t = useTranslations();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  const childrenOf = useCallback(
-    (path: string) => categories.filter((category) => category.parent === path),
-    [categories],
-  );
+  const byParent = useMemo(() => {
+    const groups = new Map<string, Category[]>();
+    categories.forEach((category) => {
+      if (!category.parent) return;
+      const siblings = groups.get(category.parent);
+      if (siblings) siblings.push(category);
+      else groups.set(category.parent, [category]);
+    });
+    return groups;
+  }, [categories]);
+
+  const childrenOf = useCallback((path: string) => byParent.get(path) || NO_CHILDREN, [byParent]);
 
   const onExpand = (path: string) =>
     setExpanded((prev) => {

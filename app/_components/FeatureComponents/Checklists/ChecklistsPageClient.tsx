@@ -3,9 +3,10 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
-import { countItems } from "@/app/_utils/checklist-utils";
+import { countItems } from "@/app/_utils/checklist-count-utils";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { ListsBrowser } from "./Parts/ListsBrowser";
+import { BrowseScope } from "@/app/_consts/browse";
 
 interface ChecklistsPageClientProps {
   initialLists: Checklist[];
@@ -37,7 +38,7 @@ export const ChecklistsPageClient = ({
 
   return (
     <ListsBrowser
-      isBoards={false}
+      scope={BrowseScope.CHECKLISTS}
       lists={initialLists}
       categories={categories}
       user={user}

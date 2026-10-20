@@ -40,7 +40,7 @@ const OptionLogo = ({ colors, className }: { colors: { background: string; prima
   />
 );
 
-export const DropdownOptions = ({
+const DropdownOptions = ({
   options,
   value,
   onSelect,

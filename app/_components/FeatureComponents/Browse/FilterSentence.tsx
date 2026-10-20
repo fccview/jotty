@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Category } from "@/app/_types";
-import { BROWSE_SORTS, BrowseSort } from "@/app/_consts/browse";
+import { BROWSE_SORTS, BrowseScope, BrowseSort } from "@/app/_consts/browse";
 import { categoryLeaf } from "@/app/_utils/category-path-utils";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -12,9 +12,18 @@ import { SENTENCE_FONT, SentenceWord } from "./SentenceWord";
 
 const VISIBLE_CATEGORY_NAMES = 2;
 
+interface FilterCountProps<F extends string> {
+  filter: F;
+  countFor: (filter: F) => number;
+}
+
+const FilterCount = <F extends string>({ filter, countFor }: FilterCountProps<F>) => (
+  <span className="font-mono text-xs text-muted-foreground">{countFor(filter)}</span>
+);
+
 interface FilterSentenceProps<F extends string> {
-  scope: "notes" | "checklists" | "boards";
-  filters: F[];
+  scope: BrowseScope;
+  filters: readonly F[];
   filter: F;
   defaultFilter: F;
   onFilter: (filter: F) => void;
@@ -59,7 +68,12 @@ export const FilterSentence = <F extends string>({
           first: categoryLeaf(selected[0], fallback),
           count: selected.length - 1,
         })
-      : selected.map((path) => categoryLeaf(path, fallback)).join(" + ");
+      : selected.length === VISIBLE_CATEGORY_NAMES
+        ? t("browse.categoriesPair", {
+            first: categoryLeaf(selected[0], fallback),
+            second: categoryLeaf(selected[1], fallback),
+          })
+        : categoryLeaf(selected[0], fallback);
 
   return (
     <div
@@ -77,9 +91,7 @@ export const FilterSentence = <F extends string>({
             options={filters.map((value) => ({
               id: value,
               name: <span className="inline-block first-letter:uppercase">{filterLabel(value)}</span>,
-              meta: (
-                <span className="font-mono text-xs text-muted-foreground">{countFor(value)}</span>
-              ),
+              meta: <FilterCount filter={value} countFor={countFor} />,
             }))}
             trigger={({ isOpen, toggle }) => (
               <SentenceWord isOpen={isOpen} isSet={filter !== defaultFilter} onClick={toggle}>

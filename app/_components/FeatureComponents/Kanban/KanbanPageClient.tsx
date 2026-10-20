@@ -6,6 +6,7 @@ import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { ListsBrowser } from "@/app/_components/FeatureComponents/Checklists/Parts/ListsBrowser";
+import { BrowseScope } from "@/app/_consts/browse";
 
 interface KanbanPageClientProps {
   initialLists: Checklist[];
@@ -27,7 +28,7 @@ export const KanbanPageClient = ({ initialLists, categories, user }: KanbanPageC
 
   return (
     <ListsBrowser
-      isBoards
+      scope={BrowseScope.BOARDS}
       lists={initialLists}
       categories={categories}
       user={user}

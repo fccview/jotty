@@ -14,6 +14,7 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { ItemType } from "@/app/_types";
 import { updatePinnedOrder } from "@/app/_server/actions/dashboard";
+import { usePinRefusal } from "@/app/_hooks/usePinToggle";
 
 const MOUSE_DISTANCE = 6;
 const TOUCH_DELAY = 200;
@@ -35,6 +36,7 @@ class FrameKeyboardSensor extends KeyboardSensor {
 
 export const usePinnedBoard = <T extends PinnedItem>(items: T[], type: ItemType) => {
   const router = useRouter();
+  const refuse = usePinRefusal();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeWidth, setActiveWidth] = useState<number | null>(null);
   const [pendingOrder, setPendingOrder] = useState<string[] | null>(null);
@@ -86,13 +88,14 @@ export const usePinnedBoard = <T extends PinnedItem>(items: T[], type: ItemType)
     try {
       const result = await updatePinnedOrder(next, type);
       if (!result.success) {
-        console.warn("Pinned order refused:", result.error);
+        refuse(result.error);
         setPendingOrder(previous);
         return;
       }
       router.refresh();
     } catch (error) {
       console.error("Failed to update pinned order:", error);
+      refuse();
       setPendingOrder(previous);
     }
   };

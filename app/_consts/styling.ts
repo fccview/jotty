@@ -35,3 +35,30 @@ export const SMALL_RADIUS_CLASS =
   "rounded-[min(calc(var(--jotty-radius,var(--jotty-radius-admin,0.25rem))*0.5),4px)]";
 export const TICK_RADIUS_CLASS =
   "rounded-[min(calc(var(--jotty-radius,var(--jotty-radius-admin,0.25rem))*0.6),3px)]";
+
+export const NOTE_FONT_SIZE_VAR = "--jotty-note-font-size";
+export const USER_NOTE_FONT_SIZE_VAR = "--jotty-note-font-size-user";
+
+export const DEFAULT_NOTE_FONT_SIZE = 16;
+export const MIN_NOTE_FONT_SIZE = 12;
+export const MAX_NOTE_FONT_SIZE = 24;
+export const NOTE_FONT_SIZE_STEP = 1;
+export const NOTE_FONT_SIZE_AUTO = 0;
+
+export const clampNoteFontSize = (value?: number): number => {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return DEFAULT_NOTE_FONT_SIZE;
+  }
+  return Math.min(
+    MAX_NOTE_FONT_SIZE,
+    Math.max(MIN_NOTE_FONT_SIZE, Math.round(value)),
+  );
+};
+
+export const noteFontSizeToPx = (value?: number): string =>
+  `${clampNoteFontSize(value)}px`;
+
+export const normaliseNoteFontSize = (value?: number): number =>
+  !value || !Number.isFinite(value)
+    ? NOTE_FONT_SIZE_AUTO
+    : clampNoteFontSize(value);

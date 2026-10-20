@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Checklist } from "@/app/_types";
 import { isKanbanType, Modes } from "@/app/_types/enums";
-import { countItems } from "@/app/_utils/checklist-utils";
+import { countItems } from "@/app/_utils/checklist-count-utils";
 import { useItemSharing } from "@/app/_hooks/useItemSharing";
 import { TickGrid } from "@/app/_components/GlobalComponents/Cards/Parts/TickGrid";
 import { NextUp } from "@/app/_components/GlobalComponents/Cards/Parts/NextUp";

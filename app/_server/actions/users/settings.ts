@@ -9,6 +9,7 @@ import { logUserEvent, logAudit } from "@/app/_server/actions/log";
 import { getCurrentUser } from "./queries";
 import { getCurrentUserRecord, patchUserFields } from "./records";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
+import { normaliseNoteFontSize } from "@/app/_consts/styling";
 
 const keepAllowed = (
   settings: Partial<User>,
@@ -21,6 +22,10 @@ const keepAllowed = (
     if (value !== undefined) {
       (allowed[key] as unknown) = value;
     }
+  }
+
+  if (allowed.notesFontSize !== undefined) {
+    allowed.notesFontSize = normaliseNoteFontSize(Number(allowed.notesFontSize));
   }
 
   if (settings.encryptionSettings) {

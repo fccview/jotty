@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} notatka} few {{notes} notatki} many {{notes} notatek} other {{notes} notatki}}, przypięte: {pinned}, zaszyfrowane: {encrypted}.",
     "checklistsSummary": "{listsCount, plural, one {{lists} lista} few {{lists} listy} many {{lists} list} other {{lists} listy}}, {boardsCount, plural, one {{boards} tablica} few {{boards} tablice} many {{boards} tablic} other {{boards} tablicy}}, do odhaczenia: {open}.",
-    "pickUp": "Kontynuuj od miejsca, w którym przerwano",
     "continueWriting": "Pisz dalej",
     "openList": "Otwórz listę",
     "openBoard": "Otwórz tablicę",

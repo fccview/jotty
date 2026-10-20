@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} not} other {{notes} not}}, {pinned} sabitlenmiş, {encrypted} şifreli.",
     "checklistsSummary": "{listsCount, plural, one {{lists} liste} other {{lists} liste}}, {boardsCount, plural, one {{boards} pano} other {{boards} pano}}, işaretlenecek {open} öğe.",
-    "pickUp": "Kaldığınız yerden devam edin",
     "continueWriting": "Yazmaya devam et",
     "openList": "Listeyi aç",
     "openBoard": "Panoyu aç",

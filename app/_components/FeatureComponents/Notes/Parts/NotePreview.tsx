@@ -1,22 +1,20 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import {
-  ArrowUpRight01Icon,
-  Clock01Icon,
-  Folder01Icon,
-  PinIcon,
-  PinOffIcon,
-} from "hugeicons-react";
+import { ArrowUpRight01Icon, Clock01Icon, Folder01Icon } from "hugeicons-react";
 import { Note } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
-import { noteStats } from "@/app/_utils/note-stats-utils";
+import { isNoteEncrypted } from "@/app/_utils/note-display-utils";
+import { useNoteStatLabels } from "@/app/_hooks/useNoteStatLabels";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { SealedPanel, SealedSize } from "@/app/_components/GlobalComponents/Cards/Parts/SealedPanel";
 import { ItemShareMark } from "@/app/_components/GlobalComponents/Cards/Parts/ItemShareMark";
+import {
+  PinStateIcon,
+  usePinLabel,
+} from "@/app/_components/GlobalComponents/Cards/Parts/PinToggle";
 import { WizardIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/WizardIcon";
 import { UnifiedMarkdownRenderer } from "./UnifiedMarkdownRenderer";
 
@@ -30,7 +28,9 @@ interface NotePreviewProps {
 export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreviewProps) => {
   const t = useTranslations();
   const trail = categoryTrail(note.category, t("notes.uncategorized"));
-  const stats = useMemo(() => noteStats(note.content || ""), [note.content]);
+  const isEncrypted = isNoteEncrypted(note);
+  const labels = useNoteStatLabels(isEncrypted ? "" : note.content || "");
+  const pinLabel = usePinLabel(isPinned);
 
   return (
     <article className="jotty-note-preview bg-card border border-border rounded-jotty overflow-hidden lg:sticky lg:top-0 [overflow-wrap:anywhere]">
@@ -43,15 +43,15 @@ export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreview
           {note.title}
         </h2>
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          {note.encrypted ? (
+          {isEncrypted ? (
             <span className="inline-flex items-center gap-1 text-primary">
               <WizardIcon className="h-3.5 w-3.5" />
               {t("encryption.encrypted")}
             </span>
           ) : (
             <>
-              <span>{t("notes.wordCount", { count: stats.wordCount })}</span>
-              <span>{t("notes.readingTime", { count: stats.readingTime })}</span>
+              <span>{labels.words}</span>
+              <span>{labels.reading}</span>
             </>
           )}
           <span className="inline-flex items-center gap-1">
@@ -67,20 +67,20 @@ export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreview
           </Button>
           {onTogglePin && (
             <Button variant="outline" size="sm" className="gap-2" onClick={onTogglePin}>
-              {isPinned ? <PinOffIcon className="h-4 w-4" /> : <PinIcon className="h-4 w-4" />}
-              {isPinned ? t("common.unpin") : t("common.pin")}
+              <PinStateIcon isPinned={isPinned} className="h-4 w-4" />
+              {pinLabel}
             </Button>
           )}
         </div>
       </div>
       <div className="px-6 py-5 max-h-[55vh] overflow-y-auto">
-        {note.encrypted ? (
+        {isEncrypted ? (
           <SealedPanel size={SealedSize.LG} />
         ) : (
           <UnifiedMarkdownRenderer content={note.content || ""} className="max-w-none" />
         )}
       </div>
-      {!note.encrypted && (note.tags || []).length > 0 && (
+      {!isEncrypted && (note.tags || []).length > 0 && (
         <div className="px-6 py-4 border-t border-border flex flex-wrap gap-2">
           {(note.tags || []).map((tag) => (
             <span key={tag} className="font-mono text-xs bg-primary/10 text-primary px-2 py-1 rounded-jotty">

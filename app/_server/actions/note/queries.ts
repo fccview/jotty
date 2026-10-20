@@ -1,3 +1,4 @@
+import { newestFirst } from "@/app/_utils/order-utils";
 import path from "path";
 import fs from "fs/promises";
 import { Note, User, GetNotesOptions } from "@/app/_types";
@@ -304,10 +305,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     }
 
     if (!preserveOrder) {
-      filteredNotes.sort(
-        (a: any, b: any) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      );
+      filteredNotes.sort(newestFirst);
     }
 
     const offsetNum = typeof offset === "number" && offset >= 0 ? offset : 0;

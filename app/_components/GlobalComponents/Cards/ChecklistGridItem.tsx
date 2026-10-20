@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { Checklist } from "@/app/_types";
-import { isKanbanType } from "@/app/_types/enums";
-import { countItems } from "@/app/_utils/checklist-utils";
+import { ItemTypes } from "@/app/_types/enums";
+import { countItems } from "@/app/_utils/checklist-count-utils";
 import { categoryLeaf } from "@/app/_utils/category-path-utils";
 import { PinToggle } from "./Parts/PinToggle";
+import { ItemGlyph } from "./Parts/ItemGlyph";
 
 interface ChecklistGridItemProps {
   list: Checklist;
@@ -27,16 +27,13 @@ export const ChecklistGridItem = ({
     () => countItems(list.items, list.type),
     [list.items, list.type],
   );
-  const Icon = isKanbanType(list.type) ? TaskDaily01Icon : CheckmarkSquare04Icon;
 
   return (
     <div
       className="jotty-checklist-grid-item group bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
     >
       <div className="flex items-start justify-between gap-1">
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-jotty bg-muted text-primary shrink-0">
-          <Icon className="h-4 w-4" />
-        </span>
+<ItemGlyph type={ItemTypes.CHECKLIST} listType={list.type} />
         {onTogglePin && (
           <PinToggle
             isPinned={isPinned}

@@ -3,11 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { FILTER_PAGE_SIZE } from "@/app/_consts/files";
 import { useInfiniteScroll } from "@/app/_hooks/useInfiniteScroll";
-
-export interface FeedFilter {
-  type: "category" | "tag";
-  value: string;
-}
+import { ContentFilter } from "@/app/_types";
 
 interface FeedPage {
   success: boolean;
@@ -15,8 +11,8 @@ interface FeedPage {
 }
 
 export const useFilteredFeed = <T>(
-  filter: FeedFilter | null,
-  load: (filter: FeedFilter, limit: number, offset: number) => Promise<FeedPage>,
+  filter: ContentFilter | null,
+  load: (filter: ContentFilter, limit: number, offset: number) => Promise<FeedPage>,
 ) => {
   const [isPending, startTransition] = useTransition();
   const [firstPage, setFirstPage] = useState<T[]>([]);

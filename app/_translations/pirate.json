@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} log} other {{notes} logs}}, {pinned} nailed down, {encrypted} buried.",
     "checklistsSummary": "{listsCount, plural, one {{lists} manifest} other {{lists} manifests}}, {boardsCount, plural, one {{boards} chart} other {{boards} charts}}, {open} left to mark.",
-    "pickUp": "Pick up where ye dropped anchor",
     "continueWriting": "Keep scribblin'",
     "openList": "Open manifest",
     "openBoard": "Open chart",

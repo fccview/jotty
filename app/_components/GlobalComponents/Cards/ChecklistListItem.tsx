@@ -1,16 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { Checklist } from "@/app/_types";
-import { isKanbanType, Modes } from "@/app/_types/enums";
-import { countItems } from "@/app/_utils/checklist-utils";
+import { ItemTypes, Modes } from "@/app/_types/enums";
+import { countItems } from "@/app/_utils/checklist-count-utils";
 import { formatShortTime } from "@/app/_utils/date-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
 import { PinToggle } from "./Parts/PinToggle";
 import { ItemShareMark } from "./Parts/ItemShareMark";
 import { Tally } from "./Parts/Tally";
+import { ItemIcon } from "./Parts/ItemGlyph";
 
 interface ChecklistListItemProps {
   list: Checklist;
@@ -31,14 +31,13 @@ export const ChecklistListItem = ({
     [list.items, list.type],
   );
   const percent = total ? Math.round((completed / total) * 100) : 0;
-  const Icon = isKanbanType(list.type) ? TaskDaily01Icon : CheckmarkSquare04Icon;
 
   return (
     <div
       className="jotty-checklist-list-item group bg-card border border-border rounded-jotty hover:border-primary transition-colors"
     >
       <div className="p-3 flex items-center gap-3">
-        <Icon className="h-5 w-5 text-primary shrink-0" />
+        <ItemIcon type={ItemTypes.CHECKLIST} listType={list.type} className="h-5 w-5 text-primary shrink-0" />
         <button
           type="button"
           onClick={() => onSelect(list)}

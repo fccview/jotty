@@ -44,7 +44,13 @@ import { getAvailableLocalesWithNames } from "@/app/_utils/locale-utils";
 import { KonamiProvider } from "./_providers/KonamiProvider";
 import { WebSocketProvider } from "./_providers/WebSocketProvider";
 import { isEnvEnabled } from "./_utils/env-utils";
-import { ADMIN_BORDER_RADIUS_VAR, radiusToRem } from "./_consts/styling";
+import {
+  ADMIN_BORDER_RADIUS_VAR,
+  USER_NOTE_FONT_SIZE_VAR,
+  normaliseNoteFontSize,
+  noteFontSizeToPx,
+  radiusToRem,
+} from "./_consts/styling";
 
 const serverThemeId = (isRwMarkable?: boolean, preferredTheme?: string) =>
   isRwMarkable ? "rwmarkable-dark" : preferredTheme || "dark";
@@ -226,6 +232,9 @@ export default async function RootLayout({
       style={
         {
           [ADMIN_BORDER_RADIUS_VAR]: radiusToRem(settings?.borderRadius),
+          ...(normaliseNoteFontSize(user?.notesFontSize) && {
+            [USER_NOTE_FONT_SIZE_VAR]: noteFontSizeToPx(user?.notesFontSize),
+          }),
         } as React.CSSProperties
       }
     >

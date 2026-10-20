@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, other {{notes} 篇笔记}}，{pinned} 篇置顶，{encrypted} 篇加密。",
     "checklistsSummary": "{listsCount, plural, other {{lists} 个清单}}，{boardsCount, plural, other {{boards} 个看板}}，还有 {open} 项待勾选。",
-    "pickUp": "从上次离开的地方继续",
     "continueWriting": "继续写作",
     "openList": "打开清单",
     "openBoard": "打开看板",

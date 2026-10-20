@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Item } from "@/app/_types";
-import { isItemCompleted, leafItems } from "@/app/_utils/checklist-utils";
+import { isItemCompleted, leafItems } from "@/app/_utils/checklist-count-utils";
 import { cn } from "@/app/_utils/global-utils";
 import { plainItemText } from "@/app/_utils/item-href-utils";
 import { TICK_RADIUS_CLASS } from "@/app/_consts/styling";

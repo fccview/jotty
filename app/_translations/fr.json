@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} note} other {{notes} notes}}, {pinned} épinglées, {encrypted} chiffrées.",
     "checklistsSummary": "{listsCount, plural, one {{lists} liste} other {{lists} listes}}, {boardsCount, plural, one {{boards} tableau} other {{boards} tableaux}}, {open} à cocher.",
-    "pickUp": "Reprenez là où vous vous étiez arrêté",
     "continueWriting": "Continuer à écrire",
     "openList": "Ouvrir la liste",
     "openBoard": "Ouvrir le tableau",

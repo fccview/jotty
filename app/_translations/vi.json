@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, other {{notes} ghi chú}}, {pinned} đã ghim, {encrypted} đã mã hóa.",
     "checklistsSummary": "{listsCount, plural, other {{lists} danh sách}}, {boardsCount, plural, other {{boards} bảng}}, còn {open} mục cần đánh dấu.",
-    "pickUp": "Tiếp tục từ chỗ bạn đã dừng",
     "continueWriting": "Tiếp tục viết",
     "openList": "Mở danh sách",
     "openBoard": "Mở bảng",

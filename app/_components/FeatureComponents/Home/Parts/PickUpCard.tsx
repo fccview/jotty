@@ -33,7 +33,7 @@ export const PickUpCard = ({
     <section className="jotty-pick-up bg-card border border-border rounded-jotty p-5 flex flex-col min-w-0 [overflow-wrap:anywhere]">
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground truncate">
-          {t("browse.pickUp")}
+          {t("settings.homePickUp")}
         </p>
         <span className="font-mono text-xs text-primary shrink-0">
           {formatShortTime(updatedAt, t)}

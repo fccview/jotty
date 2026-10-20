@@ -4,6 +4,14 @@ import { PinIcon, PinOffIcon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/app/_utils/global-utils";
 
+export const PinStateIcon = ({ isPinned, className }: { isPinned: boolean; className?: string }) =>
+  isPinned ? <PinOffIcon className={className} /> : <PinIcon className={className} />;
+
+export const usePinLabel = (isPinned: boolean) => {
+  const t = useTranslations();
+  return isPinned ? t("common.unpin") : t("common.pin");
+};
+
 interface PinToggleProps {
   isPinned: boolean;
   onToggle: () => void;
@@ -11,8 +19,7 @@ interface PinToggleProps {
 }
 
 export const PinToggle = ({ isPinned, onToggle, className }: PinToggleProps) => {
-  const t = useTranslations();
-  const label = isPinned ? t("common.unpin") : t("common.pin");
+  const label = usePinLabel(isPinned);
 
   return (
     <button
@@ -30,11 +37,10 @@ export const PinToggle = ({ isPinned, onToggle, className }: PinToggleProps) => 
       aria-label={label}
       title={label}
     >
-      {isPinned ? (
-        <PinOffIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
-      ) : (
-        <PinIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
-      )}
+      <PinStateIcon
+        isPinned={isPinned}
+        className="h-4 w-4 text-muted-foreground hover:text-primary"
+      />
     </button>
   );
 };

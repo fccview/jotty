@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Note } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { noteStats } from "@/app/_utils/note-stats-utils";
+import { isNoteEncrypted, noteExcerptOf } from "@/app/_utils/note-display-utils";
 import { useItemSharing } from "@/app/_hooks/useItemSharing";
 import { SealedPanel } from "@/app/_components/GlobalComponents/Cards/Parts/SealedPanel";
 import { AvatarStack } from "@/app/_components/GlobalComponents/User/AvatarStack";
@@ -15,10 +15,7 @@ const PEOPLE_LIMIT = 4;
 export const NotePickUp = ({ note, onOpen }: { note: Note; onOpen: () => void }) => {
   const t = useTranslations();
   const { people } = useItemSharing(note.uuid, Modes.NOTES);
-  const excerpt = useMemo(
-    () => (note.encrypted ? "" : noteStats(note.content || "").excerpt),
-    [note.encrypted, note.content],
-  );
+  const excerpt = useMemo(() => noteExcerptOf(note), [note]);
 
   return (
     <PickUpCard
@@ -35,7 +32,7 @@ export const NotePickUp = ({ note, onOpen }: { note: Note; onOpen: () => void })
         />
       }
     >
-      {note.encrypted ? (
+      {isNoteEncrypted(note) ? (
         <SealedPanel />
       ) : (
         <p className="text-md lg:text-sm text-muted-foreground leading-relaxed line-clamp-4">

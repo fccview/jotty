@@ -18,6 +18,7 @@ import {
   Tree07Icon,
   LaptopProgrammingIcon,
 } from "hugeicons-react";
+import { BORDER_RADIUS_VAR, NOTE_FONT_SIZE_VAR } from "@/app/_consts/styling";
 
 import {
   loadCustomThemes,
@@ -205,7 +206,12 @@ export const themeInitScript = (customThemesData?: string) => `
 
       const radius = parsed.state?.borderRadius;
       if (typeof radius === 'number' && isFinite(radius)) {
-        document.documentElement.style.setProperty('--jotty-radius', radius + 'rem');
+        document.documentElement.style.setProperty('${BORDER_RADIUS_VAR}', radius + 'rem');
+      }
+
+      const noteFontSize = parsed.state?.noteFontSize;
+      if (typeof noteFontSize === 'number' && isFinite(noteFontSize)) {
+        document.documentElement.style.setProperty('${NOTE_FONT_SIZE_VAR}', noteFontSize + 'px');
       }
     }
 

@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} notitie} other {{notes} notities}}, {pinned} vastgepind, {encrypted} versleuteld.",
     "checklistsSummary": "{listsCount, plural, one {{lists} lijst} other {{lists} lijsten}}, {boardsCount, plural, one {{boards} bord} other {{boards} borden}}, nog {open} af te vinken.",
-    "pickUp": "Ga verder waar je gebleven was",
     "continueWriting": "Verder schrijven",
     "openList": "Lijst openen",
     "openBoard": "Bord openen",

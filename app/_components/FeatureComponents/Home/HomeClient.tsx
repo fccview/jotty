@@ -4,13 +4,12 @@ import { useRouter } from "next/navigation";
 import { ChecklistHome } from "@/app/_components/FeatureComponents/Home/Parts/ChecklistHome";
 import { NotesHome } from "@/app/_components/FeatureComponents/Home/Parts/NotesHome";
 import { TagsHome } from "@/app/_components/FeatureComponents/Home/Parts/TagsHome";
-import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
+import { PageShell } from "@/app/_components/GlobalComponents/Layout/PageShell";
 import { Checklist, Category, Note, SanitisedUser } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { CreatePrefill, useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
-import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
 
 interface HomeClientProps {
   initialLists: Checklist[];
@@ -31,12 +30,7 @@ export const HomeClient = ({
 }: HomeClientProps) => {
   const router = useRouter();
   const { mode } = useAppMode();
-  const {
-    openSettings,
-    openCreateNoteModal,
-    openCreateChecklistModal,
-    openCreateCategoryModal,
-  } = useShortcut();
+  const { openCreateNoteModal, openCreateChecklistModal } = useShortcut();
 
   const handleOpenCreateModal = (
     initialCategory?: string,
@@ -50,18 +44,15 @@ export const HomeClient = ({
   };
 
   return (
-    <Layout
+    <PageShell
       categories={
         mode === Modes.TAGS ? [] : mode === Modes.NOTES ? initialDocsCategories : initialCategories
       }
-      onOpenSettings={openSettings}
-      onOpenCreateModal={handleOpenCreateModal}
-      onOpenCategoryModal={openCreateCategoryModal}
       user={user}
+      onOpenCreateModal={handleOpenCreateModal}
       onCategoryDeleted={() => router.refresh()}
       onCategoryRenamed={() => router.refresh()}
     >
-      <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
 
       {mode === Modes.CHECKLISTS && (
         <ChecklistHome
@@ -96,6 +87,6 @@ export const HomeClient = ({
           onCreateModal={handleOpenCreateModal}
         />
       )}
-    </Layout>
+    </PageShell>
   );
 };

@@ -21,7 +21,7 @@ import { readListsRecursively, type ChecklistReadResult } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
-import { countItems } from "@/app/_utils/checklist-utils";
+import { countItems } from "@/app/_utils/checklist-count-utils";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";

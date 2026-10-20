@@ -42,7 +42,6 @@ export type {
   QuickCreateNotes,
   HideConnectionIndicator,
   HideStatusOnCards,
-  HomeWidget,
   HideMobileStatusDropdown,
   HideTimeTrackingOnCards,
   CodeBlockStyle,

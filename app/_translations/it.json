@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} nota} other {{notes} note}}, {pinned} fissate, {encrypted} criptate.",
     "checklistsSummary": "{listsCount, plural, one {{lists} lista} other {{lists} liste}}, {boardsCount, plural, one {{boards} board} other {{boards} board}}, {open} da spuntare.",
-    "pickUp": "Riprendi da dove avevi lasciato",
     "continueWriting": "Continua a scrivere",
     "openList": "Apri lista",
     "openBoard": "Apri board",

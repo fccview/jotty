@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} ghItlh} other {{notes} ghItlhmey}}, {pinned} Hum, {encrypted} pegh.",
     "checklistsSummary": "{listsCount, plural, one {{lists} tetlh} other {{lists} tetlhmey}}, {boardsCount, plural, one {{boards} beQ} other {{boards} beQmey}}, {open} ta'be'lu'.",
-    "pickUp": "Damevpu'bogh Daq yItaH",
     "continueWriting": "yIghItlhtaH",
     "openList": "tetlh yIpoS",
     "openBoard": "beQ yIpoS",

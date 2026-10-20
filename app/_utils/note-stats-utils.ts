@@ -1,3 +1,5 @@
+import { CARD_PLAIN_RULES, stripMarkdown } from "@/app/_utils/markdown/plain-text";
+
 const WORDS_PER_MINUTE = 225;
 
 const tableTextOf = (content: string): string =>
@@ -14,27 +16,7 @@ const tableTextOf = (content: string): string =>
 
 export const notePlainText = (content: string): string => {
   const body = content.replace(/^---\n[\s\S]*?\n---\n/, "");
-
-  return (
-    body
-      .replace(/```[\s\S]*?```/g, " ")
-      .replace(/`[^`]+`/g, " ")
-      .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      .replace(/<!--[\s\S]*?-->/g, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\|.+\|/g, " ")
-      .replace(/^#{1,6}\s+/gm, "")
-      .replace(/[*_]{1,3}/g, "")
-      .replace(/^>\s+/gm, "")
-      .replace(/^[-*_]{3,}$/gm, " ")
-      .replace(/^[\s]*[-*+]\s+/gm, "")
-      .replace(/^[\s]*\d+\.\s+/gm, "")
-      .replace(/^[\s]*-?\s*\[[ xX]\]\s+/gm, "")
-      .replace(/\[\s*\]\([^)]+\)/g, " ") +
-    " " +
-    tableTextOf(body)
-  );
+  return `${stripMarkdown(body, CARD_PLAIN_RULES)} ${tableTextOf(body)}`;
 };
 
 export const noteStats = (content: string) => {

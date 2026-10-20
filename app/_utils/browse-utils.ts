@@ -1,7 +1,7 @@
 import { Checklist, DefaultChecklistFilter } from "@/app/_types";
 import { BoardFilter } from "@/app/_consts/browse";
 import { isKanbanType, TaskStatus } from "@/app/_types/enums";
-import { isItemCompleted } from "@/app/_utils/checklist-utils";
+import { isItemCompleted } from "@/app/_utils/checklist-count-utils";
 
 const isFinished = (list: Checklist) =>
   list.items.length > 0 && list.items.every((item) => isItemCompleted(item, list.type));

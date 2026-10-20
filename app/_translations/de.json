@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} Notiz} other {{notes} Notizen}}, {pinned} angepinnt, {encrypted} verschlüsselt.",
     "checklistsSummary": "{listsCount, plural, one {{lists} Liste} other {{lists} Listen}}, {boardsCount, plural, one {{boards} Board} other {{boards} Boards}}, {open} noch abzuhaken.",
-    "pickUp": "Mach da weiter, wo du aufgehört hast",
     "continueWriting": "Weiterschreiben",
     "openList": "Liste öffnen",
     "openBoard": "Board öffnen",

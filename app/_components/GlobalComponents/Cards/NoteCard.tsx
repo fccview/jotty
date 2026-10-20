@@ -7,14 +7,13 @@ import { formatShortTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
 import { useSettings } from "@/app/_utils/settings-store";
 import { UnifiedMarkdownRenderer } from "../../FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
-import { parseNoteContent } from "@/app/_utils/client-parser-utils";
-import { noteStats } from "@/app/_utils/note-stats-utils";
-import { categoryLeaf, categoryTrail } from "@/app/_utils/category-path-utils";
+import { noteDisplayOf } from "@/app/_utils/note-display-utils";
+import { categoryTrail } from "@/app/_utils/category-path-utils";
 import { cn } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { PinToggle } from "./Parts/PinToggle";
-import { SealedPanel, SealedSize } from "./Parts/SealedPanel";
+import { SealedPanel } from "./Parts/SealedPanel";
 import { ItemShareMark } from "./Parts/ItemShareMark";
 
 const CARD_TAG_LIMIT = 2;
@@ -25,7 +24,6 @@ interface NoteCardProps {
   isPinned?: boolean;
   onTogglePin?: (note: Note) => void;
   fullScrollableContent?: boolean;
-  pinPosition?: number;
 }
 
 export const NoteCard = ({
@@ -34,69 +32,11 @@ export const NoteCard = ({
   isPinned = false,
   onTogglePin,
   fullScrollableContent = false,
-  pinPosition,
 }: NoteCardProps) => {
   const t = useTranslations();
   const compact = useCompactNumber();
   const { showMarkdownPreview } = useSettings();
-  const parsed = useMemo(
-    () => (note.rawContent ? parseNoteContent(note.rawContent, note.id) : null),
-    [note.rawContent, note.id],
-  );
-
-  const title = parsed?.title || note.title;
-  const content = parsed?.content || note.content || "";
-  const isEncrypted = parsed?.encrypted ?? note.encrypted ?? false;
-  const stats = useMemo(() => noteStats(content), [content]);
-
-  if (pinPosition !== undefined) {
-    return (
-      <article
-        className={cn(
-          "jotty-note-card group bg-card border border-border rounded-jotty p-3.5 pt-4 transition-colors hover:border-primary/50 [overflow-wrap:anywhere]",
-        )}
-      >
-        <div className="flex items-start gap-2">
-          <span className="font-mono text-[11px] font-semibold text-primary mt-0.5">
-            {String(pinPosition).padStart(2, "0")}
-          </span>
-          <button
-            type="button"
-            onClick={() => onSelect(note)}
-                className="flex-1 min-w-0 text-left font-semibold text-sm leading-snug text-foreground group-hover:text-primary line-clamp-3"
-            title={title}
-          >
-            {title}
-          </button>
-          {onTogglePin && (
-            <PinToggle
-              isPinned={isPinned}
-              onToggle={() => onTogglePin(note)}
-              className="p-1 -mr-1.5 -mt-1"
-            />
-          )}
-        </div>
-        {isEncrypted ? (
-          <div className="mt-2">
-            <SealedPanel size={SealedSize.XS} />
-          </div>
-        ) : (
-          <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">
-            {stats.excerpt}
-          </p>
-        )}
-        <div className="mt-3 flex items-center justify-between gap-2 font-mono text-[11px] text-muted-foreground">
-          <span className="truncate">
-            {categoryLeaf(note.category, t("notes.uncategorized"))}
-          </span>
-          <span className="flex items-center gap-1.5 shrink-0">
-            <ItemShareMark item={note} mode={Modes.NOTES} />
-            {formatShortTime(note.updatedAt, t)}
-          </span>
-        </div>
-      </article>
-    );
-  }
+  const { title, content, isEncrypted, stats } = useMemo(() => noteDisplayOf(note), [note]);
 
   return (
     <article

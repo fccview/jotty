@@ -5,6 +5,11 @@ export enum Modes {
   DEPRECATED_DOCS = "docs",
 }
 
+export enum HomeWidget {
+  ENABLE = "enable",
+  DISABLE = "disable",
+}
+
 export enum ItemTypes {
   CHECKLIST = "checklist",
   NOTE = "note",

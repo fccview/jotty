@@ -986,7 +986,9 @@
     "homePickUp": "Pick up where you left off",
     "homePinboard": "Pinboard",
     "homePinboardDescription": "When disabled, pinned items show as regular cards at the top.",
-    "homeTags": "Tags"
+    "homeTags": "Tags",
+    "notesFontSize": "Note text size",
+    "notesFontSizeDescription": "Text size for reading and editing notes on every device. Quick settings can override it for a single browser."
   },
   "admin": {
     "title": "Admin",
@@ -1641,7 +1643,11 @@
     "kanbanColumnWidthCompact": "Compact",
     "kanbanColumnWidthComfortable": "Comfortable",
     "kanbanColumnWidthWide": "Wide",
-    "kanbanColumnWidthAutoFit": "Auto fit"
+    "kanbanColumnWidthAutoFit": "Auto fit",
+    "noteFontSize": "Note text size",
+    "noteFontSizeDescription": "Resizes the text of notes in this browser. Your account setting applies everywhere else.",
+    "noteFontSizePreview": "The quick brown fox jots down a note.",
+    "useAccountSetting": "Use account setting"
   },
   "migration": {
     "migrationComplete": "Migration Complete",
@@ -1960,7 +1966,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} note} other {{notes} notes}}, {pinned} pinned, {encrypted} encrypted.",
     "checklistsSummary": "{listsCount, plural, one {{lists} list} other {{lists} lists}}, {boardsCount, plural, one {{boards} board} other {{boards} boards}}, {open} left to tick.",
-    "pickUp": "Pick up where you left off",
     "continueWriting": "Continue writing",
     "openList": "Open list",
     "openBoard": "Open board",
@@ -2031,6 +2036,7 @@
     "andInside": " and everything inside",
     "only": " only",
     "categoriesMore": "{first} + {count} more",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "all notes",

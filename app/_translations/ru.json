@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, one {{notes} заметка} few {{notes} заметки} many {{notes} заметок} other {{notes} заметки}}, закреплено: {pinned}, зашифровано: {encrypted}.",
     "checklistsSummary": "{listsCount, plural, one {{lists} список} few {{lists} списка} many {{lists} списков} other {{lists} списка}}, {boardsCount, plural, one {{boards} доска} few {{boards} доски} many {{boards} досок} other {{boards} доски}}, осталось отметить: {open}.",
-    "pickUp": "Продолжите с того места, где остановились",
     "continueWriting": "Продолжить писать",
     "openList": "Открыть список",
     "openBoard": "Открыть доску",

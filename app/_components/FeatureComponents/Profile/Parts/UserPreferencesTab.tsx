@@ -30,15 +30,23 @@ import {
   QuickCreateNotes,
   HideConnectionIndicator,
   HideStatusOnCards,
-  HomeWidget,
   HideMobileStatusDropdown,
   HideTimeTrackingOnCards,
   CodeBlockStyle,
   NewItemInsertion,
 } from "@/app/_types";
-import { Modes } from "@/app/_types/enums";
+import { HomeWidget, Modes } from "@/app/_types/enums";
+import { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
+import { HOME_WIDGET_KEYS, HomeWidgetKey } from "@/app/_consts/home";
 import { DEFAULT_WEEK_START, WeekDay } from "@/app/_consts/calendar";
 import { DEFAULT_SEARCH_MODE, SearchModes } from "@/app/_consts/search";
+import {
+  MAX_NOTE_FONT_SIZE,
+  MIN_NOTE_FONT_SIZE,
+  NOTE_FONT_SIZE_AUTO,
+  NOTE_FONT_SIZE_STEP,
+  normaliseNoteFontSize,
+} from "@/app/_consts/styling";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
@@ -66,6 +74,11 @@ interface SettingsTabProps {
   localeOptions: Array<{ id: string, name: JSX.Element }>;
 }
 
+const widgetDefaults = (user: SanitisedUser | null) =>
+  Object.fromEntries(
+    HOME_WIDGET_KEYS.map((key) => [key, user?.[key] || HomeWidget.ENABLE]),
+  ) as Record<HomeWidgetKey, HomeWidget>;
+
 const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser> => ({
   preferredLocale: user?.preferredLocale || "en",
   preferredTheme: user?.preferredTheme || "system",
@@ -73,6 +86,7 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   landingPage: user?.landingPage || "last-visited",
   notesDefaultEditor: user?.notesDefaultEditor || "wysiwyg",
   notesDefaultMode: user?.notesDefaultMode || "view",
+  notesFontSize: normaliseNoteFontSize(user?.notesFontSize),
   notesAutoSaveInterval: user?.notesAutoSaveInterval || 5000,
   enableRecurrence: user?.enableRecurrence || "disable",
   showCompletedSuggestions: user?.showCompletedSuggestions || "enable",
@@ -96,18 +110,30 @@ const getSettingsFromUser = (user: SanitisedUser | null): Partial<SanitisedUser>
   hideTimeTrackingOnCards: user?.hideTimeTrackingOnCards || "disable",
   codeBlockStyle: user?.codeBlockStyle || "default",
   searchMode: user?.searchMode || DEFAULT_SEARCH_MODE,
-  homeWelcome: user?.homeWelcome || "enable",
-  homePickUp: user?.homePickUp || "enable",
-  homePinboard: user?.homePinboard || "enable",
-  homeTags: user?.homeTags || "enable",
+  ...widgetDefaults(user),
 });
 
-const HOME_WIDGETS: { key: "homeWelcome" | "homePickUp" | "homePinboard" | "homeTags"; label: string; description?: string }[] = [
-  { key: "homeWelcome", label: "settings.homeWelcome" },
-  { key: "homePickUp", label: "settings.homePickUp" },
-  { key: "homePinboard", label: "settings.homePinboard", description: "settings.homePinboardDescription" },
-  { key: "homeTags", label: "settings.homeTags" },
-];
+const HOME_WIDGET_COPY: Record<HomeWidgetKey, { label: string; description?: string }> = {
+  homeWelcome: { label: "settings.homeWelcome" },
+  homePickUp: { label: "settings.homePickUp" },
+  homePinboard: { label: "settings.homePinboard", description: "settings.homePinboardDescription" },
+  homeTags: { label: "settings.homeTags" },
+};
+
+const NOTE_FILTER_LABELS: Record<DefaultNoteFilter, string> = {
+  all: "notes.allNotes",
+  recent: "notes.recent",
+  pinned: "common.pinned",
+};
+
+const CHECKLIST_FILTER_LABELS: Record<DefaultChecklistFilter, string> = {
+  all: "checklists.allChecklists",
+  completed: "checklists.completed",
+  incomplete: "checklists.incomplete",
+  pinned: "common.pinned",
+  task: "checklists.taskLists",
+  simple: "checklists.simpleLists",
+};
 
 const sectionSchema = (
   keys: (keyof User)[],
@@ -135,6 +161,7 @@ const SETTING_SCHEMAS: Partial<Record<keyof User, SettingsSchema>> = {
     [
       "notesAutoSaveInterval",
       "notesDefaultMode",
+      "notesFontSize",
       "notesDefaultEditor",
       "tableSyntax",
       "disableRichEditor",
@@ -162,7 +189,7 @@ const SETTING_SCHEMAS: Partial<Record<keyof User, SettingsSchema>> = {
     kanbanSettingsSchema
   ),
   ...sectionSchema(
-    ["homeWelcome", "homePickUp", "homePinboard", "homeTags"],
+    [...HOME_WIDGET_KEYS],
     homeWidgetsSettingsSchema
   ),
 };
@@ -316,6 +343,17 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     { id: "view", name: t('settings.view') },
   ];
 
+  const noteFontSizeOptions = [
+    { id: NOTE_FONT_SIZE_AUTO, name: t('settings.default') },
+    ...Array.from(
+      { length: (MAX_NOTE_FONT_SIZE - MIN_NOTE_FONT_SIZE) / NOTE_FONT_SIZE_STEP + 1 },
+      (_, index) => {
+        const size = MIN_NOTE_FONT_SIZE + index * NOTE_FONT_SIZE_STEP;
+        return { id: size, name: `${size}px` };
+      }
+    ),
+  ];
+
   const enableRecurrenceOptions = [
     { id: "enable", name: t('settings.enable') },
     { id: "disable", name: t('settings.disable') },
@@ -359,19 +397,19 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
     { id: "bottom", name: t('settings.newItemInsertionBottom') },
   ];
 
-  const defaultChecklistFilterOptions = [
-    { id: "all", name: t('checklists.allChecklists') },
-    { id: "completed", name: t('checklists.completed') },
-    { id: "incomplete", name: t('checklists.incomplete') },
-    { id: "pinned", name: t('common.pinned') },
-    { id: "task", name: t('checklists.taskLists') },
-    { id: "simple", name: t('checklists.simpleLists') },
-  ];
+  const defaultChecklistFilterOptions = CHECKLIST_FILTERS.map((id) => ({
+    id,
+    name: t(CHECKLIST_FILTER_LABELS[id]),
+  }));
 
-  const defaultNoteFilterOptions = [
-    { id: "all", name: t('notes.allNotes') },
-    { id: "recent", name: t('notes.recent') },
-    { id: "pinned", name: t('common.pinned') },
+  const defaultNoteFilterOptions = NOTE_FILTERS.map((id) => ({
+    id,
+    name: t(NOTE_FILTER_LABELS[id]),
+  }));
+
+  const homeWidgetOptions = [
+    { id: HomeWidget.ENABLE, name: t("common.enabled") },
+    { id: HomeWidget.DISABLE, name: t("common.disabled") },
   ];
 
   return (
@@ -664,6 +702,27 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
                 (option) => option.id !== currentSettings.notesDefaultMode
               )?.name || ""
             })}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="notes-font-size">{t('settings.notesFontSize')}</Label>
+          <Dropdown
+            id="notes-font-size"
+            value={currentSettings.notesFontSize ?? NOTE_FONT_SIZE_AUTO}
+            onChange={(value) =>
+              handleSettingChange("notesFontSize", Number(value))
+            }
+            options={noteFontSizeOptions}
+            className="w-full"
+          />
+          {validationErrors.notesFontSize && (
+            <p className="text-md lg:text-sm text-destructive">
+              {validationErrors.notesFontSize}
+            </p>
+          )}
+          <p className="text-md lg:text-sm text-muted-foreground">
+            {t('settings.notesFontSizeDescription')}
           </p>
         </div>
 
@@ -997,21 +1056,20 @@ export const UserPreferencesTab = ({ noteCategories, localeOptions }: SettingsTa
         collapsible
         defaultOpen={false}
       >
-        {HOME_WIDGETS.map(({ key, label, description }) => (
+        {HOME_WIDGET_KEYS.map((key) => (
           <div key={key} className="space-y-2">
-            <Label htmlFor={key}>{t(label)}</Label>
+            <Label htmlFor={key}>{t(HOME_WIDGET_COPY[key].label)}</Label>
             <Dropdown
               id={key}
-              value={currentSettings[key] || "enable"}
+              value={currentSettings[key] || HomeWidget.ENABLE}
               onChange={(value) => handleSettingChange(key, value as HomeWidget)}
-              options={[
-                { id: "enable", name: t("common.enabled") },
-                { id: "disable", name: t("common.disabled") },
-              ]}
+              options={homeWidgetOptions}
               className="w-full"
             />
-            {description && (
-              <p className="text-md lg:text-sm text-muted-foreground">{t(description)}</p>
+            {HOME_WIDGET_COPY[key].description && (
+              <p className="text-md lg:text-sm text-muted-foreground">
+                {t(HOME_WIDGET_COPY[key].description)}
+              </p>
             )}
           </div>
         ))}

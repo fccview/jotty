@@ -5,6 +5,7 @@ import { useSettings } from "@/app/_utils/settings-store";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
 import { useRadiusOverride } from "@/app/_hooks/useRadiusOverride";
+import { useNoteFontSizeOverride } from "@/app/_hooks/useNoteFontSizeOverride";
 import { User } from "../_types";
 import { useTranslations } from "next-intl";
 import { syncThemeColorMeta } from "@/app/_utils/theme-color-utils";
@@ -24,6 +25,7 @@ export const ThemeProvider = ({
   );
 
   useRadiusOverride();
+  useNoteFontSizeOverride();
 
   const themeIDs = BUILT_IN_THEMES.map((theme) => theme.id);
 

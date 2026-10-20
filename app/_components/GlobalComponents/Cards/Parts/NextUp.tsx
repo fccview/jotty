@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { CheckmarkCircle04Icon } from "hugeicons-react";
 import { Checklist } from "@/app/_types";
-import { isItemCompleted, leafItems } from "@/app/_utils/checklist-utils";
+import { isItemCompleted, leafItems } from "@/app/_utils/checklist-count-utils";
 import { useRandomLine } from "@/app/_hooks/useRandomLine";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { cn } from "@/app/_utils/global-utils";

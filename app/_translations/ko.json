@@ -1927,7 +1927,6 @@
     },
     "notesSummary": "{notesCount, plural, other {노트 {notes}개}}, 고정 {pinned}개, 암호화 {encrypted}개.",
     "checklistsSummary": "{listsCount, plural, other {목록 {lists}개}}, {boardsCount, plural, other {보드 {boards}개}}, 체크할 항목 {open}개.",
-    "pickUp": "하던 곳에서 이어서 하기",
     "continueWriting": "이어서 쓰기",
     "openList": "목록 열기",
     "openBoard": "보드 열기",

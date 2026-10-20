@@ -2,6 +2,7 @@ import { Note } from "@/app/_types";
 import { UNCATEGORIZED, isManaged } from "@/app/_consts/notes";
 import { ListView } from "@/app/_schemas/api/common";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
+import { EXCERPT_PLAIN_RULES, stripMarkdown } from "@/app/_utils/markdown/plain-text";
 
 const EXCERPT_CHARS = 200;
 
@@ -24,15 +25,7 @@ const _isLocked = (note: ListedNote): boolean =>
   Boolean(note.encrypted) || isEncrypted(note.content ?? "");
 
 const _plain = (content: string): string =>
-  content
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, target, alias) => alias || target)
-    .replace(/^\s{0,3}(#{1,6}|>|[-*+]|\d+\.)\s+/gm, "")
-    .replace(/[*_`~]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  stripMarkdown(content, EXCERPT_PLAIN_RULES).trim();
 
 export const noteExcerpt = (content: string): string => {
   const flat = _plain(content);
