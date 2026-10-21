@@ -111,12 +111,14 @@ export async function register() {
 
       wss.on("close", () => clearInterval(heartbeat));
 
+      const { reachesUser } = await import("./app/_utils/ws-audience");
+
       globalThis.__jottyBroadcast = (event) => {
         const payload = JSON.stringify(event);
         wss.clients.forEach((client) => {
-          if (client.readyState === 1) {
-            client.send(payload);
-          }
+          if (client.readyState !== 1) return;
+          if (!reachesUser(event, connectedClients.get(client)?.username)) return;
+          client.send(payload);
         });
       };
 

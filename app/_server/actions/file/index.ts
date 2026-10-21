@@ -266,6 +266,8 @@ const STAT_BATCH_SIZE = 4000;
 export interface FileStatsEntry {
   birthtime: Date;
   mtime: Date;
+  size?: number;
+  ctime?: Date;
 }
 
 export const getAllFileStats = async (
@@ -308,7 +310,7 @@ export const getAllFileStats = async (
                 s.birthtime.getTime() === 0 ? s.mtime : s.birthtime;
               return {
                 filePath,
-                entry: { birthtime, mtime: s.mtime },
+                entry: { birthtime, mtime: s.mtime, size: s.size, ctime: s.ctime },
               };
             } catch {
               return null;

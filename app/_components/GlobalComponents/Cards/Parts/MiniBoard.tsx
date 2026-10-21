@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { Checklist, Item } from "@/app/_types";
-import { boardColumns } from "@/app/_utils/kanban/board-utils";
-import { getPriorityDotColor, sortByPriority } from "@/app/_utils/kanban";
+import { ItemStub, ListSummary } from "@/app/_types";
+import { getPriorityDotColor } from "@/app/_utils/kanban";
+import { MINI_BOARD_ROWS } from "@/app/_utils/list-summary-utils";
 import { statusColor } from "@/app/_consts/kanban";
 import { SMALL_RADIUS_CLASS } from "@/app/_consts/styling";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
@@ -11,31 +11,31 @@ import { cn } from "@/app/_utils/global-utils";
 import { plainItemText } from "@/app/_utils/item-href-utils";
 
 const LAYOUT = {
-  full: { columns: 5, rows: 3 },
+  full: { columns: 5, rows: MINI_BOARD_ROWS },
   compact: { columns: 4, rows: 2 },
 };
 
 const NO_PRIORITY = "transparent";
 
 interface MiniBoardProps {
-  board: Checklist;
+  summary: ListSummary;
   compact?: boolean;
 }
 
-const stubEdge = (item: Item, fallback: string): string => {
+const stubEdge = (item: ItemStub, fallback: string): string => {
   const dot = getPriorityDotColor(item.priority);
   return dot === NO_PRIORITY ? fallback : dot;
 };
 
-export const MiniBoard = ({ board, compact = false }: MiniBoardProps) => {
+export const MiniBoard = ({ summary, compact = false }: MiniBoardProps) => {
   const abbreviate = useCompactNumber();
   const { columns, rows } = compact ? LAYOUT.compact : LAYOUT.full;
 
   const { shown, hidden } = useMemo(() => {
-    const all = boardColumns(board);
+    const all = summary.columns;
     const visible = all.length > columns ? all.slice(0, columns - 1) : all;
     return { shown: visible, hidden: all.slice(visible.length) };
-  }, [board, columns]);
+  }, [summary.columns, columns]);
 
   return (
     <div
@@ -44,9 +44,8 @@ export const MiniBoard = ({ board, compact = false }: MiniBoardProps) => {
         gridTemplateColumns: `repeat(${shown.length + (hidden.length ? 1 : 0)}, minmax(0, 1fr))`,
       }}
     >
-      {shown.map(({ status, items }) => {
+      {shown.map(({ status, count, top }) => {
         const color = statusColor(status);
-        const sorted = sortByPriority(items);
 
         return (
           <div
@@ -65,11 +64,11 @@ export const MiniBoard = ({ board, compact = false }: MiniBoardProps) => {
               />
               {!compact && <span className="truncate">{status.label}</span>}
               <span className="ml-auto font-mono text-foreground">
-                {abbreviate(items.length)}
+                {abbreviate(count)}
               </span>
             </div>
             <div className="space-y-1">
-              {sorted.slice(0, rows).map((item) => (
+              {top.slice(0, rows).map((item) => (
                 <div
                   key={item.id}
                   title={plainItemText(item.text)}
@@ -87,7 +86,7 @@ export const MiniBoard = ({ board, compact = false }: MiniBoardProps) => {
                   {!compact && plainItemText(item.text)}
                 </div>
               ))}
-              {!items.length && (
+              {!count && (
                 <div
                   className={cn(
                     "border border-dashed border-border",
@@ -96,9 +95,9 @@ export const MiniBoard = ({ board, compact = false }: MiniBoardProps) => {
                   )}
                 />
               )}
-              {items.length > rows && (
+              {count > rows && (
                 <div className="text-center font-mono text-[9px] leading-3 text-muted-foreground">
-                  +{abbreviate(items.length - rows)}
+                  +{abbreviate(count - rows)}
                 </div>
               )}
             </div>

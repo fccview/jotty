@@ -6,7 +6,8 @@ import { Note, SanitisedUser, TagInfo } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { CreatePrefill } from "@/app/_providers/ShortcutsProvider";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { newestFirst } from "@/app/_utils/order-utils";
 import { getNotesForDisplay } from "@/app/_server/actions/note";
 import { useHomeFeed } from "@/app/_hooks/useHomeFeed";
@@ -42,7 +43,7 @@ interface NotesHomeProps {
 export const NotesHome = ({ notes, user, onCreate, onSelectNote }: NotesHomeProps) => {
   const t = useTranslations();
   const compact = useCompactNumber();
-  const { viewMode } = useSettings();
+  const viewMode = useQuickValue(QuickSettingId.VIEW_MODE);
   const { notes: allNotes } = useAppMode();
   const feed = useHomeFeed<Note>(getNotesForDisplay);
   const pins = usePins(notes, user?.pinnedNotes, ItemTypes.NOTE);

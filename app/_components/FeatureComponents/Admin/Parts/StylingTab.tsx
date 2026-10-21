@@ -3,7 +3,7 @@
 import { CssEditor } from "@/app/_components/GlobalComponents/FormElements/CSSEditor";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import {
   Orbit01Icon,
   Add01Icon,
@@ -190,9 +190,32 @@ export const StylingTab = () => {
         isOpen={themeModalOpen}
         onClose={() => setThemeModalOpen(false)}
         title={editingTheme ? t("admin.editTheme") : t("admin.createTheme")}
-        className="!w-full lg:!max-w-[90vw] !h-[90vh] overflow-y-auto !max-h-[900px]"
+        variant={ModalVariant.WORKSPACE}
+        footer={() => (
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setThemeModalOpen(false)}
+              disabled={isSavingThemes}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleSaveTheme} disabled={isSavingThemes}>
+              {isSavingThemes ? (
+                <>
+                  <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
+                  {t('common.saving')}
+                </>
+              ) : editingTheme ? (
+                t("admin.updateTheme")
+              ) : (
+                t("admin.createTheme")
+              )}
+            </Button>
+          </div>
+        )}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           <div className="space-y-8">
             <div className="bg-muted/30 border border-border rounded-jotty p-6 space-y-6">
               <Input
@@ -241,7 +264,7 @@ export const StylingTab = () => {
 
             <div className="space-y-4">
               <h4 className="text-md lg:text-sm font-medium">{t("admin.colorVariables")}</h4>
-              <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto pr-2">
+              <div className="grid grid-cols-1 gap-2">
                 {Object.entries(themeForm.colors).map(([key, value]) => (
                   <div
                     key={key}
@@ -307,27 +330,6 @@ export const StylingTab = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t border-border">
-              <Button
-                variant="outline"
-                onClick={() => setThemeModalOpen(false)}
-                disabled={isSavingThemes}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button onClick={handleSaveTheme} disabled={isSavingThemes}>
-                {isSavingThemes ? (
-                  <>
-                    <Orbit01Icon className="mr-2 h-4 w-4 animate-spin" />
-                    {t('common.saving')}
-                  </>
-                ) : editingTheme ? (
-                  t("admin.updateTheme")
-                ) : (
-                  t("admin.createTheme")
-                )}
-              </Button>
-            </div>
           </div>
 
           <div className="space-y-4">

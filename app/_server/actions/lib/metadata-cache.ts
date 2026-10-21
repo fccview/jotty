@@ -118,3 +118,8 @@ export function metaCacheKey(type: Modes, dir: string) {
   const abs = path.isAbsolute(dir) ? dir : path.join(process.cwd(), dir);
   return `${type}-meta:${abs}`;
 }
+
+export function summaryCacheKey(type: Modes, dir: string) {
+  const abs = path.isAbsolute(dir) ? dir : path.join(process.cwd(), dir);
+  return `${type}-summary:${abs}`;
+}

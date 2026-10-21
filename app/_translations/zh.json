@@ -187,6 +187,7 @@
     "unpinFromHome": "从首页取消置顶",
     "archive": "归档",
     "confirmDeleteItem": "您确定要删除 \"{itemTitle}\" 吗？",
+    "confirmDeleteEntry": "确定要删除此条目吗？",
     "sharedBy": "共享者：{sharer}",
     "itemsCompleted": "已完成 {completedItems}/{totalItems}",
     "releaseNotes": "发行说明 v{version}",
@@ -679,7 +680,17 @@
     "startTime": "开始",
     "endTime": "结束",
     "addItemToColumn": "添加项目到 {column}",
-    "addItemPlaceholder": "新项目..."
+    "addItemPlaceholder": "新项目...",
+    "agentAvatar": "代理 {agent}",
+    "agentInvalid": "代理名称由 1-64 个字母、数字、点、短横线或下划线组成，不能包含空格。",
+    "assigneeSearch": "搜索用户或为代理命名...",
+    "assignAgentAs": "分配给代理 {agent}",
+    "assigneeWillShare": "将共享看板",
+    "assigneeNoAccess": "无法查看此看板",
+    "assigneeShareTitle": "共享此看板？",
+    "assigneeShareMessage": "{user} 目前还看不到此看板。分配后会以编辑权限共享给对方。",
+    "assigneeShareConfirm": "共享并分配",
+    "assignFailed": "无法更改负责人"
   },
   "profile": {
     "userProfile": "用户",
@@ -871,6 +882,8 @@
     "confirmPassword": "确认密码",
     "passwordChanged": "密码已更改",
     "settingsSaved": "设置已保存",
+    "settingsSaveFailed": "设置保存失败",
+    "settingsSaveFailedDescription": "你的更改没有保存，请重试。",
     "dashCase": "短横线命名 (例如：my-file-name.md)",
     "minimal": "极简 (仅移除非法字符)",
     "noRename": "不重命名 (保持原始文件名)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "默认",
+    "defaultOption": "默认（{value}）",
     "dark": "深色",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "从上次离开的地方继续",
     "homePinboard": "置顶板",
     "homePinboardDescription": "停用后，置顶项目会以普通卡片的形式显示在顶部。",
-    "homeTags": "标签"
+    "homeTags": "标签",
+    "notesFontSize": "笔记文字大小",
+    "notesFontSizeDescription": "在所有设备上阅读和编辑笔记时的文字大小。快速设置可以针对单个浏览器覆盖它。",
+    "borderRadiusDescription": "调整整个应用的圆角。快速设置仍可针对单个浏览器修改。",
+    "browseViewModeDescription": "浏览笔记和列表时的布局方式。",
+    "notesCardPreviewDescription": "在卡片上显示每篇笔记开头的格式化内容。",
+    "notesCompactModeDescription": "阅读和编辑笔记时使用更窄的布局。",
+    "kanbanColumnWidthDescription": "为看板状态列设置自定义宽度。默认情况下，列会自动适应可用空间。"
   },
   "admin": {
     "title": "管理",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "编辑器设置必须是对象，未保存任何内容",
     "invalidEditorSetting": "编辑器设置 {field} 类型错误，未保存任何内容",
     "categoryOutOfBounds": "该分类不在您的笔记范围内，未创建任何内容",
+    "filenameOutOfBounds": "这个标题会让文件落到其分类之外，因此没有保存任何内容",
     "requiredField": "此字段必填",
     "emailInvalid": "请输入有效的邮箱",
     "passwordTooShort": "密码至少需要 8 个字符",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "切换富文本编辑器模式",
     "toggleMarkdownMode": "切换 Markdown 模式",
+    "editorMode": "编辑器模式",
+    "currentEditorMode": "当前正在以 {mode} 编辑",
+    "switchToRichEditor": "切换到富文本编辑器",
+    "switchToMarkdown": "切换到 Markdown",
     "quickControls": "编辑器控件",
     "toggleBold": "切换加粗",
     "toggleItalic": "切换斜体",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "编辑图表",
     "deleteDiagram": "删除图表",
+    "diagramDarkMode": "以深色模式显示",
+    "diagramLightMode": "以浅色模式显示",
+    "diagramLoadFailed": "无法加载图表编辑器。请检查网络连接后重试。",
+    "diagramSaveFailed": "无法保存图表。你的绘图仍处于打开状态。",
+    "diagramDataUnreadable": "无法读取此图表的数据，因此无法在此编辑。",
+    "drawioEditor": "Draw.io 编辑器",
+    "diagramRichModeOnly": "仅限富文本模式",
+    "diagramUnavailableInMarkdown": "Markdown 模式下不可用",
     "enterMermaidCode": "输入 Mermaid 图表代码...",
     "widthPx": "宽度 (px)",
     "heightPx": "高度 (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "行号",
     "inlineCode": "行内代码",
     "moreTools": "更多工具",
-    "moreToolsCount": "更多工具（这里收着 {count} 个）",
-    "diagramDarkMode": "以深色模式显示",
-    "diagramLightMode": "以浅色模式显示",
-    "diagramLoadFailed": "无法加载图表编辑器。请检查网络连接后重试。",
-    "diagramSaveFailed": "无法保存图表。你的绘图仍处于打开状态。",
-    "diagramDataUnreadable": "无法读取此图表的数据，因此无法在此编辑。",
-    "drawioEditor": "Draw.io 编辑器",
-    "diagramRichModeOnly": "仅限富文本模式",
-    "diagramUnavailableInMarkdown": "Markdown 模式下不可用"
+    "moreToolsCount": "更多工具（这里收着 {count} 个）"
   },
   "sharing": {
     "share": "共享",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "我是一个占位符，因为你无法加密空笔记。"
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "这些选项仅适用于此浏览器会话。如需永久设置，请查看您的",
-    "accountSettings": "用户偏好",
-    "autosaveNotes": "自动保存笔记",
     "showNotePreview": "在卡片上显示笔记预览",
     "notesCompactMode": "笔记紧凑模式",
     "showEmojis": "在清单上显示 Emoji",
@@ -1617,14 +1640,12 @@
     "viewModeList": "列表",
     "viewModeGrid": "网格",
     "borderRadius": "圆角大小",
-    "useInstanceDefault": "使用实例默认值",
-    "borderRadiusDescription": "拖动时整个应用的圆角会实时更新。",
     "kanbanColumnWidth": "看板列宽度",
-    "kanbanColumnWidthDescription": "为看板状态列设置自定义宽度。实例默认值会自动将列适应可用空间。",
     "kanbanColumnWidthCompact": "紧凑",
     "kanbanColumnWidthComfortable": "舒适",
     "kanbanColumnWidthWide": "宽松",
-    "kanbanColumnWidthAutoFit": "自动适应"
+    "kanbanColumnWidthAutoFit": "自动适应",
+    "useAccountSetting": "使用账户设置"
   },
   "migration": {
     "migrationComplete": "迁移完成",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Markdown 指南",
     "brain": "链接与大脑",
     "customisations": "自定义",
+    "selfHosting": "自托管",
     "envVariables": "环境变量",
     "mfa": "MFA",
     "encryption": "加密",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "翻译"
+    "translations": "翻译",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "页面未找到",
@@ -1826,7 +1849,9 @@
     "linked": "已链接 {title} 中的提及",
     "linkFailed": "无法链接该提及",
     "kind": {
+      "link": "链接",
       "mention": "链接",
+      "checklist": "清单",
       "wiki": "维基链接"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "标签"
     },
     "edges": {
+      "link": "链接",
       "mention": "链接",
+      "checklist": "清单",
       "wiki": "维基链接",
       "suggested": "建议",
       "tag": "标签"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty 会重写此文件开头的前置元数据：给不是有效 YAML 的值加上引号，把制表符换成空格，把不是 Jotty id 的 uuid 移到 previousUuid，再添加自己的 uuid。文件其余部分保持不变。Jotty 无法撤销此操作，如果有其他应用读取这段前置元数据，请先保留一份副本。你需要此项目的编辑权限，并且它所在的文件夹必须可写。",
     "confirm": "修复前置元数据",
     "fixed": "已修复。现在可以编辑此项目了。"
+  },
+  "live": {
+    "currentlyEditing": "正在编辑",
+    "dropped": "你离线时有人修改了这篇笔记，因此你未保存的更改已被丢弃。",
+    "copyDropped": "复制我的更改",
+    "status": {
+      "offline": "已离线。如果在你重新连接前有人修改了这篇笔记，你未保存的更改将被丢弃。",
+      "refused": "由于你的权限或这篇笔记发生了变化，实时编辑已停止。请刷新后继续。",
+      "unavailable": "实时编辑不可用，你正在单独编辑。你的更改仍会保存。"
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": "及其所有子分类",
     "only": "（不含子分类）",
     "categoriesMore": "{first} 及另外 {count} 个",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "全部笔记",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, other {{notes} 篇笔记}}，{pinned} 篇置顶",
     "checklistsKicker": "已勾选 {done}/{total} 项",
-    "kanbanKicker": "{boardsCount, plural, other {{boards} 个看板}}上有 {cardsCount, plural, other {{cards} 张卡片}}，{inProgress} 张进行中"
+    "kanbanKicker": "{boardsCount, plural, other {{boards} 个看板}}上有 {cardsCount, plural, other {{cards} 张卡片}}，{inProgress} 张进行中",
+    "hideWidget": "隐藏{widget}",
+    "widgetHidden": "已隐藏{widget}",
+    "widgetHiddenHint": "可随时在用户偏好设置中重新开启。"
+  },
+  "quickSettings": {
+    "title": "快速设置",
+    "browserOnly": "仅在此浏览器中",
+    "saveToAccount": "保存到账户",
+    "savedToAccount": "已保存到你的账户",
+    "allPreferences": "所有偏好设置",
+    "heading": "随意布置",
+    "subtitle": "更改只作用于此浏览器。把想要的设置保存到账户，就能在所有设备上使用。",
+    "overrideCount": "{count, plural, other {此处设置了 # 项}}",
+    "saving": "正在保存...",
+    "labels": {
+      "theme": "主题",
+      "borderRadius": "圆角",
+      "noteFontSize": "笔记文字大小",
+      "kanbanColumnWidth": "看板列宽",
+      "viewMode": "浏览方式",
+      "cardPreview": "卡片上预览笔记",
+      "compactMode": "紧凑笔记宽度",
+      "autosave": "自动保存笔记",
+      "showEmojis": "清单中的表情",
+      "completedSuggestions": "建议已完成的项目"
+    },
+    "hints": {
+      "borderRadius": "拖动时整个应用的圆角会随之变化。",
+      "noteFontSize": "用于阅读和书写笔记。",
+      "kanbanColumnWidth": "自动会拉伸各列以填满看板。",
+      "cardPreview": "在卡片上显示格式化的 Markdown，而不是纯文本。",
+      "compactMode": "将编辑器宽度限制为 900px。"
+    }
   }
 }

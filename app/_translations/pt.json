@@ -187,6 +187,7 @@
     "unpinFromHome": "Desafixar do início",
     "archive": "Arquivar",
     "confirmDeleteItem": "Tem a certeza de que pretende eliminar \"{itemTitle}\"?",
+    "confirmDeleteEntry": "Tem a certeza de que quer eliminar esta entrada?",
     "sharedBy": "Partilhado por {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} concluídos",
     "releaseNotes": "Notas de versão v{version}",
@@ -679,7 +680,17 @@
     "startTime": "Início",
     "endTime": "Fim",
     "addItemToColumn": "Adicionar item a {column}",
-    "addItemPlaceholder": "Novo item..."
+    "addItemPlaceholder": "Novo item...",
+    "agentAvatar": "Agente {agent}",
+    "agentInvalid": "Os nomes de agente usam 1 a 64 letras, dígitos, pontos, hífenes ou sublinhados, sem espaços.",
+    "assigneeSearch": "Pesquisa utilizadores ou dá nome a um agente...",
+    "assignAgentAs": "Atribuir ao agente {agent}",
+    "assigneeWillShare": "Vai partilhar o quadro",
+    "assigneeNoAccess": "Não consegue ver este quadro",
+    "assigneeShareTitle": "Partilhar este quadro?",
+    "assigneeShareMessage": "{user} ainda não consegue ver este quadro. Ao atribuir, o quadro é partilhado com permissão de edição.",
+    "assigneeShareConfirm": "Partilhar e atribuir",
+    "assignFailed": "Não foi possível alterar o responsável"
   },
   "profile": {
     "userProfile": "Utilizador",
@@ -871,6 +882,8 @@
     "confirmPassword": "Confirmar palavra-passe",
     "passwordChanged": "Palavra-passe alterada",
     "settingsSaved": "Definições guardadas",
+    "settingsSaveFailed": "Não foi possível guardar as definições",
+    "settingsSaveFailedDescription": "A tua alteração não foi guardada. Tenta novamente.",
     "dashCase": "Com hífens (ex.: meu-ficheiro.md)",
     "minimal": "Mínimo (remover apenas caracteres inválidos)",
     "noRename": "Sem renomear (manter nome de ficheiro original)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Predefinido",
+    "defaultOption": "Padrão ({value})",
     "dark": "Escuro",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Continue de onde parou",
     "homePinboard": "Quadro de fixados",
     "homePinboardDescription": "Quando desativado, os itens fixados aparecem como cartões normais no topo.",
-    "homeTags": "Etiquetas"
+    "homeTags": "Etiquetas",
+    "notesFontSize": "Tamanho do texto das notas",
+    "notesFontSizeDescription": "Tamanho do texto para ler e editar notas em todos os dispositivos. As definições rápidas podem alterá-lo num só navegador.",
+    "borderRadiusDescription": "Arredonda os cantos em toda a aplicação. As definições rápidas ainda podem alterá-lo num só navegador.",
+    "browseViewModeDescription": "Como as notas e listas são dispostas quando as navegas.",
+    "notesCardPreviewDescription": "Mostra o início formatado de cada nota no seu cartão.",
+    "notesCompactModeDescription": "Usa um esquema mais estreito ao ler e editar notas.",
+    "kanbanColumnWidthDescription": "Define uma largura personalizada para as colunas de estado do kanban. Por predefinição, as colunas ajustam-se ao espaço disponível."
   },
   "admin": {
     "title": "Administrador",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "As definições do editor têm de ser um objeto, nada foi guardado",
     "invalidEditorSetting": "A definição do editor {field} tem o tipo errado, nada foi guardado",
     "categoryOutOfBounds": "Essa categoria está fora das suas notas, por isso nada foi criado",
+    "filenameOutOfBounds": "Esse título colocaria o ficheiro fora da sua categoria, por isso nada foi guardado",
     "requiredField": "Este campo é obrigatório",
     "emailInvalid": "Por favor, introduza um e-mail válido",
     "passwordTooShort": "A palavra-passe deve ter pelo menos 8 caracteres",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Alternar modo de editor enriquecido",
     "toggleMarkdownMode": "Alternar modo markdown",
+    "editorMode": "Modo do editor",
+    "currentEditorMode": "A editar em {mode}",
+    "switchToRichEditor": "Mudar para o editor avançado",
+    "switchToMarkdown": "Mudar para markdown",
     "quickControls": "Controlos do editor",
     "toggleBold": "Alternar negrito",
     "toggleItalic": "Alternar itálico",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Editar diagrama",
     "deleteDiagram": "Eliminar diagrama",
+    "diagramDarkMode": "Mostrar no modo escuro",
+    "diagramLightMode": "Mostrar no modo claro",
+    "diagramLoadFailed": "Não foi possível carregar o editor de diagramas. Verifique sua conexão e tente novamente.",
+    "diagramSaveFailed": "Não foi possível salvar o diagrama. Seu desenho ainda está aberto.",
+    "diagramDataUnreadable": "Não foi possível ler os dados deste diagrama, então ele não pode ser editado aqui.",
+    "drawioEditor": "Editor do Draw.io",
+    "diagramRichModeOnly": "Somente no modo avançado",
+    "diagramUnavailableInMarkdown": "Indisponível no modo markdown",
     "enterMermaidCode": "Introduzir código de diagrama Mermaid...",
     "widthPx": "Largura (px)",
     "heightPx": "Altura (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Números de linha",
     "inlineCode": "Código em linha",
     "moreTools": "Mais ferramentas",
-    "moreToolsCount": "Mais ferramentas ({count} guardadas aqui)",
-    "diagramDarkMode": "Mostrar no modo escuro",
-    "diagramLightMode": "Mostrar no modo claro",
-    "diagramLoadFailed": "Não foi possível carregar o editor de diagramas. Verifique sua conexão e tente novamente.",
-    "diagramSaveFailed": "Não foi possível salvar o diagrama. Seu desenho ainda está aberto.",
-    "diagramDataUnreadable": "Não foi possível ler os dados deste diagrama, então ele não pode ser editado aqui.",
-    "drawioEditor": "Editor do Draw.io",
-    "diagramRichModeOnly": "Somente no modo avançado",
-    "diagramUnavailableInMarkdown": "Indisponível no modo markdown"
+    "moreToolsCount": "Mais ferramentas ({count} guardadas aqui)"
   },
   "sharing": {
     "share": "Partilhar",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Sou um marcador de posição porque não pode encriptar uma nota vazia."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Estas opções aplicam-se só a esta sessão do navegador. Para definições permanentes, veja as suas",
-    "accountSettings": "preferências do utilizador",
-    "autosaveNotes": "Guardação automática de notas",
     "showNotePreview": "Mostrar pré-visualização de notas nos cartões",
     "notesCompactMode": "Modo compacto de notas",
     "showEmojis": "Mostrar emojis nas listas de verificação",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Lista",
     "viewModeGrid": "Grelha",
     "borderRadius": "Arredondamento dos cantos",
-    "useInstanceDefault": "Usar predefinição da instância",
-    "borderRadiusDescription": "Os cantos atualizam em toda a aplicação enquanto arrasta.",
     "kanbanColumnWidth": "Largura das colunas Kanban",
-    "kanbanColumnWidthDescription": "Defina uma largura personalizada para as colunas de estado do Kanban. A predefinição da instância ajusta as colunas automaticamente ao espaço disponível.",
     "kanbanColumnWidthCompact": "Compacto",
     "kanbanColumnWidthComfortable": "Confortavel",
     "kanbanColumnWidthWide": "Largo",
-    "kanbanColumnWidthAutoFit": "Ajuste auto"
+    "kanbanColumnWidthAutoFit": "Ajuste auto",
+    "useAccountSetting": "Usar a definição da conta"
   },
   "migration": {
     "migrationComplete": "Migração concluída",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Guia Markdown",
     "brain": "Ligações e Brain",
     "customisations": "Personalizações",
+    "selfHosting": "Alojamento próprio",
     "envVariables": "Variáveis de ambiente",
     "mfa": "MFA",
     "encryption": "Encriptação",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Traduções"
+    "translations": "Traduções",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -1826,7 +1849,9 @@
     "linked": "Menção ligada em {title}",
     "linkFailed": "Não foi possível ligar essa menção",
     "kind": {
+      "link": "Ligação",
       "mention": "Ligação",
+      "checklist": "Lista",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Etiqueta"
     },
     "edges": {
+      "link": "Ligação",
       "mention": "Ligação",
+      "checklist": "Lista",
       "wiki": "Wikilink",
       "suggested": "Sugerida",
       "tag": "Etiqueta"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "O Jotty vai reescrever o frontmatter no início deste arquivo. Ele coloca entre aspas os valores que não são YAML válido, troca tabulações por espaços, move para previousUuid um uuid que não seja do Jotty e adiciona o próprio uuid. O resto do arquivo continua igual. O Jotty não consegue desfazer isso, então guarde uma cópia se outro aplicativo lê este frontmatter. Você precisa de permissão para editar este item, e a pasta precisa permitir gravação.",
     "confirm": "Corrigir o frontmatter",
     "fixed": "Corrigido. Agora você pode editar este item."
+  },
+  "live": {
+    "currentlyEditing": "A editar agora",
+    "dropped": "Alguém alterou esta nota enquanto estavas offline, por isso as tuas alterações por guardar foram descartadas.",
+    "copyDropped": "Copiar as minhas alterações",
+    "status": {
+      "offline": "Offline. Se alguém alterar esta nota antes de voltares a ligar-te, as tuas alterações por guardar serão descartadas.",
+      "refused": "A edição em direto parou porque o teu acesso ou esta nota mudou. Atualiza para continuar.",
+      "unavailable": "A edição em direto não está disponível, por isso estás a editar sozinho. As tuas alterações continuam a ser guardadas."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " e tudo o que contém",
     "only": " apenas",
     "categoriesMore": "{first} + {count} mais",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "todas as notas",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} nota} other {{notes} notas}}, {pinned} fixadas",
     "checklistsKicker": "{done} de {total} caixas marcadas",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} cartão} other {{cards} cartões}} em {boardsCount, plural, one {{boards} quadro} other {{boards} quadros}}, {inProgress} em progresso"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} cartão} other {{cards} cartões}} em {boardsCount, plural, one {{boards} quadro} other {{boards} quadros}}, {inProgress} em progresso",
+    "hideWidget": "Ocultar {widget}",
+    "widgetHidden": "{widget} oculto",
+    "widgetHiddenHint": "Pode voltar a ativá-lo a qualquer momento nas preferências do utilizador."
+  },
+  "quickSettings": {
+    "title": "Definições rápidas",
+    "browserOnly": "Só neste navegador",
+    "saveToAccount": "Guardar na conta",
+    "savedToAccount": "Guardado na tua conta",
+    "allPreferences": "Todas as preferências",
+    "heading": "Sente-te em casa",
+    "subtitle": "As alterações ficam neste navegador. Guarda as que quiseres na tua conta para as usares em todos os dispositivos.",
+    "overrideCount": "{count, plural, one {# definido aqui} other {# definidos aqui}}",
+    "saving": "A guardar...",
+    "labels": {
+      "theme": "Tema",
+      "borderRadius": "Arredondamento dos cantos",
+      "noteFontSize": "Tamanho do texto das notas",
+      "kanbanColumnWidth": "Largura das colunas kanban",
+      "viewMode": "Ver como",
+      "cardPreview": "Pré-visualização nos cartões",
+      "compactMode": "Largura compacta das notas",
+      "autosave": "Guardar notas automaticamente",
+      "showEmojis": "Emojis nas listas",
+      "completedSuggestions": "Sugerir itens concluídos"
+    },
+    "hints": {
+      "borderRadius": "Os cantos mudam em toda a aplicação enquanto arrastas.",
+      "noteFontSize": "Para ler e escrever notas.",
+      "kanbanColumnWidth": "Automático estica as colunas para preencher o quadro.",
+      "cardPreview": "Mostra markdown formatado nos cartões em vez de texto simples.",
+      "compactMode": "Limita o editor a 900px de largura."
+    }
   }
 }

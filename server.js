@@ -107,12 +107,14 @@ wss.on("close", () => {
   clearInterval(heartbeat);
 });
 
+const reachesUser = (event, username) => !event.recipient || event.recipient === username;
+
 globalThis.__jottyBroadcast = (event) => {
   const payload = JSON.stringify(event);
   wss.clients.forEach((client) => {
-    if (client.readyState === 1) {
-      client.send(payload);
-    }
+    if (client.readyState !== 1) return;
+    if (!reachesUser(event, connectedClients.get(client)?.username)) return;
+    client.send(payload);
   });
 };
 

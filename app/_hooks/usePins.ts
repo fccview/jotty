@@ -4,13 +4,11 @@ import { useCallback, useMemo } from "react";
 import { ItemType } from "@/app/_types";
 import { isPinnedEntry } from "@/app/_utils/global-utils";
 import { usePinToggle } from "@/app/_hooks/usePinToggle";
+import { pinKeysOf } from "@/app/_utils/browse-utils";
 
 interface PinnableItem {
   uuid: string;
 }
-
-const pinnedKeys = (entries: string[]) =>
-  new Set(entries.flatMap((entry) => [entry, entry.split("/").pop() || entry]));
 
 export const usePins = <T extends PinnableItem>(
   items: T[],
@@ -19,7 +17,7 @@ export const usePins = <T extends PinnableItem>(
 ) => {
   const { toggle: togglePin } = usePinToggle(type);
   const entries = useMemo(() => pinnedEntries || [], [pinnedEntries]);
-  const keys = useMemo(() => pinnedKeys(entries), [entries]);
+  const keys = useMemo(() => pinKeysOf(entries), [entries]);
 
   const pinned = useMemo(
     () =>

@@ -1,6 +1,10 @@
 import { GridViewIcon, ListViewIcon, SchoolReportCardIcon } from "hugeicons-react";
 
-export type ViewMode = "card" | "list" | "grid";
+export const VIEW_MODES = ["card", "list", "grid"] as const;
+
+export type ViewMode = (typeof VIEW_MODES)[number];
+
+export const DEFAULT_VIEW_MODE: ViewMode = "card";
 
 export const VIEW_MODE_OPTIONS: {
   id: ViewMode;

@@ -1,4 +1,4 @@
-import { getUserNotes } from "@/app/_server/actions/note/queries";
+import { getBrowseNotes } from "@/app/_server/actions/note/browse";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { getCategories } from "@/app/_server/actions/category";
 import { NotesPageClient } from "@/app/_components/FeatureComponents/Notes/NotesPageClient";
@@ -9,9 +9,9 @@ import { Modes } from "@/app/_types/enums";
 export const dynamic = "force-dynamic";
 
 export default async function NotesPage() {
-  const [notesResult, user, categoriesResult] = await Promise.all([
-    getUserNotes(),
-    getCurrentUser(),
+  const user = await getCurrentUser();
+  const [notesResult, categoriesResult] = await Promise.all([
+    getBrowseNotes(user),
     getCategories(Modes.NOTES),
   ]);
 

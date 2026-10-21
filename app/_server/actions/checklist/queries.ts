@@ -22,8 +22,13 @@ import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
 import { countItems } from "@/app/_utils/checklist-count-utils";
+import { summarizeList } from "@/app/_utils/list-summary-utils";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import {
+  getOrCompute,
+  metaCacheKey,
+  summaryCacheKey,
+} from "@/app/_server/actions/lib/metadata-cache";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
@@ -39,6 +44,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     pinnedPaths,
     preserveOrder = false,
     countOpenItems = false,
+    summarize = false,
   } = options;
 
   try {
@@ -60,12 +66,14 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     const layoutTiming = metadataOnly;
     const t1 = layoutTiming ? performance.now() : 0;
 
-    const canCache = metadataOnly && !allowArchived && !isRaw;
+    const isSummary = summarize && !metadataOnly && !isRaw;
+    const canCache = (metadataOnly || isSummary) && !allowArchived && !isRaw;
+    const cacheKeyOf = isSummary ? summaryCacheKey : metaCacheKey;
     const absUserDir = path.isAbsolute(userDir)
       ? userDir
       : path.join(process.cwd(), userDir);
     const ownCacheKey = canCache
-      ? metaCacheKey(Modes.CHECKLISTS, absUserDir)
+      ? cacheKeyOf(Modes.CHECKLISTS, absUserDir)
       : null;
 
     const cached: ChecklistReadResult[] = ownCacheKey
@@ -79,6 +87,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           metadataOnly,
           undefined,
           undefined,
+          isSummary,
         ),
       )
       : await readListsRecursively(
@@ -90,6 +99,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         metadataOnly,
         undefined,
         undefined,
+        isSummary,
       );
 
     let lists: ChecklistReadResult[] = dropClashes(cached, absUserDir);
@@ -119,7 +129,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         await ensureDir(ownerDir);
 
         const ownerCacheKey = canCache
-          ? metaCacheKey(Modes.CHECKLISTS, ownerDir)
+          ? cacheKeyOf(Modes.CHECKLISTS, ownerDir)
           : null;
 
         const ownerLists = ownerCacheKey
@@ -131,6 +141,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
               allowArchived,
               isRaw,
               metadataOnly,
+              undefined,
+              undefined,
+              isSummary,
             ),
           )
           : await readListsRecursively(
@@ -140,6 +153,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
             allowArchived,
             isRaw,
             metadataOnly,
+            undefined,
+            undefined,
+            isSummary,
           );
 
         const shared = await mountedItems(
@@ -188,7 +204,8 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 
     const openItems = countOpenItems
       ? lists.reduce((open, list) => {
-          const { total, completed } = countItems(list.items || [], list.type);
+          const { total, completed } =
+            list.summary || countItems(list.items || [], list.type);
           return open + total - completed;
         }, 0)
       : undefined;
@@ -244,7 +261,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           const { checklist } = await checkAndRefreshRecurringItems(
             list as Checklist,
           );
-          return checklist;
+          return isSummary && !checklist.summary
+            ? { ...checklist, items: [], summary: summarizeList(checklist) }
+            : checklist;
         }),
       );
     }

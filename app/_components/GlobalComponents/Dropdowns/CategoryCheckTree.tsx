@@ -9,6 +9,7 @@ import { isInCategory } from "@/app/_utils/category-path-utils";
 import { SMALL_RADIUS_CLASS } from "@/app/_consts/styling";
 
 const INDENT = 16;
+const TOGGLE_KEYS = [" ", "Enter"];
 const BASE_PADDING = 8;
 const NO_CHILDREN: Category[] = [];
 
@@ -64,8 +65,11 @@ const CategoryNode = ({
   return (
     <div className="jotty-category-tree-node select-none">
       <div
+        role="checkbox"
+        aria-checked={isSelected || isInherited}
+        tabIndex={0}
         className={cn(
-          "flex items-center gap-2 py-1.5 pr-2 text-md lg:text-sm rounded-jotty cursor-pointer border border-transparent",
+          "flex items-center gap-2 py-1.5 pr-2 text-md lg:text-sm rounded-jotty cursor-pointer border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
           isSelected
             ? "bg-primary/10 text-primary border-primary/20"
             : isInherited
@@ -74,6 +78,12 @@ const CategoryNode = ({
         )}
         style={{ paddingLeft: `${BASE_PADDING + level * INDENT}px` }}
         onClick={() => onToggle(category.path)}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          if (!TOGGLE_KEYS.includes(event.key)) return;
+          event.preventDefault();
+          onToggle(category.path);
+        }}
       >
         <button
           type="button"

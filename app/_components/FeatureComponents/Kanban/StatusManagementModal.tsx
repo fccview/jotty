@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Add01Icon, Delete03Icon, DragDropVerticalIcon } from "hugeicons-react";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { KanbanStatus } from "@/app/_types";
@@ -247,7 +247,16 @@ export const StatusManagementModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={t("tasks.manageStatuses")}
-      className="lg:max-w-3xl"
+      variant={ModalVariant.PANEL}
+      width={ModalWidth.WIDE}
+      footer={() => (
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={handleClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button onClick={handleSave}>{t("common.saveChanges")}</Button>
+        </div>
+      )}
     >
       <div className="space-y-4">
         <p className="text-md lg:text-sm text-muted-foreground">
@@ -263,7 +272,7 @@ export const StatusManagementModal = ({
             items={statuses.map((s) => s.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            <div className="space-y-2">
               {statuses.map((status) => (
                 <SortableStatusItem
                   key={status.id}
@@ -283,13 +292,6 @@ export const StatusManagementModal = ({
           <Add01Icon className="h-4 w-4 mr-2" />
           {t("tasks.addStatus")}
         </Button>
-
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={handleClose}>
-            {t("common.cancel")}
-          </Button>
-          <Button onClick={handleSave}>{t("common.saveChanges")}</Button>
-        </div>
       </div>
 
       <ConfirmModal

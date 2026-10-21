@@ -187,6 +187,7 @@
     "unpinFromHome": "Открепить от главной",
     "archive": "Архив",
     "confirmDeleteItem": "Вы уверены, что хотите удалить \"{itemTitle}\"?",
+    "confirmDeleteEntry": "Вы уверены, что хотите удалить эту запись?",
     "sharedBy": "Доступно от {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} выполнено",
     "releaseNotes": "Заметки о выпуске v{version}",
@@ -679,7 +680,17 @@
     "startTime": "Начало",
     "endTime": "Конец",
     "addItemToColumn": "Добавить элемент в {column}",
-    "addItemPlaceholder": "Новый элемент..."
+    "addItemPlaceholder": "Новый элемент...",
+    "agentAvatar": "Агент {agent}",
+    "agentInvalid": "Имя агента состоит из 1-64 букв, цифр, точек, дефисов или подчёркиваний, без пробелов.",
+    "assigneeSearch": "Найдите пользователя или назовите агента...",
+    "assignAgentAs": "Назначить агента {agent}",
+    "assigneeWillShare": "Доска станет общей",
+    "assigneeNoAccess": "Не видит эту доску",
+    "assigneeShareTitle": "Поделиться доской?",
+    "assigneeShareMessage": "{user} пока не видит эту доску. Назначение откроет ему доступ с правом редактирования.",
+    "assigneeShareConfirm": "Поделиться и назначить",
+    "assignFailed": "Не удалось сменить исполнителя"
   },
   "profile": {
     "userProfile": "Пользователь",
@@ -871,6 +882,8 @@
     "confirmPassword": "Подтвердите пароль",
     "passwordChanged": "Пароль изменён",
     "settingsSaved": "Настройки сохранены",
+    "settingsSaveFailed": "Не удалось сохранить настройки",
+    "settingsSaveFailedDescription": "Изменение не сохранилось. Попробуйте ещё раз.",
     "dashCase": "Dash case (например, my-file-name.md)",
     "minimal": "Минимальный (удалить недопустимые символы)",
     "noRename": "Без переименования (сохранить оригинальное имя)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "По умолчанию",
+    "defaultOption": "По умолчанию ({value})",
     "dark": "Тёмная",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Продолжите с того места, где остановились",
     "homePinboard": "Доска закреплённых",
     "homePinboardDescription": "Если выключено, закреплённые элементы показываются вверху как обычные карточки.",
-    "homeTags": "Теги"
+    "homeTags": "Теги",
+    "notesFontSize": "Размер текста заметок",
+    "notesFontSizeDescription": "Размер текста для чтения и редактирования заметок на всех устройствах. Быстрые настройки могут изменить его для одного браузера.",
+    "borderRadiusDescription": "Скругляет углы во всём приложении. Быстрые настройки всё равно могут изменить это для одного браузера.",
+    "browseViewModeDescription": "Как отображаются заметки и списки при просмотре.",
+    "notesCardPreviewDescription": "Показывает отформатированное начало каждой заметки на её карточке.",
+    "notesCompactModeDescription": "Использует более узкую разметку при чтении и редактировании заметок.",
+    "kanbanColumnWidthDescription": "Задайте свою ширину колонок статусов канбана. По умолчанию колонки подстраиваются под доступное место."
   },
   "admin": {
     "title": "Админ",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "Настройки редактора должны быть объектом, ничего не сохранено",
     "invalidEditorSetting": "У настройки редактора {field} неверный тип, ничего не сохранено",
     "categoryOutOfBounds": "Эта категория находится за пределами ваших заметок, поэтому ничего не создано",
+    "filenameOutOfBounds": "С таким заголовком файл оказался бы вне своей категории, поэтому ничего не сохранено",
     "requiredField": "Это поле обязательно",
     "emailInvalid": "Пожалуйста, введите корректный email",
     "passwordTooShort": "Пароль должен содержать минимум 8 символов",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Переключить режим Rich Editor",
     "toggleMarkdownMode": "Переключить режим Markdown",
+    "editorMode": "Режим редактора",
+    "currentEditorMode": "Сейчас редактирование в режиме {mode}",
+    "switchToRichEditor": "Переключиться на визуальный редактор",
+    "switchToMarkdown": "Переключиться на markdown",
     "quickControls": "Управление редактором",
     "toggleBold": "Переключить жирный",
     "toggleItalic": "Переключить курсив",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Редактировать диаграмму",
     "deleteDiagram": "Удалить диаграмму",
+    "diagramDarkMode": "Показать в тёмном режиме",
+    "diagramLightMode": "Показать в светлом режиме",
+    "diagramLoadFailed": "Не удалось загрузить редактор диаграмм. Проверьте подключение и попробуйте снова.",
+    "diagramSaveFailed": "Не удалось сохранить диаграмму. Ваш рисунок всё ещё открыт.",
+    "diagramDataUnreadable": "Не удалось прочитать данные этой диаграммы, поэтому её нельзя редактировать здесь.",
+    "drawioEditor": "Редактор Draw.io",
+    "diagramRichModeOnly": "Только в расширенном режиме",
+    "diagramUnavailableInMarkdown": "Недоступно в режиме markdown",
     "enterMermaidCode": "Введите код диаграммы Mermaid...",
     "widthPx": "Ширина (px)",
     "heightPx": "Высота (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Номера строк",
     "inlineCode": "Встроенный код",
     "moreTools": "Ещё инструменты",
-    "moreToolsCount": "Ещё инструменты (спрятано здесь: {count})",
-    "diagramDarkMode": "Показать в тёмном режиме",
-    "diagramLightMode": "Показать в светлом режиме",
-    "diagramLoadFailed": "Не удалось загрузить редактор диаграмм. Проверьте подключение и попробуйте снова.",
-    "diagramSaveFailed": "Не удалось сохранить диаграмму. Ваш рисунок всё ещё открыт.",
-    "diagramDataUnreadable": "Не удалось прочитать данные этой диаграммы, поэтому её нельзя редактировать здесь.",
-    "drawioEditor": "Редактор Draw.io",
-    "diagramRichModeOnly": "Только в расширенном режиме",
-    "diagramUnavailableInMarkdown": "Недоступно в режиме markdown"
+    "moreToolsCount": "Ещё инструменты (спрятано здесь: {count})"
   },
   "sharing": {
     "share": "Поделиться",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Я заполнитель, потому что пустую заметку невозможно зашифровать."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Эти параметры действуют только в этой сессии браузера. Постоянные настройки находятся в",
-    "accountSettings": "настройки пользователя",
-    "autosaveNotes": "Автосохранение заметок",
     "showNotePreview": "Показывать предпросмотр заметки на карточках",
     "notesCompactMode": "Компактный режим заметок",
     "showEmojis": "Показывать эмодзи на чеклистах",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Список",
     "viewModeGrid": "Сетка",
     "borderRadius": "Скругление углов",
-    "useInstanceDefault": "Использовать значение по умолчанию",
-    "borderRadiusDescription": "Углы меняются во всём приложении по мере перетаскивания.",
     "kanbanColumnWidth": "Ширина колонок Kanban",
-    "kanbanColumnWidthDescription": "Установите свою ширину колонок статусов Kanban. Значение по умолчанию автоматически подгоняет колонки под доступное пространство.",
     "kanbanColumnWidthCompact": "Компактный",
     "kanbanColumnWidthComfortable": "Комфортный",
     "kanbanColumnWidthWide": "Широкий",
-    "kanbanColumnWidthAutoFit": "Авто-подгон"
+    "kanbanColumnWidthAutoFit": "Авто-подгон",
+    "useAccountSetting": "Использовать настройку аккаунта"
   },
   "migration": {
     "migrationComplete": "Миграция завершена",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Руководство по Markdown",
     "brain": "Ссылки и Мозг",
     "customisations": "Кастомизации",
+    "selfHosting": "Самостоятельный хостинг",
     "envVariables": "Переменные окружения",
     "mfa": "MFA",
     "encryption": "Шифрование",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Переводы"
+    "translations": "Переводы",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Страница не найдена",
@@ -1826,7 +1849,9 @@
     "linked": "Упоминание в {title} стало ссылкой",
     "linkFailed": "Не удалось связать это упоминание",
     "kind": {
+      "link": "Ссылка",
       "mention": "Ссылка",
+      "checklist": "Список",
       "wiki": "Вики-ссылка"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Тег"
     },
     "edges": {
+      "link": "Ссылка",
       "mention": "Ссылка",
+      "checklist": "Список",
       "wiki": "Вики-ссылка",
       "suggested": "Предложено",
       "tag": "Тег"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty перепишет frontmatter в начале этого файла. Значения, которые не являются корректным YAML, он возьмёт в кавычки, табуляции заменит пробелами, uuid, который не является id Jotty, перенесёт в previousUuid и добавит свой uuid. Остальная часть файла не изменится. Jotty не может это отменить, поэтому сохраните копию, если этот frontmatter читает другое приложение. Нужно право на редактирование этого элемента, а его папка должна быть доступна для записи.",
     "confirm": "Исправить frontmatter",
     "fixed": "Исправлено. Теперь этот элемент можно редактировать."
+  },
+  "live": {
+    "currentlyEditing": "Сейчас редактирует",
+    "dropped": "Кто-то изменил эту заметку, пока вы были офлайн, поэтому ваши несохранённые изменения отброшены.",
+    "copyDropped": "Скопировать мои изменения",
+    "status": {
+      "offline": "Офлайн. Если кто-то изменит эту заметку до того, как вы снова подключитесь, ваши несохранённые изменения будут отброшены.",
+      "refused": "Совместное редактирование остановлено, потому что изменился ваш доступ или эта заметка. Обновите страницу, чтобы продолжить.",
+      "unavailable": "Совместное редактирование недоступно, поэтому вы редактируете в одиночку. Изменения всё равно сохраняются."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " с вложенными",
     "only": " без вложенных",
     "categoriesMore": "{first} + ещё {count}",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "все заметки",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} заметка} few {{notes} заметки} many {{notes} заметок} other {{notes} заметки}}, закреплено: {pinned}",
     "checklistsKicker": "Отмечено {done} из {total}",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} карточка} few {{cards} карточки} many {{cards} карточек} other {{cards} карточки}} на {boardsCount, plural, one {{boards} доске} few {{boards} досках} many {{boards} досках} other {{boards} доски}}, в работе: {inProgress}"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} карточка} few {{cards} карточки} many {{cards} карточек} other {{cards} карточки}} на {boardsCount, plural, one {{boards} доске} few {{boards} досках} many {{boards} досках} other {{boards} доски}}, в работе: {inProgress}",
+    "hideWidget": "Скрыть {widget}",
+    "widgetHidden": "{widget} скрыт",
+    "widgetHiddenHint": "Его можно снова включить в любой момент в настройках пользователя."
+  },
+  "quickSettings": {
+    "title": "Быстрые настройки",
+    "browserOnly": "Только в этом браузере",
+    "saveToAccount": "Сохранить в аккаунт",
+    "savedToAccount": "Сохранено в аккаунте",
+    "allPreferences": "Все настройки",
+    "heading": "Располагайтесь поудобнее",
+    "subtitle": "Изменения остаются в этом браузере. Сохраните нужные в аккаунт, чтобы использовать их на всех устройствах.",
+    "overrideCount": "{count, plural, one {# задана здесь} few {# заданы здесь} many {# задано здесь} other {# задано здесь}}",
+    "saving": "Сохранение...",
+    "labels": {
+      "theme": "Тема",
+      "borderRadius": "Скругление углов",
+      "noteFontSize": "Размер текста заметок",
+      "kanbanColumnWidth": "Ширина колонок канбана",
+      "viewMode": "Показывать как",
+      "cardPreview": "Превью заметок на карточках",
+      "compactMode": "Компактная ширина заметок",
+      "autosave": "Автосохранение заметок",
+      "showEmojis": "Эмодзи в списках",
+      "completedSuggestions": "Предлагать выполненные пункты"
+    },
+    "hints": {
+      "borderRadius": "Углы меняются во всём приложении, пока вы двигаете ползунок.",
+      "noteFontSize": "Для чтения и написания заметок.",
+      "kanbanColumnWidth": "Авто растягивает колонки на всю доску.",
+      "cardPreview": "Показывает отформатированный markdown на карточках вместо простого текста.",
+      "compactMode": "Ограничивает ширину редактора 900px."
+    }
   }
 }

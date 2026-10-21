@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { AppState, ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useThemeTone } from "@/app/_hooks/useThemeTone";
@@ -202,6 +202,7 @@ export const ExcalidrawEditorModal = ({ diagramData, onSave, onClose }: Excalidr
     <Modal
       isOpen
       onClose={() => save(true)}
+      closeOnEscape={false}
       title={
         <div className="flex items-center gap-2">
           {t("editor.editDiagram")}
@@ -210,7 +211,8 @@ export const ExcalidrawEditorModal = ({ diagramData, onSave, onClose }: Excalidr
           </Button>
         </div>
       }
-      size="fullscreen"
+      variant={ModalVariant.WORKSPACE}
+      flush
     >
       <div
         ref={wrapperRef}

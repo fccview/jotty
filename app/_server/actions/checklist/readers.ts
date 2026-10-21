@@ -27,6 +27,8 @@ import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
+import { isRecurringList, summarizeList } from "@/app/_utils/list-summary-utils";
+import { FileStamp, STAT_PRINTF, parseStatLine, summaryMemo } from "@/app/_server/actions/lib/summary-memo";
 
 const debugCrud = isDebugFlag("crud");
 
@@ -34,6 +36,14 @@ export type ChecklistReadResult =
   | Partial<Checklist>
   | Checklist
   | (Checklist & { rawContent: string });
+
+const memo = summaryMemo<ChecklistReadResult>();
+
+const summed = (list: Checklist): Checklist =>
+  isRecurringList(list) ? list : { ...list, items: [], summary: summarizeList(list) };
+
+const kept = (filePath: string, stats: FileStamp, list: Checklist): ChecklistReadResult =>
+  list.summary ? memo.remember(filePath, stats, list) : list;
 
 export const readListsRecursively = async (
   dir: string,
@@ -44,6 +54,7 @@ export const readListsRecursively = async (
   metadataOnly: boolean = false,
   metadataCache?: Map<string, Record<string, unknown>>,
   statsCache?: Map<string, FileStatsEntry>,
+  summarize: boolean = false,
 ): Promise<ChecklistReadResult[]> => {
   if (basePath === "") {
     statsCache = statsCache ?? new Map();
@@ -52,7 +63,7 @@ export const readListsRecursively = async (
       const excludeStr = allowArchived
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
-      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
+      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "${STAT_PRINTF}"`;
       const metaCmd = metaGrep(["title", "uuid", "tags", "checklistType", "createdAt", SHARED_WITH_KEY]);
       const [statsOut, metaOut] = await Promise.all([
         boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
@@ -63,12 +74,8 @@ export const readListsRecursively = async (
         ),
       ]);
       statsOut.split("\n").forEach((line) => {
-        const [p, b, m] = line.split("|");
-        if (p && b && m)
-          statsCache!.set(p, {
-            birthtime: new Date(parseFloat(b) * 1000),
-            mtime: new Date(parseFloat(m) * 1000),
-          });
+        const parsed = parseStatLine(line);
+        if (parsed) statsCache!.set(parsed[0], parsed[1]);
       });
       const metaLines = metaOut.split("\n").filter(Boolean);
       if (debugCrud && metaLines.length) {
@@ -121,10 +128,7 @@ export const readListsRecursively = async (
         try {
           const cachedStats = statsCache?.get(filePath);
           const stats = cachedStats
-            ? {
-                birthtime: cachedStats.birthtime,
-                mtime: cachedStats.mtime,
-              }
+            ? cachedStats
             : await fs.stat(filePath);
 
           if (metadataOnly) {
@@ -157,6 +161,9 @@ export const readListsRecursively = async (
               tags,
             };
           }
+          const remembered =
+            summarize && !isRaw ? memo.recall(filePath, stats) : undefined;
+          if (remembered) return remembered;
           const content = await serverReadFile(filePath);
           if (isRaw) {
             const { metadata } = extractYamlMetadata(content);
@@ -190,13 +197,16 @@ export const readListsRecursively = async (
             },
             fileName,
           );
-          if (!lacksUuid(content)) return list;
+          if (!lacksUuid(content)) {
+            return summarize ? kept(filePath, stats, summed(list)) : list;
+          }
           const claim = await claimUuid(filePath);
-          return {
+          const claimed = {
             ...list,
             uuid: claim?.uuid || pathUuid(filePath),
             ...(claim?.refusal && { lockReason: claim.refusal }),
           };
+          return summarize ? summed(claimed) : claimed;
         } catch {
           return null;
         }
@@ -214,6 +224,7 @@ export const readListsRecursively = async (
         metadataOnly,
         metadataCache,
         statsCache,
+        summarize,
       ),
     ]);
     return [

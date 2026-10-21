@@ -3,6 +3,7 @@ import { EncryptionSettings } from "./encryption";
 import type { SearchModes } from "@/app/_consts/search";
 import type { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
 import type { HomeWidgetKey } from "@/app/_consts/home";
+import type { ViewMode } from "@/app/_consts/view-modes";
 
 export type EnableRecurrence = "enable" | "disable";
 export type ShowCompletedSuggestions = "enable" | "disable";
@@ -42,6 +43,8 @@ export type HideTimeTrackingOnCards = "enable" | "disable";
 export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
 export type NewItemInsertion = "top" | "bottom";
+export type NotesCardPreview = "enable" | "disable";
+export type NotesCompactMode = "enable" | "disable";
 
 export interface User extends Partial<Record<HomeWidgetKey, HomeWidget>> {
   username: string;
@@ -60,6 +63,11 @@ export interface User extends Partial<Record<HomeWidgetKey, HomeWidget>> {
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
   notesFontSize?: number;
+  notesCardPreview?: NotesCardPreview;
+  notesCompactMode?: NotesCompactMode;
+  preferredBorderRadius?: number;
+  kanbanColumnWidth?: number;
+  browseViewMode?: ViewMode;
   pinnedLists?: string[];
   pinnedNotes?: string[];
   enableRecurrence?: EnableRecurrence;
@@ -102,6 +110,8 @@ export interface Session {
   isCurrent: boolean;
   loginType?: "local" | "sso" | "pending-mfa" | "ldap";
 }
+
+export type UserSettingsPatch = { [K in keyof User]?: User[K] | null };
 
 export type SanitisedUser = Omit<
   User,

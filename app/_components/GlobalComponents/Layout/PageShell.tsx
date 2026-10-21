@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { ReactNode } from "react";
 import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
@@ -23,6 +24,7 @@ export const PageShell = ({
   onCategoryRenamed,
   children,
 }: PageShellProps) => {
+  const locale = useLocale();
   const { openSettings, openCreateCategoryModal } = useShortcut();
 
   return (
@@ -38,7 +40,7 @@ export const PageShell = ({
       <MobileHeader
         user={user}
         onOpenSettings={openSettings}
-        currentLocale={user?.preferredLocale || "en"}
+        currentLocale={locale}
       />
       {children}
     </Layout>

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
@@ -96,7 +97,7 @@ export const useNoteEditor = ({
     };
   }, [clearPassphraseCache]);
 
-  const { autosaveNotes } = useSettings();
+  const autosaveNotes = useQuickValue(QuickSettingId.AUTOSAVE);
   const {
     registerNavigationGuard,
     unregisterNavigationGuard,
@@ -302,7 +303,6 @@ export const useNoteEditor = ({
     if (!hasUnsavedChanges) dirtySinceRef.current = null;
 
     if (
-      user?.notesAutoSaveInterval !== 0 &&
       autosaveNotes &&
       isEditMode &&
       hasUnsavedChanges &&

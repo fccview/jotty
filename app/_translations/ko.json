@@ -187,6 +187,7 @@
     "unpinFromHome": "홈에서 고정 해제",
     "archive": "보관",
     "confirmDeleteItem": "\"{itemTitle}\"을(를) 삭제하시겠습니까?",
+    "confirmDeleteEntry": "이 항목을 삭제하시겠습니까?",
     "sharedBy": "{sharer} 님이 공유함",
     "itemsCompleted": "{completedItems}/{totalItems} 완료",
     "releaseNotes": "릴리즈 노트 v{version}",
@@ -679,7 +680,17 @@
     "startTime": "시작",
     "endTime": "종료",
     "addItemToColumn": "{column}에 항목 추가",
-    "addItemPlaceholder": "새 항목..."
+    "addItemPlaceholder": "새 항목...",
+    "agentAvatar": "에이전트 {agent}",
+    "agentInvalid": "에이전트 이름은 공백 없이 1-64자의 문자, 숫자, 점, 하이픈 또는 밑줄로 구성됩니다.",
+    "assigneeSearch": "사용자를 검색하거나 에이전트 이름을 입력하세요...",
+    "assignAgentAs": "에이전트 {agent} 할당",
+    "assigneeWillShare": "보드를 공유합니다",
+    "assigneeNoAccess": "이 보드를 볼 수 없음",
+    "assigneeShareTitle": "이 보드를 공유할까요?",
+    "assigneeShareMessage": "{user}님은 아직 이 보드를 볼 수 없습니다. 할당하면 편집 권한으로 공유됩니다.",
+    "assigneeShareConfirm": "공유하고 할당",
+    "assignFailed": "담당자를 변경할 수 없습니다"
   },
   "profile": {
     "userProfile": "사용자",
@@ -871,6 +882,8 @@
     "confirmPassword": "비밀번호 확인",
     "passwordChanged": "비밀번호가 변경되었습니다",
     "settingsSaved": "설정이 저장되었습니다",
+    "settingsSaveFailed": "설정을 저장하지 못했습니다",
+    "settingsSaveFailedDescription": "변경 사항이 저장되지 않았습니다. 다시 시도하세요.",
     "dashCase": "대시 표기법 (예: my-file-name.md)",
     "minimal": "최소 (잘못된 문자만 제거)",
     "noRename": "이름 변경 안함 (원본 파일명 유지)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "마크다운",
     "htmlTableSyntax": "HTML",
     "default": "기본",
+    "defaultOption": "기본값 ({value})",
     "dark": "다크",
     "funky": "펑키",
     "okaidia": "오카이디아",
@@ -974,7 +988,14 @@
     "homePickUp": "하던 곳에서 이어서 하기",
     "homePinboard": "고정 보드",
     "homePinboardDescription": "끄면 고정된 항목이 맨 위에 일반 카드로 표시됩니다.",
-    "homeTags": "태그"
+    "homeTags": "태그",
+    "notesFontSize": "노트 글자 크기",
+    "notesFontSizeDescription": "모든 기기에서 노트를 읽고 편집할 때의 글자 크기입니다. 빠른 설정에서 브라우저별로 바꿀 수 있습니다.",
+    "borderRadiusDescription": "앱 전체의 모서리를 둥글게 합니다. 빠른 설정에서 브라우저별로 바꿀 수 있습니다.",
+    "browseViewModeDescription": "노트와 목록을 둘러볼 때의 배치 방식입니다.",
+    "notesCardPreviewDescription": "각 노트의 서식이 적용된 앞부분을 카드에 표시합니다.",
+    "notesCompactModeDescription": "노트를 읽고 편집할 때 더 좁은 레이아웃을 사용합니다.",
+    "kanbanColumnWidthDescription": "칸반 상태 열의 너비를 직접 지정합니다. 기본값은 사용 가능한 공간에 맞춰 열을 자동 조정합니다."
   },
   "admin": {
     "title": "관리자",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "에디터 설정은 객체여야 합니다. 아무것도 저장되지 않았습니다",
     "invalidEditorSetting": "에디터 설정 {field}의 타입이 잘못되었습니다. 아무것도 저장되지 않았습니다",
     "categoryOutOfBounds": "그 카테고리는 내 노트 밖에 있어서 아무것도 만들지 않았습니다",
+    "filenameOutOfBounds": "이 제목을 쓰면 파일이 카테고리 밖으로 나가므로 아무것도 저장하지 않았습니다",
     "requiredField": "필수 입력 항목입니다",
     "emailInvalid": "유효한 이메일을 입력하세요",
     "passwordTooShort": "비밀번호는 최소 8자 이상이어야 합니다",
@@ -1285,6 +1307,10 @@
     "markdown": "마크다운",
     "toggleRichEditorMode": "리치 에디터 모드 전환",
     "toggleMarkdownMode": "마크다운 모드 전환",
+    "editorMode": "편집기 모드",
+    "currentEditorMode": "현재 {mode}에서 편집 중",
+    "switchToRichEditor": "리치 편집기로 전환",
+    "switchToMarkdown": "마크다운으로 전환",
     "quickControls": "에디터 컨트롤",
     "toggleBold": "굵게 전환",
     "toggleItalic": "기울임꼴 전환",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "다이어그램 편집",
     "deleteDiagram": "다이어그램 삭제",
+    "diagramDarkMode": "다크 모드로 보기",
+    "diagramLightMode": "라이트 모드로 보기",
+    "diagramLoadFailed": "다이어그램 편집기를 불러올 수 없습니다. 연결을 확인하고 다시 시도하세요.",
+    "diagramSaveFailed": "다이어그램을 저장할 수 없습니다. 그림은 아직 열려 있습니다.",
+    "diagramDataUnreadable": "이 다이어그램의 데이터를 읽을 수 없어 여기서 편집할 수 없습니다.",
+    "drawioEditor": "Draw.io 편집기",
+    "diagramRichModeOnly": "리치 모드 전용",
+    "diagramUnavailableInMarkdown": "마크다운 모드에서는 사용할 수 없음",
     "enterMermaidCode": "Mermaid 다이어그램 코드를 입력하세요...",
     "widthPx": "너비 (px)",
     "heightPx": "높이 (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "줄 번호",
     "inlineCode": "인라인 코드",
     "moreTools": "도구 더 보기",
-    "moreToolsCount": "도구 더 보기 (여기에 {count}개 보관됨)",
-    "diagramDarkMode": "다크 모드로 보기",
-    "diagramLightMode": "라이트 모드로 보기",
-    "diagramLoadFailed": "다이어그램 편집기를 불러올 수 없습니다. 연결을 확인하고 다시 시도하세요.",
-    "diagramSaveFailed": "다이어그램을 저장할 수 없습니다. 그림은 아직 열려 있습니다.",
-    "diagramDataUnreadable": "이 다이어그램의 데이터를 읽을 수 없어 여기서 편집할 수 없습니다.",
-    "drawioEditor": "Draw.io 편집기",
-    "diagramRichModeOnly": "리치 모드 전용",
-    "diagramUnavailableInMarkdown": "마크다운 모드에서는 사용할 수 없음"
+    "moreToolsCount": "도구 더 보기 (여기에 {count}개 보관됨)"
   },
   "sharing": {
     "share": "공유",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "빈 메모는 암호화할 수 없기 때문에 자리 표시자입니다."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "이 옵션은 이 브라우저 세션에만 적용됩니다. 영구 설정은 다음에서 확인하세요:",
-    "accountSettings": "사용자 환경설정",
-    "autosaveNotes": "노트 자동 저장",
     "showNotePreview": "카드에서 노트 미리보기 표시",
     "notesCompactMode": "노트 컴팩트 모드",
     "showEmojis": "체크리스트에 이모지 표시",
@@ -1617,14 +1640,12 @@
     "viewModeList": "목록",
     "viewModeGrid": "그리드",
     "borderRadius": "모서리 둥글기",
-    "useInstanceDefault": "기본값 사용",
-    "borderRadiusDescription": "드래그하는 동안 앱 전체의 모서리가 즉시 바뀝니다.",
     "kanbanColumnWidth": "칸반 열 넓이",
-    "kanbanColumnWidthDescription": "칸반 상태 열에 대한 사용자 정의 넓이를 설정합니다. 인스턴스 기본값은 열을 사용 가능한 공간에 자동으로 맞춥니다.",
     "kanbanColumnWidthCompact": "좁은",
     "kanbanColumnWidthComfortable": "보통",
     "kanbanColumnWidthWide": "넓은",
-    "kanbanColumnWidthAutoFit": "자동 맞춤"
+    "kanbanColumnWidthAutoFit": "자동 맞춤",
+    "useAccountSetting": "계정 설정 사용"
   },
   "migration": {
     "migrationComplete": "마이그레이션 완료",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "마크다운 가이드",
     "brain": "링크와 브레인",
     "customisations": "커스트마이징",
+    "selfHosting": "셀프 호스팅",
     "envVariables": "환경 변수",
     "mfa": "MFA",
     "encryption": "암호화",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "번역"
+    "translations": "번역",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",
@@ -1826,7 +1849,9 @@
     "linked": "{title}의 언급을 링크했습니다",
     "linkFailed": "그 언급을 링크하지 못했습니다",
     "kind": {
+      "link": "링크",
       "mention": "링크",
+      "checklist": "체크리스트",
       "wiki": "위키링크"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "태그"
     },
     "edges": {
+      "link": "링크",
       "mention": "링크",
+      "checklist": "체크리스트",
       "wiki": "위키링크",
       "suggested": "추천",
       "tag": "태그"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty가 이 파일 맨 위의 프런트매터를 다시 씁니다. 올바른 YAML이 아닌 값은 따옴표로 감싸고, 탭은 공백으로 바꾸고, Jotty id가 아닌 uuid는 previousUuid로 옮긴 뒤 자체 uuid를 추가합니다. 파일의 나머지는 그대로입니다. Jotty는 이 작업을 되돌릴 수 없으니, 다른 앱이 이 프런트매터를 읽는다면 사본을 남겨 두세요. 이 항목의 편집 권한이 필요하고, 폴더에 쓰기가 가능해야 합니다.",
     "confirm": "프런트매터 고치기",
     "fixed": "고쳤습니다. 이제 이 항목을 편집할 수 있습니다."
+  },
+  "live": {
+    "currentlyEditing": "편집 중",
+    "dropped": "오프라인인 동안 누군가 이 노트를 변경해서 저장하지 않은 변경 사항이 삭제되었습니다.",
+    "copyDropped": "내 변경 사항 복사",
+    "status": {
+      "offline": "오프라인입니다. 다시 연결되기 전에 누군가 이 노트를 변경하면 저장하지 않은 변경 사항이 삭제됩니다.",
+      "refused": "접근 권한이나 이 노트가 변경되어 실시간 편집이 중단되었습니다. 계속하려면 새로고침하세요.",
+      "unavailable": "실시간 편집을 사용할 수 없어 혼자 편집하고 있습니다. 변경 사항은 계속 저장됩니다."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " 및 하위 항목 전체",
     "only": "만",
     "categoriesMore": "{first} 외 {count}개",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "모든 노트",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, other {노트 {notes}개}}, 고정 {pinned}개",
     "checklistsKicker": "{total}칸 중 {done}칸 체크",
-    "kanbanKicker": "{boardsCount, plural, other {보드 {boards}개}}에 {cardsCount, plural, other {카드 {cards}개}}, 진행 중 {inProgress}개"
+    "kanbanKicker": "{boardsCount, plural, other {보드 {boards}개}}에 {cardsCount, plural, other {카드 {cards}개}}, 진행 중 {inProgress}개",
+    "hideWidget": "{widget} 숨기기",
+    "widgetHidden": "{widget} 숨김",
+    "widgetHiddenHint": "사용자 환경설정에서 언제든지 다시 켤 수 있습니다."
+  },
+  "quickSettings": {
+    "title": "빠른 설정",
+    "browserOnly": "이 브라우저에서만",
+    "saveToAccount": "계정에 저장",
+    "savedToAccount": "계정에 저장되었습니다",
+    "allPreferences": "모든 환경설정",
+    "heading": "편하게 꾸며 보세요",
+    "subtitle": "변경 사항은 이 브라우저에만 적용됩니다. 원하는 설정을 계정에 저장하면 모든 기기에서 사용할 수 있습니다.",
+    "overrideCount": "{count, plural, other {여기서 #개 설정됨}}",
+    "saving": "저장 중...",
+    "labels": {
+      "theme": "테마",
+      "borderRadius": "모서리 둥글기",
+      "noteFontSize": "노트 글자 크기",
+      "kanbanColumnWidth": "칸반 열 너비",
+      "viewMode": "보기 방식",
+      "cardPreview": "카드에 노트 미리보기",
+      "compactMode": "좁은 노트 너비",
+      "autosave": "노트 자동 저장",
+      "showEmojis": "체크리스트 이모지",
+      "completedSuggestions": "완료한 항목 추천"
+    },
+    "hints": {
+      "borderRadius": "드래그하는 동안 앱 전체의 모서리가 바뀝니다.",
+      "noteFontSize": "노트를 읽고 쓸 때 적용됩니다.",
+      "kanbanColumnWidth": "자동은 열을 보드에 꽉 차게 늘립니다.",
+      "cardPreview": "카드에 일반 텍스트 대신 서식이 적용된 마크다운을 표시합니다.",
+      "compactMode": "편집기 너비를 900px로 제한합니다."
+    }
   }
 }

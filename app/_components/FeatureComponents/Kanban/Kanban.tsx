@@ -30,7 +30,8 @@ import { archiveItem, unarchiveItem } from "@/app/_server/actions/checklist-item
 import { useTranslations } from "next-intl";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { useToast } from "@/app/_providers/ToastProvider";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { clampKanbanColumnWidth } from "@/app/_consts/styling";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 
@@ -69,7 +70,7 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
       (sharedChecklist) => sharedChecklist.uuid === checklist.uuid,
     ) || false;
   const { permissions } = usePermissions();
-  const { kanbanColumnWidth } = useSettings();
+  const kanbanColumnWidth = useQuickValue(QuickSettingId.KANBAN_COLUMN_WIDTH);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const customColumnWidth =
     kanbanColumnWidth !== null && isDesktop

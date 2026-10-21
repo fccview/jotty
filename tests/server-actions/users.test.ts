@@ -8,6 +8,11 @@ const mockReadSessions = vi.fn()
 const mockLogUserEvent = vi.fn()
 const mockLogAudit = vi.fn()
 const mockRevokeGrants = vi.fn()
+const mockBroadcast = vi.fn()
+
+vi.mock('@/app/_server/actions/ws/broadcast', () => ({
+  broadcast: (...args: unknown[]) => mockBroadcast(...args),
+}))
 
 vi.mock('@/app/_server/actions/file', () => ({
   readJsonFile: (...args: any[]) => mockReadJsonFile(...args),
@@ -778,6 +783,94 @@ describe('Users Actions', () => {
       expect(written[0].encryptionSettings.customKeyPath).toBe('/safe/path')
       expect(written[0].encryptionSettings.method).toBe('xchacha')
       expect(written[0].encryptionSettings.autoDecrypt).toBe(false)
+    })
+
+    it('should clear an editable setting so it follows the default again', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, handedness: 'left-handed', preferredBorderRadius: 1 },
+      ])
+
+      const result = await updateUserSettings({ handedness: null, preferredBorderRadius: null })
+
+      expect(result.success).toBe(true)
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0]).not.toHaveProperty('handedness')
+      expect(written[0]).not.toHaveProperty('preferredBorderRadius')
+      expect(result.data?.user).not.toHaveProperty('handedness')
+      expect(mockLogAudit).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'user_settings_updated',
+        metadata: expect.objectContaining({ settingsCleared: ['preferredBorderRadius', 'handedness'] }),
+      }))
+    })
+
+    it('should refuse to clear a field that is not an editable setting', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: true, apiKey: 'key', mfaSecret: 'secret' },
+      ])
+
+      await updateUserSettings({ isAdmin: null, passwordHash: null, apiKey: null, mfaSecret: null, username: null })
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0]).toMatchObject({ username: 'testuser', passwordHash: 'hash', isAdmin: true, apiKey: 'key', mfaSecret: 'secret' })
+      expect(mockLogAudit).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'user_settings_rejected',
+        metadata: expect.objectContaining({
+          rejected: ['isAdmin', 'passwordHash', 'apiKey', 'mfaSecret', 'username'],
+        }),
+      }))
+    })
+
+    it('should not let null wipe encryption settings', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, encryptionSettings: { method: 'pgp', hasKeys: true, autoDecrypt: true } },
+      ])
+
+      await updateUserSettings({ encryptionSettings: null })
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0].encryptionSettings).toEqual({ method: 'pgp', hasKeys: true, autoDecrypt: true })
+    })
+
+    it('should keep validating values next to a cleared field', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, browseViewMode: 'list', preferredBorderRadius: 1 },
+      ])
+
+      const result = await updateUserSettings({
+        browseViewMode: 'carousel' as never,
+        preferredBorderRadius: 'huge' as never,
+        notesFontSize: 400,
+        handedness: null,
+      })
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0].browseViewMode).toBe('list')
+      expect(written[0].preferredBorderRadius).toBe(1)
+      expect(written[0].notesFontSize).toBe(24)
+      expect(result.data?.user.notesFontSize).toBe(24)
+    })
+
+    it('should keep reading old records that store explicit default values', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, notesFontSize: 0, kanbanColumnWidth: 0, landingPage: 'checklists' },
+      ])
+
+      const result = await updateUserSettings({ handedness: 'left-handed' })
+
+      expect(result.data?.user).toMatchObject({ notesFontSize: 0, kanbanColumnWidth: 0, landingPage: 'checklists', handedness: 'left-handed' })
+    })
+
+    it('should broadcast a settings change only to the user who made it', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false },
+      ])
+
+      await updateUserSettings({ handedness: 'left-handed' })
+
+      expect(mockBroadcast).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'settings',
+        recipient: 'testuser',
+      }))
     })
 
     it('should audit rejected fields', async () => {

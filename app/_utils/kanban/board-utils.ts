@@ -37,7 +37,7 @@ export const getColumnItems = (
 };
 
 export const boardColumns = (
-  checklist: Checklist,
+  checklist: Pick<Checklist, "items" | "statuses">,
 ): { status: KanbanStatus; items: Item[] }[] => {
   const statuses = checklist.statuses?.length
     ? checklist.statuses

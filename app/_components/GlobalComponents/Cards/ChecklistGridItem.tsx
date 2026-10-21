@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Checklist } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
-import { countItems } from "@/app/_utils/checklist-count-utils";
+import { useListSummary } from "@/app/_hooks/useListCardStats";
 import { categoryLeaf } from "@/app/_utils/category-path-utils";
 import { PinToggle } from "./Parts/PinToggle";
 import { ItemGlyph } from "./Parts/ItemGlyph";
@@ -23,10 +22,7 @@ export const ChecklistGridItem = ({
   onTogglePin,
 }: ChecklistGridItemProps) => {
   const t = useTranslations();
-  const { total, completed } = useMemo(
-    () => countItems(list.items, list.type),
-    [list.items, list.type],
-  );
+  const { total, completed } = useListSummary(list);
 
   return (
     <div

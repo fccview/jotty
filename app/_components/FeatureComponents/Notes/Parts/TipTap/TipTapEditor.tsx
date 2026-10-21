@@ -7,7 +7,8 @@ import { CompactTableToolbar } from "@/app/_components/FeatureComponents/Notes/P
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { TableSyntax } from "@/app/_types";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useFileUpload } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useFileUpload";
 import {
@@ -80,7 +81,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     ref,
   ) => {
     const { user, appSettings, tagsIndex, usersPublicData } = useAppMode();
-    const { compactMode } = useSettings();
+    const compactMode = useQuickValue(QuickSettingId.COMPACT_MODE);
     const t = useTranslations();
 
     const editorSettings = appSettings?.editor || {

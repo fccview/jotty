@@ -98,7 +98,7 @@ export const HistoryPreview = ({
       </div>
 
       {viewMode === "diff" ? (
-        <div className="max-h-[60vh] overflow-auto rounded-jotty border border-border bg-card">
+        <div className="overflow-x-auto rounded-jotty border border-border bg-card">
           <pre className="p-4 text-sm font-mono whitespace-pre-wrap break-words">
             {diffLines.map((line, idx) => (
               <div
@@ -123,7 +123,7 @@ export const HistoryPreview = ({
           </pre>
         </div>
       ) : (
-        <div className="max-h-[60vh] overflow-auto rounded-jotty border border-border bg-card p-4">
+        <div className="overflow-x-auto rounded-jotty border border-border bg-card p-4">
           <UnifiedMarkdownRenderer content={selectedVersion?.content || ""} className={NOTE_PROSE_CLASS} />
         </div>
       )}

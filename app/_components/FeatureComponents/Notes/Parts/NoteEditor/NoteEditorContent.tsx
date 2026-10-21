@@ -6,7 +6,8 @@ import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Not
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
@@ -50,7 +51,7 @@ export const NoteEditorContent = ({
 }: NoteEditorContentProps) => {
   const t = useTranslations();
   const { user, notes, checklists } = useAppMode();
-  const { compactMode } = useSettings();
+  const compactMode = useQuickValue(QuickSettingId.COMPACT_MODE);
   const editorRef = useRef<TiptapEditorRef>(null);
   const isMinimalMode = useMinimalMode();
   const rootRef = useRef<HTMLDivElement>(null);

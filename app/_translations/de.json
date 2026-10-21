@@ -187,6 +187,7 @@
     "unpinFromHome": "Von Startseite lösen",
     "archive": "Archivieren",
     "confirmDeleteItem": "Bist du sicher, dass du \"{itemTitle}\" löschen möchtest?",
+    "confirmDeleteEntry": "Möchtest du diesen Eintrag wirklich löschen?",
     "sharedBy": "Freigegeben von {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} abgeschlossen",
     "releaseNotes": "Versionshinweise v{version}",
@@ -679,7 +680,17 @@
     "startTime": "Start",
     "endTime": "Ende",
     "addItemToColumn": "Element zu {column} hinzufügen",
-    "addItemPlaceholder": "Neues Element..."
+    "addItemPlaceholder": "Neues Element...",
+    "agentAvatar": "Agent {agent}",
+    "agentInvalid": "Agentennamen bestehen aus 1-64 Buchstaben, Ziffern, Punkten, Bindestrichen oder Unterstrichen, ohne Leerzeichen.",
+    "assigneeSearch": "Benutzer suchen oder einen Agenten benennen...",
+    "assignAgentAs": "Agent {agent} zuweisen",
+    "assigneeWillShare": "Teilt das Board",
+    "assigneeNoAccess": "Kann dieses Board nicht sehen",
+    "assigneeShareTitle": "Dieses Board teilen?",
+    "assigneeShareMessage": "{user} kann dieses Board noch nicht sehen. Wenn du zuweist, wird es mit Bearbeitungsrechten geteilt.",
+    "assigneeShareConfirm": "Teilen und zuweisen",
+    "assignFailed": "Zuweisung konnte nicht geändert werden"
   },
   "profile": {
     "userProfile": "Benutzer",
@@ -871,6 +882,8 @@
     "confirmPassword": "Passwort bestätigen",
     "passwordChanged": "Passwort geändert",
     "settingsSaved": "Einstellungen gespeichert",
+    "settingsSaveFailed": "Einstellungen konnten nicht gespeichert werden",
+    "settingsSaveFailedDescription": "Deine Änderung wurde nicht gespeichert. Versuche es erneut.",
     "dashCase": "Bindestrich-Format (bspw., mein-datei-name.md)",
     "minimal": "Minimal (entfernt nur ungültige Zeichen)",
     "noRename": "Keine Umbenennung (Original-Dateiname bleibt erhalten)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Standard",
+    "defaultOption": "Standard ({value})",
     "dark": "Dark",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Mach da weiter, wo du aufgehört hast",
     "homePinboard": "Pinnwand",
     "homePinboardDescription": "Wenn deaktiviert, erscheinen angepinnte Elemente als normale Karten ganz oben.",
-    "homeTags": "Tags"
+    "homeTags": "Tags",
+    "notesFontSize": "Textgröße in Notizen",
+    "notesFontSizeDescription": "Textgröße zum Lesen und Bearbeiten von Notizen auf allen Geräten. Die Schnelleinstellungen können sie für einen einzelnen Browser überschreiben.",
+    "borderRadiusDescription": "Rundet die Ecken in der ganzen App. Die Schnelleinstellungen können das für einen Browser trotzdem ändern.",
+    "browseViewModeDescription": "Wie Notizen und Listen beim Durchsuchen angeordnet werden.",
+    "notesCardPreviewDescription": "Zeigt den formatierten Anfang jeder Notiz auf ihrer Karte.",
+    "notesCompactModeDescription": "Nutzt beim Lesen und Bearbeiten von Notizen ein schmaleres Layout.",
+    "kanbanColumnWidthDescription": "Lege eine eigene Breite für die Kanban-Statusspalten fest. Standardmäßig passen sich die Spalten dem verfügbaren Platz an."
   },
   "admin": {
     "title": "Administration",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "Editoreinstellungen müssen ein Objekt sein, nichts wurde gespeichert",
     "invalidEditorSetting": "Die Editoreinstellung {field} hat den falschen Typ, nichts wurde gespeichert",
     "categoryOutOfBounds": "Diese Kategorie liegt außerhalb deiner Notizen, deshalb wurde nichts erstellt",
+    "filenameOutOfBounds": "Dieser Titel würde die Datei außerhalb ihrer Kategorie ablegen, daher wurde nichts gespeichert",
     "requiredField": "Dieses Feld muss ausgefüllt werden",
     "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein",
     "passwordTooShort": "Das Passwort muss mindestens 8 Zeichen haben",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Rich-Editor-Modus umschalten",
     "toggleMarkdownMode": "Markdown-Modus umschalten",
+    "editorMode": "Editormodus",
+    "currentEditorMode": "Du bearbeitest gerade in {mode}",
+    "switchToRichEditor": "Zum Rich-Text-Editor wechseln",
+    "switchToMarkdown": "Zu Markdown wechseln",
     "quickControls": "Editor-Steuerung",
     "toggleBold": "Fettdruck umschalten",
     "toggleItalic": "Kursivdruck umschalten",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Diagramm bearbeiten",
     "deleteDiagram": "Diagramm löschen",
+    "diagramDarkMode": "Im dunklen Modus anzeigen",
+    "diagramLightMode": "Im hellen Modus anzeigen",
+    "diagramLoadFailed": "Der Diagramm-Editor konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
+    "diagramSaveFailed": "Das Diagramm konnte nicht gespeichert werden. Deine Zeichnung ist noch geöffnet.",
+    "diagramDataUnreadable": "Die Daten dieses Diagramms konnten nicht gelesen werden, daher kann es hier nicht bearbeitet werden.",
+    "drawioEditor": "Draw.io-Editor",
+    "diagramRichModeOnly": "Nur im Rich-Modus",
+    "diagramUnavailableInMarkdown": "Im Markdown-Modus nicht verfügbar",
     "enterMermaidCode": "Gib den Mermaid-Code hier ein...",
     "widthPx": "Breite (px)",
     "heightPx": "Höhe (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Zeilennummern",
     "inlineCode": "Inline-Code",
     "moreTools": "Weitere Werkzeuge",
-    "moreToolsCount": "Weitere Werkzeuge ({count} hier versteckt)",
-    "diagramDarkMode": "Im dunklen Modus anzeigen",
-    "diagramLightMode": "Im hellen Modus anzeigen",
-    "diagramLoadFailed": "Der Diagramm-Editor konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
-    "diagramSaveFailed": "Das Diagramm konnte nicht gespeichert werden. Deine Zeichnung ist noch geöffnet.",
-    "diagramDataUnreadable": "Die Daten dieses Diagramms konnten nicht gelesen werden, daher kann es hier nicht bearbeitet werden.",
-    "drawioEditor": "Draw.io-Editor",
-    "diagramRichModeOnly": "Nur im Rich-Modus",
-    "diagramUnavailableInMarkdown": "Im Markdown-Modus nicht verfügbar"
+    "moreToolsCount": "Weitere Werkzeuge ({count} hier versteckt)"
   },
   "sharing": {
     "share": "Freigeben",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Ich bin ein Platzhalter, weil man eine leere Notiz nicht verschlüsseln kann."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Diese Einstellungen gelten nur für diese Browser-Sitzung. Für dauerhafte Einstellungen schau in deine",
-    "accountSettings": "Benutzereinstellungen",
-    "autosaveNotes": "Notizen automatisch speichern",
     "showNotePreview": "Vorschau der Notizen auf Karten zeigen",
     "notesCompactMode": "Kompaktmodus für Notizen",
     "showEmojis": "Emojis auf Checklist-Karten zeigen",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Liste",
     "viewModeGrid": "Raster",
     "borderRadius": "Eckenrundung",
-    "useInstanceDefault": "Standard der Instanz verwenden",
-    "borderRadiusDescription": "Die Ecken ändern sich beim Ziehen in der gesamten App.",
     "kanbanColumnWidth": "Kanban-Spaltenbreite",
-    "kanbanColumnWidthDescription": "Lege eine benutzerdefinierte Breite für die Kanban-Statusspalten fest. Der Instanzstandard passt die Spalten automatisch an den verfügbaren Platz an.",
     "kanbanColumnWidthCompact": "Kompakt",
     "kanbanColumnWidthComfortable": "Komfortabel",
     "kanbanColumnWidthWide": "Breit",
-    "kanbanColumnWidthAutoFit": "Auto-Anpassung"
+    "kanbanColumnWidthAutoFit": "Auto-Anpassung",
+    "useAccountSetting": "Kontoeinstellung verwenden"
   },
   "migration": {
     "migrationComplete": "Migration vollständig",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Markdown-Erklärung",
     "brain": "Links & Brain",
     "customisations": "Anpassungen",
+    "selfHosting": "Selbst hosten",
     "envVariables": "Umgebungsvariablen",
     "mfa": "MFA",
     "encryption": "Verschlüsselung",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Übersetzungen"
+    "translations": "Übersetzungen",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -1826,7 +1849,9 @@
     "linked": "Erwähnung in {title} verlinkt",
     "linkFailed": "Die Erwähnung konnte nicht verlinkt werden",
     "kind": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Checkliste",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Tag"
     },
     "edges": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Checkliste",
       "wiki": "Wikilink",
       "suggested": "Vorgeschlagen",
       "tag": "Tag"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty schreibt das Frontmatter am Anfang dieser Datei neu. Werte, die kein gültiges YAML sind, bekommen Anführungszeichen, Tabs werden zu Leerzeichen, eine uuid, die keine Jotty-ID ist, wandert nach previousUuid, und Jotty fügt eine eigene uuid hinzu. Der Rest der Datei bleibt, wie er ist. Jotty kann das nicht rückgängig machen. Leg also eine Kopie an, wenn eine andere App dieses Frontmatter liest. Du brauchst Bearbeitungsrechte für dieses Element, und sein Ordner muss beschreibbar sein.",
     "confirm": "Frontmatter reparieren",
     "fixed": "Repariert. Du kannst dieses Element jetzt bearbeiten."
+  },
+  "live": {
+    "currentlyEditing": "Bearbeitet gerade",
+    "dropped": "Jemand hat diese Notiz geändert, während du offline warst. Deine ungespeicherten Änderungen wurden verworfen.",
+    "copyDropped": "Meine Änderungen kopieren",
+    "status": {
+      "offline": "Offline. Wenn jemand diese Notiz ändert, bevor du wieder verbunden bist, werden deine ungespeicherten Änderungen verworfen.",
+      "refused": "Die Live-Bearbeitung wurde beendet, weil sich dein Zugriff oder diese Notiz geändert hat. Lade die Seite neu, um weiterzumachen.",
+      "unavailable": "Live-Bearbeitung ist nicht verfügbar, du bearbeitest also allein. Deine Änderungen werden trotzdem gespeichert."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " samt allem darin",
     "only": " allein",
     "categoriesMore": "{first} + {count} weitere",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "alle Notizen",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} Notiz} other {{notes} Notizen}}, {pinned} angepinnt",
     "checklistsKicker": "{done} von {total} Kästchen abgehakt",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} Karte} other {{cards} Karten}} auf {boardsCount, plural, one {{boards} Board} other {{boards} Boards}}, {inProgress} in Bearbeitung"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} Karte} other {{cards} Karten}} auf {boardsCount, plural, one {{boards} Board} other {{boards} Boards}}, {inProgress} in Bearbeitung",
+    "hideWidget": "{widget} ausblenden",
+    "widgetHidden": "{widget} ausgeblendet",
+    "widgetHiddenHint": "Du kannst es jederzeit in den Benutzereinstellungen wieder einschalten."
+  },
+  "quickSettings": {
+    "title": "Schnelleinstellungen",
+    "browserOnly": "Nur in diesem Browser",
+    "saveToAccount": "Im Konto speichern",
+    "savedToAccount": "In deinem Konto gespeichert",
+    "allPreferences": "Alle Einstellungen",
+    "heading": "Fühl dich wie zu Hause",
+    "subtitle": "Änderungen gelten in diesem Browser. Speichere sie in deinem Konto, um sie auf jedem Gerät zu nutzen.",
+    "overrideCount": "{count, plural, one {# hier gesetzt} other {# hier gesetzt}}",
+    "saving": "Wird gespeichert...",
+    "labels": {
+      "theme": "Design",
+      "borderRadius": "Eckenrundung",
+      "noteFontSize": "Textgröße in Notizen",
+      "kanbanColumnWidth": "Kanban-Spaltenbreite",
+      "viewMode": "Anzeigen als",
+      "cardPreview": "Notizvorschau auf Karten",
+      "compactMode": "Kompakte Notizbreite",
+      "autosave": "Notizen automatisch speichern",
+      "showEmojis": "Emojis in Checklisten",
+      "completedSuggestions": "Erledigte Einträge vorschlagen"
+    },
+    "hints": {
+      "borderRadius": "Die Ecken ändern sich in der ganzen App, während du ziehst.",
+      "noteFontSize": "Zum Lesen und Schreiben von Notizen.",
+      "kanbanColumnWidth": "Automatisch passt die Spalten an das Board an.",
+      "cardPreview": "Zeigt formatiertes Markdown statt reinem Text auf Karten.",
+      "compactMode": "Begrenzt den Editor auf 900px Breite."
+    }
   }
 }

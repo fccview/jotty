@@ -26,6 +26,28 @@ import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
+import { summarizeNote } from "@/app/_utils/note-display-utils";
+import { STAT_PRINTF, parseStatLine, summaryMemo } from "@/app/_server/actions/lib/summary-memo";
+
+export type ListedNote = Note & { sourcePath?: string };
+
+const memo = summaryMemo<ListedNote>();
+
+const summed = (note: Note, filePath: string): ListedNote => ({
+  ...note,
+  content: "",
+  ...summarizeNote(note),
+  sourcePath: filePath,
+});
+
+const claimedNote = async (note: Note, filePath: string): Promise<Note> => {
+  const claim = await claimUuid(filePath);
+  return {
+    ...note,
+    uuid: claim?.uuid || pathUuid(filePath),
+    ...(claim?.refusal && { lockReason: claim.refusal }),
+  };
+};
 
 export const readNotesRecursively = async (
   dir: string,
@@ -37,7 +59,8 @@ export const readNotesRecursively = async (
   excerptLength?: number,
   metadataCache?: Map<string, Record<string, unknown>>,
   statsCache?: Map<string, FileStatsEntry>,
-): Promise<Note[]> => {
+  summarize: boolean = false,
+): Promise<ListedNote[]> => {
   if (basePath === "") {
     statsCache = statsCache || new Map();
     metadataCache = metadataCache || new Map();
@@ -46,7 +69,7 @@ export const readNotesRecursively = async (
       const excludeStr = allowArchived
         ? ""
         : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
-      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
+      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "${STAT_PRINTF}"`;
       const metaCmd = metaGrep(["title", "uuid", "tags", "encrypted", "createdAt", SHARED_WITH_KEY]);
       const [statsOut, metaOut] = await Promise.all([
         boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
@@ -58,12 +81,8 @@ export const readNotesRecursively = async (
       ]);
 
       statsOut.split("\n").forEach((line) => {
-        const [p, b, m] = line.split("|");
-        if (p && b && m)
-          statsCache!.set(p, {
-            birthtime: new Date(parseFloat(b) * 1000),
-            mtime: new Date(parseFloat(m) * 1000),
-          });
+        const parsed = parseStatLine(line);
+        if (parsed) statsCache!.set(parsed[0], parsed[1]);
       });
 
       scanFrontmatter(metaOut, metadataCache!);
@@ -72,7 +91,7 @@ export const readNotesRecursively = async (
     }
   }
 
-  const notes: Note[] = [];
+  const notes: ListedNote[] = [];
   const entries = await serverReadDir(dir);
   let excludedDirs = EXCLUDED_DIRS;
 
@@ -107,6 +126,7 @@ export const readNotesRecursively = async (
       excerptLength,
       metadataCache,
       statsCache,
+      summarize,
     );
   });
 
@@ -124,7 +144,7 @@ export const readNotesRecursively = async (
     try {
       const cachedStats = statsCache?.get(filePath);
       const stats = cachedStats
-        ? { birthtime: cachedStats.birthtime, mtime: cachedStats.mtime }
+        ? cachedStats
         : await fs.stat(filePath);
 
       if (metadataOnly) {
@@ -191,6 +211,8 @@ export const readNotesRecursively = async (
           tags,
         };
       } else {
+        const remembered = summarize && !isRaw ? memo.recall(filePath, stats) : undefined;
+        if (remembered) return remembered;
         const content = await serverReadFile(filePath);
         if (isRaw) {
           const { metadata } = extractYamlMetadata(content);
@@ -222,13 +244,11 @@ export const readNotesRecursively = async (
             },
             fileName,
           );
-          if (!lacksUuid(content)) return note;
-          const claim = await claimUuid(filePath);
-          return {
-            ...note,
-            uuid: claim?.uuid || pathUuid(filePath),
-            ...(claim?.refusal && { lockReason: claim.refusal }),
-          };
+          if (lacksUuid(content)) {
+            const claimed = await claimedNote(note, filePath);
+            return summarize ? summed(claimed, filePath) : claimed;
+          }
+          return summarize ? memo.remember(filePath, stats, summed(note, filePath)) : note;
         }
       }
     } catch (e) {
@@ -243,7 +263,7 @@ export const readNotesRecursively = async (
 
   notes.push(
     ...orderByUuids(
-      currentDirNotes.filter((n): n is Note => n != null),
+      currentDirNotes.filter((n): n is ListedNote => n != null),
       order?.items,
       (note) => note.uuid,
     ),

@@ -3,6 +3,16 @@ import { ItemTypes } from "./enums";
 import { EncryptionMethod } from "./encryption";
 import { SharingPermissions } from "./core";
 
+export interface NoteSummary {
+  excerpt: string;
+  wordCount: number;
+}
+
+export interface NoteBody {
+  uuid: string;
+  content: string;
+}
+
 export interface Note {
   /** @deprecated file-layer slug (on-disk filename), never identity; use uuid */
   id: string;
@@ -26,6 +36,8 @@ export interface Note {
   tags?: string[];
   extraMetadata?: Record<string, unknown>;
   lockReason?: StampRefusals;
+  excerpt?: string;
+  wordCount?: number;
 }
 
 export interface NoteEditorViewModel {

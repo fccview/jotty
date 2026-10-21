@@ -44,3 +44,20 @@ export const runQueued = <T>(
 
 export const itemLane = (mode: string, uuid: string): string =>
   `item:${mode}:${uuid}`;
+
+export const mapPooled = async <T, R>(
+  items: T[],
+  size: number,
+  work: (item: T) => Promise<R>,
+): Promise<R[]> => {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  const runner = async () => {
+    while (next < items.length) {
+      const index = next++;
+      results[index] = await work(items[index]);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(size, items.length) }, runner));
+  return results;
+};

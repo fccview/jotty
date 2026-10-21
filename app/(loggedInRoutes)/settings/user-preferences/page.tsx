@@ -6,13 +6,17 @@ import { getFlagPath } from '@/app/_utils/global-utils';
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { isSpecialTranslation } from "@/app/_utils/special-translations-utils";
 
+const FALLBACK_LOCALE = "en";
+
 export default async function UserPreferencesPage() {
     const notesCategoriesResult = await getCategories(Modes.NOTES);
     const notesCategories = notesCategoriesResult.success ? notesCategoriesResult.data : [];
     const user = await getCurrentUser();
-    const currentLocale = user?.preferredLocale || "en";
-
     const locales = await getAvailableLocalesWithNames();
+    const wantedLocale = process.env.DEFAULT_LOCALE || FALLBACK_LOCALE;
+    const instanceLocale = locales.find((locale) => locale.code === wantedLocale) || locales.find((locale) => locale.code === FALLBACK_LOCALE);
+    const currentLocale = user?.preferredLocale || instanceLocale?.code || FALLBACK_LOCALE;
+
     const filteredLocales = locales.filter((locale) => {
         if (isSpecialTranslation(locale.code)) {
             return locale.code === currentLocale;
@@ -27,5 +31,12 @@ export default async function UserPreferencesPage() {
         };
     });
 
-    return <UserPreferencesTab noteCategories={notesCategories || []} localeOptions={localeOptions} />;
+    return (
+        <UserPreferencesTab
+            noteCategories={notesCategories || []}
+            localeOptions={localeOptions}
+            instanceLocale={instanceLocale?.code || FALLBACK_LOCALE}
+            instanceLocaleName={instanceLocale?.name || FALLBACK_LOCALE}
+        />
+    );
 }

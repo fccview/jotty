@@ -4,7 +4,7 @@ import { plainItemText } from "@/app/_utils/item-href-utils";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
 import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Item, Checklist, KanbanPriority } from "@/app/_types";
 import {
@@ -409,14 +409,15 @@ export const KanbanCardDetail = ({
         isOpen={isOpen}
         onClose={onClose}
         title={plainItemText(item.text) || t("checklists.untitledTask")}
-        size="fullscreen"
+        variant={ModalVariant.WORKSPACE}
+        flush
         allowEnlarge
         defaultEnlarged
         storageKey="kanban-card-detail"
-        className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
+        width={ModalWidth.XWIDE}
       >
-      <div className="kanban-card-detail-body flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:overflow-hidden">
-        <div className="min-w-0 space-y-4 p-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+      <div className="kanban-card-detail-body flex shrink-0 flex-col gap-6 lg:min-h-0 lg:flex-1 lg:shrink lg:flex-row lg:overflow-hidden">
+        <div className="min-w-0 space-y-4 px-6 py-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           {isEditing ? (
             <div className="space-y-4">
               <div>
@@ -538,7 +539,7 @@ export const KanbanCardDetail = ({
           )}
         </div>
 
-        <div className="overflow-y-auto p-4 lg:min-h-0 lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6">
+        <div className="shrink-0 px-6 py-4 lg:min-h-0 lg:w-80 lg:overflow-y-auto lg:border-l lg:border-border">
           <KanbanCardDetailProperties
             item={item}
             statuses={statuses}

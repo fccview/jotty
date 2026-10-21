@@ -4,10 +4,16 @@ import { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
 import { HOME_WIDGET_KEYS, HomeWidgetKey } from "@/app/_consts/home";
 import { SearchModes } from "@/app/_consts/search";
 import {
+  KANBAN_COLUMN_WIDTH_AUTO,
+  MAX_BORDER_RADIUS,
+  MAX_KANBAN_COLUMN_WIDTH,
   MAX_NOTE_FONT_SIZE,
+  MIN_BORDER_RADIUS,
+  MIN_KANBAN_COLUMN_WIDTH,
   MIN_NOTE_FONT_SIZE,
   NOTE_FONT_SIZE_AUTO,
 } from "@/app/_consts/styling";
+import { VIEW_MODES } from "@/app/_consts/view-modes";
 
 export const userSettingsSchema = z.object({
   preferredTheme: z.string().min(1, "Theme is required"),
@@ -43,6 +49,21 @@ export const editorSettingsSchema = z.object({
         message: `Notes font size must be between ${MIN_NOTE_FONT_SIZE} and ${MAX_NOTE_FONT_SIZE}`,
       },
     )
+    .optional(),
+  browseViewMode: z
+    .enum(VIEW_MODES, {
+      message: "View mode must be 'card', 'list' or 'grid'",
+    })
+    .optional(),
+  notesCardPreview: z
+    .enum(["enable", "disable"], {
+      message: "Card preview must be either 'enable' or 'disable'",
+    })
+    .optional(),
+  notesCompactMode: z
+    .enum(["enable", "disable"], {
+      message: "Compact mode must be either 'enable' or 'disable'",
+    })
     .optional(),
   disableRichEditor: z.enum(["enable", "disable"], {
     message: "Disable rich editor must be either 'enable' or 'disable'",
@@ -100,6 +121,17 @@ export const checklistSettingsSchema = z.object({
 });
 
 export const kanbanSettingsSchema = z.object({
+  kanbanColumnWidth: z
+    .number()
+    .refine(
+      (width) =>
+        width === KANBAN_COLUMN_WIDTH_AUTO ||
+        (width >= MIN_KANBAN_COLUMN_WIDTH && width <= MAX_KANBAN_COLUMN_WIDTH),
+      {
+        message: `Kanban column width must be between ${MIN_KANBAN_COLUMN_WIDTH} and ${MAX_KANBAN_COLUMN_WIDTH}`,
+      },
+    )
+    .optional(),
   hideStatusOnCards: z
     .enum(["enable", "disable"], {
       message: "Hide status on cards must be either 'enable' or 'disable'",
@@ -139,6 +171,11 @@ export const fileSettingsSchema = z.object({
 
 export const generalSettingsSchema = z.object({
   preferredLocale: z.string().optional(),
+  preferredBorderRadius: z
+    .number()
+    .min(MIN_BORDER_RADIUS, `Corner rounding must be at least ${MIN_BORDER_RADIUS}`)
+    .max(MAX_BORDER_RADIUS, `Corner rounding must be at most ${MAX_BORDER_RADIUS}`)
+    .optional(),
   preferredTheme: z.string().min(1, "Theme is required"),
   landingPage: z.enum([Modes.CHECKLISTS, Modes.NOTES, "last-visited"], {
     message: "Landing page must be 'checklists', 'notes', or 'last-visited'",

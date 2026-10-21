@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
-import { countItems } from "@/app/_utils/checklist-count-utils";
+import { listSummaryOf } from "@/app/_utils/list-summary-utils";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { ListsBrowser } from "./Parts/ListsBrowser";
 import { BrowseScope } from "@/app/_consts/browse";
@@ -28,7 +28,7 @@ export const ChecklistsPageClient = ({
         .filter((list) => list.type === "simple")
         .reduce(
           (sum, list) => {
-            const counts = countItems(list.items, list.type);
+            const counts = listSummaryOf(list);
             return { done: sum.done + counts.completed, total: sum.total + counts.total };
           },
           { done: 0, total: 0 },

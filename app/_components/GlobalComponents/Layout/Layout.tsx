@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { useState } from "react";
 import { QuickNav } from "@/app/_components/FeatureComponents/Header/QuickNav";
 import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
@@ -43,6 +44,7 @@ export const Layout = ({
   isEditorInEditMode = false,
   extraClasses = "",
 }: LayoutProps) => {
+  const locale = useLocale();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { setMode, isInitialized } = useAppMode();
   const { isDragging } = useUIStore();
@@ -98,7 +100,7 @@ export const Layout = ({
           onSidebarToggle={() => setSidebarOpen(true)}
           onOpenSettings={onOpenSettings}
           user={user}
-          currentLocale={user?.preferredLocale || "en"}
+          currentLocale={locale}
           onModeChange={setMode}
           isEditorInEditMode={isEditorInEditMode}
         />

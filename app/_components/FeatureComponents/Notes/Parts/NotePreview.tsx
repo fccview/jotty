@@ -6,7 +6,7 @@ import { Note } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { formatRelativeTime } from "@/app/_utils/date-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
-import { isNoteEncrypted } from "@/app/_utils/note-display-utils";
+import { hasNoteBody, isNoteEncrypted } from "@/app/_utils/note-display-utils";
 import { useNoteStatLabels } from "@/app/_hooks/useNoteStatLabels";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { SealedPanel, SealedSize } from "@/app/_components/GlobalComponents/Cards/Parts/SealedPanel";
@@ -76,8 +76,10 @@ export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreview
       <div className="px-6 py-5 max-h-[55vh] overflow-y-auto">
         {isEncrypted ? (
           <SealedPanel size={SealedSize.LG} />
-        ) : (
+        ) : hasNoteBody(note) ? (
           <UnifiedMarkdownRenderer content={note.content || ""} className="max-w-none" />
+        ) : (
+          <p className="text-sm text-muted-foreground leading-relaxed">{note.excerpt}</p>
         )}
       </div>
       {!isEncrypted && (note.tags || []).length > 0 && (

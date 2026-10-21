@@ -1,22 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { BrowseSort, DEFAULT_ITEMS_PER_PAGE } from "@/app/_consts/browse";
-import { isInCategory } from "@/app/_utils/category-path-utils";
-import { newestFirst, oldestFirst } from "@/app/_utils/order-utils";
-
-interface Browsable {
-  title: string;
-  category?: string;
-  updatedAt: string;
-}
-
-const SORTERS: Record<BrowseSort, (a: Browsable, b: Browsable) => number> = {
-  [BrowseSort.UPDATED]: newestFirst,
-  [BrowseSort.OLDEST]: oldestFirst,
-  [BrowseSort.AZ]: (a, b) => a.title.localeCompare(b.title),
-};
+import { Browsable, browseResults, inCategories } from "@/app/_utils/browse-utils";
 
 interface UseBrowseOptions<T, F extends string> {
   items: T[];
@@ -42,21 +28,14 @@ export const useBrowse = <T extends Browsable, F extends string>({
     setPage(1);
   }, [filter, categories, recursive, sort, perPage]);
 
-  const inCategories = useMemo(
-    () =>
-      categories.length
-        ? items.filter((item) =>
-            categories.some((path) =>
-              isInCategory(item.category || UNCATEGORIZED, path, recursive),
-            ),
-          )
-        : items,
+  const scoped = useMemo(
+    () => inCategories(items, categories, recursive),
     [items, categories, recursive],
   );
 
   const matching = useCallback(
-    (candidate: F) => inCategories.filter((item) => matches(item, candidate)),
-    [inCategories, matches],
+    (candidate: F) => scoped.filter((item) => matches(item, candidate)),
+    [scoped, matches],
   );
 
   const capped = useCallback(
@@ -67,10 +46,10 @@ export const useBrowse = <T extends Browsable, F extends string>({
     [limitFor],
   );
 
-  const results = useMemo(() => {
-    const found = matching(filter).sort(SORTERS[sort]);
-    return found.slice(0, capped(filter, found.length));
-  }, [matching, filter, sort, capped]);
+  const results = useMemo(
+    () => browseResults(scoped, filter, sort, matches, limitFor),
+    [scoped, filter, sort, matches, limitFor],
+  );
 
   const countFor = useCallback(
     (candidate: F) => capped(candidate, matching(candidate).length),
@@ -80,6 +59,11 @@ export const useBrowse = <T extends Browsable, F extends string>({
   const pages = Math.max(1, Math.ceil(results.length / perPage));
   const current = Math.min(page, pages);
   const start = (current - 1) * perPage;
+  const pageItems = useMemo(() => results.slice(start, start + perPage), [results, start, perPage]);
+  const nextItems = useMemo(
+    () => results.slice(start + perPage, start + perPage * 2),
+    [results, start, perPage],
+  );
 
   const toggleCategory = useCallback(
     (path: string) =>
@@ -115,7 +99,8 @@ export const useBrowse = <T extends Browsable, F extends string>({
     total: results.length,
     start: results.length ? start + 1 : 0,
     end: Math.min(results.length, start + perPage),
-    pageItems: results.slice(start, start + perPage),
+    pageItems,
+    nextItems,
     countFor,
     clear,
   };
@@ -123,5 +108,5 @@ export const useBrowse = <T extends Browsable, F extends string>({
 
 export type BrowseControls<F extends string> = Omit<
   ReturnType<typeof useBrowse<Browsable, F>>,
-  "pageItems"
-> & { pageItems: unknown[] };
+  "pageItems" | "nextItems"
+> & { pageItems: unknown[]; nextItems: unknown[] };

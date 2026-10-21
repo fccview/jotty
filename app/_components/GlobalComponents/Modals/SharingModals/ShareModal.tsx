@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "../Modal";
+import { Modal, ModalVariant } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useSharingTools } from "@/app/_hooks/useSharingTools";
 import { FeedbackMessage } from "./Parts/SharingFeedbackMessage";
@@ -42,8 +42,35 @@ export const ShareModal = ({
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t('sharing.shareModalTitle', { type: metadata.type === ItemTypes.CHECKLIST ? t("common.checklist") : t("common.note") })}>
-      <div className="space-y-4 pb-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      variant={ModalVariant.PANEL}
+      title={t('sharing.shareModalTitle', { type: metadata.type === ItemTypes.CHECKLIST ? t("common.checklist") : t("common.note") })}
+      footer={(close) => (
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            {activeTab === "users" && hookResult.currentSharing.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={hookResult.handleRemoveAllSharing}
+                disabled={hookResult.isLoading}
+              >
+                {t('common.removeAll')}
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={close}
+              disabled={hookResult.isLoading}
+            >{t('common.close')}</Button>
+          </div>
+        </div>
+      )}
+    >
+      <div className="space-y-4">
         <h3 className="font-semibold text-lg">{metadata.title}</h3>
         <FeedbackMessage error={error} success={success} />
         <ShareTabs activeTab={activeTab} setActiveTab={handleTabChange} />
@@ -65,27 +92,6 @@ export const ShareModal = ({
             itemType={metadata.type as ItemType}
           />
         )}
-      </div>
-
-      <div className="-mx-6 -mb-6 flex items-center justify-between gap-2 px-6 py-3 border-t border-border bg-muted/20 rounded-b-jotty">
-        <div>
-          {activeTab === "users" && hookResult.currentSharing.length > 0 && (
-            <Button
-              variant="destructive"
-              onClick={hookResult.handleRemoveAllSharing}
-              disabled={hookResult.isLoading}
-            >
-              {t('common.removeAll')}
-            </Button>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={hookResult.isLoading}
-          >{t('common.close')}</Button>
-        </div>
       </div>
     </Modal>
   );

@@ -20,7 +20,7 @@ interface PinnedChecklistCardProps {
 
 export const PinnedChecklistCard = ({ list, onSelect, onTogglePin }: PinnedChecklistCardProps) => {
   const t = useTranslations();
-  const { isBoard, total, completed, assignees } = useListCardStats(list);
+  const { isBoard, total, completed, assignees, summary } = useListCardStats(list);
   const updated = formatShortTime(list.updatedAt, t);
 
   return (
@@ -36,9 +36,9 @@ export const PinnedChecklistCard = ({ list, onSelect, onTogglePin }: PinnedCheck
 
       <div className="px-3">
         {isBoard ? (
-          <MiniBoard board={list} compact />
+          <MiniBoard summary={summary} compact />
         ) : (
-          <TickGrid items={list.items} type={list.type} />
+          <TickGrid summary={summary} />
         )}
       </div>
 

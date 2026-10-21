@@ -143,7 +143,6 @@ export const MfaSetupModal = ({
             isOpen={isOpen}
             onClose={step === 3 ? handleComplete : handleClose}
             title={t("mfa.setupTitle")}
-            className="max-w-lg"
         >
             {step === 1 && (
                 <div className="space-y-6">

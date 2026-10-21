@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { matchesListFilter } from "@/app/_utils/browse-utils";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useBrowse } from "@/app/_hooks/useBrowse";
@@ -27,7 +28,7 @@ interface ListsBrowserProps {
 
 export const ListsBrowser = ({ scope, lists, categories, user, kicker }: ListsBrowserProps) => {
   const router = useRouter();
-  const { viewMode } = useSettings();
+  const viewMode = useQuickValue(QuickSettingId.VIEW_MODE);
   const { openCreateChecklistModal } = useShortcut();
   const pins = usePins(lists, user?.pinnedLists, ItemTypes.CHECKLIST);
   const isBoards = scope === BrowseScope.BOARDS;

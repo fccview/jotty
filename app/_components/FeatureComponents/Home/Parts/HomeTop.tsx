@@ -15,6 +15,7 @@ import { HomeFilterHero } from "./HomeFilterHero";
 import { QuickCapture } from "./QuickCapture";
 import { Pinboard } from "./Pinboard";
 import { TagCloud } from "./TagCloud";
+import { WidgetDismiss } from "./WidgetDismiss";
 
 const SECTION = "grid gap-4 mb-10 lg:mb-14";
 
@@ -64,6 +65,7 @@ export const HomeTop = <T extends { uuid: string }>({
   const showTags =
     widgets.tags && tagsEnabled && !selectedFilter && tags.some((tag) => tagCount(tag) > 0);
   const showPins = pinned.length > 0 && !selectedFilter;
+  const tagsBesidePins = showPins && showTags && widgets.pinboard;
 
   return (
     <>
@@ -87,7 +89,12 @@ export const HomeTop = <T extends { uuid: string }>({
             )}
           >
             {widgets.welcome && (
-              <HomeHero kicker={date} title={greeting} summary={summary}>
+              <HomeHero
+                kicker={date}
+                title={greeting}
+                summary={summary}
+                dismiss={<WidgetDismiss widget="homeWelcome" onPrimary />}
+              >
                 <QuickCapture
                   promptsKey={promptsKey}
                   buttonLabel={newLabel}
@@ -104,8 +111,7 @@ export const HomeTop = <T extends { uuid: string }>({
         <div
           className={cn(
             SECTION,
-            "items-start",
-            showPins && showTags && widgets.pinboard && "xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]",
+            tagsBesidePins ? "xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]" : "items-start",
           )}
         >
           {showPins && (
@@ -128,6 +134,7 @@ export const HomeTop = <T extends { uuid: string }>({
               tags={tags}
               countOf={tagCount}
               onSelect={(tag) => setSelectedFilter({ type: "tag", value: tag.name })}
+              matchSibling={tagsBesidePins}
             />
           )}
         </div>

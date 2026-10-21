@@ -72,6 +72,7 @@ export const mutateUsers = async <T>(
 export const patchUserFields = async (
   username: string,
   updates: Partial<User>,
+  cleared: ReadonlyArray<keyof User> = [],
 ): Promise<User | null> => {
   if (!username) return null;
 
@@ -83,6 +84,7 @@ export const patchUserFields = async (
     if (userIndex === -1) return null;
 
     const updatedUser: User = { ...allUsers[userIndex], ...updates };
+    cleared.forEach((key) => delete updatedUser[key]);
     allUsers[userIndex] = updatedUser;
 
     return updatedUser;

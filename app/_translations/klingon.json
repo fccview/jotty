@@ -187,6 +187,7 @@
     "unpinFromHome": "juHvo' yIHumHa'",
     "archive": "PolmeH ghom",
     "confirmDeleteItem": "\"{itemTitle}\" DaQaw' DaneH'a'?",
+    "confirmDeleteEntry": "ghItlh vam Qaw'nIS'a'?",
     "sharedBy": "{sharer} lI'",
     "itemsCompleted": "{completedItems}/{totalItems} rIn",
     "releaseNotes": "mI' {version} choHmey",
@@ -419,7 +420,7 @@
     "updateNote": "ghItlh yIchoH",
     "printSaveAsPdf": "nagh / PDF rur pol",
     "tableOfContents": "De'wI' tetlh",
-    "wordCount": "{count, plural, one {# mu'} other {# mu'mey}}",
+    "wordCount": "{count, plural, one {# mu''} other {# mu''mey}}",
     "charCount": "{count, plural, one {# Degh} other {# Deghmey}}",
     "readingTime": "{count, plural, one {# tup laD} other {# tupmey laD}}",
     "tags": "meq",
@@ -679,7 +680,17 @@
     "startTime": "qaStaHvIS",
     "endTime": "bav",
     "addItemToColumn": "{column} chel",
-    "addItemPlaceholder": "chu' De'..."
+    "addItemPlaceholder": "chu' De'...",
+    "agentAvatar": "ghot {agent}",
+    "agentInvalid": "ghot pongmey: 1-64 ngutlh, mI', Dop, tlhegh, bIng tlhegh. chIm yIlo'Qo'.",
+    "assigneeSearch": "lo'wI' yInej pagh ghot yIpong...",
+    "assignAgentAs": "{agent} ghot yInob",
+    "assigneeWillShare": "ghItlh 'aghmoH",
+    "assigneeNoAccess": "ghItlhvam leghlaHbe'",
+    "assigneeShareTitle": "ghItlhvam 'aghmoH'a'?",
+    "assigneeShareMessage": "{user} ghItlhvam leghlaHbe' DaH. Danobchugh, choHmeH 'aghmoH.",
+    "assigneeShareConfirm": "'aghmoH 'ej nob",
+    "assignFailed": "nobwI' choHlaHbe'"
   },
   "profile": {
     "userProfile": "lo'wI'",
@@ -871,6 +882,8 @@
     "confirmPassword": "mu'pe' yIpab",
     "passwordChanged": "mu'pe' choH Qapla'",
     "settingsSaved": "SeH Pol Qapla'",
+    "settingsSaveFailed": "SeHlaw pollaHbe'",
+    "settingsSaveFailedDescription": "choHmeylIj pollu'be'. yInIDqa'.",
     "dashCase": "Dash case (e.g., my-file-name.md)",
     "minimal": "nap (mu' tlhIm teq)",
     "noRename": "pong choHbe'",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "maS",
+    "defaultOption": "motlh ({value})",
     "dark": "Hurgh",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Damevpu'bogh Daq yItaH",
     "homePinboard": "Hum beQ",
     "homePinboardDescription": "Qotlu'chugh, Dochmey Hum 'ang ghIH beQmey motlh.",
-    "homeTags": "meqmey"
+    "homeTags": "meqmey",
+    "notesFontSize": "ghItlh ngutlh tIn",
+    "notesFontSizeDescription": "Hoch jan Daq ghItlh laDmeH 'ej choHmeH ngutlh tIn. nom SeHlaw wa' Qorwagh choHlaH.",
+    "borderRadiusDescription": "Hoch Daq HeH botlh. nom SeHlaw wa' Qorwagh choHlaH.",
+    "browseViewModeDescription": "ghItlhmey 'ej tetlhmey Dalegh mIw.",
+    "notesCardPreviewDescription": "ghItlh tagh 'ay' ngoq Daq 'agh.",
+    "notesCompactModeDescription": "ghItlh DalaDtaHvIS yIQaw' HeH.",
+    "kanbanColumnWidthDescription": "kanban tetlh juch DaneHbogh yIwIv. Hoch tetlh Daqvo' Hoch Daq tIn."
   },
   "admin": {
     "title": "ra'wI'",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "choHwI' SeH object 'oHnIS, Pagh Pollu'",
     "invalidEditorSetting": "choHwI' SeH {field} Segh muj, Pagh Pollu'",
     "categoryOutOfBounds": "ghItlhmeylIj HurDaq Seghvam tu'lu', Pagh chenmoHlu'",
+    "filenameOutOfBounds": "pongvam, ghItlh Segh Hur ghaH. vaj pagh pollu'",
     "requiredField": "De' poQ",
     "emailInvalid": "QIn lughbe'",
     "passwordTooShort": "mu'pe' nI'be'",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Rich ChoHwI' yIchoH",
     "toggleMarkdownMode": "Markdown Mode yIchoH",
+    "editorMode": "choHwI' mIw",
+    "currentEditorMode": "{mode} Daq choHtaH",
+    "switchToRichEditor": "choHwI' Qatlh yIchu'",
+    "switchToMarkdown": "markdown yIchu'",
     "quickControls": "choHwI' SeHlaw",
     "toggleBold": "tIq yIchoH",
     "toggleItalic": "vIH yIchoH",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "De' vI' yIchoH",
     "deleteDiagram": "De' vI' yIQaw'",
+    "diagramDarkMode": "HurDaq 'ang",
+    "diagramLightMode": "wovDaq 'ang",
+    "diagramLoadFailed": "mIllogh chenmoHwI' laH yIlI'be'. rar yIlegh 'ej yInIDqa'.",
+    "diagramSaveFailed": "mIllogh pollaHbe'. DaghItlhbogh mIllogh poSmoHtaH.",
+    "diagramDataUnreadable": "mIllogh De' laD'a'laHbe', vaj naDev choHlaHbe'.",
+    "drawioEditor": "Draw.io choHwI'",
+    "diagramRichModeOnly": "Hap mIw neH",
+    "diagramUnavailableInMarkdown": "markdown mIwDaq tu'lu'be'",
     "enterMermaidCode": "Mermaid mI' yIghItlh...",
     "widthPx": "jagh (px)",
     "heightPx": "'ab (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Line numbers",
     "inlineCode": "tlhegh ngoq",
     "moreTools": "jan latlh",
-    "moreToolsCount": "jan latlh ({count} So'lu'bogh naDev)",
-    "diagramDarkMode": "HurDaq 'ang",
-    "diagramLightMode": "wovDaq 'ang",
-    "diagramLoadFailed": "mIllogh chenmoHwI' laH yIlI'be'. rar yIlegh 'ej yInIDqa'.",
-    "diagramSaveFailed": "mIllogh pollaHbe'. DaghItlhbogh mIllogh poSmoHtaH.",
-    "diagramDataUnreadable": "mIllogh De' laD'a'laHbe', vaj naDev choHlaHbe'.",
-    "drawioEditor": "Draw.io choHwI'",
-    "diagramRichModeOnly": "Hap mIw neH",
-    "diagramUnavailableInMarkdown": "markdown mIwDaq tu'lu'be'"
+    "moreToolsCount": "jan latlh ({count} So'lu'bogh naDev)"
   },
   "sharing": {
     "share": "ghom",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "I am a placeholder because you can't encrypt an empty note."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "poHvam neH. bIPol DaneHchugh, ",
-    "accountSettings": "lo'wI' maS",
-    "autosaveNotes": "ghItlh nIteb Pol",
     "showNotePreview": "ghItlh legh yIcha'",
     "notesCompactMode": "ghItlh compact mode",
     "showEmojis": "tetlh Emoji yIcha'",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Tetlh",
     "viewModeGrid": "Saras",
     "borderRadius": "veH lermoHghach",
-    "useInstanceDefault": "pat DIvI' yIlo'",
-    "borderRadiusDescription": "bIQeqtaHvIS Hoch pat veHmey choH.",
     "kanbanColumnWidth": "Kanban veH jul",
-    "kanbanColumnWidthDescription": "Kanban veHmeyvaD nIj wIv. DIvI' nIjDuH veHmey nIjDaj Hoch DIvI' nI.",
     "kanbanColumnWidthCompact": "QIm",
     "kanbanColumnWidthComfortable": "QaQ",
     "kanbanColumnWidthWide": "jen",
-    "kanbanColumnWidthAutoFit": "nIjDuH"
+    "kanbanColumnWidthAutoFit": "nIjDuH",
+    "useAccountSetting": "mI' SeHlaw yIlo'"
   },
   "migration": {
     "migrationComplete": "choH rIn",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Markdown mIw",
     "brain": "rarmey & yab",
     "customisations": "Tigh",
+    "selfHosting": "nIteb QaD",
     "envVariables": "Env Variables",
     "mfa": "MFA",
     "encryption": "pegh",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Hol"
+    "translations": "Hol",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "tu'be'lu'",
@@ -1826,7 +1849,9 @@
     "linked": "{title}Daq pong rarlu'",
     "linkFailed": "pong rar Qapla'be'",
     "kind": {
+      "link": "rar",
       "mention": "rar",
+      "checklist": "tetlh",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "per"
     },
     "edges": {
+      "link": "rar",
       "mention": "rar",
+      "checklist": "tetlh",
       "wiki": "Wikilink",
       "suggested": "chup",
       "tag": "per"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "ghitlh nachDaq frontmatter ghItlhqa' Jotty. YAML lI'be'bogh mI' quotes lan, tabs chImmeH tlhegh moj, Jotty mI' ghaHbe'bogh uuid previousUuid Daq lan, uuid chu' chel. ghitlh latlh choHbe'. DochHa'laHbe' Jotty, vaj frontmatter laDchugh latlh ghun, yIqaw'Ha'. Dochvam choHmeH chaw' DaghajnIS, 'ej ghItlhlaHnIS qachDaj.",
     "confirm": "frontmatter yItI'",
     "fixed": "tI'lu'ta'. DaH Dochvam DachoHlaH."
+  },
+  "live": {
+    "currentlyEditing": "DaH choHtaH",
+    "dropped": "QIt DaHtaHvIS ghItlhvam choH vay'. vaj choHmeylIj pollu'be'bogh lo'laHbe'.",
+    "copyDropped": "choHmeywIj yIqon",
+    "status": {
+      "offline": "QIt. DaHbe'pa' vay' ghItlhvam choHchugh, choHmeylIj pollu'be'bogh lo'laHbe'.",
+      "refused": "yIn choH mev, 'el DIch pagh ghItlhvam choH. yIchu'qa'.",
+      "unavailable": "yIn choH lo'laHbe'. nIteb DachoH. choHmeylIj pollu'taH."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " 'ej Hoch qoDDaj",
     "only": " neH",
     "categoriesMore": "{first} + {count} latlh",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "Hoch ghItlhmey",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} ghItlh} other {{notes} ghItlhmey}}, {pinned} Hum",
     "checklistsKicker": "{total} Dochmey, {done} ta'lu'",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} Doch} other {{cards} Dochmey}}, {boardsCount, plural, one {{boards} beQDaq} other {{boards} beQmeyDaq}}, {inProgress} vanglI'"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} Doch} other {{cards} Dochmey}}, {boardsCount, plural, one {{boards} beQDaq} other {{boards} beQmeyDaq}}, {inProgress} vanglI'",
+    "hideWidget": "{widget} So'",
+    "widgetHidden": "{widget} So'lu'pu'",
+    "widgetHiddenHint": "ghItlhwI' DuHmey Daq ghIq Dachu'laH."
+  },
+  "quickSettings": {
+    "title": "nom SeHlaw",
+    "browserOnly": "Qorwaghvam neH",
+    "saveToAccount": "mI' Daq yIpol",
+    "savedToAccount": "mI'lIj Daq polta'",
+    "allPreferences": "Hoch SeHlaw",
+    "heading": "juHlIj Daq yIghoS",
+    "subtitle": "Qorwaghvam Daq choHmey ratlh. mI'lIj Daq yIpol, Hoch jan Daq yIlo'.",
+    "overrideCount": "{count, plural, one {# naDev SeH} other {# naDev SeH}}",
+    "saving": "polmeH...",
+    "labels": {
+      "theme": "Hew",
+      "borderRadius": "HeH botlh",
+      "noteFontSize": "ghItlh ngutlh tIn",
+      "kanbanColumnWidth": "kanban tetlh juch",
+      "viewMode": "legh mIw",
+      "cardPreview": "ngoq Daq ghItlh legh",
+      "compactMode": "ghItlh juch mach",
+      "autosave": "ghItlh nom pol",
+      "showEmojis": "tetlh Daq emoji",
+      "completedSuggestions": "Qapta'bogh Doch yIpeS"
+    },
+    "hints": {
+      "borderRadius": "DatlhuchtaHvIS Hoch Daq HeH choH.",
+      "noteFontSize": "ghItlh laDmeH 'ej ghItlhmeH.",
+      "kanbanColumnWidth": "nom tetlh juch, ghItlh Hoch Daq tIn.",
+      "cardPreview": "ngoq Daq markdown Qatlh 'agh, ghItlh nap 'aghbe'.",
+      "compactMode": "choHwI' 900px juch neH."
+    }
   }
 }

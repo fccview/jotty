@@ -187,6 +187,7 @@
     "unpinFromHome": "Losmaken van home",
     "archive": "Archiveren",
     "confirmDeleteItem": "Weet u zeker dat u \"{itemTitle}\" wilt verwijderen?",
+    "confirmDeleteEntry": "Weet je zeker dat je deze invoer wilt verwijderen?",
     "sharedBy": "Gedeeld door {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} voltooid",
     "releaseNotes": "Release-opmerkingen v{version}",
@@ -679,7 +680,17 @@
     "startTime": "Start",
     "endTime": "Einde",
     "addItemToColumn": "Item toevoegen aan {column}",
-    "addItemPlaceholder": "Nieuw item..."
+    "addItemPlaceholder": "Nieuw item...",
+    "agentAvatar": "Agent {agent}",
+    "agentInvalid": "Agentnamen bestaan uit 1-64 letters, cijfers, punten, streepjes of underscores, zonder spaties.",
+    "assigneeSearch": "Zoek gebruikers of geef een agent een naam...",
+    "assignAgentAs": "Agent {agent} toewijzen",
+    "assigneeWillShare": "Deelt het bord",
+    "assigneeNoAccess": "Kan dit bord niet zien",
+    "assigneeShareTitle": "Dit bord delen?",
+    "assigneeShareMessage": "{user} kan dit bord nog niet zien. Toewijzen deelt het met bewerkrechten.",
+    "assigneeShareConfirm": "Delen en toewijzen",
+    "assignFailed": "Kon de toegewezen persoon niet wijzigen"
   },
   "profile": {
     "userProfile": "Gebruiker",
@@ -871,6 +882,8 @@
     "confirmPassword": "Bevestig wachtwoord",
     "passwordChanged": "Wachtwoord gewijzigd",
     "settingsSaved": "Instellingen opgeslagen",
+    "settingsSaveFailed": "Instellingen opslaan mislukt",
+    "settingsSaveFailedDescription": "Je wijziging is niet opgeslagen. Probeer het opnieuw.",
     "dashCase": "Streepjesnotatie (bijv., mijn-bestand-naam.md)",
     "minimal": "Minimaal (verwijder alleen ongeldige tekens)",
     "noRename": "Niet hernoemen (behoud originele bestandsnaam)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Standaard",
+    "defaultOption": "Standaard ({value})",
     "dark": "Donker",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Ga verder waar je gebleven was",
     "homePinboard": "Prikbord",
     "homePinboardDescription": "Indien uitgeschakeld, worden vastgepinde items bovenaan als gewone kaarten getoond.",
-    "homeTags": "Tags"
+    "homeTags": "Tags",
+    "notesFontSize": "Tekstgrootte van notities",
+    "notesFontSizeDescription": "Tekstgrootte voor het lezen en bewerken van notities op elk apparaat. Snelle instellingen kunnen dit voor één browser aanpassen.",
+    "borderRadiusDescription": "Rondt de hoeken in de hele app af. Snelle instellingen kunnen dit nog voor één browser aanpassen.",
+    "browseViewModeDescription": "Hoe notities en lijsten worden weergegeven als je erdoor bladert.",
+    "notesCardPreviewDescription": "Toont het opgemaakte begin van elke notitie op de kaart.",
+    "notesCompactModeDescription": "Gebruik een smallere opmaak bij het lezen en bewerken van notities.",
+    "kanbanColumnWidthDescription": "Stel een eigen breedte in voor de kanban-statuskolommen. Standaard passen de kolommen zich aan de beschikbare ruimte aan."
   },
   "admin": {
     "title": "Beheer",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "Editor-instellingen moeten een object zijn, er is niets opgeslagen",
     "invalidEditorSetting": "Editor-instelling {field} heeft het verkeerde type, er is niets opgeslagen",
     "categoryOutOfBounds": "Die categorie valt buiten je notities, dus er is niets aangemaakt",
+    "filenameOutOfBounds": "Met die titel komt het bestand buiten de categorie terecht, dus er is niets opgeslagen",
     "requiredField": "Dit veld is verplicht",
     "emailInvalid": "Voer een geldig e-mailadres in",
     "passwordTooShort": "Wachtwoord moet minimaal 8 tekens lang zijn",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Rich editor-modus wisselen",
     "toggleMarkdownMode": "Markdown-modus wisselen",
+    "editorMode": "Editormodus",
+    "currentEditorMode": "Je bewerkt nu in {mode}",
+    "switchToRichEditor": "Overschakelen naar de rich-text-editor",
+    "switchToMarkdown": "Overschakelen naar markdown",
     "quickControls": "Editorbediening",
     "toggleBold": "Vet wisselen",
     "toggleItalic": "Cursief wisselen",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Diagram bewerken",
     "deleteDiagram": "Diagram verwijderen",
+    "diagramDarkMode": "Weergeven in donkere modus",
+    "diagramLightMode": "Weergeven in lichte modus",
+    "diagramLoadFailed": "De diagrameditor kon niet worden geladen. Controleer je verbinding en probeer het opnieuw.",
+    "diagramSaveFailed": "Het diagram kon niet worden opgeslagen. Je tekening is nog open.",
+    "diagramDataUnreadable": "De gegevens van dit diagram konden niet worden gelezen, dus het kan hier niet worden bewerkt.",
+    "drawioEditor": "Draw.io-editor",
+    "diagramRichModeOnly": "Alleen in rich-modus",
+    "diagramUnavailableInMarkdown": "Niet beschikbaar in markdown-modus",
     "enterMermaidCode": "Voer Mermaid-diagramcode in...",
     "widthPx": "Breedte (px)",
     "heightPx": "Hoogte (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Lijnnummers",
     "inlineCode": "Inline code",
     "moreTools": "Meer gereedschap",
-    "moreToolsCount": "Meer gereedschap ({count} hier opgeborgen)",
-    "diagramDarkMode": "Weergeven in donkere modus",
-    "diagramLightMode": "Weergeven in lichte modus",
-    "diagramLoadFailed": "De diagrameditor kon niet worden geladen. Controleer je verbinding en probeer het opnieuw.",
-    "diagramSaveFailed": "Het diagram kon niet worden opgeslagen. Je tekening is nog open.",
-    "diagramDataUnreadable": "De gegevens van dit diagram konden niet worden gelezen, dus het kan hier niet worden bewerkt.",
-    "drawioEditor": "Draw.io-editor",
-    "diagramRichModeOnly": "Alleen in rich-modus",
-    "diagramUnavailableInMarkdown": "Niet beschikbaar in markdown-modus"
+    "moreToolsCount": "Meer gereedschap ({count} hier opgeborgen)"
   },
   "sharing": {
     "share": "Delen",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Ik ben een tijdelijke aanduiding omdat je een lege notitie niet kunt coderen."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Deze opties gelden alleen voor deze browsersessie. Voor permanente instellingen, bekijk je",
-    "accountSettings": "gebruikersvoorkeuren",
-    "autosaveNotes": "Notities automatisch opslaan",
     "showNotePreview": "Notitievoorbeeld op kaarten tonen",
     "notesCompactMode": "Compacte modus notities",
     "showEmojis": "Emoji's op checklists tonen",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Lijst",
     "viewModeGrid": "Raster",
     "borderRadius": "Hoekafronding",
-    "useInstanceDefault": "Standaard van instantie gebruiken",
-    "borderRadiusDescription": "De hoeken passen zich in de hele app aan terwijl je sleept.",
     "kanbanColumnWidth": "Kanban-kolombreedte",
-    "kanbanColumnWidthDescription": "Stel een aangepaste breedte in voor de Kanban-statuskolommen. De standaardwaarde van de instantie past de kolommen automatisch aan de beschikbare ruimte aan.",
     "kanbanColumnWidthCompact": "Compact",
     "kanbanColumnWidthComfortable": "Comfortabel",
     "kanbanColumnWidthWide": "Breed",
-    "kanbanColumnWidthAutoFit": "Auto-passen"
+    "kanbanColumnWidthAutoFit": "Auto-passen",
+    "useAccountSetting": "Accountinstelling gebruiken"
   },
   "migration": {
     "migrationComplete": "Migratie voltooid",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Markdown-gids",
     "brain": "Links & Brain",
     "customisations": "Aanpassingen",
+    "selfHosting": "Zelf hosten",
     "envVariables": "Omgevingsvariabelen",
     "mfa": "MFA",
     "encryption": "Versleuteling",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Vertalingen"
+    "translations": "Vertalingen",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Pagina niet gevonden",
@@ -1826,7 +1849,9 @@
     "linked": "De vermelding in {title} is gelinkt",
     "linkFailed": "Kon die vermelding niet linken",
     "kind": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Lijst",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Tag"
     },
     "edges": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Lijst",
       "wiki": "Wikilink",
       "suggested": "Voorgesteld",
       "tag": "Tag"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty herschrijft de frontmatter bovenaan dit bestand. Waarden die geen geldige YAML zijn krijgen aanhalingstekens, tabs worden spaties, een uuid die geen Jotty-id is gaat naar previousUuid, en Jotty voegt een eigen uuid toe. De rest van het bestand blijft zoals het is. Jotty kan dit niet ongedaan maken, dus bewaar een kopie als een andere app deze frontmatter leest. Je hebt bewerkrechten op dit item nodig en de map moet beschrijfbaar zijn.",
     "confirm": "Frontmatter repareren",
     "fixed": "Gerepareerd. Je kunt dit item nu bewerken."
+  },
+  "live": {
+    "currentlyEditing": "Bewerkt nu",
+    "dropped": "Iemand heeft deze notitie gewijzigd terwijl je offline was, dus je niet-opgeslagen wijzigingen zijn verworpen.",
+    "copyDropped": "Mijn wijzigingen kopiëren",
+    "status": {
+      "offline": "Offline. Als iemand deze notitie wijzigt voordat je weer verbonden bent, worden je niet-opgeslagen wijzigingen verworpen.",
+      "refused": "Live bewerken is gestopt omdat je toegang of deze notitie is gewijzigd. Vernieuw om verder te gaan.",
+      "unavailable": "Live bewerken is niet beschikbaar, dus je bewerkt alleen. Je wijzigingen worden nog steeds opgeslagen."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " en alles daarin",
     "only": " alleen",
     "categoriesMore": "{first} + {count} meer",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "alle notities",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} notitie} other {{notes} notities}}, {pinned} vastgepind",
     "checklistsKicker": "{done} van {total} vakjes afgevinkt",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} kaart} other {{cards} kaarten}} op {boardsCount, plural, one {{boards} bord} other {{boards} borden}}, {inProgress} bezig"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} kaart} other {{cards} kaarten}} op {boardsCount, plural, one {{boards} bord} other {{boards} borden}}, {inProgress} bezig",
+    "hideWidget": "{widget} verbergen",
+    "widgetHidden": "{widget} verborgen",
+    "widgetHiddenHint": "Je kunt het altijd weer aanzetten in je gebruikersvoorkeuren."
+  },
+  "quickSettings": {
+    "title": "Snelle instellingen",
+    "browserOnly": "Alleen in deze browser",
+    "saveToAccount": "Opslaan in account",
+    "savedToAccount": "Opgeslagen in je account",
+    "allPreferences": "Alle voorkeuren",
+    "heading": "Voel je thuis",
+    "subtitle": "Wijzigingen blijven in deze browser. Sla de instellingen die je wilt op in je account om ze op elk apparaat te gebruiken.",
+    "overrideCount": "{count, plural, one {# hier ingesteld} other {# hier ingesteld}}",
+    "saving": "Opslaan...",
+    "labels": {
+      "theme": "Thema",
+      "borderRadius": "Hoekafronding",
+      "noteFontSize": "Tekstgrootte van notities",
+      "kanbanColumnWidth": "Breedte kanbankolommen",
+      "viewMode": "Weergeven als",
+      "cardPreview": "Notitievoorbeeld op kaarten",
+      "compactMode": "Compacte notitiebreedte",
+      "autosave": "Notities automatisch opslaan",
+      "showEmojis": "Emoji's in lijsten",
+      "completedSuggestions": "Afgeronde items voorstellen"
+    },
+    "hints": {
+      "borderRadius": "De hoeken veranderen in de hele app terwijl je sleept.",
+      "noteFontSize": "Voor het lezen en schrijven van notities.",
+      "kanbanColumnWidth": "Automatisch rekt de kolommen op tot het bord vol is.",
+      "cardPreview": "Toont opgemaakte markdown op kaarten in plaats van platte tekst.",
+      "compactMode": "Beperkt de editor tot 900px breed."
+    }
   }
 }

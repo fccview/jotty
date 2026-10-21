@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useThemeTone } from "@/app/_hooks/useThemeTone";
 import { ThemeTone } from "@/app/_consts/diagrams";
 import {
@@ -138,7 +138,7 @@ export const DrawioEditorModal = ({ baseUrl, diagramData, onSave, onClose }: Dra
   };
 
   return (
-    <Modal isOpen onClose={handleClose} title={t("editor.editDiagram")} size="fullscreen">
+    <Modal isOpen onClose={handleClose} title={t("editor.editDiagram")} variant={ModalVariant.WORKSPACE} flush>
       <iframe
         ref={frameRef}
         src={src}

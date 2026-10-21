@@ -187,6 +187,7 @@
     "unpinFromHome": "Odepnij od głównego ekranu",
     "archive": "Archiwum",
     "confirmDeleteItem": "Czy na pewno chcesz usunąć \"{itemTitle}\"?",
+    "confirmDeleteEntry": "Czy na pewno chcesz usunąć ten wpis?",
     "sharedBy": "Udostępniono przez {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} zakończonych",
     "releaseNotes": "Notatki wydania v{version}",
@@ -679,7 +680,17 @@
     "startTime": "Początek",
     "endTime": "Koniec",
     "addItemToColumn": "Dodaj element do {column}",
-    "addItemPlaceholder": "Nowy element..."
+    "addItemPlaceholder": "Nowy element...",
+    "agentAvatar": "Agent {agent}",
+    "agentInvalid": "Nazwy agentów mają od 1 do 64 liter, cyfr, kropek, myślników lub podkreśleń, bez spacji.",
+    "assigneeSearch": "Szukaj użytkowników lub nazwij agenta...",
+    "assignAgentAs": "Przypisz agenta {agent}",
+    "assigneeWillShare": "Udostępni tablicę",
+    "assigneeNoAccess": "Nie widzi tej tablicy",
+    "assigneeShareTitle": "Udostępnić tę tablicę?",
+    "assigneeShareMessage": "{user} jeszcze nie widzi tej tablicy. Przypisanie udostępni ją z prawem edycji.",
+    "assigneeShareConfirm": "Udostępnij i przypisz",
+    "assignFailed": "Nie udało się zmienić osoby przypisanej"
   },
   "profile": {
     "userProfile": "Użytkownik",
@@ -871,6 +882,8 @@
     "confirmPassword": "Potwierdź hasło",
     "passwordChanged": "Hasło zmienione",
     "settingsSaved": "Ustawienia zapisane",
+    "settingsSaveFailed": "Nie udało się zapisać ustawień",
+    "settingsSaveFailedDescription": "Twoja zmiana nie została zapisana. Spróbuj ponownie.",
     "dashCase": "Słowo-średnikowe (np. moj-plik-nazwa.md)",
     "minimal": "Minimalny (usunięcie tylko nieprawidłowych znaków)",
     "noRename": "Brak zmiany nazwy (zachowaj oryginalną nazwę pliku)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Domyślny",
+    "defaultOption": "Domyślne ({value})",
     "dark": "Ciemny",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Kontynuuj od miejsca, w którym przerwano",
     "homePinboard": "Tablica przypiętych",
     "homePinboardDescription": "Po wyłączeniu przypięte elementy są wyświetlane u góry jako zwykłe karty.",
-    "homeTags": "Tagi"
+    "homeTags": "Tagi",
+    "notesFontSize": "Rozmiar tekstu notatek",
+    "notesFontSizeDescription": "Rozmiar tekstu do czytania i edycji notatek na każdym urządzeniu. Szybkie ustawienia mogą go zmienić dla jednej przeglądarki.",
+    "borderRadiusDescription": "Zaokrągla rogi w całej aplikacji. Szybkie ustawienia nadal mogą to zmienić dla jednej przeglądarki.",
+    "browseViewModeDescription": "Jak układają się notatki i listy podczas przeglądania.",
+    "notesCardPreviewDescription": "Pokazuje sformatowany początek każdej notatki na jej karcie.",
+    "notesCompactModeDescription": "Używa węższego układu podczas czytania i edycji notatek.",
+    "kanbanColumnWidthDescription": "Ustaw własną szerokość kolumn statusów kanban. Domyślnie kolumny dopasowują się do dostępnego miejsca."
   },
   "admin": {
     "title": "Admin",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "Ustawienia edytora muszą być obiektem, nic nie zostało zapisane",
     "invalidEditorSetting": "Ustawienie edytora {field} ma zły typ, nic nie zostało zapisane",
     "categoryOutOfBounds": "Ta kategoria leży poza Twoimi notatkami, więc nic nie zostało utworzone",
+    "filenameOutOfBounds": "Ten tytuł umieściłby plik poza jego kategorią, więc nic nie zostało zapisane",
     "requiredField": "To pole jest wymagane",
     "emailInvalid": "Proszę podać prawidłowy adres e‑mail",
     "passwordTooShort": "Hasło musi mieć co najmniej 8 znaków",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Przełącz tryb Rich Editor",
     "toggleMarkdownMode": "Przełącz tryb Markdown",
+    "editorMode": "Tryb edytora",
+    "currentEditorMode": "Edytujesz w trybie {mode}",
+    "switchToRichEditor": "Przełącz na edytor sformatowany",
+    "switchToMarkdown": "Przełącz na markdown",
     "quickControls": "Sterowanie edytorem",
     "toggleBold": "Włącz/wyłącz pogrubienie",
     "toggleItalic": "Włącz/wyłącz kursywę",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Edytuj diagram",
     "deleteDiagram": "Usuń diagram",
+    "diagramDarkMode": "Pokaż w trybie ciemnym",
+    "diagramLightMode": "Pokaż w trybie jasnym",
+    "diagramLoadFailed": "Nie udało się wczytać edytora diagramów. Sprawdź połączenie i spróbuj ponownie.",
+    "diagramSaveFailed": "Nie udało się zapisać diagramu. Twój rysunek jest nadal otwarty.",
+    "diagramDataUnreadable": "Nie udało się odczytać danych tego diagramu, więc nie można go tutaj edytować.",
+    "drawioEditor": "Edytor Draw.io",
+    "diagramRichModeOnly": "Tylko w trybie rozszerzonym",
+    "diagramUnavailableInMarkdown": "Niedostępne w trybie markdown",
     "enterMermaidCode": "Wprowadź kod diagramu Mermaid…",
     "widthPx": "Szerokość (px)",
     "heightPx": "Wysokość (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Numery linii",
     "inlineCode": "Kod w linii",
     "moreTools": "Więcej narzędzi",
-    "moreToolsCount": "Więcej narzędzi (schowanych tutaj: {count})",
-    "diagramDarkMode": "Pokaż w trybie ciemnym",
-    "diagramLightMode": "Pokaż w trybie jasnym",
-    "diagramLoadFailed": "Nie udało się wczytać edytora diagramów. Sprawdź połączenie i spróbuj ponownie.",
-    "diagramSaveFailed": "Nie udało się zapisać diagramu. Twój rysunek jest nadal otwarty.",
-    "diagramDataUnreadable": "Nie udało się odczytać danych tego diagramu, więc nie można go tutaj edytować.",
-    "drawioEditor": "Edytor Draw.io",
-    "diagramRichModeOnly": "Tylko w trybie rozszerzonym",
-    "diagramUnavailableInMarkdown": "Niedostępne w trybie markdown"
+    "moreToolsCount": "Więcej narzędzi (schowanych tutaj: {count})"
   },
   "sharing": {
     "share": "Udostępnij",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Jestem symbolem zastępczym, ponieważ nie można zaszyfrować pustej notatki."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Te opcje działają tylko w tej sesji przeglądarki. Stałe ustawienia znajdziesz w",
-    "accountSettings": "Preferencje użytkownika",
-    "autosaveNotes": "Automatyczne zapisywanie notatek",
     "showNotePreview": "Pokaż podgląd notatki na kartach",
     "notesCompactMode": "Tryb kompaktowy notatek",
     "showEmojis": "Pokaż emotikony w listach kontrolnych",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Lista",
     "viewModeGrid": "Siatka",
     "borderRadius": "Zaokrąglenie rogów",
-    "useInstanceDefault": "Użyj wartości domyślnej",
-    "borderRadiusDescription": "Rogi aktualizują się w całej aplikacji podczas przeciągania.",
     "kanbanColumnWidth": "Szerokość kolumn Kanban",
-    "kanbanColumnWidthDescription": "Ustaw niestandardową szerokość kolumn statusów Kanban. Wartość domyślna instancji automatycznie dopasowuje kolumny do dostępnej przestrzeni.",
     "kanbanColumnWidthCompact": "Kompaktowy",
     "kanbanColumnWidthComfortable": "Komfortowy",
     "kanbanColumnWidthWide": "Szeroki",
-    "kanbanColumnWidthAutoFit": "Dopasowanie"
+    "kanbanColumnWidthAutoFit": "Dopasowanie",
+    "useAccountSetting": "Użyj ustawienia konta"
   },
   "migration": {
     "migrationComplete": "Migracja zakończona",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Przewodnik po Markdownie",
     "brain": "Linki i Mózg",
     "customisations": "Dostosowania",
+    "selfHosting": "Własny hosting",
     "envVariables": "Zmienne środowiskowe",
     "mfa": "MFA",
     "encryption": "Szyfrowanie",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Tłumaczenia"
+    "translations": "Tłumaczenia",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Strona nie znaleziona",
@@ -1826,7 +1849,9 @@
     "linked": "Podlinkowano wzmiankę w {title}",
     "linkFailed": "Nie udało się podlinkować tej wzmianki",
     "kind": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Lista",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Tag"
     },
     "edges": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Lista",
       "wiki": "Wikilink",
       "suggested": "Sugerowane",
       "tag": "Tag"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty przepisze frontmatter na początku tego pliku. Wartości, które nie są poprawnym YAML, ujmie w cudzysłów, tabulatory zamieni na spacje, uuid niebędący identyfikatorem Jotty przeniesie do previousUuid i doda własne uuid. Reszta pliku się nie zmieni. Jotty nie może tego cofnąć, więc zrób kopię, jeśli inna aplikacja czyta ten frontmatter. Potrzebujesz prawa edycji tego elementu, a jego folder musi umożliwiać zapis.",
     "confirm": "Napraw frontmatter",
     "fixed": "Naprawiono. Możesz teraz edytować ten element."
+  },
+  "live": {
+    "currentlyEditing": "Teraz edytuje",
+    "dropped": "Ktoś zmienił tę notatkę, gdy byłeś offline, więc twoje niezapisane zmiany zostały odrzucone.",
+    "copyDropped": "Skopiuj moje zmiany",
+    "status": {
+      "offline": "Offline. Jeśli ktoś zmieni tę notatkę, zanim się połączysz, twoje niezapisane zmiany zostaną odrzucone.",
+      "refused": "Edycja na żywo została zatrzymana, bo zmienił się twój dostęp lub ta notatka. Odśwież, aby kontynuować.",
+      "unavailable": "Edycja na żywo jest niedostępna, więc edytujesz sam. Twoje zmiany nadal się zapisują."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " i wszystkim w środku",
     "only": " wyłącznie",
     "categoriesMore": "{first} + {count} więcej",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "wszystkie notatki",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} notatka} few {{notes} notatki} many {{notes} notatek} other {{notes} notatki}}, przypięte: {pinned}",
     "checklistsKicker": "Odhaczone pola: {done} z {total}",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} karta} few {{cards} karty} many {{cards} kart} other {{cards} karty}} na {boardsCount, plural, one {{boards} tablicy} few {{boards} tablicach} many {{boards} tablicach} other {{boards} tablicy}}, w trakcie: {inProgress}"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} karta} few {{cards} karty} many {{cards} kart} other {{cards} karty}} na {boardsCount, plural, one {{boards} tablicy} few {{boards} tablicach} many {{boards} tablicach} other {{boards} tablicy}}, w trakcie: {inProgress}",
+    "hideWidget": "Ukryj {widget}",
+    "widgetHidden": "Ukryto {widget}",
+    "widgetHiddenHint": "Możesz go ponownie włączyć w dowolnym momencie w preferencjach użytkownika."
+  },
+  "quickSettings": {
+    "title": "Szybkie ustawienia",
+    "browserOnly": "Tylko w tej przeglądarce",
+    "saveToAccount": "Zapisz na koncie",
+    "savedToAccount": "Zapisano na twoim koncie",
+    "allPreferences": "Wszystkie preferencje",
+    "heading": "Rozgość się",
+    "subtitle": "Zmiany zostają w tej przeglądarce. Zapisz wybrane na koncie, aby używać ich na każdym urządzeniu.",
+    "overrideCount": "{count, plural, one {# ustawione tutaj} few {# ustawione tutaj} many {# ustawionych tutaj} other {# ustawionych tutaj}}",
+    "saving": "Zapisywanie...",
+    "labels": {
+      "theme": "Motyw",
+      "borderRadius": "Zaokrąglenie rogów",
+      "noteFontSize": "Rozmiar tekstu notatek",
+      "kanbanColumnWidth": "Szerokość kolumn kanban",
+      "viewMode": "Wyświetlaj jako",
+      "cardPreview": "Podgląd notatek na kartach",
+      "compactMode": "Kompaktowa szerokość notatek",
+      "autosave": "Autozapis notatek",
+      "showEmojis": "Emoji na listach",
+      "completedSuggestions": "Podpowiadaj ukończone elementy"
+    },
+    "hints": {
+      "borderRadius": "Rogi zmieniają się w całej aplikacji podczas przeciągania.",
+      "noteFontSize": "Do czytania i pisania notatek.",
+      "kanbanColumnWidth": "Automatycznie rozciąga kolumny na całą tablicę.",
+      "cardPreview": "Pokazuje sformatowany markdown na kartach zamiast zwykłego tekstu.",
+      "compactMode": "Ogranicza edytor do szerokości 900px."
+    }
   }
 }

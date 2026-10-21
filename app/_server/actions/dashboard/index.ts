@@ -44,7 +44,7 @@ const _mutatePins = async (
 
   if (!saved) return false;
 
-  await broadcast({ type: "settings", action: "updated", username });
+  await broadcast({ type: "settings", action: "updated", username, recipient: username });
   return true;
 };
 

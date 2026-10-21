@@ -187,6 +187,7 @@
     "unpinFromHome": "Unpin from Home",
     "archive": "Archive",
     "confirmDeleteItem": "Are you sure you want to delete \"{itemTitle}\"?",
+    "confirmDeleteEntry": "Are you sure you want to delete this entry?",
     "sharedBy": "Shared by {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} completed",
     "releaseNotes": "Release Notes v{version}",
@@ -896,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Default",
+    "defaultOption": "Default ({value})",
     "dark": "Dark",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -988,7 +990,12 @@
     "homePinboardDescription": "When disabled, pinned items show as regular cards at the top.",
     "homeTags": "Tags",
     "notesFontSize": "Note text size",
-    "notesFontSizeDescription": "Text size for reading and editing notes on every device. Quick settings can override it for a single browser."
+    "notesFontSizeDescription": "Text size for reading and editing notes on every device. Quick settings can override it for a single browser.",
+    "borderRadiusDescription": "Rounds the corners across the whole app. Quick settings can still change it for one browser.",
+    "browseViewModeDescription": "How notes and lists are laid out when you browse them.",
+    "notesCardPreviewDescription": "Show the formatted start of each note on its card.",
+    "notesCompactModeDescription": "Use a narrower layout while reading and editing notes.",
+    "kanbanColumnWidthDescription": "Set a custom width for kanban status columns. Default auto-fits columns to the available space."
   },
   "admin": {
     "title": "Admin",
@@ -1625,28 +1632,19 @@
     "notePlaceholder": "I am a placeholder because you can't encrypt an empty note."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "These options only apply to this browser session. For permanent settings, check your",
-    "accountSettings": "user preferences",
-    "autosaveNotes": "Autosave Notes",
     "showNotePreview": "Show Note Preview on Cards",
     "notesCompactMode": "Notes compact mode",
     "showEmojis": "Show Emojis on checklists",
-    "viewMode": "View Mode",
+    "viewMode": "View mode",
     "viewModeCard": "Cards",
     "viewModeList": "List",
     "viewModeGrid": "Grid",
     "borderRadius": "Corner rounding",
-    "useInstanceDefault": "Use instance default",
-    "borderRadiusDescription": "Corners update across the whole app as you drag.",
     "kanbanColumnWidth": "Kanban column width",
-    "kanbanColumnWidthDescription": "Set a custom width for kanban status columns. The instance default auto-fits columns to the available space.",
     "kanbanColumnWidthCompact": "Compact",
     "kanbanColumnWidthComfortable": "Comfortable",
     "kanbanColumnWidthWide": "Wide",
     "kanbanColumnWidthAutoFit": "Auto fit",
-    "noteFontSize": "Note text size",
-    "noteFontSizeDescription": "Resizes the text of notes in this browser. Your account setting applies everywhere else.",
-    "noteFontSizePreview": "The quick brown fox jots down a note.",
     "useAccountSetting": "Use account setting"
   },
   "migration": {
@@ -2067,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} note} other {{notes} notes}}, {pinned} pinned",
     "checklistsKicker": "{done} of {total} boxes ticked",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} card} other {{cards} cards}} on {boardsCount, plural, one {{boards} board} other {{boards} boards}}, {inProgress} in progress"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} card} other {{cards} cards}} on {boardsCount, plural, one {{boards} board} other {{boards} boards}}, {inProgress} in progress",
+    "hideWidget": "Hide {widget}",
+    "widgetHidden": "{widget} hidden",
+    "widgetHiddenHint": "Turn it back on any time in user preferences."
+  },
+  "quickSettings": {
+    "title": "Quick settings",
+    "browserOnly": "Only in this browser",
+    "saveToAccount": "Save to account",
+    "savedToAccount": "Saved to your account",
+    "allPreferences": "All preferences",
+    "heading": "Make yourself at home",
+    "subtitle": "Changes stick to this browser. Save any of them to your account to use them on every device.",
+    "overrideCount": "{count, plural, one {# set here} other {# set here}}",
+    "saving": "Saving...",
+    "labels": {
+      "theme": "Theme",
+      "borderRadius": "Corner rounding",
+      "noteFontSize": "Note text size",
+      "kanbanColumnWidth": "Kanban column width",
+      "viewMode": "Browse as",
+      "cardPreview": "Preview notes on cards",
+      "compactMode": "Compact note width",
+      "autosave": "Autosave notes",
+      "showEmojis": "Emojis on checklists",
+      "completedSuggestions": "Suggest completed items"
+    },
+    "hints": {
+      "borderRadius": "Corners update across the whole app as you drag.",
+      "noteFontSize": "For reading and writing notes.",
+      "kanbanColumnWidth": "Auto fit stretches columns to fill the board.",
+      "cardPreview": "Show formatted markdown on cards instead of plain text.",
+      "compactMode": "Caps the editor at 900px wide."
+    }
   }
 }

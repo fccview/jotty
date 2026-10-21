@@ -86,7 +86,7 @@ export const HistoryList = ({
           <p className="text-sm mt-1">{t("history.noHistoryDescription")}</p>
         </div>
       ) : (
-        <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+        <div className="space-y-2">
           {entries.map((entry, index) => (
             <div
               key={`${entry.commitHash}-${index}`}

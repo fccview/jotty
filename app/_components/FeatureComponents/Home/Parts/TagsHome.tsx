@@ -17,7 +17,8 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useMemo, useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { getNotesForDisplay } from "@/app/_server/actions/note";
@@ -43,7 +44,7 @@ export const TagsHome = ({
   const t = useTranslations();
   const router = useRouter();
   const { selectedFilter, setSelectedFilter, tagsIndex } = useAppMode();
-  const { viewMode } = useSettings();
+  const viewMode = useQuickValue(QuickSettingId.VIEW_MODE);
   const [, startTransition] = useTransition();
   const [displayNotes, setDisplayNotes] = useState<Note[]>(initialNotes);
   const [displayChecklists, setDisplayChecklists] =
