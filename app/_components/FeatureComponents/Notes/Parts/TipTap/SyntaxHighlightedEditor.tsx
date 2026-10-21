@@ -158,7 +158,7 @@ export const SyntaxHighlightedEditor = ({
 
   return (
     <div
-      className="flex-1 overflow-y-auto jotty-scrollable-content min-h-0"
+      className="flex flex-col flex-1 overflow-y-auto jotty-scrollable-content min-h-0"
       onDragOver={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -170,7 +170,7 @@ export const SyntaxHighlightedEditor = ({
           onFileDrop(Array.from(e.dataTransfer.files));
       }}
     >
-      <div className="flex min-h-full" ref={editorRef}>
+      <div className="flex flex-1 min-h-full" ref={editorRef}>
         {showLineNumbers && (
           <div className="markdown-line-numbers py-4 px-1 text-foreground text-right select-none hidden lg:block opacity-50">
             {content.split("\n").map((line, i) => (
@@ -180,7 +180,7 @@ export const SyntaxHighlightedEditor = ({
             ))}
           </div>
         )}
-        <div className="relative flex-1">
+        <div className="relative flex flex-1 flex-col">
           {showVisualGuides && charWidthRef.current > 0 && (
             <div className="absolute inset-0 pointer-events-none hidden lg:block" aria-hidden="true">
               {visualGuideColumns.map((column) => (

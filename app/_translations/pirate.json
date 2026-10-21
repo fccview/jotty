@@ -250,7 +250,14 @@
     "reconnecting": "Reconnecting...",
     "hide": "Stow away",
     "thisEntry": "this entry",
-    "preview": "Peek"
+    "preview": "Peek",
+    "justNowShort": "now",
+    "minutesShort": "{count}m",
+    "hoursShort": "{count}h",
+    "daysShort": "{count}d",
+    "weeksShort": "{count}w",
+    "monthsShort": "{count}mo",
+    "yearsShort": "{count}y"
   },
   "history": {
     "noteHistory": "Log History",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Top o' the manifest",
     "newItemInsertionBottom": "Bottom o' the manifest",
     "selectShowChecklistEmojis": "Choose yer rune showin'",
-    "showChecklistEmojisDescription": "Marks each manifest entry with a rune drawn from its words."
+    "showChecklistEmojisDescription": "Marks each manifest entry with a rune drawn from its words.",
+    "homeWidgetsSection": "Port Trinkets",
+    "homeWelcome": "Ahoy Banner",
+    "homePickUp": "Pick up where ye dropped anchor",
+    "homePinboard": "Notice Board",
+    "homePinboardDescription": "When stowed, nailed-down items show as regular cards up top.",
+    "homeTags": "Flags"
   },
   "admin": {
     "title": "Captain",
@@ -1904,5 +1917,116 @@
     "confirmMessage": "Jotty will rewrite the frontmatter atop this scroll. It quotes values that ain't proper YAML, swaps tabs for spaces, stows a uuid that ain't a Jotty id in previousUuid, and adds its own uuid. The rest o' the scroll stays as it be. Jotty can't undo this, so keep a copy if another ship reads this frontmatter. Ye need leave to edit this booty, and its folder must be writable.",
     "confirm": "Patch the frontmatter",
     "fixed": "Patched! Ye can edit this booty now."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Still on watch, {name}.",
+      "morning": "Mornin', {name}.",
+      "afternoon": "Afternoon, {name}.",
+      "evening": "Evenin', {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} log} other {{notes} logs}}, {pinned} nailed down, {encrypted} buried.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} manifest} other {{lists} manifests}}, {boardsCount, plural, one {{boards} chart} other {{boards} charts}}, {open} left to mark.",
+    "continueWriting": "Keep scribblin'",
+    "openList": "Open manifest",
+    "openBoard": "Open chart",
+    "tag": "Flag",
+    "clearFilter": "Clean the spyglass",
+    "newNoteIn": "New log in {name}",
+    "newChecklistIn": "New manifest in {name}",
+    "tagCount": "#{tag}, {count, plural, one {# piece o' cargo} other {# pieces o' cargo}}",
+    "topTags": "Top {count} most hoisted",
+    "allTags": "All {count} flags",
+    "more": "+{count} more",
+    "showFewer": "Show fewer",
+    "pinnedOf": "{shown} of {total} nailed down",
+    "pinnedTotal": "{total} nailed down",
+    "showAllPinned": "Show all {total}",
+    "bucket": "1 square = {count} pieces o' cargo",
+    "tickedOf": "{done} of {total} marked",
+    "emptyList": "Nary a thing aboard yet.",
+    "hours": "{count} hrs",
+    "shallNotPass": "The spyglass shall not pass.",
+    "notePrompts": [
+      "Call me Ishmael.",
+      "It was a dark and stormy night.",
+      "Once upon a time...",
+      "All we have to decide is what to do with the time that be given us.",
+      "Scribe that down! Scribe that down!",
+      "Inconceivable!",
+      "Speak, friend, and come aboard.",
+      "Live long and prosper.",
+      "Don't panic.",
+      "Help me, Obi-Wan Kenobi. Ye be me only hope.",
+      "Life, uh, finds a way.",
+      "I am Groot."
+    ],
+    "listPrompts": [
+      "Do or do not. There be no try.",
+      "I love it when a plan comes together.",
+      "Just keep swimming.",
+      "Houston, we have a problem.",
+      "Let's get down to business.",
+      "Clear eyes, full hearts, can't lose.",
+      "Winter be coming.",
+      "Run, Forrest, run!",
+      "Shall we play a game?",
+      "With great power comes great responsibility.",
+      "Resistance be futile.",
+      "Yer mission, should ye choose to accept it..."
+    ],
+    "allDone": [
+      "Mischief managed.",
+      "It's dangerous to sail alone... oh wait, ye be done.",
+      "All yer tasks are belong to done.",
+      "So long, and thanks for all the ticks.",
+      "This be the way.",
+      "Achievement unlocked: nary a thing left.",
+      "The cake was not a lie.",
+      "Live long and procrastinate.",
+      "I'm afraid there be nothin' left to do, Dave.",
+      "Fus Ro Done.",
+      "May the done be with ye.",
+      "Level clear. Insert doubloon to continue.",
+      "exit 0. Clean run, no errors.",
+      "Winter be not coming. Ye be done.",
+      "One does not simply mark more boxes."
+    ],
+    "sentence": "Show me <type></type> from <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "every heading",
+    "andInside": " and all below decks",
+    "only": " alone",
+    "categoriesMore": "{first} + {count} more",
+    "filters": {
+      "notes": {
+        "all": "all logs",
+        "recent": "fresh logs",
+        "pinned": "nailed-down logs"
+      },
+      "checklists": {
+        "all": "all manifests",
+        "completed": "plundered manifests",
+        "incomplete": "outstanding manifests",
+        "pinned": "nailed-down manifests",
+        "task": "duty rosters",
+        "simple": "simple scrawls"
+      },
+      "boards": {
+        "all": "all charts",
+        "completed": "plundered charts",
+        "incomplete": "outstanding charts",
+        "pinned": "nailed-down charts",
+        "todo": "charts with chores",
+        "in-progress": "charts under way"
+      }
+    },
+    "sorts": {
+      "updated": "freshest first",
+      "oldest": "oldest first",
+      "az": "A to Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} log} other {{notes} logs}}, {pinned} nailed down",
+    "checklistsKicker": "{done} of {total} boxes marked",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} card} other {{cards} cards}} on {boardsCount, plural, one {{boards} chart} other {{boards} charts}}, {inProgress} under way"
   }
 }

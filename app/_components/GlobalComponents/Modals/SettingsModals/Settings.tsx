@@ -6,9 +6,6 @@ import {
   File02Icon,
   ArrowHorizontalIcon,
   CheckmarkSquare04Icon,
-  SchoolReportCardIcon,
-  ListViewIcon,
-  GridViewIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -21,8 +18,15 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
 import { RadiusSlider } from "@/app/_components/GlobalComponents/FormElements/RadiusSlider";
 import { ColumnWidthSlider } from "@/app/_components/GlobalComponents/FormElements/ColumnWidthSlider";
-import { clampRadius, clampKanbanColumnWidth } from "@/app/_consts/styling";
+import { NoteFontSizeSlider } from "@/app/_components/GlobalComponents/FormElements/NoteFontSizeSlider";
+import {
+  clampRadius,
+  clampKanbanColumnWidth,
+  clampNoteFontSize,
+  normaliseNoteFontSize,
+} from "@/app/_consts/styling";
 import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
+import { VIEW_MODE_OPTIONS } from "@/app/_consts/view-modes";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -51,11 +55,16 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     setBorderRadius,
     kanbanColumnWidth,
     setKanbanColumnWidth,
+    noteFontSize,
+    setNoteFontSize,
   } = useSettings();
 
   const radius = borderRadius ?? clampRadius(appSettings?.borderRadius);
   const columnWidth =
     kanbanColumnWidth ?? clampKanbanColumnWidth(undefined);
+  const fontSize = clampNoteFontSize(
+    noteFontSize ?? (normaliseNoteFontSize(user?.notesFontSize) || undefined),
+  );
   const [themes, setThemes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -153,49 +162,47 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       </div>
 
       <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-md lg:text-sm font-medium">
+            {t("settingsModal.noteFontSize")}
+          </h3>
+          {noteFontSize !== null && (
+            <button
+              onClick={() => setNoteFontSize(null)}
+              className="text-md lg:text-xs text-primary hover:underline"
+            >
+              {t("settingsModal.useAccountSetting")}
+            </button>
+          )}
+        </div>
+        <NoteFontSizeSlider
+          value={fontSize}
+          onChange={(value) => setNoteFontSize(clampNoteFontSize(value))}
+        />
+        <p className="text-md lg:text-xs text-muted-foreground mt-2">
+          {t("settingsModal.noteFontSizeDescription")}
+        </p>
+      </div>
+
+      <div className="mb-6">
         <h3 className="text-md lg:text-sm font-medium mb-3">
           {t("settingsModal.viewMode")}
         </h3>
         <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => setViewMode("card")}
-            className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
-              viewMode === "card"
-                ? "border-primary color-primary"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <SchoolReportCardIcon className="h-5 w-5" />
-            <span className="text-md lg:text-xs font-medium">
-              {t("settingsModal.viewModeCard")}
-            </span>
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
-              viewMode === "list"
-                ? "border-primary color-primary"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <ListViewIcon className="h-5 w-5" />
-            <span className="text-md lg:text-xs font-medium">
-              {t("settingsModal.viewModeList")}
-            </span>
-          </button>
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
-              viewMode === "grid"
-                ? "border-primary color-primary"
-                : "border-border hover:border-primary/50"
-            }`}
-          >
-            <GridViewIcon className="h-5 w-5" />
-            <span className="text-md lg:text-xs font-medium">
-              {t("settingsModal.viewModeGrid")}
-            </span>
-          </button>
+          {VIEW_MODE_OPTIONS.map(({ id, icon: Icon, labelKey }) => (
+            <button
+              key={id}
+              onClick={() => setViewMode(id)}
+              className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
+                viewMode === id
+                  ? "border-primary color-primary"
+                  : "border-border hover:border-primary/50"
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-md lg:text-xs font-medium">{t(labelKey)}</span>
+            </button>
+          ))}
         </div>
       </div>
 

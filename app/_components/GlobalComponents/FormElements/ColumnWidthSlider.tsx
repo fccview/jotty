@@ -6,6 +6,7 @@ import {
   MAX_KANBAN_COLUMN_WIDTH,
   MIN_KANBAN_COLUMN_WIDTH,
 } from "@/app/_consts/styling";
+import { RangeSlider } from "@/app/_components/GlobalComponents/FormElements/RangeSlider";
 
 interface ColumnWidthSliderProps {
   value: number;
@@ -36,27 +37,17 @@ export const ColumnWidthSlider = ({
     : t(widthToPresetKey(value));
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <input
-          id="kanban-column-width"
-          type="range"
-          min={MIN_KANBAN_COLUMN_WIDTH}
-          max={MAX_KANBAN_COLUMN_WIDTH}
-          step={KANBAN_COLUMN_WIDTH_STEP}
-          value={value}
-          disabled={disabled}
-          aria-label={t("settingsModal.kanbanColumnWidth")}
-          aria-valuetext={presetLabel}
-          onChange={(event) => onChange(Number(event.target.value))}
-          className="w-full accent-primary disabled:opacity-50"
-        />
-        <span
-          className="w-20 shrink-0 whitespace-nowrap overflow-hidden text-right font-medium text-md lg:text-xs text-muted-foreground"
-        >
-          {presetLabel}
-        </span>
-      </div>
-    </div>
+    <RangeSlider
+      id="kanban-column-width"
+      label={t("settingsModal.kanbanColumnWidth")}
+      value={value}
+      min={MIN_KANBAN_COLUMN_WIDTH}
+      max={MAX_KANBAN_COLUMN_WIDTH}
+      step={KANBAN_COLUMN_WIDTH_STEP}
+      valueText={presetLabel}
+      onChange={onChange}
+      disabled={disabled}
+      valueClassName="font-medium"
+    />
   );
 };

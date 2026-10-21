@@ -1,6 +1,6 @@
 "use server";
 
-import { Note } from "@/app/_types";
+import { ContentFilter, Note } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { isUuid } from "@/app/_consts/identity";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
@@ -27,7 +27,7 @@ export const viewNote = async (uuid: string): Promise<Note | undefined> => {
 };
 
 export const getNotesForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
+  filter?: ContentFilter | null,
   limit: number = 20,
   offset: number = 0,
 ) => {

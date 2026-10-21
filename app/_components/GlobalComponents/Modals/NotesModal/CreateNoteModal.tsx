@@ -23,6 +23,7 @@ interface CreateNoteModalProps {
   onCreated: (doc?: Note) => void;
   categories: Category[];
   initialCategory?: string;
+  initialTitle?: string;
 }
 
 export const CreateNoteModal = ({
@@ -30,11 +31,12 @@ export const CreateNoteModal = ({
   onCreated,
   categories,
   initialCategory = "",
+  initialTitle = "",
 }: CreateNoteModalProps) => {
   const t = useTranslations();
   const { user } = useAppMode();
   const { showToast } = useToast();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle);
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
   const [isCreating, setIsCreating] = useState(false);

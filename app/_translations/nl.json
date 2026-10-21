@@ -250,7 +250,14 @@
     "reconnecting": "Opnieuw verbinding maken...",
     "hide": "Verbergen",
     "thisEntry": "deze invoer",
-    "preview": "Voorbeeld"
+    "preview": "Voorbeeld",
+    "justNowShort": "nu",
+    "minutesShort": "{count}m",
+    "hoursShort": "{count}u",
+    "daysShort": "{count}d",
+    "weeksShort": "{count}w",
+    "monthsShort": "{count}mnd",
+    "yearsShort": "{count}j"
   },
   "history": {
     "noteHistory": "Notitiegeschiedenis",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Bovenaan de lijst",
     "newItemInsertionBottom": "Onderaan de lijst",
     "selectShowChecklistEmojis": "Emoji-zichtbaarheid kiezen",
-    "showChecklistEmojisDescription": "Toont automatisch een emoji naast checklistitems op basis van de tekst."
+    "showChecklistEmojisDescription": "Toont automatisch een emoji naast checklistitems op basis van de tekst.",
+    "homeWidgetsSection": "Startpaginawidgets",
+    "homeWelcome": "Welkomstbanner",
+    "homePickUp": "Ga verder waar je gebleven was",
+    "homePinboard": "Prikbord",
+    "homePinboardDescription": "Indien uitgeschakeld, worden vastgepinde items bovenaan als gewone kaarten getoond.",
+    "homeTags": "Tags"
   },
   "admin": {
     "title": "Beheer",
@@ -1904,5 +1917,116 @@
     "confirmMessage": "Jotty herschrijft de frontmatter bovenaan dit bestand. Waarden die geen geldige YAML zijn krijgen aanhalingstekens, tabs worden spaties, een uuid die geen Jotty-id is gaat naar previousUuid, en Jotty voegt een eigen uuid toe. De rest van het bestand blijft zoals het is. Jotty kan dit niet ongedaan maken, dus bewaar een kopie als een andere app deze frontmatter leest. Je hebt bewerkrechten op dit item nodig en de map moet beschrijfbaar zijn.",
     "confirm": "Frontmatter repareren",
     "fixed": "Gerepareerd. Je kunt dit item nu bewerken."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Nog wakker, {name}.",
+      "morning": "Goedemorgen, {name}.",
+      "afternoon": "Goedemiddag, {name}.",
+      "evening": "Goedenavond, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} notitie} other {{notes} notities}}, {pinned} vastgepind, {encrypted} versleuteld.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} lijst} other {{lists} lijsten}}, {boardsCount, plural, one {{boards} bord} other {{boards} borden}}, nog {open} af te vinken.",
+    "continueWriting": "Verder schrijven",
+    "openList": "Lijst openen",
+    "openBoard": "Bord openen",
+    "tag": "Tag",
+    "clearFilter": "Filter wissen",
+    "newNoteIn": "Nieuwe notitie in {name}",
+    "newChecklistIn": "Nieuwe checklist in {name}",
+    "tagCount": "#{tag}, {count, plural, one {# item} other {# items}}",
+    "topTags": "Top {count} op gebruik",
+    "allTags": "Alle {count} tags",
+    "more": "+{count} meer",
+    "showFewer": "Minder tonen",
+    "pinnedOf": "{shown} van {total} vastgepind",
+    "pinnedTotal": "{total} vastgepind",
+    "showAllPinned": "Alle {total} tonen",
+    "bucket": "1 vakje = {count} items",
+    "tickedOf": "{done} van {total} afgevinkt",
+    "emptyList": "Er staat nog niets op.",
+    "hours": "{count} uur",
+    "shallNotPass": "Het voorbeeld zal niet passeren.",
+    "notePrompts": [
+      "Noem mij Ismaël.",
+      "Het was een donkere en stormachtige nacht.",
+      "Er was eens...",
+      "Het enige wat we moeten beslissen is wat we doen met de tijd die ons gegeven is.",
+      "Schrijf dat op! Schrijf dat op!",
+      "Ondenkbaar!",
+      "Spreek, vriend, en treed binnen.",
+      "Leef lang en voorspoedig.",
+      "Geen paniek.",
+      "Help me, Obi-Wan Kenobi. Jij bent mijn enige hoop.",
+      "Het leven, eh, vindt een weg.",
+      "Ik ben Groot."
+    ],
+    "listPrompts": [
+      "Doe het of doe het niet. Er is geen proberen.",
+      "Ik hou ervan als een plan slaagt.",
+      "Gewoon blijven zwemmen.",
+      "Houston, we hebben een probleem.",
+      "Aan de slag.",
+      "Heldere ogen, volle harten, kan niet verliezen.",
+      "De winter komt eraan.",
+      "Ren, Forrest, ren!",
+      "Zullen we een spelletje spelen?",
+      "Grote kracht brengt grote verantwoordelijkheid met zich mee.",
+      "Verzet is zinloos.",
+      "Uw missie, mocht u die accepteren..."
+    ],
+    "allDone": [
+      "Kattenkwaad volbracht.",
+      "Het is gevaarlijk om alleen te gaan... o wacht, je bent klaar.",
+      "Al jouw taken zijn behoren tot klaar.",
+      "Tot ziens, en bedankt voor alle vinkjes.",
+      "Dit is de weg.",
+      "Prestatie ontgrendeld: niets meer over.",
+      "De taart was geen leugen.",
+      "Leef lang en stel uit.",
+      "Ik vrees dat er niets meer te doen is, Dave.",
+      "Fus Ro Klaar.",
+      "Moge het afvinken met je zijn.",
+      "Level voltooid. Werp een munt in om verder te gaan.",
+      "exit 0. Schone run, geen fouten.",
+      "De winter komt er niet aan. Je bent klaar.",
+      "Je vinkt niet zomaar nog meer vakjes af."
+    ],
+    "sentence": "Toon me <type></type> uit <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "elke categorie",
+    "andInside": " en alles daarin",
+    "only": " alleen",
+    "categoriesMore": "{first} + {count} meer",
+    "filters": {
+      "notes": {
+        "all": "alle notities",
+        "recent": "recente notities",
+        "pinned": "vastgepinde notities"
+      },
+      "checklists": {
+        "all": "alle lijsten",
+        "completed": "voltooide lijsten",
+        "incomplete": "onvoltooide lijsten",
+        "pinned": "vastgepinde lijsten",
+        "task": "takenlijsten",
+        "simple": "eenvoudige lijsten"
+      },
+      "boards": {
+        "all": "alle borden",
+        "completed": "voltooide borden",
+        "incomplete": "onvoltooide borden",
+        "pinned": "vastgepinde borden",
+        "todo": "borden met to-do's",
+        "in-progress": "borden in uitvoering"
+      }
+    },
+    "sorts": {
+      "updated": "nieuwste eerst",
+      "oldest": "oudste eerst",
+      "az": "A tot Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} notitie} other {{notes} notities}}, {pinned} vastgepind",
+    "checklistsKicker": "{done} van {total} vakjes afgevinkt",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} kaart} other {{cards} kaarten}} op {boardsCount, plural, one {{boards} bord} other {{boards} borden}}, {inProgress} bezig"
   }
 }

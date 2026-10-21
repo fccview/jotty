@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ViewMode } from "@/app/_consts/view-modes";
 
 type BuiltInTheme =
   | "system"
@@ -41,18 +42,20 @@ interface SettingsState {
   autosaveNotes: boolean;
   showMarkdownPreview: boolean;
   showCompletedSuggestions: boolean;
-  viewMode: 'card' | 'list' | 'grid';
+  viewMode: ViewMode;
   borderRadius: number | null;
   kanbanColumnWidth: number | null;
+  noteFontSize: number | null;
   setBorderRadius: (radius: number | null) => void;
   setKanbanColumnWidth: (width: number | null) => void;
+  setNoteFontSize: (size: number | null) => void;
   setTheme: (theme: Theme) => void;
   setShowEmojis: (show: boolean | null) => void;
   setAutosaveNotes: (enabled: boolean) => void;
   setShowMarkdownPreview: (show: boolean) => void;
   setShowCompletedSuggestions: (show: boolean) => void;
   setCompactMode: (compact: boolean) => void;
-  setViewMode: (mode: 'card' | 'list' | 'grid') => void;
+  setViewMode: (mode: ViewMode) => void;
   getResolvedTheme: (
     isRwMarkable: boolean,
     userPreferredTheme?: string
@@ -72,8 +75,10 @@ export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
       viewMode: 'card',
       borderRadius: null,
       kanbanColumnWidth: null,
+      noteFontSize: null,
       setBorderRadius: (radius) => set({ borderRadius: radius }),
       setKanbanColumnWidth: (width) => set({ kanbanColumnWidth: width }),
+      setNoteFontSize: (size) => set({ noteFontSize: size }),
       setTheme: (theme) => set({ theme }),
       setShowEmojis: (show) => set({ showEmojis: show }),
       setAutosaveNotes: (enabled) => set({ autosaveNotes: enabled }),

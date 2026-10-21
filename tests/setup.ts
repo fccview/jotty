@@ -197,9 +197,7 @@ vi.mock("@/app/_utils/checklist-utils", () => ({
     title: "Test",
     items: [],
   }),
-  isItemCompleted: vi.fn().mockReturnValue(false),
   formatTime: vi.fn().mockReturnValue("0s"),
-  getCompletionRate: vi.fn().mockReturnValue(0),
 }));
 
 export const mockLock = vi.fn().mockResolvedValue(undefined);

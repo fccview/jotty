@@ -18,6 +18,8 @@ interface CreateListModalProps {
   onCreated: (checklist?: Checklist) => void;
   categories: Category[];
   initialCategory?: string;
+  initialTitle?: string;
+  initialType?: ChecklistType;
 }
 
 export const CreateListModal = ({
@@ -25,13 +27,15 @@ export const CreateListModal = ({
   onCreated,
   categories,
   initialCategory = "",
+  initialTitle = "",
+  initialType = "simple",
 }: CreateListModalProps) => {
   const t = useTranslations();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle);
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
   const [showNewCategory, setShowNewCategory] = useState(false);
-  const [type, setType] = useState<ChecklistType>("simple");
+  const [type, setType] = useState<ChecklistType>(initialType);
   const [isLoading, setIsLoading] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];

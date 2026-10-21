@@ -261,13 +261,13 @@ mark {
 
 .jotty-note-prose,
 .ProseMirror.prose {
-  font-size: 16px;
+  font-size: var(--jotty-note-font-size, var(--jotty-note-font-size-user, 16px));
 }
 
 @media (min-width: 1024px) {
   .jotty-note-prose,
   .ProseMirror.prose {
-    font-size: 17px;
+    font-size: var(--jotty-note-font-size, var(--jotty-note-font-size-user, 17px));
   }
 }
 

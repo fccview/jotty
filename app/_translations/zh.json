@@ -250,7 +250,14 @@
     "reconnecting": "正在重新连接...",
     "hide": "隐藏",
     "thisEntry": "这个条目",
-    "preview": "预览"
+    "preview": "预览",
+    "justNowShort": "刚刚",
+    "minutesShort": "{count}分",
+    "hoursShort": "{count}时",
+    "daysShort": "{count}天",
+    "weeksShort": "{count}周",
+    "monthsShort": "{count}月",
+    "yearsShort": "{count}年"
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "列表顶部",
     "newItemInsertionBottom": "列表底部",
     "selectShowChecklistEmojis": "选择 Emoji 显示方式",
-    "showChecklistEmojisDescription": "根据清单项目的文字自动在旁边显示 Emoji。"
+    "showChecklistEmojisDescription": "根据清单项目的文字自动在旁边显示 Emoji。",
+    "homeWidgetsSection": "首页小组件",
+    "homeWelcome": "欢迎横幅",
+    "homePickUp": "从上次离开的地方继续",
+    "homePinboard": "置顶板",
+    "homePinboardDescription": "停用后，置顶项目会以普通卡片的形式显示在顶部。",
+    "homeTags": "标签"
   },
   "admin": {
     "title": "管理",
@@ -1904,5 +1917,116 @@
     "confirmMessage": "Jotty 会重写此文件开头的前置元数据：给不是有效 YAML 的值加上引号，把制表符换成空格，把不是 Jotty id 的 uuid 移到 previousUuid，再添加自己的 uuid。文件其余部分保持不变。Jotty 无法撤销此操作，如果有其他应用读取这段前置元数据，请先保留一份副本。你需要此项目的编辑权限，并且它所在的文件夹必须可写。",
     "confirm": "修复前置元数据",
     "fixed": "已修复。现在可以编辑此项目了。"
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "还没睡呀，{name}。",
+      "morning": "早上好，{name}。",
+      "afternoon": "下午好，{name}。",
+      "evening": "晚上好，{name}。"
+    },
+    "notesSummary": "{notesCount, plural, other {{notes} 篇笔记}}，{pinned} 篇置顶，{encrypted} 篇加密。",
+    "checklistsSummary": "{listsCount, plural, other {{lists} 个清单}}，{boardsCount, plural, other {{boards} 个看板}}，还有 {open} 项待勾选。",
+    "continueWriting": "继续写作",
+    "openList": "打开清单",
+    "openBoard": "打开看板",
+    "tag": "标签",
+    "clearFilter": "清除筛选",
+    "newNoteIn": "在 {name} 中新建笔记",
+    "newChecklistIn": "在 {name} 中新建清单",
+    "tagCount": "#{tag}，{count, plural, other {# 个项目}}",
+    "topTags": "最常用的 {count} 个",
+    "allTags": "全部 {count} 个标签",
+    "more": "+{count} 个",
+    "showFewer": "收起",
+    "pinnedOf": "已置顶 {shown}/{total}",
+    "pinnedTotal": "已置顶 {total} 个",
+    "showAllPinned": "显示全部 {total} 个",
+    "bucket": "1 格 = {count} 项",
+    "tickedOf": "已勾选 {done}/{total}",
+    "emptyList": "还什么都没有。",
+    "hours": "{count} 小时",
+    "shallNotPass": "预览不得通过。",
+    "notePrompts": [
+      "叫我以实玛利吧。",
+      "那是一个漆黑的暴风雨之夜。",
+      "很久很久以前……",
+      "我们需要决定的，只是如何利用我们被给予的时间。",
+      "记下来！记下来！",
+      "不可思议！",
+      "说朋友，然后进入。",
+      "生生不息，繁荣昌盛。",
+      "不要惊慌。",
+      "救救我，欧比旺·克诺比。你是我唯一的希望。",
+      "生命，呃，自会找到出路。",
+      "我是格鲁特。"
+    ],
+    "listPrompts": [
+      "做，或不做，没有试试看。",
+      "我就爱计划成功的感觉。",
+      "继续游下去。",
+      "休斯顿，我们有麻烦了。",
+      "让我们开始干正事吧。",
+      "目光清澈，心怀热忱，战无不胜。",
+      "凛冬将至。",
+      "跑，阿甘，跑！",
+      "要玩个游戏吗？",
+      "能力越大，责任越大。",
+      "抵抗是徒劳的。",
+      "你的任务，如果你选择接受的话……"
+    ],
+    "allDone": [
+      "恶作剧完毕。",
+      "一个人去很危险……哦等等，你已经完成了。",
+      "你所有任务都是属于完成了。",
+      "再见，谢谢所有的勾。",
+      "此乃正道。",
+      "成就解锁：清空了。",
+      "蛋糕不是谎言。",
+      "生生不息，拖延昌盛。",
+      "恐怕已经没有事情可做了，戴夫。",
+      "Fus Ro 搞定。",
+      "愿完成与你同在。",
+      "过关。投币继续。",
+      "exit 0。运行干净，零错误。",
+      "凛冬不会来了。你已完成。",
+      "你不能就这么再勾更多的框。"
+    ],
+    "sentence": "显示<category></category><scope></scope>中的<type></type>，<sort></sort>。",
+    "everyCategory": "所有分类",
+    "andInside": "及其所有子分类",
+    "only": "（不含子分类）",
+    "categoriesMore": "{first} 及另外 {count} 个",
+    "filters": {
+      "notes": {
+        "all": "全部笔记",
+        "recent": "最近的笔记",
+        "pinned": "置顶笔记"
+      },
+      "checklists": {
+        "all": "全部清单",
+        "completed": "已完成的清单",
+        "incomplete": "未完成的清单",
+        "pinned": "置顶清单",
+        "task": "任务清单",
+        "simple": "简单清单"
+      },
+      "boards": {
+        "all": "全部看板",
+        "completed": "已完成的看板",
+        "incomplete": "未完成的看板",
+        "pinned": "置顶看板",
+        "todo": "有待办的看板",
+        "in-progress": "进行中的看板"
+      }
+    },
+    "sorts": {
+      "updated": "最新优先",
+      "oldest": "最早优先",
+      "az": "按 A 到 Z"
+    },
+    "notesKicker": "{notesCount, plural, other {{notes} 篇笔记}}，{pinned} 篇置顶",
+    "checklistsKicker": "已勾选 {done}/{total} 项",
+    "kanbanKicker": "{boardsCount, plural, other {{boards} 个看板}}上有 {cardsCount, plural, other {{cards} 张卡片}}，{inProgress} 张进行中"
   }
 }

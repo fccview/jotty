@@ -124,3 +124,24 @@ export const applyDrop = (
 
   return { ...checklist, items: _renumber(reordered), updatedAt: now };
 };
+
+export const boardTrackedSeconds = (items: Item[]): number =>
+  items.reduce(
+    (total, item) =>
+      total +
+      (item.timeEntries || []).reduce(
+        (sum, entry) => sum + (entry.duration || 0),
+        0,
+      ),
+    0,
+  );
+
+export const boardAssignees = (items: Item[]): string[] =>
+  Array.from(
+    new Set(
+      items
+        .filter((item) => !item.isArchived)
+        .map((item) => item.assignee)
+        .filter((assignee): assignee is string => Boolean(assignee)),
+    ),
+  );

@@ -11,6 +11,7 @@ import {
 import { ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/app/_utils/global-utils";
+import { FALLBACK_STATUS_COLOR } from "@/app/_consts/kanban";
 
 interface KanbanCardDetailPropertiesProps {
   item: Item;
@@ -152,7 +153,7 @@ export const KanbanCardDetailProperties = ({
                 >
                   <span
                     className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: status.color || "#6b7280" }}
+                    style={{ backgroundColor: status.color || FALLBACK_STATUS_COLOR }}
                   />
                   {status.label}
                 </button>

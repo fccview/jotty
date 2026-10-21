@@ -184,7 +184,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <p className="text-md lg:text-xs text-muted-foreground">{description}</p>
       <div
         className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${disabled
-            ? "border-muted-foreground/15 bg-muted/30 cursor-not-allowed"
+            ? "border-muted-foreground/[0.15] bg-muted/30 cursor-not-allowed"
             : dragOver
               ? "border-primary bg-primary/5"
               : "border-muted-foreground/25 hover:border-muted-foreground/50"

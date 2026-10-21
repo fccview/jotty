@@ -250,7 +250,14 @@
     "reconnecting": "Reconnecting...",
     "hide": "So'",
     "thisEntry": "this entry",
-    "preview": "leghpre'"
+    "preview": "leghpre'",
+    "justNowShort": "DaH",
+    "minutesShort": "{count}tup",
+    "hoursShort": "{count}rep",
+    "daysShort": "{count}jaj",
+    "weeksShort": "{count}hogh",
+    "monthsShort": "{count}jar",
+    "yearsShort": "{count}DIS"
   },
   "history": {
     "noteHistory": "ghItlh Qu' tetlh",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Top of the list",
     "newItemInsertionBottom": "Bottom of the list",
     "selectShowChecklistEmojis": "Emoji cha'ghach yIwIv",
-    "showChecklistEmojisDescription": "mu'mey ghop tetlh Segh Emoji cha' pagh."
+    "showChecklistEmojisDescription": "mu'mey ghop tetlh Segh Emoji cha' pagh.",
+    "homeWidgetsSection": "juH De'wI'Hommey",
+    "homeWelcome": "nuqneH joqwI'",
+    "homePickUp": "Damevpu'bogh Daq yItaH",
+    "homePinboard": "Hum beQ",
+    "homePinboardDescription": "Qotlu'chugh, Dochmey Hum 'ang ghIH beQmey motlh.",
+    "homeTags": "meqmey"
   },
   "admin": {
     "title": "ra'wI'",
@@ -1904,5 +1917,116 @@
     "confirmMessage": "ghitlh nachDaq frontmatter ghItlhqa' Jotty. YAML lI'be'bogh mI' quotes lan, tabs chImmeH tlhegh moj, Jotty mI' ghaHbe'bogh uuid previousUuid Daq lan, uuid chu' chel. ghitlh latlh choHbe'. DochHa'laHbe' Jotty, vaj frontmatter laDchugh latlh ghun, yIqaw'Ha'. Dochvam choHmeH chaw' DaghajnIS, 'ej ghItlhlaHnIS qachDaj.",
     "confirm": "frontmatter yItI'",
     "fixed": "tI'lu'ta'. DaH Dochvam DachoHlaH."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "bIQongbe'taH, {name}.",
+      "morning": "po' QaQ, {name}.",
+      "afternoon": "pov QaQ, {name}.",
+      "evening": "ram QaQ, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} ghItlh} other {{notes} ghItlhmey}}, {pinned} Hum, {encrypted} pegh.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} tetlh} other {{lists} tetlhmey}}, {boardsCount, plural, one {{boards} beQ} other {{boards} beQmey}}, {open} ta'be'lu'.",
+    "continueWriting": "yIghItlhtaH",
+    "openList": "tetlh yIpoS",
+    "openBoard": "beQ yIpoS",
+    "tag": "meq",
+    "clearFilter": "vI' yIteq",
+    "newNoteIn": "{name}Daq ghItlh chu'",
+    "newChecklistIn": "{name}Daq tetlh chu'",
+    "tagCount": "#{tag}, {count, plural, one {# Doch} other {# Dochmey}}",
+    "topTags": "{count} lo'lu'qu'bogh",
+    "allTags": "Hoch {count} meqmey",
+    "more": "+{count} latlh",
+    "showFewer": "puS yI'ang",
+    "pinnedOf": "{total} Hum, {shown} 'ang",
+    "pinnedTotal": "{total} Hum",
+    "showAllPinned": "Hoch {total} yI'ang",
+    "bucket": "1 Hom = {count} Dochmey",
+    "tickedOf": "{total} Dochmey, {done} ta'lu'",
+    "emptyList": "pagh tu'lu' DaH.",
+    "hours": "{count} rep",
+    "shallNotPass": "cha'wI' juSlaHbe'.",
+    "notePrompts": [
+      "Ishmael HIpong.",
+      "ram Hurgh jevqu'.",
+      "ben law'...",
+      "poH nonejbogh wIlo'meH, wIwIvnIS neH.",
+      "yIghItlh! yIghItlh!",
+      "Qubbe'lu'!",
+      "jup yIjatlh 'ej yI'el.",
+      "yIn nI' yISIQ 'ej yIchep.",
+      "yIbItQo'.",
+      "HIQaH, Obi-Wan Kenobi. SoH neH HIQaHlaH.",
+      "yIn, uh, He tu'laH.",
+      "Groot jIH."
+    ],
+    "listPrompts": [
+      "yIruch pagh yIruchQo'. nIDghach tu'lu'be'.",
+      "Qapbogh nab vImaS.",
+      "yIQaltaH neH.",
+      "Houston, Seng wIghaj.",
+      "Qu'maj wItagh!",
+      "mInDu' chIS, tIqDu' teb, jeylu'laHbe'.",
+      "tlhIm ghoStaH.",
+      "yIqet, Forrest, yIqet!",
+      "Quj wIQuj'a'?",
+      "HoS tIn, ngoy' tIn.",
+      "Suvghach lo'laHbe'.",
+      "Qu'lIj, Dalaj DaneHchugh..."
+    ],
+    "allDone": [
+      "mIgh vang rIn.",
+      "mob DaghoSchugh, Qob... toH, bIrInpu'.",
+      "Hoch Qu'lIj rIn wIghaj.",
+      "Qapla', 'ej Hoch ta'mey vItlho'.",
+      "Hevam 'oH.",
+      "Qapla' poSmoHlu': pagh ratlh.",
+      "chab nepbe'.",
+      "yIn nI' yISIQ 'ej yImIm.",
+      "jIQoS, Dave. Qu' ratlhbe'.",
+      "Fus Ro rIn.",
+      "rIn Dutlhejjaj.",
+      "patlh rIn. taHmeH Huch yIlan.",
+      "exit 0. Qaghbe', Qapla'.",
+      "tlhIm ghoSbe'. bIrIn.",
+      "Dochmey latlh vImeqmeH nap 'oHbe'."
+    ],
+    "sentence": "<category></category><scope></scope>vo' <type></type> HI'ang, <sort></sort>.",
+    "everyCategory": "Hoch Segh",
+    "andInside": " 'ej Hoch qoDDaj",
+    "only": " neH",
+    "categoriesMore": "{first} + {count} latlh",
+    "filters": {
+      "notes": {
+        "all": "Hoch ghItlhmey",
+        "recent": "ghItlhmey chu'",
+        "pinned": "ghItlhmey Hum"
+      },
+      "checklists": {
+        "all": "Hoch tetlhmey",
+        "completed": "tetlhmey rIn",
+        "incomplete": "tetlhmey rInbe'",
+        "pinned": "tetlhmey Hum",
+        "task": "Qu' tetlhmey",
+        "simple": "nap tetlhmey"
+      },
+      "boards": {
+        "all": "Hoch beQmey",
+        "completed": "beQmey rIn",
+        "incomplete": "beQmey rInbe'",
+        "pinned": "beQmey Hum",
+        "todo": "Qu' ghajbogh beQmey",
+        "in-progress": "vanglI'bogh beQmey"
+      }
+    },
+    "sorts": {
+      "updated": "chu'qu' wa'DIch",
+      "oldest": "ngo'qu' wa'DIch",
+      "az": "A vo' Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} ghItlh} other {{notes} ghItlhmey}}, {pinned} Hum",
+    "checklistsKicker": "{total} Dochmey, {done} ta'lu'",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} Doch} other {{cards} Dochmey}}, {boardsCount, plural, one {{boards} beQDaq} other {{boards} beQmeyDaq}}, {inProgress} vanglI'"
   }
 }

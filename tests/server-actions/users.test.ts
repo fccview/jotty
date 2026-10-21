@@ -658,6 +658,21 @@ describe('Users Actions', () => {
       expect(result.data?.user.newItemInsertion).toBe('bottom')
     })
 
+    it('should clamp the note font size before saving it', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false },
+      ])
+
+      const tooBig = await updateUserSettings({ notesFontSize: 400 })
+      expect(tooBig.data?.user.notesFontSize).toBe(24)
+
+      const sneaky = await updateUserSettings({ notesFontSize: '18px; color: red' as unknown as number })
+      expect(sneaky.data?.user.notesFontSize).toBe(0)
+
+      const reset = await updateUserSettings({ notesFontSize: 0 })
+      expect(reset.data?.user.notesFontSize).toBe(0)
+    })
+
     it('should return the updated user without credentials or mfa secrets', async () => {
       mockReadJsonFile.mockResolvedValue([
         {

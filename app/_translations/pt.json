@@ -250,7 +250,14 @@
     "reconnecting": "A reconectar...",
     "hide": "Ocultar",
     "thisEntry": "esta entrada",
-    "preview": "Pré-visualização"
+    "preview": "Pré-visualização",
+    "justNowShort": "agora",
+    "minutesShort": "{count}min",
+    "hoursShort": "{count}h",
+    "daysShort": "{count}d",
+    "weeksShort": "{count}sem",
+    "monthsShort": "{count}mês",
+    "yearsShort": "{count}a"
   },
   "history": {
     "noteHistory": "Histórico da nota",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "Topo da lista",
     "newItemInsertionBottom": "Final da lista",
     "selectShowChecklistEmojis": "Selecionar visibilidade dos emojis",
-    "showChecklistEmojisDescription": "Mostra um emoji automático junto dos itens da lista com base no texto."
+    "showChecklistEmojisDescription": "Mostra um emoji automático junto dos itens da lista com base no texto.",
+    "homeWidgetsSection": "Widgets da página inicial",
+    "homeWelcome": "Faixa de boas-vindas",
+    "homePickUp": "Continue de onde parou",
+    "homePinboard": "Quadro de fixados",
+    "homePinboardDescription": "Quando desativado, os itens fixados aparecem como cartões normais no topo.",
+    "homeTags": "Etiquetas"
   },
   "admin": {
     "title": "Administrador",
@@ -1904,5 +1917,116 @@
     "confirmMessage": "O Jotty vai reescrever o frontmatter no início deste arquivo. Ele coloca entre aspas os valores que não são YAML válido, troca tabulações por espaços, move para previousUuid um uuid que não seja do Jotty e adiciona o próprio uuid. O resto do arquivo continua igual. O Jotty não consegue desfazer isso, então guarde uma cópia se outro aplicativo lê este frontmatter. Você precisa de permissão para editar este item, e a pasta precisa permitir gravação.",
     "confirm": "Corrigir o frontmatter",
     "fixed": "Corrigido. Agora você pode editar este item."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "Ainda por aí, {name}.",
+      "morning": "Bom dia, {name}.",
+      "afternoon": "Boa tarde, {name}.",
+      "evening": "Boa noite, {name}."
+    },
+    "notesSummary": "{notesCount, plural, one {{notes} nota} other {{notes} notas}}, {pinned} fixadas, {encrypted} encriptadas.",
+    "checklistsSummary": "{listsCount, plural, one {{lists} lista} other {{lists} listas}}, {boardsCount, plural, one {{boards} quadro} other {{boards} quadros}}, {open} por marcar.",
+    "continueWriting": "Continuar a escrever",
+    "openList": "Abrir lista",
+    "openBoard": "Abrir quadro",
+    "tag": "Etiqueta",
+    "clearFilter": "Limpar filtro",
+    "newNoteIn": "Nova nota em {name}",
+    "newChecklistIn": "Nova lista em {name}",
+    "tagCount": "#{tag}, {count, plural, one {# item} other {# itens}}",
+    "topTags": "As {count} mais usadas",
+    "allTags": "Todas as {count} etiquetas",
+    "more": "+{count} mais",
+    "showFewer": "Mostrar menos",
+    "pinnedOf": "{shown} de {total} fixadas",
+    "pinnedTotal": "{total} fixadas",
+    "showAllPinned": "Mostrar todas as {total}",
+    "bucket": "1 quadrado = {count} itens",
+    "tickedOf": "{done} de {total} marcados",
+    "emptyList": "Ainda não tem nada.",
+    "hours": "{count} h",
+    "shallNotPass": "A pré-visualização não passará.",
+    "notePrompts": [
+      "Chamai-me Ismael.",
+      "Era uma noite escura e tempestuosa.",
+      "Era uma vez...",
+      "Tudo o que temos de decidir é o que fazer com o tempo que nos é dado.",
+      "Escreva isso! Escreva isso!",
+      "Inconcebível!",
+      "Fala, amigo, e entra.",
+      "Vida longa e próspera.",
+      "Não entre em pânico.",
+      "Ajuda-me, Obi-Wan Kenobi. És a minha única esperança.",
+      "A vida, hã, encontra um caminho.",
+      "Eu sou o Groot."
+    ],
+    "listPrompts": [
+      "Faz ou não faças. Tentar não há.",
+      "Adoro quando um plano resulta.",
+      "Continua a nadar.",
+      "Houston, temos um problema.",
+      "Vamos ao trabalho.",
+      "Olhos claros, corações cheios, não podemos perder.",
+      "O inverno está a chegar.",
+      "Corre, Forrest, corre!",
+      "Vamos jogar um jogo?",
+      "Com grande poder vem grande responsabilidade.",
+      "A resistência é inútil.",
+      "A sua missão, caso decida aceitá-la..."
+    ],
+    "allDone": [
+      "Malfeito feito.",
+      "É perigoso ir sozinho... ah, espere, já terminou.",
+      "Todas as suas tarefas são pertencem a concluído.",
+      "Adeus, e obrigado por todos os vistos.",
+      "Este é o caminho.",
+      "Conquista desbloqueada: não resta nada.",
+      "O bolo não era mentira.",
+      "Vida longa e procrastinação.",
+      "Receio que não haja mais nada a fazer, Dave.",
+      "Fus Ro Feito.",
+      "Que o feito esteja contigo.",
+      "Nível concluído. Insira uma moeda para continuar.",
+      "exit 0. Execução limpa, sem erros.",
+      "O inverno não está a chegar. Terminou.",
+      "Ninguém simplesmente marca mais caixas."
+    ],
+    "sentence": "Mostre-me <type></type> de <category></category><scope></scope>, <sort></sort>.",
+    "everyCategory": "todas as categorias",
+    "andInside": " e tudo o que contém",
+    "only": " apenas",
+    "categoriesMore": "{first} + {count} mais",
+    "filters": {
+      "notes": {
+        "all": "todas as notas",
+        "recent": "as notas recentes",
+        "pinned": "as notas fixadas"
+      },
+      "checklists": {
+        "all": "todas as listas",
+        "completed": "as listas concluídas",
+        "incomplete": "as listas por concluir",
+        "pinned": "as listas fixadas",
+        "task": "as listas de tarefas",
+        "simple": "as listas simples"
+      },
+      "boards": {
+        "all": "todos os quadros",
+        "completed": "os quadros concluídos",
+        "incomplete": "os quadros por concluir",
+        "pinned": "os quadros fixados",
+        "todo": "os quadros com tarefas a fazer",
+        "in-progress": "os quadros em progresso"
+      }
+    },
+    "sorts": {
+      "updated": "do mais recente para o mais antigo",
+      "oldest": "do mais antigo para o mais recente",
+      "az": "de A a Z"
+    },
+    "notesKicker": "{notesCount, plural, one {{notes} nota} other {{notes} notas}}, {pinned} fixadas",
+    "checklistsKicker": "{done} de {total} caixas marcadas",
+    "kanbanKicker": "{cardsCount, plural, one {{cards} cartão} other {{cards} cartões}} em {boardsCount, plural, one {{boards} quadro} other {{boards} quadros}}, {inProgress} em progresso"
   }
 }

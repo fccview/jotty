@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CheckmarkCircle04Icon, ArrowDown01Icon, ArrowRight01Icon, CircleIcon } from "hugeicons-react";
 import { Checklist } from "@/app/_types";
-import { countItems } from "@/app/_utils/checklist-utils";
+import { countItems } from "@/app/_utils/checklist-count-utils";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { useTranslations } from "next-intl";
 

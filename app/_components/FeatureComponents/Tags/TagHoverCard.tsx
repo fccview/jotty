@@ -54,7 +54,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
           <button
             key={note.uuid}
             onClick={(e) => handleNoteClick(e, note)}
-            className="inline-flex items-center justify-between gap-1.5 w-full px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer"
+            className="inline-flex items-center justify-between gap-1.5 w-full px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/[0.15] transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-1.5">
               <File02Icon className="h-4 w-4 flex-shrink-0" />
@@ -81,7 +81,7 @@ export const TagHoverCard = ({ notes, checklists }: TagHoverCardProps) => {
           <button
             key={list.uuid ?? list.id}
             onClick={(e) => handleChecklistClick(e, list)}
-            className="inline-flex items-center justify-between gap-1.5 w-full px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/15 transition-colors cursor-pointer"
+            className="inline-flex items-center justify-between gap-1.5 w-full px-2 py-1 bg-primary/10 border border-primary/20 rounded-jotty hover:bg-primary/[0.15] transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-1.5">
               <CheckmarkSquare04Icon className="h-4 w-4 flex-shrink-0" />

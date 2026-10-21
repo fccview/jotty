@@ -1,6 +1,8 @@
-import { Modes } from "./enums";
+import { HomeWidget, Modes } from "./enums";
 import { EncryptionSettings } from "./encryption";
 import type { SearchModes } from "@/app/_consts/search";
+import type { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
+import type { HomeWidgetKey } from "@/app/_consts/home";
 
 export type EnableRecurrence = "enable" | "disable";
 export type ShowCompletedSuggestions = "enable" | "disable";
@@ -30,14 +32,8 @@ export type PreferredTimeFormat = "12-hours" | "24-hours" | "system";
 export type FirstDayOfWeek = "sunday" | "monday" | "saturday";
 export type Handedness = "right-handed" | "left-handed";
 export type DisableRichEditor = "enable" | "disable";
-export type DefaultChecklistFilter =
-  | "all"
-  | "completed"
-  | "incomplete"
-  | "pinned"
-  | "task"
-  | "simple";
-export type DefaultNoteFilter = "all" | "recent" | "pinned";
+export type DefaultChecklistFilter = (typeof CHECKLIST_FILTERS)[number];
+export type DefaultNoteFilter = (typeof NOTE_FILTERS)[number];
 export type QuickCreateNotes = "enable" | "disable";
 export type HideConnectionIndicator = "enable" | "disable";
 export type HideStatusOnCards = "enable" | "disable";
@@ -47,7 +43,7 @@ export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
 export type NewItemInsertion = "top" | "bottom";
 
-export interface User {
+export interface User extends Partial<Record<HomeWidgetKey, HomeWidget>> {
   username: string;
   passwordHash: string;
   isAdmin: boolean;
@@ -63,6 +59,7 @@ export interface User {
   notesAutoSaveInterval?: NotesAutoSaveInterval;
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
+  notesFontSize?: number;
   pinnedLists?: string[];
   pinnedNotes?: string[];
   enableRecurrence?: EnableRecurrence;

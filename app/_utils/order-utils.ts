@@ -24,3 +24,13 @@ export const orderByUuids = <T>(
 
   return [...ranked, ...rest];
 };
+
+interface Dated {
+  updatedAt: string;
+}
+
+const timeOf = (item: Dated) => new Date(item.updatedAt).getTime();
+
+export const newestFirst = (a: Dated, b: Dated): number => timeOf(b) - timeOf(a);
+
+export const oldestFirst = (a: Dated, b: Dated): number => timeOf(a) - timeOf(b);

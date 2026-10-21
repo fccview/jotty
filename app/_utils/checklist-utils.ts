@@ -22,16 +22,6 @@ import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { AGENT_SEGMENT } from "@/app/_consts/agents";
 
-export const isItemCompleted = (item: Item, checklistType: string): boolean => {
-  if (
-    checklistType === ChecklistsTypes.KANBAN ||
-    checklistType === ChecklistsTypes.TASK
-  ) {
-    return item.status === TaskStatus.COMPLETED || !!item.completed;
-  }
-  return !!item.completed;
-};
-
 export const areAllItemsCompleted = (items: any[]): boolean => {
   if (items.length === 0) return true;
 
@@ -47,41 +37,6 @@ export const formatTime = (seconds: number): string => {
   const minutes = Math.floor((seconds % 3600) / 60);
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
-};
-
-export const countItems = (
-  items: Item[],
-  checklistType?: string,
-): { total: number; completed: number } =>
-  items.reduce(
-    (acc, item) => {
-      if (item.isArchived) return acc;
-
-      if (item.children && item.children.length > 0) {
-        const childCounts = countItems(item.children, checklistType);
-        return {
-          total: acc.total + childCounts.total,
-          completed: acc.completed + childCounts.completed,
-        };
-      }
-
-      return {
-        total: acc.total + 1,
-        completed: isItemCompleted(item, checklistType || "")
-          ? acc.completed + 1
-          : acc.completed,
-      };
-    },
-    { total: 0, completed: 0 },
-  );
-
-export const getCompletionRate = (
-  items: Item[],
-  checklistType?: string,
-): number => {
-  const { total, completed } = countItems(items, checklistType);
-  if (total === 0) return 0;
-  return Math.round((completed / total) * 100);
 };
 
 const _flatDescription = (text: string): string =>

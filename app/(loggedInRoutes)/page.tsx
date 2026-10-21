@@ -20,6 +20,7 @@ export default async function HomePage() {
       getUserChecklists({
         limit: HOMEPAGE_ITEMS_LIMIT,
         pinnedPaths: user?.pinnedLists,
+        countOpenItems: true,
       }),
       getUserNotes({
         limit: HOMEPAGE_ITEMS_LIMIT,
@@ -30,6 +31,7 @@ export default async function HomePage() {
     ]);
 
   const lists = listsResult.success && listsResult.data ? listsResult.data : [];
+  const openItems = "openItems" in listsResult ? listsResult.openItems || 0 : 0;
   const notes = notesResult.success && notesResult.data ? notesResult.data : [];
 
   const categories =
@@ -48,6 +50,7 @@ export default async function HomePage() {
       initialCategories={categories}
       initialDocs={notes as Note[]}
       initialDocsCategories={notesCategories}
+      openItems={openItems}
       user={user}
     />
   );

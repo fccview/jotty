@@ -250,7 +250,14 @@
     "reconnecting": "다시 연결하는 중...",
     "hide": "숨기기",
     "thisEntry": "이 항목",
-    "preview": "미리보기"
+    "preview": "미리보기",
+    "justNowShort": "방금",
+    "minutesShort": "{count}분",
+    "hoursShort": "{count}시간",
+    "daysShort": "{count}일",
+    "weeksShort": "{count}주",
+    "monthsShort": "{count}개월",
+    "yearsShort": "{count}년"
   },
   "history": {
     "noteHistory": "노트 기록",
@@ -961,7 +968,13 @@
     "newItemInsertionTop": "목록 맨 위",
     "newItemInsertionBottom": "목록 맨 아래",
     "selectShowChecklistEmojis": "이모지 표시 선택",
-    "showChecklistEmojisDescription": "체크리스트 항목의 텍스트에 따라 이모지를 자동으로 표시합니다."
+    "showChecklistEmojisDescription": "체크리스트 항목의 텍스트에 따라 이모지를 자동으로 표시합니다.",
+    "homeWidgetsSection": "홈 위젯",
+    "homeWelcome": "환영 배너",
+    "homePickUp": "하던 곳에서 이어서 하기",
+    "homePinboard": "고정 보드",
+    "homePinboardDescription": "끄면 고정된 항목이 맨 위에 일반 카드로 표시됩니다.",
+    "homeTags": "태그"
   },
   "admin": {
     "title": "관리자",
@@ -1904,5 +1917,116 @@
     "confirmMessage": "Jotty가 이 파일 맨 위의 프런트매터를 다시 씁니다. 올바른 YAML이 아닌 값은 따옴표로 감싸고, 탭은 공백으로 바꾸고, Jotty id가 아닌 uuid는 previousUuid로 옮긴 뒤 자체 uuid를 추가합니다. 파일의 나머지는 그대로입니다. Jotty는 이 작업을 되돌릴 수 없으니, 다른 앱이 이 프런트매터를 읽는다면 사본을 남겨 두세요. 이 항목의 편집 권한이 필요하고, 폴더에 쓰기가 가능해야 합니다.",
     "confirm": "프런트매터 고치기",
     "fixed": "고쳤습니다. 이제 이 항목을 편집할 수 있습니다."
+  },
+  "browse": {
+    "greeting": {
+      "stillUp": "아직 안 주무셨네요, {name}님.",
+      "morning": "좋은 아침이에요, {name}님.",
+      "afternoon": "좋은 오후예요, {name}님.",
+      "evening": "좋은 저녁이에요, {name}님."
+    },
+    "notesSummary": "{notesCount, plural, other {노트 {notes}개}}, 고정 {pinned}개, 암호화 {encrypted}개.",
+    "checklistsSummary": "{listsCount, plural, other {목록 {lists}개}}, {boardsCount, plural, other {보드 {boards}개}}, 체크할 항목 {open}개.",
+    "continueWriting": "이어서 쓰기",
+    "openList": "목록 열기",
+    "openBoard": "보드 열기",
+    "tag": "태그",
+    "clearFilter": "필터 지우기",
+    "newNoteIn": "{name}에 새 노트",
+    "newChecklistIn": "{name}에 새 체크리스트",
+    "tagCount": "#{tag}, {count, plural, other {항목 #개}}",
+    "topTags": "많이 쓴 상위 {count}개",
+    "allTags": "전체 태그 {count}개",
+    "more": "+{count}개 더",
+    "showFewer": "간단히 보기",
+    "pinnedOf": "고정 {total}개 중 {shown}개",
+    "pinnedTotal": "고정 {total}개",
+    "showAllPinned": "{total}개 모두 보기",
+    "bucket": "1칸 = 항목 {count}개",
+    "tickedOf": "{total}개 중 {done}개 체크",
+    "emptyList": "아직 아무것도 없어요.",
+    "hours": "{count}시간",
+    "shallNotPass": "미리보기는 지나갈 수 없다.",
+    "notePrompts": [
+      "나를 이슈메일이라 불러 다오.",
+      "어둡고 폭풍우 치는 밤이었다.",
+      "옛날 옛적에...",
+      "우리가 결정할 일은 주어진 시간 동안 뭘 하느냐는 것뿐이야.",
+      "적어 둬! 적어 둬!",
+      "말도 안 돼!",
+      "말하라, 친구여, 그리고 들어오라.",
+      "장수와 번영을.",
+      "당황하지 마시오.",
+      "도와주세요, 오비완 케노비. 당신만이 유일한 희망이에요.",
+      "생명은, 어, 길을 찾아낸다.",
+      "나는 그루트다."
+    ],
+    "listPrompts": [
+      "하든지 말든지, 시도란 없다.",
+      "계획대로 되는 게 너무 좋아.",
+      "그냥 계속 헤엄쳐.",
+      "휴스턴, 문제가 생겼다.",
+      "이제 일을 시작하자.",
+      "맑은 눈, 뜨거운 가슴, 질 수 없다.",
+      "겨울이 오고 있다.",
+      "달려, 포레스트, 달려!",
+      "게임 한 판 할까?",
+      "큰 힘에는 큰 책임이 따른다.",
+      "저항은 무의미하다.",
+      "이번 임무는, 수락한다면..."
+    ],
+    "allDone": [
+      "장난 완료.",
+      "혼자 가면 위험해... 아, 이미 다 끝났네요.",
+      "당신의 모든 할 일은 완료의 것이 되었다.",
+      "안녕히, 그리고 체크 표시들 고마웠어요.",
+      "이것이 길이다.",
+      "업적 달성: 남은 일 없음.",
+      "케이크는 거짓말이 아니었다.",
+      "장수와 미루기를.",
+      "유감스럽지만 더 할 일이 없어요, 데이브.",
+      "푸스 로 완료.",
+      "완료가 함께하기를.",
+      "스테이지 클리어. 계속하려면 동전을 넣으세요.",
+      "exit 0. 오류 없이 깔끔하게 실행됨.",
+      "겨울은 오지 않는다. 다 끝났어요.",
+      "누구도 그냥 체크박스를 더 체크할 수는 없다."
+    ],
+    "sentence": "<category></category><scope></scope>의 <type></type>, <sort></sort>으로 보여 주세요.",
+    "everyCategory": "모든 카테고리",
+    "andInside": " 및 하위 항목 전체",
+    "only": "만",
+    "categoriesMore": "{first} 외 {count}개",
+    "filters": {
+      "notes": {
+        "all": "모든 노트",
+        "recent": "최근 노트",
+        "pinned": "고정된 노트"
+      },
+      "checklists": {
+        "all": "모든 목록",
+        "completed": "완료된 목록",
+        "incomplete": "미완료 목록",
+        "pinned": "고정된 목록",
+        "task": "작업 목록",
+        "simple": "단순 목록"
+      },
+      "boards": {
+        "all": "모든 보드",
+        "completed": "완료된 보드",
+        "incomplete": "미완료 보드",
+        "pinned": "고정된 보드",
+        "todo": "할 일이 있는 보드",
+        "in-progress": "진행 중인 보드"
+      }
+    },
+    "sorts": {
+      "updated": "최신순",
+      "oldest": "오래된순",
+      "az": "이름순"
+    },
+    "notesKicker": "{notesCount, plural, other {노트 {notes}개}}, 고정 {pinned}개",
+    "checklistsKicker": "{total}칸 중 {done}칸 체크",
+    "kanbanKicker": "{boardsCount, plural, other {보드 {boards}개}}에 {cardsCount, plural, other {카드 {cards}개}}, 진행 중 {inProgress}개"
   }
 }

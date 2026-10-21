@@ -17,6 +17,7 @@ import {
   User,
   AppModeContextType,
   AllSharedItems,
+  ContentFilter,
   UserSharedItems,
   SanitisedUser,
 } from "@/app/_types";
@@ -98,10 +99,7 @@ export const AppModeProvider = ({
       ? { type: "category" as const, value: categoryParam }
       : null;
 
-  const [selectedFilter, setSelectedFilter] = useState<{
-    type: "category" | "tag";
-    value: string;
-  } | null>(initialFilter);
+  const [selectedFilter, setSelectedFilter] = useState<ContentFilter | null>(initialFilter);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 

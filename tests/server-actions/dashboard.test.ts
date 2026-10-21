@@ -199,6 +199,45 @@ describe("Dashboard Actions", () => {
       );
     });
 
+    it("ignores uuids that are not pinned and keeps pins the client left out", async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: "testuser", pinnedLists: ["list-1", "list-2", "list-3"] },
+      ]);
+
+      const result = await updatePinnedOrder(
+        ["list-3", "intruder", "list-1"],
+        ItemTypes.CHECKLIST,
+      );
+
+      expect(result.success).toBe(true);
+      expect(mockWriteJsonFile).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            username: "testuser",
+            pinnedLists: ["list-3", "list-1", "list-2"],
+          }),
+        ]),
+        expect.any(String),
+      );
+    });
+
+    it("only touches the signed-in user's pins", async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: "someone", pinnedNotes: ["note-a", "note-b"] },
+        { username: "testuser", pinnedNotes: ["note-1", "note-2"] },
+      ]);
+
+      await updatePinnedOrder(["note-2", "note-1"], ItemTypes.NOTE);
+
+      expect(mockWriteJsonFile).toHaveBeenCalledWith(
+        [
+          { username: "someone", pinnedNotes: ["note-a", "note-b"] },
+          { username: "testuser", pinnedNotes: ["note-2", "note-1"] },
+        ],
+        expect.any(String),
+      );
+    });
+
     it("should handle errors gracefully", async () => {
       mockWriteJsonFile.mockRejectedValue(new Error("Write error"));
 

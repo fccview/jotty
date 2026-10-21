@@ -21,6 +21,7 @@ import { readListsRecursively, type ChecklistReadResult } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
+import { countItems } from "@/app/_utils/checklist-count-utils";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
@@ -37,6 +38,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     offset,
     pinnedPaths,
     preserveOrder = false,
+    countOpenItems = false,
   } = options;
 
   try {
@@ -184,6 +186,13 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       );
     }
 
+    const openItems = countOpenItems
+      ? lists.reduce((open, list) => {
+          const { total, completed } = countItems(list.items || [], list.type);
+          return open + total - completed;
+        }, 0)
+      : undefined;
+
     const limitNum = typeof limit === "number" && limit > 0 ? limit : undefined;
     const offsetNum = typeof offset === "number" && offset >= 0 ? offset : 0;
 
@@ -247,7 +256,11 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         : undefined,
     }));
 
-    return { success: true, data: serializedLists as Checklist[] };
+    return {
+      success: true,
+      data: serializedLists as Checklist[],
+      ...(openItems !== undefined && { openItems }),
+    };
   } catch (error) {
     console.error("Error in getUserChecklists:", error);
     return { success: false, error: "Failed to fetch lists" };

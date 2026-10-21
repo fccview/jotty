@@ -1,4 +1,5 @@
 import { User } from "@/app/_types";
+import { HOME_WIDGET_KEYS } from "@/app/_consts/home";
 
 export const EDITABLE_SETTING_KEYS: ReadonlyArray<keyof User> = [
   "preferredLocale",
@@ -8,6 +9,7 @@ export const EDITABLE_SETTING_KEYS: ReadonlyArray<keyof User> = [
   "landingPage",
   "notesDefaultEditor",
   "notesDefaultMode",
+  "notesFontSize",
   "notesAutoSaveInterval",
   "enableRecurrence",
   "showCompletedSuggestions",
@@ -31,6 +33,7 @@ export const EDITABLE_SETTING_KEYS: ReadonlyArray<keyof User> = [
   "codeBlockStyle",
   "newItemInsertion",
   "searchMode",
+  ...HOME_WIDGET_KEYS,
 ] as const;
 
 export const EDITABLE_ENCRYPTION_KEYS = [

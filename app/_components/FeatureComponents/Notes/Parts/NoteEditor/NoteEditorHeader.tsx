@@ -27,9 +27,8 @@ import {
   Clock01Icon,
   GitCompareIcon,
   Copy02Icon,
-  PinIcon,
-  PinOffIcon,
 } from "hugeicons-react";
+import { PinStateIcon } from "@/app/_components/GlobalComponents/Cards/Parts/PinToggle";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useEffect, useState } from "react";
@@ -37,7 +36,8 @@ import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/Dropd
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { toggleArchive, togglePin } from "@/app/_server/actions/dashboard";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
+import { usePinToggle } from "@/app/_hooks/usePinToggle";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { copyTextToClipboard, isPinnedEntry } from "@/app/_utils/global-utils";
 import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
@@ -113,7 +113,7 @@ export const NoteEditorHeader = ({
     useState(false);
   const [copied, setCopied] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [isTogglingPin, setIsTogglingPin] = useState(false);
+  const { toggle: togglePin } = usePinToggle(ItemTypes.NOTE);
   const { user, setUser, appSettings } = useAppMode();
   const router = useRouter();
   const { permissions } = usePermissions();
@@ -167,33 +167,18 @@ export const NoteEditorHeader = ({
     user?.pinnedNotes?.some((entry) => isPinnedEntry(entry, note?.uuid))
   );
 
-  const handlePinToggle = async () => {
+  const handlePinToggle = () => {
     const uuid = note?.uuid;
-    if (!uuid || isTogglingPin) return;
-
-    setIsTogglingPin(true);
-    try {
-      const result = await togglePin(uuid, ItemTypes.NOTE);
-      if (result.success) {
-        if (user) {
-          const pinned = user.pinnedNotes || [];
-          setUser({
-            ...user,
-            pinnedNotes: isPinned
-              ? pinned.filter((entry) => !isPinnedEntry(entry, uuid))
-              : [...pinned, uuid],
-          });
-        }
-        router.refresh();
-      } else {
-        showToast({ title: result.error || t("common.error"), type: "error" });
-      }
-    } catch (error) {
-      console.error("Failed to toggle note pin:", error);
-      showToast({ title: t("common.error"), type: "error" });
-    } finally {
-      setIsTogglingPin(false);
-    }
+    togglePin(uuid, () => {
+      if (!user || !uuid) return;
+      const pinned = user.pinnedNotes || [];
+      setUser({
+        ...user,
+        pinnedNotes: isPinned
+          ? pinned.filter((entry) => !isPinnedEntry(entry, uuid))
+          : [...pinned, uuid],
+      });
+    });
   };
 
   const handleSaveClick = () => {
@@ -514,11 +499,7 @@ export const NoteEditorHeader = ({
                           {
                             type: "item" as const,
                             label: isPinned ? t("common.unpin") : t("common.pin"),
-                            icon: isPinned ? (
-                              <PinOffIcon className="h-4 w-4" />
-                            ) : (
-                              <PinIcon className="h-4 w-4" />
-                            ),
+                            icon: <PinStateIcon isPinned={isPinned} className="h-4 w-4" />,
                             onClick: handlePinToggle,
                           },
                         ]
