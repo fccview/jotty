@@ -1,5 +1,5 @@
 import { User } from "@/app/_types";
-import { HomeWidget, Modes } from "@/app/_types/enums";
+import { ToggleState, Modes } from "@/app/_types/enums";
 import { HOME_WIDGET_KEYS, HomeWidgetKey } from "@/app/_consts/home";
 import { DEFAULT_WEEK_START } from "@/app/_consts/calendar";
 import { DEFAULT_SEARCH_MODE } from "@/app/_consts/search";
@@ -55,8 +55,8 @@ export const EDITABLE_ENCRYPTION_KEYS = [
 type SettingDefaults = { [K in keyof User]?: NonNullable<User[K]> };
 
 const WIDGET_DEFAULTS = Object.fromEntries(
-  HOME_WIDGET_KEYS.map((key) => [key, HomeWidget.ENABLE]),
-) as Record<HomeWidgetKey, HomeWidget>;
+  HOME_WIDGET_KEYS.map((key) => [key, ToggleState.ENABLE]),
+) as Record<HomeWidgetKey, ToggleState>;
 
 export const SETTING_DEFAULTS = {
   preferredTheme: "system",
@@ -64,28 +64,28 @@ export const SETTING_DEFAULTS = {
   landingPage: Modes.CHECKLISTS,
   notesDefaultEditor: "wysiwyg",
   notesDefaultMode: "view",
-  notesCardPreview: "disable",
-  notesCompactMode: "disable",
+  notesCardPreview: ToggleState.DISABLE,
+  notesCompactMode: ToggleState.DISABLE,
   browseViewMode: DEFAULT_VIEW_MODE,
   notesAutoSaveInterval: AUTOSAVE_DEFAULT_MS,
-  enableRecurrence: "disable",
-  showCompletedSuggestions: "enable",
-  showChecklistEmojis: "enable",
+  enableRecurrence: ToggleState.DISABLE,
+  showCompletedSuggestions: ToggleState.ENABLE,
+  showChecklistEmojis: ToggleState.ENABLE,
   fileRenameMode: "minimal",
   preferredDateFormat: "system",
   preferredTimeFormat: "system",
   firstDayOfWeek: DEFAULT_WEEK_START,
   handedness: "right-handed",
-  disableRichEditor: "disable",
+  disableRichEditor: ToggleState.DISABLE,
   markdownTheme: "prism",
   defaultChecklistFilter: "all",
   checklistItemClickAction: "toggle",
   defaultNoteFilter: "all",
-  quickCreateNotes: "disable",
-  hideConnectionIndicator: "disable",
-  hideStatusOnCards: "disable",
-  hideMobileStatusDropdown: "disable",
-  hideTimeTrackingOnCards: "disable",
+  quickCreateNotes: ToggleState.DISABLE,
+  hideConnectionIndicator: ToggleState.DISABLE,
+  hideStatusOnCards: ToggleState.DISABLE,
+  hideMobileStatusDropdown: ToggleState.DISABLE,
+  hideTimeTrackingOnCards: ToggleState.DISABLE,
   codeBlockStyle: "default",
   newItemInsertion: "top",
   searchMode: DEFAULT_SEARCH_MODE,

@@ -14,7 +14,7 @@ import { RecurrenceRule, Checklist, Item } from "@/app/_types";
 import { handleScroll, isMobileDevice } from "@/app/_utils/global-utils";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
 import { TaskStatus } from "@/app/_types/enums";

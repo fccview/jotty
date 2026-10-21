@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { CheckmarkCircle04Icon } from "hugeicons-react";
 import { ListSummary } from "@/app/_types";
-import { NEXT_UP_SHOWN } from "@/app/_utils/list-summary-utils";
+import { NEXT_UP_SHOWN } from "@/app/_utils/browse/list-summary-utils";
 import { useRandomLine } from "@/app/_hooks/useRandomLine";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { cn } from "@/app/_utils/global-utils";

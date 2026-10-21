@@ -2,7 +2,7 @@
 
 import { MultiplicationSignIcon } from "hugeicons-react";
 import { HomeWidgetKey } from "@/app/_consts/home";
-import { useHideWidget } from "@/app/_hooks/useHideWidget";
+import { useHideWidget } from "@/app/_hooks/settings/useHideWidget";
 import { cn } from "@/app/_utils/global-utils";
 
 interface WidgetDismissProps {

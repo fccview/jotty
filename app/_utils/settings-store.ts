@@ -8,7 +8,7 @@ import {
   SETTINGS_STORE_VERSION,
   SYSTEM_THEME,
 } from "@/app/_consts/quick-settings";
-import { migrateSettings } from "@/app/_utils/quick-settings-migrate";
+import { migrateSettings } from "@/app/_utils/settings/quick-settings-migrate";
 
 type BuiltInTheme =
   | "system"

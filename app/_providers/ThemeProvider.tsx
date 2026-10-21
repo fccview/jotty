@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { resolveTheme } from "@/app/_utils/settings-store";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId, SYSTEM_THEME } from "@/app/_consts/quick-settings";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
 import { useRadiusOverride } from "@/app/_hooks/useRadiusOverride";
 import { useNoteFontSizeOverride } from "@/app/_hooks/useNoteFontSizeOverride";
-import { useBodyCookieSync } from "@/app/_hooks/useBodyCookieSync";
+import { useBodyCookieSync } from "@/app/_hooks/browse/useBodyCookieSync";
 import { useTranslations } from "next-intl";
 import { syncThemeColorMeta } from "@/app/_utils/theme-color-utils";
 

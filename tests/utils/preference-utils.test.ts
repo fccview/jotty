@@ -6,7 +6,7 @@ import {
   optionFromRaw,
   storedSettingsOf,
   withDefaultOption,
-} from "@/app/_utils/preference-utils";
+} from "@/app/_utils/settings/preference-utils";
 import { SETTING_DEFAULTS } from "@/app/_consts/user-settings";
 import { User } from "@/app/_types";
 

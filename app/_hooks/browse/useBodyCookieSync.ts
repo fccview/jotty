@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { DESKTOP_QUERY } from "@/app/_consts/browse";
-import { bodyNeedOf, syncBodyCookie } from "@/app/_utils/body-cookie";
+import { bodyNeedOf, syncBodyCookie } from "@/app/_utils/browse/body-cookie";
 
 export const useBodyCookieSync = () => {
   const showMarkdownPreview = useQuickValue(QuickSettingId.CARD_PREVIEW);

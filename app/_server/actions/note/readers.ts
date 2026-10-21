@@ -49,18 +49,32 @@ const claimedNote = async (note: Note, filePath: string): Promise<Note> => {
   };
 };
 
+export interface NoteReadOptions {
+  basePath?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  metadataOnly?: boolean;
+  excerptLength?: number;
+  metadataCache?: Map<string, Record<string, unknown>>;
+  statsCache?: Map<string, FileStatsEntry>;
+  summarize?: boolean;
+}
+
 export const readNotesRecursively = async (
   dir: string,
-  basePath: string = "",
   owner: string,
-  allowArchived: boolean = false,
-  isRaw: boolean = false,
-  metadataOnly: boolean = false,
-  excerptLength?: number,
-  metadataCache?: Map<string, Record<string, unknown>>,
-  statsCache?: Map<string, FileStatsEntry>,
-  summarize: boolean = false,
+  options: NoteReadOptions = {},
 ): Promise<ListedNote[]> => {
+  const {
+    basePath = "",
+    allowArchived = false,
+    isRaw = false,
+    metadataOnly = false,
+    excerptLength,
+    summarize = false,
+  } = options;
+  let { metadataCache, statsCache } = options;
+
   if (basePath === "") {
     statsCache = statsCache || new Map();
     metadataCache = metadataCache || new Map();
@@ -116,18 +130,12 @@ export const readNotesRecursively = async (
   );
 
   const subDirPromises = orderedDirNames.map(async (dirName) => {
-    return readNotesRecursively(
-      path.join(dir, dirName),
-      basePath ? `${basePath}/${dirName}` : dirName,
-      owner,
-      allowArchived,
-      isRaw,
-      metadataOnly,
-      excerptLength,
+    return readNotesRecursively(path.join(dir, dirName), owner, {
+      ...options,
+      basePath: basePath ? `${basePath}/${dirName}` : dirName,
       metadataCache,
       statsCache,
-      summarize,
-    );
+    });
   });
 
   const categoryDir = dir;

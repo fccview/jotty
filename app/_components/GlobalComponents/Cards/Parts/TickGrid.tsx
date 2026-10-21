@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { ListSummary } from "@/app/_types";
-import { TICK_COLUMNS } from "@/app/_utils/list-summary-utils";
+import { TICK_COLUMNS } from "@/app/_utils/browse/list-summary-utils";
 import { cn } from "@/app/_utils/global-utils";
 import { TICK_RADIUS_CLASS } from "@/app/_consts/styling";
 

@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { mockCookies } from "../setup";
 import { BodyCookie } from "@/app/_consts/browse";
-import { bodyNeedOf, isBodyCookie } from "@/app/_utils/body-cookie";
+import { ViewMode } from "@/app/_consts/view-modes";
+import { bodyNeedOf, isBodyCookie } from "@/app/_utils/browse/body-cookie";
 import { accountWantsBodies, firstPageBodies } from "@/app/_server/actions/note/browse";
 import { Note, SanitisedUser } from "@/app/_types";
 
@@ -18,17 +19,17 @@ const note = (uuid: string, extra: Partial<Note> = {}): Note => ({
 
 describe("bodyNeedOf", () => {
   it("only wants page bodies for cards with previews on", () => {
-    expect(bodyNeedOf({ viewMode: "card", showMarkdownPreview: true, isDesktop: false })).toBe(BodyCookie.ON);
-    expect(bodyNeedOf({ viewMode: "card", showMarkdownPreview: false, isDesktop: true })).toBe(BodyCookie.OFF);
+    expect(bodyNeedOf({ viewMode: ViewMode.CARD, showMarkdownPreview: true, isDesktop: false })).toBe(BodyCookie.ON);
+    expect(bodyNeedOf({ viewMode: ViewMode.CARD, showMarkdownPreview: false, isDesktop: true })).toBe(BodyCookie.OFF);
   });
 
   it("never wants bodies for grid tiles", () => {
-    expect(bodyNeedOf({ viewMode: "grid", showMarkdownPreview: true, isDesktop: true })).toBe(BodyCookie.OFF);
+    expect(bodyNeedOf({ viewMode: ViewMode.GRID, showMarkdownPreview: true, isDesktop: true })).toBe(BodyCookie.OFF);
   });
 
   it("wants only the selected body for the desktop list preview, none on phones", () => {
-    expect(bodyNeedOf({ viewMode: "list", showMarkdownPreview: false, isDesktop: true })).toBe(BodyCookie.SELECTED);
-    expect(bodyNeedOf({ viewMode: "list", showMarkdownPreview: true, isDesktop: false })).toBe(BodyCookie.OFF);
+    expect(bodyNeedOf({ viewMode: ViewMode.LIST, showMarkdownPreview: false, isDesktop: true })).toBe(BodyCookie.SELECTED);
+    expect(bodyNeedOf({ viewMode: ViewMode.LIST, showMarkdownPreview: true, isDesktop: false })).toBe(BodyCookie.OFF);
   });
 
   it("recognises every cookie value and nothing else", () => {
@@ -58,9 +59,9 @@ describe("server body decision", () => {
   });
 
   it("falls back to account settings without a cookie", () => {
-    expect(accountWantsBodies({ ...user, browseViewMode: "grid", notesCardPreview: "enable" })).toBe(BodyCookie.OFF);
-    expect(accountWantsBodies({ ...user, browseViewMode: "card", notesCardPreview: "enable" })).toBe(BodyCookie.ON);
-    expect(accountWantsBodies({ ...user, browseViewMode: "list" })).toBe(BodyCookie.SELECTED);
+    expect(accountWantsBodies({ ...user, browseViewMode: ViewMode.GRID, notesCardPreview: "enable" })).toBe(BodyCookie.OFF);
+    expect(accountWantsBodies({ ...user, browseViewMode: ViewMode.CARD, notesCardPreview: "enable" })).toBe(BodyCookie.ON);
+    expect(accountWantsBodies({ ...user, browseViewMode: ViewMode.LIST })).toBe(BodyCookie.SELECTED);
     expect(accountWantsBodies(user)).toBe(BodyCookie.OFF);
   });
 });

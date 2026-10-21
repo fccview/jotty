@@ -7,7 +7,7 @@ import { CompactTableToolbar } from "@/app/_components/FeatureComponents/Notes/P
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { TableSyntax } from "@/app/_types";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useFileUpload } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorHooks/useFileUpload";

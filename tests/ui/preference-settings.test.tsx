@@ -19,7 +19,7 @@ vi.mock("@/app/_server/actions/users", () => ({
   updateUserSettings: (patch: UserSettingsPatch) => mockUpdate(patch),
 }));
 
-import { usePreferenceSettings } from "@/app/_hooks/usePreferenceSettings";
+import { usePreferenceSettings } from "@/app/_hooks/settings/usePreferenceSettings";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { Modes } from "@/app/_types/enums";
 

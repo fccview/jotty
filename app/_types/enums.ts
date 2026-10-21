@@ -5,7 +5,7 @@ export enum Modes {
   DEPRECATED_DOCS = "docs",
 }
 
-export enum HomeWidget {
+export enum ToggleState {
   ENABLE = "enable",
   DISABLE = "disable",
 }

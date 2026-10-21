@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HomeWidget, Modes } from "@/app/_types/enums";
+import { ToggleState, Modes } from "@/app/_types/enums";
 import { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
 import { HOME_WIDGET_KEYS, HomeWidgetKey } from "@/app/_consts/home";
 import { SearchModes } from "@/app/_consts/search";
@@ -56,16 +56,16 @@ export const editorSettingsSchema = z.object({
     })
     .optional(),
   notesCardPreview: z
-    .enum(["enable", "disable"], {
+    .enum([ToggleState.ENABLE, ToggleState.DISABLE], {
       message: "Card preview must be either 'enable' or 'disable'",
     })
     .optional(),
   notesCompactMode: z
-    .enum(["enable", "disable"], {
+    .enum([ToggleState.ENABLE, ToggleState.DISABLE], {
       message: "Compact mode must be either 'enable' or 'disable'",
     })
     .optional(),
-  disableRichEditor: z.enum(["enable", "disable"], {
+  disableRichEditor: z.enum(ToggleState, {
     message: "Disable rich editor must be either 'enable' or 'disable'",
   }),
   markdownTheme: z.enum(
@@ -86,7 +86,7 @@ export const editorSettingsSchema = z.object({
   defaultNoteFilter: z.enum(NOTE_FILTERS, {
     message: "Default note filter must be 'all', 'recent', or 'pinned'",
   }),
-  quickCreateNotes: z.enum(["enable", "disable"], {
+  quickCreateNotes: z.enum(ToggleState, {
     message: "Quick create notes must be either 'enable' or 'disable'",
   }),
   quickCreateNotesCategory: z.string().optional(),
@@ -96,13 +96,13 @@ export const editorSettingsSchema = z.object({
 });
 
 export const checklistSettingsSchema = z.object({
-  enableRecurrence: z.enum(["enable", "disable"], {
+  enableRecurrence: z.enum(ToggleState, {
     message: "Enable recurrence must be either 'enable' or 'disable'",
   }),
-  showCompletedSuggestions: z.enum(["enable", "disable"], {
+  showCompletedSuggestions: z.enum(ToggleState, {
     message: "Show completed suggestions must be either 'enable' or 'disable'",
   }),
-  showChecklistEmojis: z.enum(["enable", "disable"], {
+  showChecklistEmojis: z.enum(ToggleState, {
     message: "Show checklist emojis must be either 'enable' or 'disable'",
   }),
   defaultChecklistFilter: z.enum(
@@ -133,18 +133,18 @@ export const kanbanSettingsSchema = z.object({
     )
     .optional(),
   hideStatusOnCards: z
-    .enum(["enable", "disable"], {
+    .enum([ToggleState.ENABLE, ToggleState.DISABLE], {
       message: "Hide status on cards must be either 'enable' or 'disable'",
     })
     .optional(),
   hideMobileStatusDropdown: z
-    .enum(["enable", "disable"], {
+    .enum([ToggleState.ENABLE, ToggleState.DISABLE], {
       message:
         "Hide mobile status dropdown must be either 'enable' or 'disable'",
     })
     .optional(),
   hideTimeTrackingOnCards: z
-    .enum(["enable", "disable"], {
+    .enum([ToggleState.ENABLE, ToggleState.DISABLE], {
       message:
         "Hide time tracking on cards must be either 'enable' or 'disable'",
     })
@@ -152,7 +152,7 @@ export const kanbanSettingsSchema = z.object({
 });
 
 const homeWidgetSchema = z
-  .enum(HomeWidget, {
+  .enum(ToggleState, {
     message: "Home widgets must be either 'enable' or 'disable'",
   })
   .optional();
@@ -201,7 +201,7 @@ export const generalSettingsSchema = z.object({
     })
     .optional(),
   hideConnectionIndicator: z
-    .enum(["enable", "disable"], {
+    .enum([ToggleState.ENABLE, ToggleState.DISABLE], {
       message: "Hide connection indicator must be either 'enable' or 'disable'",
     })
     .optional(),

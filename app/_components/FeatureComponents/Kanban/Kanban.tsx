@@ -30,7 +30,7 @@ import { archiveItem, unarchiveItem } from "@/app/_server/actions/checklist-item
 import { useTranslations } from "next-intl";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { useToast } from "@/app/_providers/ToastProvider";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { clampKanbanColumnWidth } from "@/app/_consts/styling";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";

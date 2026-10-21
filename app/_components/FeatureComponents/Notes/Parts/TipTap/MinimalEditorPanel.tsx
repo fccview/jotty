@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import { MinimalModeEditor } from "./MinimalModeEditor";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 
 interface MinimalEditorPanelProps {

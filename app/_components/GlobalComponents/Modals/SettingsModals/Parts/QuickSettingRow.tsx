@@ -15,7 +15,7 @@ import {
   TextFontIcon,
 } from "hugeicons-react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useQuickSetting } from "@/app/_hooks/useQuickSetting";
+import { useQuickSetting } from "@/app/_hooks/settings/useQuickSetting";
 import {
   QUICK_SETTINGS,
   QuickSettingId,
@@ -25,10 +25,9 @@ import {
   isToggleSetting,
   sliderOf,
 } from "@/app/_consts/quick-settings";
-import { VIEW_MODE_OPTIONS } from "@/app/_consts/view-modes";
-import { cn } from "@/app/_utils/global-utils";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
-import { SettingSlider } from "@/app/_components/GlobalComponents/FormElements/SettingSlider";
+import { ViewModeSwitch } from "@/app/_components/GlobalComponents/Buttons/ViewModeSwitch";
+import { SettingSlider } from "@/app/_components/FeatureComponents/Settings/Parts/SettingSlider";
 import { Dropdown, DropdownOption } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { OverrideState, QuickRow } from "./QuickRow";
 
@@ -145,39 +144,9 @@ const ThemeRow = ({ themes }: { themes: DropdownOption[] | null }) => {
 };
 
 const ViewModeRow = () => {
-  const { t, setting, override, row } = useRowBasics(QuickSettingId.VIEW_MODE);
+  const { override, row } = useRowBasics(QuickSettingId.VIEW_MODE);
 
-  return (
-    <QuickRow
-      {...row}
-      {...override}
-      below={
-        <div id={row.controlId} role="radiogroup" aria-label={row.label} className="grid grid-cols-3 gap-2">
-          {VIEW_MODE_OPTIONS.map(({ id, icon: Icon, labelKey }) => {
-            const isActive = setting.value === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                role="radio"
-                aria-checked={isActive}
-                onClick={() => setting.set(id)}
-                className={cn(
-                  "flex h-10 items-center justify-center gap-2 rounded-jotty border text-md lg:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  isActive
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground",
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {t(labelKey)}
-              </button>
-            );
-          })}
-        </div>
-      }
-    />
-  );
+  return <QuickRow {...row} {...override} below={<ViewModeSwitch id={row.controlId} isWide />} />;
 };
 
 interface QuickSettingRowProps {

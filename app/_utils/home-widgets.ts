@@ -1,7 +1,7 @@
 import { SanitisedUser } from "@/app/_types";
-import { HomeWidget } from "@/app/_types/enums";
+import { ToggleState } from "@/app/_types/enums";
 
-const isShown = (value?: HomeWidget) => value !== HomeWidget.DISABLE;
+const isShown = (value?: ToggleState) => value !== ToggleState.DISABLE;
 
 export const homeWidgets = (user: SanitisedUser | null) => ({
   welcome: isShown(user?.homeWelcome),

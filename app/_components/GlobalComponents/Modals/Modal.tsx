@@ -11,8 +11,8 @@ import {
 import { Button } from "../Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { readModalEnlarged, writeModalEnlarged } from "@/app/_utils/modal-store";
-import { EXIT_CLASS_ATTR, ghostOut } from "@/app/_utils/modal-ghost";
-import { lastFocusOutside, restoreFocus, trackFocus } from "@/app/_utils/focus-history";
+import { EXIT_CLASS_ATTR, ghostOut } from "@/app/_utils/modal/modal-ghost";
+import { lastFocusOutside, restoreFocus, trackFocus } from "@/app/_utils/modal/focus-history";
 
 export enum ModalVariant {
   DIALOG = "dialog",
@@ -96,7 +96,7 @@ const trapTab = (event: KeyboardEvent, panel: HTMLElement) => {
   const last = focusables[focusables.length - 1];
   const active = document.activeElement;
 
-  if (event.shiftKey && (active === first || !panel.contains(active))) {
+  if (event.shiftKey && (active === first || active === panel || !panel.contains(active))) {
     event.preventDefault();
     last.focus();
   } else if (!event.shiftKey && (active === last || !panel.contains(active))) {

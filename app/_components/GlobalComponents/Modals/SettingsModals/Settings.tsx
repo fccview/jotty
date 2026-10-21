@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ArrowRight01Icon } from "hugeicons-react";
-import { getAllThemes } from "@/app/_consts/themes";
 import {
   QUICK_TABS,
   QuickSettingId,
@@ -14,10 +12,10 @@ import {
 } from "@/app/_consts/quick-settings";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
+import { useThemeOptions } from "@/app/_hooks/settings/useThemeOptions";
 import { cn } from "@/app/_utils/global-utils";
 import { Modal, ModalVariant } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { DropdownOption } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { QuickSettingRow } from "./Parts/QuickSettingRow";
 
 interface SettingsModalProps {
@@ -76,22 +74,7 @@ const PanelFooter = ({ close }: { close: () => void }) => {
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const t = useTranslations();
-  const [themes, setThemes] = useState<DropdownOption[] | null>(null);
-
-  useEffect(() => {
-    if (!isOpen || themes) return;
-
-    const loadThemes = async () => {
-      try {
-        setThemes(await getAllThemes());
-      } catch (error) {
-        console.error("Failed to load themes:", error);
-        setThemes([]);
-      }
-    };
-
-    loadThemes();
-  }, [isOpen, themes]);
+  const themes = useThemeOptions(isOpen);
 
   return (
     <Modal

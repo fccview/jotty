@@ -11,7 +11,7 @@ import {
   summarizeNote,
   withNoteBody,
 } from "@/app/_utils/note-display-utils";
-import { summarizeList, TICK_COLUMNS, TICK_ROWS } from "@/app/_utils/list-summary-utils";
+import { summarizeList, TICK_COLUMNS, TICK_ROWS } from "@/app/_utils/browse/list-summary-utils";
 import { firstNotesPage, matchesListFilter } from "@/app/_utils/browse-utils";
 
 const note = (content: string, extra: Partial<Note> = {}): Note => ({

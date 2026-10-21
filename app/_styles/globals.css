@@ -1468,7 +1468,10 @@ pre.text-foreground span,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .jotty-range::-webkit-slider-thumb,
+  .jotty-range::-webkit-slider-thumb {
+    transition: none;
+  }
+
   .jotty-range::-moz-range-thumb {
     transition: none;
   }

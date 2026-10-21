@@ -6,17 +6,18 @@ import { useTranslations } from "next-intl";
 import { Category, DefaultNoteFilter, Note, SanitisedUser } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
+import { ViewMode } from "@/app/_consts/view-modes";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useBrowse } from "@/app/_hooks/useBrowse";
-import { useNoteBodies } from "@/app/_hooks/useNoteBodies";
+import { useNoteBodies } from "@/app/_hooks/browse/useNoteBodies";
 import { usePins } from "@/app/_hooks/usePins";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 import { BodyCookie, BrowseScope, DESKTOP_QUERY, NOTE_FILTERS } from "@/app/_consts/browse";
 import { matchesNoteFilter, noteLimitFor } from "@/app/_utils/browse-utils";
-import { bodyNeedOf } from "@/app/_utils/body-cookie";
+import { bodyNeedOf } from "@/app/_utils/browse/body-cookie";
 import { NoteItems } from "@/app/_components/GlobalComponents/Cards/NoteItems";
 import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
 import { BrowseShell } from "@/app/_components/FeatureComponents/Browse/BrowseShell";
@@ -83,7 +84,7 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
       browse={browse}
       onCreate={() => openCreateNoteModal()}
     >
-      {viewMode === "list" ? (
+      {viewMode === ViewMode.LIST ? (
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 items-start lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] min-[1500px]:grid-cols-[210px_minmax(0,360px)_minmax(0,1fr)]">
           <div className="hidden min-[1500px]:block">
             <CategoryFilter

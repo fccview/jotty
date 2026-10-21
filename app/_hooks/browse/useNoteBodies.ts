@@ -11,7 +11,7 @@ import {
   retryNow,
   withFailures,
   withoutFailures,
-} from "@/app/_utils/body-retry";
+} from "@/app/_utils/browse/body-retry";
 
 const bodyKey = (note: Pick<Note, "uuid" | "updatedAt">) => `${note.uuid}@${note.updatedAt}`;
 

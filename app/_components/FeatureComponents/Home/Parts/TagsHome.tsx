@@ -17,7 +17,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useMemo, useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";

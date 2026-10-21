@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { NOTE_FONT_SIZE_VAR, noteFontSizeToPx } from "@/app/_consts/styling";
 

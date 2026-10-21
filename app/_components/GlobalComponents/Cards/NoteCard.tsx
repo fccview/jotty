@@ -5,7 +5,7 @@ import { Note } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { formatShortTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { UnifiedMarkdownRenderer } from "../../FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { noteDisplayOf } from "@/app/_utils/note-display-utils";

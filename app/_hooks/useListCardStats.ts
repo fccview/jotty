@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Checklist } from "@/app/_types";
 import { isKanbanType } from "@/app/_types/enums";
-import { listSummaryOf } from "@/app/_utils/list-summary-utils";
+import { listSummaryOf } from "@/app/_utils/browse/list-summary-utils";
 
 export const useListSummary = (list: Checklist) => useMemo(() => listSummaryOf(list), [list]);
 

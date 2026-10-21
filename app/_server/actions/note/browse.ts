@@ -3,7 +3,7 @@ import { Note, SanitisedUser } from "@/app/_types";
 import { BodyCookie, DEFAULT_ITEMS_PER_PAGE, NOTE_BODIES_COOKIE } from "@/app/_consts/browse";
 import { firstNotesPage } from "@/app/_utils/browse-utils";
 import { isNoteEncrypted } from "@/app/_utils/note-display-utils";
-import { bodyNeedOf, isBodyCookie } from "@/app/_utils/body-cookie";
+import { bodyNeedOf, isBodyCookie } from "@/app/_utils/browse/body-cookie";
 import { QuickSettingId, accountValueOf } from "@/app/_consts/quick-settings";
 import { getUserNotes } from "./queries";
 

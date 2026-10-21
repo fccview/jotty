@@ -1,7 +1,7 @@
 import type { User } from "@/app/_types";
-import { HomeWidget, Modes } from "@/app/_types/enums";
+import { ToggleState, Modes } from "@/app/_types/enums";
 import { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
-import { HOME_WIDGET_KEYS } from "@/app/_consts/home";
+import { HOME_WIDGET_COPY, HOME_WIDGET_KEYS } from "@/app/_consts/home";
 import { WeekDay } from "@/app/_consts/calendar";
 import { SearchModes } from "@/app/_consts/search";
 import { VIEW_MODE_OPTIONS } from "@/app/_consts/view-modes";
@@ -27,8 +27,8 @@ export interface ChoiceField {
 }
 
 const ENABLE_DISABLE: ChoiceOption[] = [
-  { id: "enable", labelKey: "settings.enable" },
-  { id: "disable", labelKey: "settings.disable" },
+  { id: ToggleState.ENABLE, labelKey: "settings.enable" },
+  { id: ToggleState.DISABLE, labelKey: "settings.disable" },
 ];
 
 const SECONDS = [1, 5, 10, 15, 20, 25, 30];
@@ -46,13 +46,6 @@ const CHECKLIST_FILTER_LABELS: Record<(typeof CHECKLIST_FILTERS)[number], string
   pinned: "common.pinned",
   task: "checklists.taskLists",
   simple: "checklists.simpleLists",
-};
-
-const HOME_WIDGET_COPY: Record<(typeof HOME_WIDGET_KEYS)[number], { labelKey: string; descriptionKey?: string }> = {
-  homeWelcome: { labelKey: "settings.homeWelcome" },
-  homePickUp: { labelKey: "settings.homePickUp" },
-  homePinboard: { labelKey: "settings.homePinboard", descriptionKey: "settings.homePinboardDescription" },
-  homeTags: { labelKey: "settings.homeTags" },
 };
 
 const field = (def: Omit<ChoiceField, "defaultValue">): ChoiceField => ({
@@ -140,8 +133,8 @@ export const GENERAL_FIELDS: ChoiceField[] = [
     descriptionKey: "settings.hideConnectionIndicatorDescription",
     placeholderKey: "settings.selectConnectionIndicator",
     options: [
-      { id: "disable", labelKey: "settings.showIndicator" },
-      { id: "enable", labelKey: "settings.hideIndicator" },
+      { id: ToggleState.DISABLE, labelKey: "settings.showIndicator" },
+      { id: ToggleState.ENABLE, labelKey: "settings.hideIndicator" },
     ],
   }),
   field({
@@ -268,8 +261,8 @@ export const NOTE_FIELDS: ChoiceField[] = [
     descriptionKey: "settings.minimalModeDescription",
     placeholderKey: "settings.selectMinimalMode",
     options: [
-      { id: "disable", labelKey: "settings.useRichTextEditor" },
-      { id: "enable", labelKey: "settings.markdownOnly" },
+      { id: ToggleState.DISABLE, labelKey: "settings.useRichTextEditor" },
+      { id: ToggleState.ENABLE, labelKey: "settings.markdownOnly" },
     ],
   }),
   field({
@@ -287,8 +280,8 @@ export const NOTE_FIELDS: ChoiceField[] = [
     descriptionKey: "settings.quickCreateNotesDescription",
     placeholderKey: "settings.selectQuickCreateNotes",
     options: [
-      { id: "disable", labelKey: "settings.quickCreateNotesShowModal" },
-      { id: "enable", labelKey: "settings.quickCreateNotesSkipModal" },
+      { id: ToggleState.DISABLE, labelKey: "settings.quickCreateNotesShowModal" },
+      { id: ToggleState.ENABLE, labelKey: "settings.quickCreateNotesSkipModal" },
     ],
   }),
 ];
@@ -357,8 +350,8 @@ export const HOME_WIDGET_FIELDS: ChoiceField[] = HOME_WIDGET_KEYS.map((key) =>
     labelKey: HOME_WIDGET_COPY[key].labelKey,
     descriptionKey: HOME_WIDGET_COPY[key].descriptionKey,
     options: [
-      { id: HomeWidget.ENABLE, labelKey: "common.enabled" },
-      { id: HomeWidget.DISABLE, labelKey: "common.disabled" },
+      { id: ToggleState.ENABLE, labelKey: "common.enabled" },
+      { id: ToggleState.DISABLE, labelKey: "common.disabled" },
     ],
   }),
 );
@@ -371,8 +364,8 @@ export const KANBAN_FIELDS: ChoiceField[] = [
     descriptionKey: "settings.hideStatusOnCardsDescription",
     placeholderKey: "settings.selectStatusOnCards",
     options: [
-      { id: "disable", labelKey: "settings.showStatusOnCards" },
-      { id: "enable", labelKey: "settings.hideStatusOnCards" },
+      { id: ToggleState.DISABLE, labelKey: "settings.showStatusOnCards" },
+      { id: ToggleState.ENABLE, labelKey: "settings.hideStatusOnCards" },
     ],
   }),
   field({
@@ -382,8 +375,8 @@ export const KANBAN_FIELDS: ChoiceField[] = [
     descriptionKey: "settings.hideMobileStatusDropdownDescription",
     placeholderKey: "settings.selectMobileStatusDropdown",
     options: [
-      { id: "disable", labelKey: "settings.showMobileStatusDropdown" },
-      { id: "enable", labelKey: "settings.hideMobileStatusDropdown" },
+      { id: ToggleState.DISABLE, labelKey: "settings.showMobileStatusDropdown" },
+      { id: ToggleState.ENABLE, labelKey: "settings.hideMobileStatusDropdown" },
     ],
   }),
   field({
@@ -393,8 +386,8 @@ export const KANBAN_FIELDS: ChoiceField[] = [
     descriptionKey: "settings.hideTimeTrackingOnCardsDescription",
     placeholderKey: "settings.selectTimeTrackingOnCards",
     options: [
-      { id: "disable", labelKey: "settings.showTimeTrackingOnCards" },
-      { id: "enable", labelKey: "settings.hideTimeTrackingOnCards" },
+      { id: ToggleState.DISABLE, labelKey: "settings.showTimeTrackingOnCards" },
+      { id: ToggleState.ENABLE, labelKey: "settings.hideTimeTrackingOnCards" },
     ],
   }),
 ];

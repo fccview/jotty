@@ -8,7 +8,7 @@ import {
   retryNow,
   withFailures,
   withoutFailures,
-} from "@/app/_utils/body-retry";
+} from "@/app/_utils/browse/body-retry";
 
 describe("note body retry backoff", () => {
   it("doubles the wait per attempt up to a ceiling", () => {

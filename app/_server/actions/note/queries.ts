@@ -16,7 +16,7 @@ import {
   extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
-import { readNotesRecursively, type ListedNote } from "./readers";
+import { readNotesRecursively, type ListedNote, type NoteReadOptions } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { isDebugFlag } from "@/app/_utils/env-utils";
@@ -38,13 +38,7 @@ export const getAllNotes = async (allowArchived?: boolean) => {
       const userDir = NOTES_DIR(user.username);
 
       try {
-        const userDocs = await readNotesRecursively(
-          userDir,
-          "",
-          user.username,
-          allowArchived,
-          false,
-        );
+        const userDocs = await readNotesRecursively(userDir, user.username, { allowArchived });
         allDocs.push(...userDocs);
       } catch (error) {
         continue;
@@ -224,33 +218,18 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       ? cacheKeyOf(Modes.NOTES, resolvedDir)
       : null;
 
+    const readOptions: NoteReadOptions = {
+      allowArchived,
+      isRaw,
+      metadataOnly,
+      excerptLength,
+      summarize: isSummary,
+    };
+    const readOwn = () => readNotesRecursively(resolvedDir, currentUser.username, readOptions);
+
     const cached: ListedNote[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, resolvedDir, () =>
-        readNotesRecursively(
-          resolvedDir,
-          "",
-          currentUser.username,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-          excerptLength,
-          undefined,
-          undefined,
-          isSummary,
-        ),
-      )
-      : await readNotesRecursively(
-        resolvedDir,
-        "",
-        currentUser.username,
-        allowArchived,
-        isRaw,
-        metadataOnly,
-        excerptLength,
-        undefined,
-        undefined,
-        isSummary,
-      );
+      ? await getOrCompute(ownCacheKey, resolvedDir, readOwn)
+      : await readOwn();
 
     const notes: ListedNote[] = dropClashes(cached, resolvedDir);
 
@@ -280,33 +259,10 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
           ? cacheKeyOf(Modes.NOTES, ownerAbsDir)
           : null;
 
+        const readOwner = () => readNotesRecursively(ownerDir, mount.owner, readOptions);
         const ownerNotes = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerAbsDir, () =>
-            readNotesRecursively(
-              ownerDir,
-              "",
-              mount.owner,
-              allowArchived,
-              isRaw,
-              metadataOnly,
-              excerptLength,
-              undefined,
-              undefined,
-              isSummary,
-            ),
-          )
-          : await readNotesRecursively(
-            ownerDir,
-            "",
-            mount.owner,
-            allowArchived,
-            isRaw,
-            metadataOnly,
-            excerptLength,
-            undefined,
-            undefined,
-            isSummary,
-          );
+          ? await getOrCompute(ownerCacheKey, ownerAbsDir, readOwner)
+          : await readOwner();
 
         const shared = await mountedItems(
           Modes.NOTES,

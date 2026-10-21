@@ -17,12 +17,16 @@ import {
   extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
-import { readListsRecursively, type ChecklistReadResult } from "./readers";
+import {
+  readListsRecursively,
+  type ChecklistReadResult,
+  type ListReadOptions,
+} from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
 import { countItems } from "@/app/_utils/checklist-count-utils";
-import { summarizeList } from "@/app/_utils/list-summary-utils";
+import { summarizeList } from "@/app/_utils/browse/list-summary-utils";
 import { isDebugFlag } from "@/app/_utils/env-utils";
 import {
   getOrCompute,
@@ -76,31 +80,17 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       ? cacheKeyOf(Modes.CHECKLISTS, absUserDir)
       : null;
 
+    const readOptions: ListReadOptions = {
+      allowArchived,
+      isRaw,
+      metadataOnly,
+      summarize: isSummary,
+    };
+    const readOwn = () => readListsRecursively(userDir, currentUser.username, readOptions);
+
     const cached: ChecklistReadResult[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, absUserDir, () =>
-        readListsRecursively(
-          userDir,
-          "",
-          currentUser.username,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-          undefined,
-          undefined,
-          isSummary,
-        ),
-      )
-      : await readListsRecursively(
-        userDir,
-        "",
-        currentUser.username,
-        allowArchived,
-        isRaw,
-        metadataOnly,
-        undefined,
-        undefined,
-        isSummary,
-      );
+      ? await getOrCompute(ownCacheKey, absUserDir, readOwn)
+      : await readOwn();
 
     let lists: ChecklistReadResult[] = dropClashes(cached, absUserDir);
 
@@ -132,31 +122,10 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           ? cacheKeyOf(Modes.CHECKLISTS, ownerDir)
           : null;
 
+        const readOwner = () => readListsRecursively(ownerDir, mount.owner, readOptions);
         const ownerLists = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerDir, () =>
-            readListsRecursively(
-              ownerDir,
-              "",
-              mount.owner,
-              allowArchived,
-              isRaw,
-              metadataOnly,
-              undefined,
-              undefined,
-              isSummary,
-            ),
-          )
-          : await readListsRecursively(
-            ownerDir,
-            "",
-            mount.owner,
-            allowArchived,
-            isRaw,
-            metadataOnly,
-            undefined,
-            undefined,
-            isSummary,
-          );
+          ? await getOrCompute(ownerCacheKey, ownerDir, readOwner)
+          : await readOwner();
 
         const shared = await mountedItems(
           Modes.CHECKLISTS,
@@ -408,13 +377,10 @@ export const getAllLists = async (
       );
 
       try {
-        const userLists = await readListsRecursively(
-          userDir,
-          "",
-          user.username,
+        const userLists = await readListsRecursively(userDir, user.username, {
           allowArchived,
           isRaw,
-        );
+        });
         allLists.push(...(userLists as Checklist[]));
       } catch (error) {
         continue;

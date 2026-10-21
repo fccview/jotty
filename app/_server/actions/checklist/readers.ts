@@ -27,7 +27,7 @@ import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
-import { isRecurringList, summarizeList } from "@/app/_utils/list-summary-utils";
+import { isRecurringList, summarizeList } from "@/app/_utils/browse/list-summary-utils";
 import { FileStamp, STAT_PRINTF, parseStatLine, summaryMemo } from "@/app/_server/actions/lib/summary-memo";
 
 const debugCrud = isDebugFlag("crud");
@@ -45,17 +45,29 @@ const summed = (list: Checklist): Checklist =>
 const kept = (filePath: string, stats: FileStamp, list: Checklist): ChecklistReadResult =>
   list.summary ? memo.remember(filePath, stats, list) : list;
 
+export interface ListReadOptions {
+  basePath?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  metadataOnly?: boolean;
+  metadataCache?: Map<string, Record<string, unknown>>;
+  statsCache?: Map<string, FileStatsEntry>;
+  summarize?: boolean;
+}
+
 export const readListsRecursively = async (
   dir: string,
-  basePath: string = "",
   owner: string,
-  allowArchived?: boolean,
-  isRaw: boolean = false,
-  metadataOnly: boolean = false,
-  metadataCache?: Map<string, Record<string, unknown>>,
-  statsCache?: Map<string, FileStatsEntry>,
-  summarize: boolean = false,
+  options: ListReadOptions = {},
 ): Promise<ChecklistReadResult[]> => {
+  const {
+    basePath = "",
+    allowArchived,
+    isRaw = false,
+    metadataOnly = false,
+    summarize = false,
+  } = options;
+  let { metadataCache, statsCache } = options;
   if (basePath === "") {
     statsCache = statsCache ?? new Map();
     metadataCache = metadataCache ?? new Map();
@@ -215,17 +227,12 @@ export const readListsRecursively = async (
 
     const [currentFiles, subLists] = await Promise.all([
       Promise.all(filePromises),
-      readListsRecursively(
-        categoryDir,
-        categoryPath,
-        owner,
-        allowArchived,
-        isRaw,
-        metadataOnly,
+      readListsRecursively(categoryDir, owner, {
+        ...options,
+        basePath: categoryPath,
         metadataCache,
         statsCache,
-        summarize,
-      ),
+      }),
     ]);
     return [
       ...orderByUuids(

@@ -29,7 +29,11 @@ export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreview
   const t = useTranslations();
   const trail = categoryTrail(note.category, t("notes.uncategorized"));
   const isEncrypted = isNoteEncrypted(note);
-  const labels = useNoteStatLabels(isEncrypted ? "" : note.content || "");
+  const hasBody = hasNoteBody(note);
+  const labels = useNoteStatLabels(
+    isEncrypted || !hasBody ? "" : note.content || "",
+    hasBody ? undefined : note.wordCount ?? 0,
+  );
   const pinLabel = usePinLabel(isPinned);
 
   return (
@@ -76,7 +80,7 @@ export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreview
       <div className="px-6 py-5 max-h-[55vh] overflow-y-auto">
         {isEncrypted ? (
           <SealedPanel size={SealedSize.LG} />
-        ) : hasNoteBody(note) ? (
+        ) : hasBody ? (
           <UnifiedMarkdownRenderer content={note.content || ""} className="max-w-none" />
         ) : (
           <p className="text-sm text-muted-foreground leading-relaxed">{note.excerpt}</p>

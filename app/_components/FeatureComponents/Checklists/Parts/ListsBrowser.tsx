@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { matchesListFilter } from "@/app/_utils/browse-utils";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";

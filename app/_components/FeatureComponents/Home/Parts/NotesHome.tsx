@@ -6,7 +6,7 @@ import { Note, SanitisedUser, TagInfo } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { CreatePrefill } from "@/app/_providers/ShortcutsProvider";
-import { useQuickValue } from "@/app/_hooks/useQuickSetting";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { newestFirst } from "@/app/_utils/order-utils";
 import { getNotesForDisplay } from "@/app/_server/actions/note";

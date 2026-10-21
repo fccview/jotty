@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Dropdown, DropdownOption } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
-import { DEFAULT_OPTION_ID, optionFromRaw, withDefaultOption } from "@/app/_utils/preference-utils";
+import { DEFAULT_OPTION_ID, optionFromRaw, withDefaultOption } from "@/app/_utils/settings/preference-utils";
 
 export type PreferenceValue = string | number;
 

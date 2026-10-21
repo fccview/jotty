@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
-import { SettingSlider } from "@/app/_components/GlobalComponents/FormElements/SettingSlider";
+import { SettingSlider } from "@/app/_components/FeatureComponents/Settings/Parts/SettingSlider";
 import { QUICK_SETTINGS, SliderSettingId, sliderOf } from "@/app/_consts/quick-settings";
 
 interface PreferenceSliderProps {

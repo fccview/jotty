@@ -1,4 +1,5 @@
 import type { User, UserSettingsPatch } from "@/app/_types";
+import { ToggleState } from "@/app/_types/enums";
 import {
   BORDER_RADIUS_STEP,
   DEFAULT_KANBAN_COLUMN_WIDTH,
@@ -100,12 +101,11 @@ type QuickSettingsRegistry = {
   [K in QuickSettingId]: QuickSettingDef<K, keyof User>;
 };
 
-type ToggleValue = "enable" | "disable";
-
 const COMPACT_COLUMN_MAX = 240;
 const COMFORTABLE_COLUMN_MAX = 360;
 
-const toToggle = (value: boolean): ToggleValue => (value ? "enable" : "disable");
+const toToggle = (value: boolean): ToggleState =>
+  value ? ToggleState.ENABLE : ToggleState.DISABLE;
 
 const asBoolean = (value: unknown): boolean | undefined =>
   typeof value === "boolean" ? value : undefined;
@@ -219,7 +219,7 @@ export const QUICK_SETTINGS: QuickSettingsRegistry = {
     tab: QuickTab.NOTES,
     labelKey: "quickSettings.labels.cardPreview",
     control: { kind: QuickControl.TOGGLE },
-    fromUser: (user) => user?.notesCardPreview === "enable",
+    fromUser: (user) => user?.notesCardPreview === ToggleState.ENABLE,
     toUser: toToggle,
     sanitise: asBoolean,
   }),
@@ -228,7 +228,7 @@ export const QUICK_SETTINGS: QuickSettingsRegistry = {
     tab: QuickTab.NOTES,
     labelKey: "quickSettings.labels.compactMode",
     control: { kind: QuickControl.TOGGLE },
-    fromUser: (user) => user?.notesCompactMode === "enable",
+    fromUser: (user) => user?.notesCompactMode === ToggleState.ENABLE,
     toUser: toToggle,
     sanitise: asBoolean,
   }),
@@ -249,7 +249,7 @@ export const QUICK_SETTINGS: QuickSettingsRegistry = {
     tab: QuickTab.LISTS,
     labelKey: "quickSettings.labels.showEmojis",
     control: { kind: QuickControl.TOGGLE },
-    fromUser: (user) => user?.showChecklistEmojis !== "disable",
+    fromUser: (user) => user?.showChecklistEmojis !== ToggleState.DISABLE,
     toUser: toToggle,
     sanitise: asBoolean,
   }),
@@ -261,7 +261,7 @@ export const QUICK_SETTINGS: QuickSettingsRegistry = {
     tab: QuickTab.LISTS,
     labelKey: "quickSettings.labels.completedSuggestions",
     control: { kind: QuickControl.TOGGLE },
-    fromUser: (user) => user?.showCompletedSuggestions !== "disable",
+    fromUser: (user) => user?.showCompletedSuggestions !== ToggleState.DISABLE,
     toUser: toToggle,
     sanitise: asBoolean,
   }),

@@ -30,7 +30,7 @@ export const ItemViews = <T,>({
   renderRow,
   renderTile,
 }: ItemViewsProps<T>) => {
-  if (view === "list") {
+  if (view === ViewMode.LIST) {
     return (
       <div className="space-y-3">
         {items.map((item) => (
@@ -40,7 +40,7 @@ export const ItemViews = <T,>({
     );
   }
 
-  if (view === "grid") {
+  if (view === ViewMode.GRID) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {items.map((item) => (

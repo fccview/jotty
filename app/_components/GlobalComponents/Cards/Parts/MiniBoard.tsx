@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { ItemStub, ListSummary } from "@/app/_types";
 import { getPriorityDotColor } from "@/app/_utils/kanban";
-import { MINI_BOARD_ROWS } from "@/app/_utils/list-summary-utils";
+import { MINI_BOARD_ROWS } from "@/app/_utils/browse/list-summary-utils";
 import { statusColor } from "@/app/_consts/kanban";
 import { SMALL_RADIUS_CLASS } from "@/app/_consts/styling";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";

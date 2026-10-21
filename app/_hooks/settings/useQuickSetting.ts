@@ -1,10 +1,8 @@
 import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useToast } from "@/app/_providers/ToastProvider";
 import { useSettings } from "@/app/_utils/settings-store";
-import { updateUserSettings } from "@/app/_server/actions/users";
+import { useSettingSaver } from "@/app/_hooks/settings/useSettingSaver";
 import {
   QuickSettingId,
   QuickSettingValues,
@@ -20,9 +18,8 @@ export const useQuickValue = <K extends QuickSettingId>(id: K): QuickSettingValu
 
 export const useQuickSetting = <K extends QuickSettingId>(id: K) => {
   const t = useTranslations();
-  const router = useRouter();
-  const { showToast } = useToast();
-  const { user, setUser } = useAppMode();
+  const persist = useSettingSaver();
+  const { user } = useAppMode();
   const override = useSettings((state) => state.overrides[id]);
   const setOverride = useSettings((state) => state.setOverride);
   const clearOverride = useSettings((state) => state.clearOverride);
@@ -41,32 +38,12 @@ export const useQuickSetting = <K extends QuickSettingId>(id: K) => {
 
   const saveToAccount = useCallback(async () => {
     setIsSaving(true);
-    try {
-      const result = await updateUserSettings(accountPatch(id, value, user));
-      if (!result.success || !result.data?.user) {
-        console.error(`Failed to save quick setting ${id}:`, result.error);
-        showToast({
-          type: "error",
-          title: t("settings.settingsSaveFailed"),
-          message: t("settings.settingsSaveFailedDescription"),
-        });
-        return;
-      }
-
-      setUser(result.data.user);
-      showToast({ type: "success", title: t("quickSettings.savedToAccount") });
-      router.refresh();
-    } catch (error) {
-      console.error(`Failed to save quick setting ${id}:`, error);
-      showToast({
-        type: "error",
-        title: t("settings.settingsSaveFailed"),
-        message: t("settings.settingsSaveFailedDescription"),
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  }, [id, value, user, setUser, showToast, t, router]);
+    await persist(accountPatch(id, value, user), {
+      label: `quick setting ${id}`,
+      saved: { title: t("quickSettings.savedToAccount") },
+    });
+    setIsSaving(false);
+  }, [id, value, user, persist, t]);
 
   return { value, accountValue, isOverridden, set, reset, saveToAccount, isSaving };
 };

@@ -58,7 +58,7 @@ describe("browse summaries", () => {
         : `---\nuuid: ${SEALED_UUID}\ntitle: Sealed\nencrypted: true\n---\n-----BEGIN PGP MESSAGE-----\nabc`,
     );
 
-    const notes = await readNotesRecursively(dir, "Work", "a", false, false, false, undefined, undefined, undefined, true);
+    const notes = await readNotesRecursively(dir, "a", { basePath: "Work", summarize: true });
     const plain = notes.find((note) => note.uuid === NOTE_UUID)!;
     const sealed = notes.find((note) => note.uuid === SEALED_UUID)!;
 
@@ -78,7 +78,7 @@ describe("browse summaries", () => {
     mockServerReadDir.mockResolvedValue([file("plain.md")]);
     mockServerReadFile.mockResolvedValue(`---\nuuid: ${NOTE_UUID}\ntitle: Plain\n---\nfirst`);
 
-    const read = () => readNotesRecursively(dir, "", "b", false, false, false, undefined, undefined, undefined, true);
+    const read = () => readNotesRecursively(dir, "b", { summarize: true });
 
     await read();
     await read();
@@ -103,7 +103,7 @@ describe("browse summaries", () => {
         : `---\nuuid: ${RECUR_UUID}\ntitle: Recur\nchecklistType: simple\n---\n- [ ] water plants | recurrence:{"rrule":"FREQ=DAILY","dtstart":"2026-01-01"}`,
     );
 
-    const lists = await readListsRecursively(dir, "", "c", false, false, false, undefined, undefined, true);
+    const lists = await readListsRecursively(dir, "c", { summarize: true });
     const plain = lists.find((list) => list.uuid === LIST_UUID)!;
 
     expect(plain.items).toEqual([]);

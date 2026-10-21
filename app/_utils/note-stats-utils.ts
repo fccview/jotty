@@ -2,6 +2,9 @@ import { CARD_PLAIN_RULES, stripMarkdown } from "@/app/_utils/markdown/plain-tex
 
 const WORDS_PER_MINUTE = 225;
 
+export const readingTimeOf = (wordCount: number): number =>
+  Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
+
 const tableTextOf = (content: string): string =>
   (content.match(/\|(.+)\|/g) || [])
     .filter((row) => !row.match(/^\|[\s-:|]+\|$/))
@@ -30,6 +33,6 @@ export const noteStats = (content: string) => {
     excerpt: plainText.replace(/\s+/g, " ").trim(),
     wordCount: words.length,
     charCount: plainText.replace(/\s+/g, "").length,
-    readingTime: Math.max(1, Math.ceil(words.length / WORDS_PER_MINUTE)),
+    readingTime: readingTimeOf(words.length),
   };
 };

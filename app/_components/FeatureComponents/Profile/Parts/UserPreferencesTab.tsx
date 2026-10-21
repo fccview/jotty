@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type JSX } from "react";
+import { useState, type JSX } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -14,15 +14,14 @@ import {
   NOTE_LEAD_FIELDS,
 } from "@/app/_consts/preference-fields";
 import { SETTING_DEFAULTS } from "@/app/_consts/user-settings";
-import { usePreferenceSettings } from "@/app/_hooks/usePreferenceSettings";
+import { usePreferenceSettings } from "@/app/_hooks/settings/usePreferenceSettings";
+import { useThemeOptions } from "@/app/_hooks/settings/useThemeOptions";
 import { PreferenceSlider } from "./PreferenceSlider";
 import { PreferenceSelect } from "./PreferenceSelect";
 import { PreferenceFields } from "./PreferenceFields";
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { Label } from "@/app/_components/GlobalComponents/FormElements/label";
 import { FormWrapper } from "@/app/_components/GlobalComponents/FormElements/FormWrapper";
-import { DropdownOption } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { getAllThemes } from "@/app/_consts/themes";
 import { DeleteAccountModal } from "@/app/_components/GlobalComponents/Modals/UserModals/DeleteAccountModal";
 
 interface SettingsTabProps {
@@ -44,22 +43,7 @@ export const UserPreferencesTab = ({
   const { isDemoMode, appSettings } = useAppMode();
   const { current, errors, change, slide, commit } = usePreferenceSettings();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [themeOptions, setThemeOptions] = useState<DropdownOption[] | null>(null);
-
-  useEffect(() => {
-    const loadThemes = async () => {
-      try {
-        const themes = await getAllThemes();
-        setThemeOptions(
-          themes.map((theme) => ({ id: theme.id, name: theme.name, icon: theme.icon, colors: theme.colors })),
-        );
-      } catch (error) {
-        console.error("Failed to load themes:", error);
-        setThemeOptions([]);
-      }
-    };
-    loadThemes();
-  }, []);
+  const themeOptions = useThemeOptions();
 
   const sliderProps = (id: SliderSettingId) => {
     const key = QUICK_SETTINGS[id].userKey;

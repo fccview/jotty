@@ -4,7 +4,7 @@ import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { isKanbanType } from "@/app/_types/enums";
 import { isInCategory } from "@/app/_utils/category-path-utils";
 import { newestFirst, oldestFirst } from "@/app/_utils/order-utils";
-import { listSummaryOf } from "@/app/_utils/list-summary-utils";
+import { listSummaryOf } from "@/app/_utils/browse/list-summary-utils";
 
 export interface Browsable {
   title: string;

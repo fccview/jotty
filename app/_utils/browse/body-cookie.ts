@@ -10,8 +10,8 @@ interface BodySettings {
 }
 
 export const bodyNeedOf = ({ showMarkdownPreview, viewMode, isDesktop }: BodySettings): BodyCookie => {
-  if (viewMode === "card" && showMarkdownPreview) return BodyCookie.ON;
-  if (viewMode === "list" && isDesktop) return BodyCookie.SELECTED;
+  if (viewMode === ViewMode.CARD && showMarkdownPreview) return BodyCookie.ON;
+  if (viewMode === ViewMode.LIST && isDesktop) return BodyCookie.SELECTED;
   return BodyCookie.OFF;
 };
 

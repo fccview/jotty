@@ -114,12 +114,20 @@ export function dropByPrefix(prefix: string) {
   });
 }
 
-export function metaCacheKey(type: Modes, dir: string) {
+enum CacheFlavour {
+  META = "meta",
+  SUMMARY = "summary",
+}
+
+const cacheKeyOf = (flavour: CacheFlavour, type: Modes, dir: string) => {
   const abs = path.isAbsolute(dir) ? dir : path.join(process.cwd(), dir);
-  return `${type}-meta:${abs}`;
+  return `${type}-${flavour}:${abs}`;
+};
+
+export function metaCacheKey(type: Modes, dir: string) {
+  return cacheKeyOf(CacheFlavour.META, type, dir);
 }
 
 export function summaryCacheKey(type: Modes, dir: string) {
-  const abs = path.isAbsolute(dir) ? dir : path.join(process.cwd(), dir);
-  return `${type}-summary:${abs}`;
+  return cacheKeyOf(CacheFlavour.SUMMARY, type, dir);
 }

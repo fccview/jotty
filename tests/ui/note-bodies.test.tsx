@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { act, createElement, useEffect } from "react";
 import { createRoot, Root } from "react-dom/client";
 import type { Note } from "@/app/_types";
-import { RETRY_BASE_MS } from "@/app/_utils/body-retry";
+import { RETRY_BASE_MS } from "@/app/_utils/browse/body-retry";
 
 const mockRead = vi.fn();
 
@@ -11,7 +11,7 @@ vi.mock("@/app/_server/actions/note", () => ({
   readNoteBodies: (uuids: string[]) => mockRead(uuids),
 }));
 
-import { useNoteBodies } from "@/app/_hooks/useNoteBodies";
+import { useNoteBodies } from "@/app/_hooks/browse/useNoteBodies";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 

@@ -20,31 +20,16 @@ import {
   normaliseKanbanColumnWidth,
   normaliseNoteFontSize,
 } from "@/app/_consts/styling";
-import { VIEW_MODES } from "@/app/_consts/view-modes";
+import { settingErrorOf } from "@/app/_schemas/setting-checks";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 
-const TOGGLE_VALUES: ReadonlyArray<unknown> = ["enable", "disable"];
-
-const _isFiniteNumber = (value: unknown): value is number =>
-  typeof value === "number" && Number.isFinite(value);
-
-const _keepOneOf = (
-  allowed: Partial<User>,
-  key: keyof User,
-  values: ReadonlyArray<unknown>,
-) => {
-  if (allowed[key] !== undefined && !values.includes(allowed[key])) {
-    delete allowed[key];
+const _clampLooks = (allowed: Partial<User>) => {
+  if (allowed.notesFontSize !== undefined) {
+    allowed.notesFontSize = normaliseNoteFontSize(Number(allowed.notesFontSize));
   }
-};
 
-const _normaliseLooks = (allowed: Partial<User>) => {
-  if (allowed.preferredBorderRadius !== undefined) {
-    if (_isFiniteNumber(allowed.preferredBorderRadius)) {
-      allowed.preferredBorderRadius = clampRadius(allowed.preferredBorderRadius);
-    } else {
-      delete allowed.preferredBorderRadius;
-    }
+  if (typeof allowed.preferredBorderRadius === "number") {
+    allowed.preferredBorderRadius = clampRadius(allowed.preferredBorderRadius);
   }
 
   if (allowed.kanbanColumnWidth !== undefined) {
@@ -52,10 +37,12 @@ const _normaliseLooks = (allowed: Partial<User>) => {
       Number(allowed.kanbanColumnWidth),
     );
   }
+};
 
-  _keepOneOf(allowed, "browseViewMode", VIEW_MODES);
-  _keepOneOf(allowed, "notesCardPreview", TOGGLE_VALUES);
-  _keepOneOf(allowed, "notesCompactMode", TOGGLE_VALUES);
+const _dropInvalid = (allowed: Partial<User>) => {
+  (Object.keys(allowed) as (keyof User)[]).forEach((key) => {
+    if (settingErrorOf(key, allowed[key]) !== null) delete allowed[key];
+  });
 };
 
 const clearedKeys = (settings: UserSettingsPatch): (keyof User)[] =>
@@ -74,11 +61,8 @@ const keepAllowed = (
     }
   }
 
-  if (allowed.notesFontSize !== undefined) {
-    allowed.notesFontSize = normaliseNoteFontSize(Number(allowed.notesFontSize));
-  }
-
-  _normaliseLooks(allowed);
+  _clampLooks(allowed);
+  _dropInvalid(allowed);
 
   if (settings.encryptionSettings) {
     allowed.encryptionSettings = mergeCrypto(

@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
-import { listSummaryOf } from "@/app/_utils/list-summary-utils";
+import { listSummaryOf } from "@/app/_utils/browse/list-summary-utils";
 import { ListsBrowser } from "@/app/_components/FeatureComponents/Checklists/Parts/ListsBrowser";
 import { BrowseScope } from "@/app/_consts/browse";
 
