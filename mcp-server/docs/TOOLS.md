@@ -309,7 +309,7 @@ Cards that have an agent, from every board you can see, sub-cards included. Comp
 
 ## Links and shares
 
-The assistant can follow the links between items and see what's shared.
+The assistant can follow the links between items, see what's shared and share your items.
 
 | Tool | What it does | Arguments |
 |---|---|---|
@@ -318,7 +318,9 @@ The assistant can follow the links between items and see what's shared.
 | `list_orphans` | Items with no links. That's normal, it isn't a to-do list | `type`, `limit`, `offset` |
 | `connect_items` | Links a note to another item it relates to | `source`, `target`, `style` (`append` or `mention`) |
 | `disconnect_items` | Takes a note's links to an item back out, and closes the gap they leave | `source`, `target` |
-| `list_shares` | What other people shared with you and what you shared, with who can do what. Read only | `direction` (`withMe` or `byMe`), `type`, `limit`, `offset` |
+| `list_shares` | What other people shared with you and what you shared, with who can do what | `direction` (`withMe` or `byMe`), `type`, `item`, `user`, `limit`, `offset` |
+| `share_item` | Shares a note or checklist you own with one person, or replaces what they had. `public` makes a read-only link | `itemId`, `username`, `permission` (`r`, `rw` or `rwd`) |
+| `unshare_item` | Takes one person's access away, or turns the public link off with `public` | `itemId`, `username` |
 
 ```json
 { "source": "3b9d6f2e-8a41-4c7e-b5d0-91f2a6c4e8b7", "target": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "style": "append" }

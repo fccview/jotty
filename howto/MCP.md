@@ -91,7 +91,7 @@ claude mcp add jotty -e JOTTY_URL=https://jotty.example.com -e JOTTY_API_KEY=ck_
 
 Each everyday action has its own tool, named after its API operation in snake case, so `listNotes` becomes `list_notes`. They cover search, categories, the usage summary, notes, checklists and their items, and the common board actions.
 
-The assistant can also follow your [links](BRAIN.md) and see what's shared:
+The assistant can also follow your [links](BRAIN.md), see what's shared and share your items:
 
 | Tool | What it does |
 |---|---|
@@ -100,7 +100,9 @@ The assistant can also follow your [links](BRAIN.md) and see what's shared:
 | `list_orphans` | Items with no links. That's normal, it isn't a to-do list |
 | `connect_items` | Links a note to another item it relates to |
 | `disconnect_items` | Takes a note's links to an item back out, and closes the gap they leave |
-| `list_shares` | What other people shared with you and what you shared, with who can do what. Read only |
+| `list_shares` | What other people shared with you and what you shared, with who can do what. Filter it to one item or one person |
+| `share_item` | Shares a note or checklist you own with someone, as read, edit or edit and delete, or makes a read-only public link |
+| `unshare_item` | Takes someone's access to your note or checklist away, or turns its public link off |
 
 These tools change part of a note without resending the rest. Everything else in the file stays byte for byte, line endings included.
 

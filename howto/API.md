@@ -117,6 +117,34 @@ Refusals come back as `400` with one of these messages:
 
 Board and card responses also carry the new fields: `specNote` on boards and `agent` on cards, left out when they aren't set.
 
+## Sharing
+
+You can share your notes and checklists from a script, the same way the share button does. Only the owner or an admin can change who holds an item.
+
+| Endpoint | What it does |
+|---|---|
+| `GET /api/shares` | What other people shared with you and what you shared. Filter with `direction` (`withMe` or `byMe`), `type`, `item` (a uuid) and `user` (a username) |
+| `PUT /api/shares/{itemId}` | Shares the item with `{ "username": "alice", "permission": "rw" }`, or replaces what alice already had. `permission` is `r` to read, `rw` to also edit, `rwd` to also delete, and defaults to `r`. Use `public` as the username for a read-only link anyone can open |
+| `DELETE /api/shares/{itemId}/{username}` | Takes that person's access away, or turns the public link off with `public`. Removing somebody who doesn't hold it changes nothing |
+
+Both answer with who holds the item afterwards:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "9f1c2a7e-4b3d-4c8e-9a61-2f5d7e0b8c14",
+    "type": "note",
+    "isPublic": false,
+    "sharedWith": [
+      { "username": "alice", "permissions": { "canRead": true, "canEdit": true, "canDelete": false } }
+    ]
+  }
+}
+```
+
+The person you share with gets a notification, and the item shows up in their shared items. Editing a shared item through the API keeps its shares. Sharing a whole folder is still done in Jotty itself.
+
 ## Errors
 
 Errors come back as JSON with the status code telling you what went wrong:

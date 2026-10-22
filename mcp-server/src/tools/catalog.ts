@@ -96,6 +96,22 @@ export const CATALOG: CatalogEntry[] = [
     },
   },
   { id: "listShares", defaults: { limit: 25 } },
+  {
+    id: "shareItem",
+    hints: {
+      [ToolErrorKind.Input]:
+        "username is an existing user's exact username, or public for a read-only link. permission is r, rw or rwd. You can't share with yourself.",
+      [ToolErrorKind.Forbidden]: "Only the item's owner or an admin can change who it's shared with.",
+      [ToolErrorKind.NotFound]: "itemId is the uuid of a note or checklist you can see. search or list_notes gives it.",
+    },
+  },
+  {
+    id: "unshareItem",
+    hints: {
+      [ToolErrorKind.Forbidden]: "Only the item's owner or an admin can change who it's shared with.",
+      [ToolErrorKind.NotFound]: "itemId is the uuid of a note or checklist you can see. list_shares with item shows who holds it.",
+    },
+  },
   { id: "listDuplicateUuids" },
   { id: "repairDuplicateUuid" },
 ];

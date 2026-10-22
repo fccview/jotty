@@ -11,9 +11,9 @@ import {
   LinkStyles,
   RelationsStatus,
 } from "@/app/_consts/relations";
-import { ShareDirections } from "@/app/_consts/sharing";
-import { ItemTypes } from "@/app/_types/enums";
-import { pageFields, required, totalField, uuidParam } from "./common";
+import { PUBLIC_USER, ShareDirections } from "@/app/_consts/sharing";
+import { ItemTypes, SharePerms } from "@/app/_types/enums";
+import { envelope, pageFields, required, totalField, uuidParam } from "./common";
 
 const ORPHANS_DEFAULT = 25;
 
@@ -168,12 +168,19 @@ const permissionsSchema = z.object({
   canCreate: z.boolean().optional(),
 });
 
+const holderSchema = z.object({ username: z.string(), permissions: permissionsSchema });
+
 export const sharesQuery = z.object({
   direction: z
     .enum(ShareDirections)
     .optional()
     .describe("withMe for items other people shared with you, byMe for yours. Both when left out"),
   type: z.enum(ItemTypes).optional().describe("Only notes or only checklists, both when left out"),
+  item: z.string().optional().describe("Only this note or checklist, by uuid"),
+  user: z
+    .string()
+    .optional()
+    .describe("Only shares with this person: what they shared with you, and yours they hold"),
   ...pageFields,
 });
 
@@ -184,7 +191,7 @@ export const shareSchema = linkedItemSchema
     permissions: permissionsSchema.optional().describe("What you can do with it, on withMe items"),
     isPublic: z.boolean().optional().describe("Anyone with the link can open it, on byMe items"),
     sharedWith: z
-      .array(z.object({ username: z.string(), permissions: permissionsSchema }))
+      .array(holderSchema)
       .optional()
       .describe("Who holds it and what they can do, on byMe items"),
   })
@@ -194,3 +201,30 @@ export const sharesSchema = z.object({
   shares: z.array(shareSchema),
   total: totalField,
 });
+
+export const shareParams = uuidParam("itemId", "Note or checklist");
+
+export const unshareParams = shareParams.extend({
+  username: required("username").describe(`Who loses it. ${PUBLIC_USER} turns the public link off`),
+});
+
+export const shareBody = z.object({
+  username: required("username").describe(
+    `Who gets it, an existing username. ${PUBLIC_USER} makes a read-only link anyone can open`,
+  ),
+  permission: z
+    .enum(SharePerms)
+    .default(SharePerms.READ)
+    .describe("r can read, rw can also edit, rwd can also delete. Sharing again with the same person replaces what they had"),
+});
+
+export const itemSharesSchema = envelope(
+  z
+    .object({
+      id: z.string().describe("Note or checklist uuid"),
+      type: z.enum(ItemTypes),
+      isPublic: z.boolean().describe("Anyone with the link can open it"),
+      sharedWith: z.array(holderSchema).describe("Who holds it now and what they can do"),
+    })
+    .register(apiNames, { id: "ItemShares" }),
+);

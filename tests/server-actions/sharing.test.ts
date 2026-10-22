@@ -62,11 +62,19 @@ vi.mock("@/app/_utils/grep-utils", () => ({
   grepListAllFiles: (...args: unknown[]) => mockGrepListAllFiles(...args),
 }));
 
+vi.mock("@/app/_server/actions/users/records", () => ({
+  findUserRecord: async (username: string) => ({ username }),
+}));
+
 vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: unknown[]) => mockIsAdmin(...args),
   canAccessAllContent: (...args: unknown[]) =>
     mockCanAccessAllContent(...args),
   getUsername: (...args: unknown[]) => mockGetUsername(...args),
+  getCurrentUser: async () => {
+    const username = await mockGetUsername();
+    return username ? { username, isAdmin: Boolean(await mockIsAdmin()) } : null;
+  },
   getUserByNoteUuid: (...args: unknown[]) => mockOwnerOfNote(...args),
   getUserByChecklistUuid: (...args: unknown[]) => mockOwnerOfList(...args),
 }));
