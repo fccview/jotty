@@ -7,6 +7,8 @@ module.exports = {
     ],
     theme: {
         extend: {
+            minWidth: ({ theme }) => theme('spacing'),
+            maxWidth: ({ theme }) => theme('spacing'),
             colors: {
                 background: 'rgb(var(--background) / <alpha-value>)',
                 'background-secondary': 'rgb(var(--background-secondary) / <alpha-value>)',

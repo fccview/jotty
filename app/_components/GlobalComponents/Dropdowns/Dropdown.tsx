@@ -1,8 +1,9 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ArrowDown01Icon, MoreHorizontalIcon } from "hugeicons-react";
+import { ArrowDown01Icon, MoreHorizontalIcon, Tick02Icon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
+import { MENU_ITEM_ACTIVE_CLASS, MENU_ITEM_CLASS } from "@/app/_consts/styling";
 import { Logo } from "../Layout/Logo/Logo";
 import { Popover } from "./Popover";
 
@@ -49,28 +50,29 @@ const DropdownOptions = ({
   value: string | number;
   onSelect: (id: string) => void;
 }) => (
-  <div className="py-1">
-    {options.map((option) => (
-      <button
-        key={option.id}
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onSelect(option.id.toString());
-        }}
-        className={cn(
-          "w-full flex items-center gap-2 px-3 py-2 text-md lg:text-sm text-left hover:bg-accent hover:text-accent-foreground",
-          option.id === value && "bg-accent text-accent-foreground",
-          option.className
-        )}
-      >
-        {option.icon && <option.icon className="h-4 w-4" />}
-        <span className="flex-1">{option.name}</span>
-        {option.meta}
-        {option.colors && <OptionLogo colors={option.colors} className="h-5 w-5 ml-auto" />}
-      </button>
-    ))}
+  <div className="flex flex-col gap-px p-1">
+    {options.map((option) => {
+      const isSelected = option.id === value;
+
+      return (
+        <button
+          key={option.id}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onSelect(option.id.toString());
+          }}
+          className={cn(MENU_ITEM_CLASS, isSelected && MENU_ITEM_ACTIVE_CLASS, option.className)}
+        >
+          {option.icon && <option.icon className="h-4 w-4 shrink-0" />}
+          <span className="flex-1">{option.name}</span>
+          {option.meta}
+          {option.colors && <OptionLogo colors={option.colors} className="h-5 w-5 ml-auto" />}
+          {isSelected && !option.colors && <Tick02Icon className="h-4 w-4 shrink-0" />}
+        </button>
+      );
+    })}
   </div>
 );
 
@@ -127,11 +129,11 @@ export const Dropdown = ({
               toggle();
             }}
             className={cn(
-              "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-jotty border border-border transition-colors",
+              "jotty-dropdown-button w-full flex items-center justify-between p-3 rounded-jotty border border-border transition-[background-color,border-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               disabled
                 ? "bg-muted text-muted-foreground cursor-not-allowed"
-                : "hover:bg-muted/50",
-              isOpen && "bg-muted/50"
+                : "hover:bg-muted/50 hover:border-primary/30",
+              isOpen && "border-primary/50 ring-2 ring-primary/10"
             )}
             disabled={disabled}
           >
@@ -147,7 +149,7 @@ export const Dropdown = ({
               )}
               <ArrowDown01Icon
                 className={cn(
-                  `h-4 w-4 transition-transform`,
+                  `h-4 w-4 text-muted-foreground transition-transform duration-200`,
                   isOpen ? "rotate-180" : "",
                   disabled && "opacity-50"
                 )}

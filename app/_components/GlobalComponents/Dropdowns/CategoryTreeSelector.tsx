@@ -15,6 +15,7 @@ import { Category } from "@/app/_types";
 import { CategoryTreeNode } from "./CategoryTreeNode";
 import { canFill } from "@/app/_utils/sharing-utils";
 import { useTranslations } from "next-intl";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 const DROPDOWN_MAX_HEIGHT = 240;
 const DROPDOWN_MIN_HEIGHT = 120;
@@ -189,7 +190,7 @@ export const CategoryTreeSelector = ({
           }
           : undefined
       }
-      className="jotty-category-tree-selector-dropdown fixed z-[10000] bg-background border border-input rounded-jotty shadow-lg overflow-y-auto"
+      className={`jotty-category-tree-selector-dropdown fixed z-[10000] overflow-y-auto ${MENU_CLASS}`}
     >
       <div className="p-2">
         {rootCategories.length === 0 && (

@@ -3,8 +3,13 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/app/_utils/global-utils";
-import { Button } from "../Buttons/Button";
 import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
+import {
+  MENU_CLASS,
+  MENU_DIVIDER_CLASS,
+  MENU_ITEM_CLASS,
+  MENU_ITEM_DANGER_CLASS,
+} from "@/app/_consts/styling";
 import {
   MenuAlign,
   MenuSide,
@@ -21,6 +26,16 @@ interface DropdownItem {
   variant?: "default" | "destructive";
   className?: string;
 }
+
+const isDivider = (item?: DropdownItem) => item?.type === "divider";
+
+const tidyDividers = (items: DropdownItem[]) =>
+  items.filter((item, index, all) => {
+    if (!isDivider(item)) return true;
+    const rest = all.slice(index + 1);
+    const hasItemBefore = all.slice(0, index).some((entry) => !isDivider(entry));
+    return hasItemBefore && !isDivider(all[index + 1]) && rest.some((entry) => !isDivider(entry));
+  });
 
 interface DropdownMenuProps {
   trigger: React.ReactNode;
@@ -123,7 +138,8 @@ export const DropdownMenu = ({
         <div
           ref={menuRef}
           className={cn(
-            "absolute min-w-56 w-fit bg-background border border-border rounded-jotty shadow-lg z-50 py-1",
+            "absolute min-w-48 w-max max-w-[min(20rem,calc(100vw-1rem))] z-50 flex flex-col gap-px p-1",
+            MENU_CLASS,
             menuPlacementClasses(placement),
             point && "overflow-auto",
           )}
@@ -132,29 +148,27 @@ export const DropdownMenu = ({
             maxWidth: Math.max(point.x, window.innerWidth - point.x) - MENU_MARGIN,
           } : undefined}
         >
-          {items.map((item, index) => {
-            if (item.type === "divider") {
-              return <div key={index} className="h-px bg-border my-1" />;
+          {tidyDividers(items).map((item, index) => {
+            if (isDivider(item)) {
+              return <div key={index} className={MENU_DIVIDER_CLASS} />;
             }
 
             return (
-              <Button
+              <button
                 key={index}
-                variant={"ghost"}
-                size="sm"
+                type="button"
                 onClick={() => item.onClick && handleItemClick(item.onClick)}
                 className={cn(
-                  item.className || "",
-                  "w-full flex items-center gap-3 text-md lg:text-sm transition-colors text-left rounded-none",
-                  item.variant === "destructive" &&
-                  "text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                  MENU_ITEM_CLASS,
+                  item.variant === "destructive" && MENU_ITEM_DANGER_CLASS,
+                  item.className,
                 )}
               >
                 {item.icon && (
                   <span className="flex-shrink-0 w-4 h-4">{item.icon}</span>
                 )}
                 <span className="flex-grow">{item.label}</span>
-              </Button>
+              </button>
             );
           })}
         </div>

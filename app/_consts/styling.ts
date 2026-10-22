@@ -73,3 +73,17 @@ export const normaliseNoteFontSize = (value?: number): number =>
 
 export const KICKER_CLASS =
   "font-mono text-[11px] uppercase tracking-widest text-muted-foreground";
+
+export const MENU_CLASS =
+  "jotty-menu bg-card border border-border rounded-jotty shadow-xl shadow-black/[0.08]";
+
+export const MENU_ITEM_CLASS =
+  "flex w-full items-center gap-2.5 rounded-[calc(var(--jotty-radius-effective)*0.75)] px-2.5 py-1.5 text-left text-md lg:text-sm text-foreground transition-colors duration-150 hover:bg-muted focus-visible:bg-muted focus-visible:outline-none";
+
+export const MENU_ITEM_ACTIVE_CLASS =
+  "bg-primary/10 text-primary hover:bg-primary/15 focus-visible:bg-primary/15";
+
+export const MENU_ITEM_DANGER_CLASS =
+  "text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:bg-destructive/10";
+
+export const MENU_DIVIDER_CLASS = "mx-1.5 my-1 border-t border-dashed border-border";

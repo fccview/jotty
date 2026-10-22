@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { cn } from "@/app/_utils/global-utils";
+import { MENU_CLASS } from "@/app/_consts/styling";
 import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 import {
@@ -71,7 +72,8 @@ export const Popover = ({
         <div
           ref={menuRef}
           className={cn(
-            "jotty-dropdown-menu absolute z-50 bg-card border border-border rounded-jotty shadow-lg",
+            "jotty-dropdown-menu absolute z-50",
+            MENU_CLASS,
             menuPlacementClasses(placement),
             menuClassName,
           )}

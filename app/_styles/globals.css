@@ -1287,6 +1287,30 @@ pre.text-foreground span,
   }
 }
 
+.jotty-menu {
+  --jotty-menu-shift: -4px;
+  transform-origin: top center;
+  animation: jotty-menu-in 160ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.jotty-menu.bottom-full {
+  --jotty-menu-shift: 4px;
+  transform-origin: bottom center;
+}
+
+@keyframes jotty-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--jotty-menu-shift)) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jotty-menu {
+    animation: none;
+  }
+}
+
 @keyframes jotty-pulse-connected {
   0%,
   100% {

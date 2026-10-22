@@ -41,6 +41,7 @@ import {
   MenuSide,
   menuPlacementClasses,
 } from "@/app/_utils/menu-placement-utils";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -543,7 +544,8 @@ const NestedChecklistItemComponent = ({
                       <div
                         ref={dropdownMenuRef}
                         className={cn(
-                          "absolute z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
+                          "absolute z-50 w-48",
+                          MENU_CLASS,
                           menuPlacementClasses(dropdownPlacement),
                         )}
                       >

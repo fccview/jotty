@@ -14,6 +14,7 @@ import {
   AgentAvatarSizes,
 } from "@/app/_components/GlobalComponents/Agent/AgentAvatar";
 import { AgentChip } from "./AgentChip";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 interface KanbanAssigneePickerProps {
   checklist: Checklist;
@@ -161,7 +162,7 @@ export const KanbanAssigneePicker = ({
       )}
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full bg-card border border-border rounded-jotty shadow-lg max-h-60 overflow-y-auto">
+        <div className={`absolute z-50 mt-1 w-full max-h-60 overflow-y-auto ${MENU_CLASS}`}>
           {options.map((option) => {
             const hint = _hintOf(option.person);
             const isActive = usable[active] === option;

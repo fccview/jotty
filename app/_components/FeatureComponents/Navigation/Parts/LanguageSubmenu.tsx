@@ -3,7 +3,12 @@
 import { useState, useMemo } from "react";
 import { Search01Icon, ArrowLeft01Icon, Tick02Icon } from "hugeicons-react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { getFlagPath } from "@/app/_utils/global-utils";
+import { cn, getFlagPath } from "@/app/_utils/global-utils";
+import {
+  MENU_CLASS,
+  MENU_ITEM_ACTIVE_CLASS,
+  MENU_ITEM_CLASS,
+} from "@/app/_consts/styling";
 import { updateUserSettings } from "@/app/_server/actions/users";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -51,18 +56,19 @@ export const LanguageSubmenu = ({ currentLocale, onClose, onBack }: LanguageSubm
   };
 
   return (
-    <div className="absolute right-0 top-0 w-56 bg-background border border-border rounded-jotty shadow-lg z-50">
-      <div className="p-2 border-b border-border flex items-center gap-2">
+    <div className={cn("absolute right-0 top-full mt-1 w-56 z-50", MENU_CLASS)}>
+      <div className="p-2 border-b border-dashed border-border flex items-center gap-2">
         <button
           onClick={onBack}
-          className="p-1 hover:bg-accent rounded-jotty transition-colors"
+          aria-label={t("common.back")}
+          className="p-1 text-muted-foreground hover:bg-muted hover:text-foreground rounded-jotty transition-colors"
         >
           <ArrowLeft01Icon className="h-4 w-4" />
         </button>
         <span className="text-md lg:text-sm font-medium flex-1">{t("common.language")}</span>
       </div>
 
-      <div className="p-2 border-b border-border">
+      <div className="p-2 border-b border-dashed border-border">
         <div className="relative">
           <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
@@ -76,14 +82,13 @@ export const LanguageSubmenu = ({ currentLocale, onClose, onBack }: LanguageSubm
         </div>
       </div>
 
-      <div className="max-h-[300px] overflow-y-auto">
+      <div className="max-h-[300px] overflow-y-auto flex flex-col gap-px p-1">
         {filteredLocales.length > 0 ? (
           filteredLocales.map((locale) => (
             <button
               key={locale.code}
               onClick={() => handleLanguageChange(locale.code)}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm transition-colors ${locale.code === currentLocale ? "bg-accent/50" : ""
-                }`}
+              className={cn(MENU_ITEM_CLASS, locale.code === currentLocale && MENU_ITEM_ACTIVE_CLASS)}
             >
               <img
                 src={getFlagPath(locale.countryCode)}

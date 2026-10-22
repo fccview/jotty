@@ -17,6 +17,7 @@ import {
 import { useTranslations } from "next-intl";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { CalloutType } from "@/app/_consts/callouts";
+import { MENU_ITEM_ACTIVE_CLASS } from "@/app/_consts/styling";
 
 const CalloutIcons: Record<CalloutType, typeof Idea01Icon> = {
   info: Idea01Icon,
@@ -49,7 +50,7 @@ const CalloutNodeView: FC<CalloutNodeViewComponentProps> = ({
         label: t(`editor.callout${type.charAt(0).toUpperCase() + type.slice(1)}`),
         icon: <TypeIcon className={`h-4 w-4 callout-icon-${type}`} />,
         onClick: () => updateAttributes({ type }),
-        className: type === calloutType ? "bg-muted" : "",
+        className: type === calloutType ? MENU_ITEM_ACTIVE_CLASS : "",
       };
     }
   );

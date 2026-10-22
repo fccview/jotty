@@ -10,6 +10,8 @@ import {
   FolderAddIcon,
   Folder02Icon,
   LogoutSquare02Icon,
+  Share08Icon,
+  Delete03Icon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
@@ -137,10 +139,12 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     {
       label: t("sharing.shareFolder"),
       onClick: () => onShareCategory(category.path),
+      icon: <Share08Icon className="h-4 w-4" />,
     },
     {
       label: t("common.renameCategory"),
       onClick: () => onRenameCategory(category.path),
+      icon: <FolderEditIcon className="h-4 w-4" />,
     },
     ...(canRemove
       ? [
@@ -148,6 +152,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
             label: t("common.deleteCategory"),
             onClick: () => onDeleteCategory(category.path),
             variant: "destructive" as const,
+            icon: <Delete03Icon className="h-4 w-4" />,
           },
         ]
       : []),

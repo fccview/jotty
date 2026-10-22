@@ -27,6 +27,7 @@ import {
 } from "@/app/_server/actions/lib/metadata-cache";
 import { withNoteBody } from "@/app/_utils/note-display-utils";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
+import { pinsFirst } from "@/app/_utils/pin-utils";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
@@ -314,22 +315,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       limit &&
       limit > 0
     ) {
-      const pathMatches = (note: { uuid?: string }, p: string) => {
-        const u = note.uuid;
-        return p === u || p.split("/").pop() === u;
-      };
-      const pinned: typeof filteredNotes = [];
-      for (const p of pinnedPaths) {
-        const found = filteredNotes.find((n: { uuid?: string }) =>
-          pathMatches(n, p),
-        );
-        if (found) pinned.push(found);
-      }
-      const rest = filteredNotes.filter(
-        (n: { category?: string; uuid?: string; id: string }) =>
-          !pinnedPaths.some((p) => pathMatches(n, p)),
-      );
-      filteredNotes = [...pinned, ...rest].slice(0, limit);
+      filteredNotes = pinsFirst(filteredNotes, pinnedPaths, limit);
     } else if (limit && limit > 0) {
       filteredNotes = filteredNotes.slice(offsetNum, offsetNum + limit);
     } else if (offsetNum > 0) {

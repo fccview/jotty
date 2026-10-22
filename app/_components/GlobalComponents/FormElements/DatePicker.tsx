@@ -6,6 +6,7 @@ import { Calendar03Icon, Clock01Icon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useWeekStart } from "@/app/_hooks/useWeekStart";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 interface DatePickerProps {
   value: string;
@@ -85,7 +86,7 @@ const DatePickerComponent = ({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 left-0 bg-popover border border-border rounded-jotty shadow-lg p-3 animate-in fade-in-0 zoom-in-95">
+        <div className={`absolute z-50 mt-1 left-0 p-3 ${MENU_CLASS}`}>
           <DayPicker
             mode="single"
             selected={_toDateValue(value)}
@@ -237,7 +238,7 @@ const TimePickerComponent = ({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 left-0 bg-popover border border-border rounded-jotty shadow-lg p-2 animate-in fade-in-0 zoom-in-95">
+        <div className={`absolute z-50 mt-1 left-0 p-2 ${MENU_CLASS}`}>
           <div className="flex gap-1">
             <div
               ref={hoursListRef}

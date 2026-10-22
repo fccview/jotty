@@ -34,6 +34,7 @@ import {
   summaryCacheKey,
 } from "@/app/_server/actions/lib/metadata-cache";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
+import { pinsFirst } from "@/app/_utils/pin-utils";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
@@ -188,19 +189,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       pinnedPaths.length > 0 &&
       limitNum !== undefined
     ) {
-      const pathMatches = (list: ChecklistReadResult, p: string) => {
-        const u = (list as { uuid?: string }).uuid;
-        return p === u || p.split("/").pop() === u;
-      };
-      const pinned: ChecklistReadResult[] = [];
-      for (const p of pinnedPaths) {
-        const found = lists.find((l) => pathMatches(l, p));
-        if (found) pinned.push(found);
-      }
-      const rest = lists.filter(
-        (l) => !pinnedPaths.some((p) => pathMatches(l, p)),
-      );
-      lists = [...pinned, ...rest].slice(0, limitNum);
+      lists = pinsFirst(lists, pinnedPaths, limitNum);
     } else if (limitNum !== undefined) {
       lists = lists.slice(offsetNum, offsetNum + limitNum);
     } else if (offsetNum > 0) {
