@@ -320,6 +320,9 @@
     "attemptsRemaining": "Attenzione: {count, plural, one {# tentativo} other {# tentativi}} rimanenti prima del blocco dell'account",
     "accountLocked": "Troppi tentativi falliti. Riprova tra {seconds} {seconds, plural, one {secondo} other {secondi}}",
     "notAuthorized": "Non hai accesso a questa app. Chiedi al tuo amministratore.",
+    "ssoUnreachable": "Impossibile raggiungere il provider di accesso. Riprova tra un minuto. Se continua a succedere, chiedi al tuo amministratore di verificare che il provider sia attivo e che questo server possa raggiungere l'URL dell'issuer OIDC.",
+    "ssoMisconfigured": "Il single sign-on non è configurato correttamente qui. Chiedi al tuo amministratore di controllare issuer OIDC, client ID, client secret e URL di reindirizzamento. I log del server contengono i dettagli.",
+    "ssoCallbackFailed": "L'accesso non è stato completato. Potrebbe essere scaduto o essere stato avviato in un'altra scheda. Riprova; se continua a non funzionare, il tuo amministratore troverà il motivo nei log del server.",
     "rememberMe": "Ricordami",
     "demoMode": "Modalità demo"
   },

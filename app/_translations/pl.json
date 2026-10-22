@@ -320,6 +320,9 @@
     "attemptsRemaining": "Uwaga: {count, plural, one {# próba} few {# próby} other {# prób}} pozostało przed zablokowaniem konta",
     "accountLocked": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {seconds} {seconds, plural, one {sekundę} few {sekundy} other {sekund}}",
     "notAuthorized": "Nie masz dostępu do tej aplikacji. Poproś administratora.",
+    "ssoUnreachable": "Nie można połączyć się z dostawcą logowania. Spróbuj ponownie za minutę. Jeśli to się powtarza, poproś administratora, aby sprawdził, czy dostawca działa i czy ten serwer może połączyć się z adresem URL wystawcy OIDC.",
+    "ssoMisconfigured": "Logowanie jednokrotne nie jest tu poprawnie skonfigurowane. Poproś administratora o sprawdzenie wystawcy OIDC, identyfikatora klienta, sekretu klienta i adresu przekierowania. Szczegóły są w logach serwera.",
+    "ssoCallbackFailed": "Logowanie nie zostało ukończone. Mogło wygasnąć lub zostać rozpoczęte w innej karcie. Spróbuj ponownie; jeśli nadal się nie udaje, administrator znajdzie przyczynę w logach serwera.",
     "rememberMe": "Zapamiętaj mnie",
     "demoMode": "Tryb demo"
   },

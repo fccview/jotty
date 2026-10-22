@@ -42,6 +42,13 @@ export const getCurrentUserRecord = async (): Promise<User | null> => {
   return findUserRecord(currentUsername);
 };
 
+const readUsersForWrite = async (usersPath: string): Promise<unknown> => {
+  const users = await readJsonFile(USERS_FILE);
+  if (users !== null) return users;
+  const raw = await fs.readFile(usersPath, "utf-8");
+  return raw.trim() ? null : [];
+};
+
 /**
  * Every read-modify-write of the users file goes through here. The mutator sees
  * the freshest records while the lock is held; returning null aborts the write.
@@ -50,8 +57,9 @@ export const mutateUsers = async <T>(
   mutator: (users: User[]) => Promise<T | null> | T | null,
 ): Promise<T | null> => {
   try {
-    return await withFileLock(await touchUsersFile(), async () => {
-      const allUsers = await readJsonFile(USERS_FILE);
+    const usersPath = await touchUsersFile();
+    return await withFileLock(usersPath, async () => {
+      const allUsers = await readUsersForWrite(usersPath);
 
       if (!Array.isArray(allUsers)) return null;
 

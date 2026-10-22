@@ -19,6 +19,12 @@ export interface OrderData {
   items?: string[];
 }
 
+const CORE_FILE_SEEDS: Record<string, string> = {
+  [USERS_FILE]: "[]",
+  [SESSIONS_FILE]: "{}",
+  [SESSION_DATA_FILE]: "{}",
+};
+
 export const getEnvOrFile = async (
   envVar: string,
   fileVar: string,
@@ -39,17 +45,10 @@ export const ensureCorDirsAndFiles = async (): Promise<{
   success: boolean;
   error?: string;
 }> => {
-  const coreDirAndFiles = {
-    dirs: [USERS_DIR],
-    files: [USERS_FILE, SESSIONS_FILE, SESSION_DATA_FILE],
-  };
-
   try {
-    for (const dir of coreDirAndFiles.dirs) {
-      await ensureDir(path.join(process.cwd(), dir));
-    }
-    for (const file of coreDirAndFiles.files) {
-      await ensureFile(path.join(process.cwd(), file));
+    await ensureDir(path.join(process.cwd(), USERS_DIR));
+    for (const [file, initial] of Object.entries(CORE_FILE_SEEDS)) {
+      await ensureFile(path.join(process.cwd(), file), initial);
     }
     return { success: true };
   } catch (error) {
@@ -66,11 +65,11 @@ export const ensureDir = async (dir: string) => {
   }
 };
 
-export const ensureFile = async (filePath: string) => {
+export const ensureFile = async (filePath: string, initial = "") => {
   try {
     await fs.access(filePath);
   } catch {
-    await fs.writeFile(filePath, "", "utf-8");
+    await fs.writeFile(filePath, initial, "utf-8");
   }
 };
 

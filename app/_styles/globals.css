@@ -1288,10 +1288,14 @@ pre.text-foreground span,
 }
 
 .jotty-auth-paper {
-  background-image: radial-gradient(rgb(var(--border)) 1px, transparent 1px);
+  background-image: radial-gradient(rgb(var(--muted-foreground) / 0.35) 1.2px, transparent 1.2px);
+  background-image: radial-gradient(
+    hsl(from rgb(var(--background)) h calc(s * 0.6) calc(l + (50 - l) * 0.35)) 1.2px,
+    transparent 1.2px
+  );
   background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 35%, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 35%, transparent 85%);
 }
 
 .jotty-menu {

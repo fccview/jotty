@@ -320,6 +320,9 @@
     "attemptsRemaining": "{count, plural, one {# attempt} other {# attempts}} left before this account locks",
     "accountLocked": "Too many failed attempts. Try again in {seconds} {seconds, plural, one {second} other {seconds}}",
     "notAuthorized": "You don't have access to this app. Ask your admin.",
+    "ssoUnreachable": "Couldn't reach the sign-in provider. Try again in a minute. If it keeps happening, ask your admin to check the provider is up and that this server can reach the OIDC issuer URL.",
+    "ssoMisconfigured": "Single sign-on isn't set up correctly here. Ask your admin to check the OIDC issuer, client ID, client secret and redirect URL. The server logs have the details.",
+    "ssoCallbackFailed": "Sign-in didn't finish. It may have expired or been started in another tab. Try again, and if it keeps failing your admin can find the reason in the server logs.",
     "rememberMe": "Remember me",
     "demoMode": "Demo mode"
   },

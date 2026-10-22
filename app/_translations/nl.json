@@ -320,6 +320,9 @@
     "attemptsRemaining": "Waarschuwing: {count, plural, one {# poging} other {# pogingen}} over voordat account wordt vergrendeld",
     "accountLocked": "Te veel mislukte pogingen. Probeer het opnieuw over {seconds} {seconds, plural, one {seconde} other {seconden}}",
     "notAuthorized": "Je hebt geen toegang tot deze app. Vraag het je beheerder.",
+    "ssoUnreachable": "De inlogprovider is niet bereikbaar. Probeer het over een minuut opnieuw. Blijft het gebeuren, vraag je beheerder dan te controleren of de provider draait en of deze server de OIDC-issuer-URL kan bereiken.",
+    "ssoMisconfigured": "Single sign-on is hier niet goed ingesteld. Vraag je beheerder de OIDC-issuer, client-ID, client-secret en redirect-URL te controleren. De serverlogs bevatten de details.",
+    "ssoCallbackFailed": "Het inloggen is niet afgerond. Het is misschien verlopen of in een ander tabblad gestart. Probeer het opnieuw; blijft het mislukken, dan vindt je beheerder de reden in de serverlogs.",
     "rememberMe": "Aangemeld blijven",
     "demoMode": "Demomodus"
   },

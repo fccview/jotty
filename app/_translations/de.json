@@ -320,6 +320,9 @@
     "attemptsRemaining": "Warnung: Noch {count, plural, one {# Versuch} other {# Versuche}} bis zur Kontosperre",
     "accountLocked": "Zu viele fehlgeschlagene Versuche. Versuch es in {seconds} {seconds, plural, one {Sekunde} other {Sekunden}} erneut.",
     "notAuthorized": "Du hast keinen Zugriff auf diese Anwendung. Wende dich an deinen Administrator.",
+    "ssoUnreachable": "Der Anmeldeanbieter ist nicht erreichbar. Versuche es in einer Minute erneut. Wenn das öfter passiert, bitte deinen Administrator zu prüfen, ob der Anbieter läuft und dieser Server die OIDC-Issuer-URL erreichen kann.",
+    "ssoMisconfigured": "Single Sign-On ist hier nicht richtig eingerichtet. Bitte deinen Administrator, OIDC-Issuer, Client-ID, Client-Secret und Weiterleitungs-URL zu prüfen. Details stehen in den Server-Logs.",
+    "ssoCallbackFailed": "Die Anmeldung wurde nicht abgeschlossen. Sie ist vielleicht abgelaufen oder wurde in einem anderen Tab gestartet. Versuche es erneut. Wenn es weiter fehlschlägt, findet dein Administrator den Grund in den Server-Logs.",
     "rememberMe": "Angemeldet bleiben",
     "demoMode": "Demo-Modus"
   },

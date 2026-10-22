@@ -37,6 +37,7 @@ export const MfaSetupModal = ({
     const [recoveryCode, setRecoveryCode] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
+    const [attempt, setAttempt] = useState(0);
 
     useEffect(() => {
         if (isOpen && step === 1) {
@@ -238,6 +239,7 @@ export const MfaSetupModal = ({
                     />
 
                     <CodeInput
+                        key={attempt}
                         length={6}
                         onComplete={async (code) => {
                             setIsVerifying(true);
@@ -253,6 +255,7 @@ export const MfaSetupModal = ({
                                         message: t("mfa.mfaEnabledSuccess"),
                                     });
                                 } else {
+                                    setAttempt((current) => current + 1);
                                     showToast({
                                         type: "error",
                                         title: t("common.error"),
@@ -260,6 +263,8 @@ export const MfaSetupModal = ({
                                     });
                                 }
                             } catch (error) {
+                                console.error("MFA setup verification failed:", error);
+                                setAttempt((current) => current + 1);
                                 showToast({
                                     type: "error",
                                     title: t("common.error"),

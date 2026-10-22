@@ -320,6 +320,9 @@
     "attemptsRemaining": "Advertencia: {count, plural, one {# intento} other {# intentos}} restantes antes del bloqueo de cuenta",
     "accountLocked": "Demasiados intentos fallidos. Inténtelo de nuevo en {seconds} {seconds, plural, one {segundo} other {segundos}}",
     "notAuthorized": "No tienes acceso a esta aplicación. Pregunta a tu administrador.",
+    "ssoUnreachable": "No se pudo contactar con el proveedor de inicio de sesión. Inténtalo de nuevo en un minuto. Si sigue pasando, pide a tu administrador que compruebe que el proveedor funciona y que este servidor puede acceder a la URL del emisor OIDC.",
+    "ssoMisconfigured": "El inicio de sesión único no está bien configurado aquí. Pide a tu administrador que revise el emisor OIDC, el ID de cliente, el secreto de cliente y la URL de redirección. Los registros del servidor tienen los detalles.",
+    "ssoCallbackFailed": "El inicio de sesión no terminó. Puede que haya caducado o que se iniciara en otra pestaña. Inténtalo de nuevo; si sigue fallando, tu administrador encontrará el motivo en los registros del servidor.",
     "rememberMe": "Recuérdame",
     "demoMode": "Modo demo"
   },

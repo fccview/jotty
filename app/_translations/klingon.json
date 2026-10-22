@@ -320,6 +320,9 @@
     "attemptsRemaining": "ghuH: {count} logh neH bInIDlaH",
     "accountLocked": "bInIDqu'. {seconds} lup 'uy' wa'leS yInIDqa'.",
     "notAuthorized": "bI'el 'e' chaw'be'lu'. ra'wI' yIghel.",
+    "ssoUnreachable": "'el lo'wI' DaghoS 'e' DaQo'. loQ yIloS 'ej yInIDqa'. qaSqa'chugh, lo'wI' yIn 'ej OIDC issuer URL ghoS De'wI'vam'e' 'e' tu'meH ra'wI' yItlhob.",
+    "ssoMisconfigured": "SSO lughbe'lu'. OIDC issuer, client ID, client secret, redirect URL je yInuD 'e' ra'wI' yItlhob. De'wI' ta' ghItlhmeyDaq qaSpu'bogh tu'lu'.",
+    "ssoCallbackFailed": "'el Qapbe'. poH natlhpu' pagh latlh tab Daq taghlu'pu'. yInIDqa'. Qapbe'qa'chugh, De'wI' ta' ghItlhmeyDaq meq tu' ra'wI'.",
     "rememberMe": "qaqaw",
     "demoMode": "ngeb Qu'"
   },

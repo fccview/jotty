@@ -320,6 +320,9 @@
     "attemptsRemaining": "Warning: {count} tries left before we throw ye in the brig",
     "accountLocked": "To the brig with ye! Wait {seconds} seconds.",
     "notAuthorized": "Ye lack the clearance! Talk to the Captain.",
+    "ssoUnreachable": "Arr, we can't raise the harbour master! Wait a minute and try again. If the seas stay quiet, have the Captain check the lookout's awake and this ship can sight the OIDC issuer URL.",
+    "ssoMisconfigured": "The ship's charts for single sign-on be all wrong! Have the Captain check the OIDC issuer, client ID, client secret and redirect URL. The ship's log has the full tale.",
+    "ssoCallbackFailed": "Ye never made it aboard! The gangplank may have been pulled up, or ye started boarding from another tab. Try again, and if ye keep fallin' in the drink, the Captain can read why in the ship's log.",
     "rememberMe": "Remember me, matey",
     "demoMode": "Practice voyage"
   },

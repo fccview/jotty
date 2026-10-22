@@ -320,6 +320,9 @@
     "attemptsRemaining": "Uyarı: Hesabın kilitlenmesine {count, plural, one {# deneme} other {# deneme}} kaldı",
     "accountLocked": "Çok fazla hatalı deneme. {seconds} {seconds, plural, one {saniye} other {saniye}} sonra tekrar deneyin",
     "notAuthorized": "Bu uygulamaya erişiminiz yok. Yöneticinize başvurun.",
+    "ssoUnreachable": "Oturum açma sağlayıcısına ulaşılamadı. Bir dakika sonra tekrar deneyin. Sorun sürerse yöneticinizden sağlayıcının çalıştığını ve bu sunucunun OIDC issuer URL'sine erişebildiğini kontrol etmesini isteyin.",
+    "ssoMisconfigured": "Çoklu oturum açma burada doğru yapılandırılmamış. Yöneticinizden OIDC issuer, istemci kimliği, istemci gizli anahtarı ve yönlendirme URL'sini kontrol etmesini isteyin. Ayrıntılar sunucu günlüklerinde.",
+    "ssoCallbackFailed": "Oturum açma tamamlanmadı. Süresi dolmuş ya da başka bir sekmede başlatılmış olabilir. Tekrar deneyin; başarısız olmaya devam ederse yöneticiniz nedeni sunucu günlüklerinde bulabilir.",
     "rememberMe": "Beni hatırla",
     "demoMode": "Demo modu"
   },

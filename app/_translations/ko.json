@@ -320,6 +320,9 @@
     "attemptsRemaining": "경고: {count, plural, one {#회} other {#회}}의 시도가 남아 있습니다",
     "accountLocked": "실패 시도가 너무 많습니다. {seconds} {seconds, plural, one {초} other {초}} 후에 다시 시도하세요",
     "notAuthorized": "이 앱에 접근할 권한이 없습니다. 관리자에게 문의하세요.",
+    "ssoUnreachable": "로그인 제공자에 연결할 수 없습니다. 잠시 후 다시 시도하세요. 계속 발생하면 관리자에게 제공자가 작동 중인지, 이 서버가 OIDC 발급자 URL에 접근할 수 있는지 확인해 달라고 요청하세요.",
+    "ssoMisconfigured": "이곳의 SSO 설정이 올바르지 않습니다. 관리자에게 OIDC 발급자, 클라이언트 ID, 클라이언트 시크릿, 리디렉션 URL을 확인해 달라고 요청하세요. 자세한 내용은 서버 로그에 있습니다.",
+    "ssoCallbackFailed": "로그인이 완료되지 않았습니다. 만료되었거나 다른 탭에서 시작되었을 수 있습니다. 다시 시도하세요. 계속 실패하면 관리자가 서버 로그에서 원인을 확인할 수 있습니다.",
     "rememberMe": "로그인 상태 유지",
     "demoMode": "데모 모드"
   },

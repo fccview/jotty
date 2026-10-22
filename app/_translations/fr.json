@@ -320,6 +320,9 @@
     "attemptsRemaining": "Attention : {count, plural, one {# tentative} other {# tentatives}} restantes avant le verrouillage du compte",
     "accountLocked": "Trop de tentatives échouées. Réessayez dans {seconds} {seconds, plural, one {seconde} other {secondes}}",
     "notAuthorized": "Vous n’avez pas accès à cette application. Demandez à votre administrateur.",
+    "ssoUnreachable": "Impossible de joindre le fournisseur de connexion. Réessayez dans une minute. Si cela continue, demandez à votre administrateur de vérifier que le fournisseur fonctionne et que ce serveur peut joindre l’URL de l’émetteur OIDC.",
+    "ssoMisconfigured": "L’authentification unique n’est pas correctement configurée ici. Demandez à votre administrateur de vérifier l’émetteur OIDC, l’ID client, le secret client et l’URL de redirection. Les journaux du serveur contiennent les détails.",
+    "ssoCallbackFailed": "La connexion n’a pas abouti. Elle a peut-être expiré ou été lancée dans un autre onglet. Réessayez ; si l’échec persiste, votre administrateur trouvera la cause dans les journaux du serveur.",
     "rememberMe": "Se souvenir de moi",
     "demoMode": "Mode démo"
   },

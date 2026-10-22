@@ -23,6 +23,7 @@ export const MfaDisableModal = ({
     const t = useTranslations();
     const { showToast } = useToast();
     const [isDisabling, setIsDisabling] = useState(false);
+    const [attempt, setAttempt] = useState(0);
 
     const handleCodeComplete = async (code: string) => {
         setIsDisabling(true);
@@ -38,6 +39,7 @@ export const MfaDisableModal = ({
                 onClose();
                 onSuccess();
             } else {
+                setAttempt((current) => current + 1);
                 showToast({
                     type: "error",
                     title: t("common.error"),
@@ -45,6 +47,8 @@ export const MfaDisableModal = ({
                 });
             }
         } catch (error) {
+            console.error("MFA disable failed:", error);
+            setAttempt((current) => current + 1);
             showToast({
                 type: "error",
                 title: t("common.error"),
@@ -73,6 +77,7 @@ export const MfaDisableModal = ({
                         {t("mfa.enterCode")}
                     </label>
                     <CodeInput
+                        key={attempt}
                         length={6}
                         onComplete={handleCodeComplete}
                         disabled={isDisabling}

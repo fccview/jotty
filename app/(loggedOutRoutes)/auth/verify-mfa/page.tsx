@@ -12,6 +12,13 @@ export default function VerifyMfaPage() {
     const t = useTranslations();
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [attempt, setAttempt] = useState(0);
+
+    const refuse = (message: string) => {
+        setError(message);
+        setIsLoading(false);
+        setAttempt((current) => current + 1);
+    };
 
     const handleCodeComplete = async (code: string) => {
         setIsLoading(true);
@@ -24,8 +31,7 @@ export default function VerifyMfaPage() {
         try {
             const result = await verifyMfaLogin(formData);
             if (result?.error) {
-                setError(result.error);
-                setIsLoading(false);
+                refuse(result.error);
             }
         } catch (error: unknown) {
             if (error && typeof error === "object" && "digest" in error) {
@@ -34,8 +40,8 @@ export default function VerifyMfaPage() {
                     throw error;
                 }
             }
-            setError(t("auth.errorOccurred"));
-            setIsLoading(false);
+            console.error("MFA verification failed:", error);
+            refuse(t("auth.errorOccurred"));
         }
     };
 
@@ -48,6 +54,7 @@ export default function VerifyMfaPage() {
             <FeedbackMessage error={error || null} success={null} />
 
             <CodeInput
+                key={attempt}
                 length={6}
                 onComplete={handleCodeComplete}
                 disabled={isLoading}

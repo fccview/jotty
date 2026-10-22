@@ -320,6 +320,9 @@
     "attemptsRemaining": "警告：在账户锁定前还剩 {count, plural, one {# 次尝试} other {# 次尝试}}",
     "accountLocked": "失败次数过多。请在 {seconds} {seconds, plural, one {秒} other {秒}} 后重试",
     "notAuthorized": "您无权访问此应用。请联系管理员。",
+    "ssoUnreachable": "无法连接到登录提供方。请稍后重试。如果问题持续，请让管理员检查提供方是否正常运行，以及此服务器能否访问 OIDC 签发者 URL。",
+    "ssoMisconfigured": "此处的单点登录配置不正确。请让管理员检查 OIDC 签发者、客户端 ID、客户端密钥和重定向 URL。详细信息见服务器日志。",
+    "ssoCallbackFailed": "登录未完成，可能已过期或是在另一个标签页中发起的。请重试；如果仍然失败，管理员可以在服务器日志中找到原因。",
     "rememberMe": "记住我",
     "demoMode": "演示模式"
   },

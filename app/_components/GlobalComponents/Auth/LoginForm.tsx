@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import { login } from "@/app/_server/actions/auth";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Key01Icon, LockIcon } from "hugeicons-react";
+import { LockKeyIcon } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
 import { KICKER_CLASS } from "@/app/_consts/styling";
 import { cn } from "@/app/_utils/global-utils";
+import { SsoButton } from "@/app/_components/GlobalComponents/Auth/SsoButton";
+import { useSsoError } from "@/app/_hooks/useSsoError";
 
-const OIDC_LOGIN_URL = "/api/oidc/login";
 const DEMO_USERNAME = "demo";
 const DEMO_PASSWORD = "demodemo";
 const DIVIDER_CLASS =
@@ -28,7 +28,7 @@ export default function LoginForm({
   showRegisterLink?: boolean;
 }) {
   const t = useTranslations("auth");
-  const searchParams = useSearchParams();
+  const ssoError = useSsoError();
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
@@ -41,11 +41,10 @@ export default function LoginForm({
   const { isDemoMode } = useAppMode();
 
   useEffect(() => {
-    const errorParam = searchParams.get("error");
-    if (errorParam === "unauthorized") {
-      setError(t("notAuthorized"));
+    if (ssoError) {
+      setError(ssoError);
     }
-  }, [searchParams, t]);
+  }, [ssoError]);
 
   useEffect(() => {
     if (!lockedUntil) {
@@ -76,6 +75,7 @@ export default function LoginForm({
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setAttemptsRemaining(null);
 
     const formData = new FormData(e.currentTarget);
 
@@ -108,50 +108,31 @@ export default function LoginForm({
   const isBusy = isLoading || isSsoLoading || countdown > 0;
   const showAttempts =
     !countdown && attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining < 4;
+  const warning =
+    countdown > 0
+      ? t("accountLocked", { seconds: countdown })
+      : showAttempts
+        ? t("attemptsRemaining", { count: attemptsRemaining })
+        : null;
 
   return (
     <>
-      <FeedbackMessage error={error || null} success={null} />
-      {countdown > 0 && (
-        <FeedbackMessage
-          error={null}
-          success={null}
-          warning={t("accountLocked", { seconds: countdown })}
-          icon={<LockIcon />}
-        />
-      )}
-      {showAttempts && (
-        <FeedbackMessage
-          error={null}
-          success={null}
-          warning={t("attemptsRemaining", { count: attemptsRemaining })}
-        />
-      )}
+      <FeedbackMessage
+        error={warning ? null : error || null}
+        success={null}
+        warning={warning}
+        icon={countdown > 0 ? <LockKeyIcon /> : undefined}
+      />
 
       {ssoEnabled && (
         <>
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            disabled={isLoading || isSsoLoading}
-            onClick={() => {
-              setIsSsoLoading(true);
-              window.location.href = OIDC_LOGIN_URL;
-            }}
-          >
-            {isSsoLoading ? (
-              <Logo className="h-4 w-4 animate-pulse" />
-            ) : (
-              <Key01Icon className="h-4 w-4" />
-            )}
-            {isSsoLoading ? t("signingIn") : t("signInWithSSO")}
-          </Button>
+          <SsoButton variant="outline" disabled={isLoading} onLoadingChange={setIsSsoLoading} />
           <div className={cn(KICKER_CLASS, DIVIDER_CLASS)}>{t("orContinueWith")}</div>
         </>
       )}
 
       {isDemoMode && (
-        <div className="rounded-jotty border border-dashed border-primary/40 bg-muted px-3 py-2.5">
+        <div className="rounded-jotty border border-dashed border-primary/40 bg-primary/5 px-3 py-2.5">
           <div className={cn(KICKER_CLASS, "mb-1.5 flex items-center gap-2")}>
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             {t("demoMode")}

@@ -320,6 +320,9 @@
     "attemptsRemaining": "Cảnh báo: còn lại {count, plural, one {# lần thử} other {# lần thử}} trước khi khóa tài khoản",
     "accountLocked": "Quá nhiều lần thử thất bại. Hãy thử lại sau {seconds} {seconds, plural, one {giây} other {giây}}",
     "notAuthorized": "Bạn không có quyền truy cập ứng dụng này. Hãy hỏi quản trị viên.",
+    "ssoUnreachable": "Không thể kết nối tới nhà cung cấp đăng nhập. Hãy thử lại sau một phút. Nếu vẫn xảy ra, hãy nhờ quản trị viên kiểm tra nhà cung cấp có đang hoạt động và máy chủ này có truy cập được URL issuer OIDC hay không.",
+    "ssoMisconfigured": "Đăng nhập một lần chưa được cấu hình đúng ở đây. Hãy nhờ quản trị viên kiểm tra issuer OIDC, client ID, client secret và URL chuyển hướng. Chi tiết có trong nhật ký máy chủ.",
+    "ssoCallbackFailed": "Đăng nhập chưa hoàn tất. Có thể phiên đã hết hạn hoặc được bắt đầu ở một thẻ khác. Hãy thử lại; nếu vẫn lỗi, quản trị viên có thể tìm nguyên nhân trong nhật ký máy chủ.",
     "rememberMe": "nhớ tôi",
     "demoMode": "Chế độ demo"
   },
