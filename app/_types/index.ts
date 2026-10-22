@@ -12,14 +12,20 @@ export type {
   List,
   Checklist,
   Comment,
+  ItemStub,
+  TickCell,
+  ListTicks,
+  MiniColumn,
+  ListSummary,
 } from "./checklist";
 
-export type { Note, NoteEditorViewModel } from "./note";
+export type { Note, NoteBody, NoteEditorViewModel, NoteSummary } from "./note";
 
 export type {
   User,
   Session,
   SanitisedUser,
+  UserSettingsPatch,
   PublicUserInfo,
   EnableRecurrence,
   ShowCompletedSuggestions,
@@ -47,6 +53,8 @@ export type {
   CodeBlockStyle,
   ChecklistItemClickAction,
   NewItemInsertion,
+  NotesCardPreview,
+  NotesCompactMode,
 } from "./user";
 
 export type {

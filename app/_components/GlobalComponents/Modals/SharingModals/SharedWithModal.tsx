@@ -1,4 +1,4 @@
-import { Modal } from "../Modal";
+import { Modal, ModalVariant } from "../Modal";
 import { UserAvatar } from "../../User/UserAvatar";
 import { useTranslations } from "next-intl";
 
@@ -17,7 +17,7 @@ export const SharedWithModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t("sharing.sharedWith")}>
+    <Modal isOpen={isOpen} onClose={onClose} variant={ModalVariant.PANEL} title={t("sharing.sharedWith")}>
       <div className="space-y-4 py-6">
         {usernames.map((username) => (
           <div

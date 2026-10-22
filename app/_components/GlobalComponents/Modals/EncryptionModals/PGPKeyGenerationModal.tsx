@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Download01Icon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Modal } from "../Modal";
+import { Modal, ModalWidth } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { PasswordFields } from "@/app/_components/GlobalComponents/FormElements/PasswordFields";
@@ -137,7 +137,7 @@ export const PGPKeyGenerationModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={t("encryption.generatePGPKeyPair")}
-      className="max-w-2xl"
+      width={ModalWidth.WIDE}
     >
       {!generatedKeys ? (
         <form onSubmit={handleSubmit} className="space-y-6">

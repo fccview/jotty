@@ -6,6 +6,7 @@ import { ArrowRight04Icon } from "hugeicons-react";
 import { formatShortTime } from "@/app/_utils/date-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { WidgetDismiss } from "./WidgetDismiss";
 
 interface PickUpCardProps {
   title: string;
@@ -30,13 +31,16 @@ export const PickUpCard = ({
   const trail = categoryTrail(category, t("notes.uncategorized"));
 
   return (
-    <section className="jotty-pick-up bg-card border border-border rounded-jotty p-5 flex flex-col min-w-0 [overflow-wrap:anywhere]">
+    <section className="jotty-pick-up group/widget bg-card border border-border rounded-jotty p-5 flex flex-col min-w-0 [overflow-wrap:anywhere]">
       <div className="flex items-center justify-between gap-3">
         <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground truncate">
           {t("settings.homePickUp")}
         </p>
-        <span className="font-mono text-xs text-primary shrink-0">
-          {formatShortTime(updatedAt, t)}
+        <span className="flex shrink-0 items-center gap-1">
+          <span className="font-mono text-xs text-primary">
+            {formatShortTime(updatedAt, t)}
+          </span>
+          <WidgetDismiss widget="homePickUp" className="-my-1 -mr-2" />
         </span>
       </div>
       <h3

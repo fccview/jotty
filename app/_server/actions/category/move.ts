@@ -27,6 +27,7 @@ import { mountsFor, userDirFor } from "@/app/_server/actions/share/mounts";
 import {
   invalidateCached,
   metaCacheKey,
+  summaryCacheKey,
 } from "@/app/_server/actions/lib/metadata-cache";
 import { targetDir, bouncer, shownAs } from "@/app/_server/actions/share/target";
 import { SharedMount } from "@/app/_types/sharing";
@@ -69,6 +70,7 @@ const forgetLists = (mode: Modes, owners: string[]): void => {
   Array.from(new Set(owners)).forEach((owner) => {
     const dir = path.join(process.cwd(), userDirFor(mode, owner));
     invalidateCached(metaCacheKey(mode, dir));
+    invalidateCached(summaryCacheKey(mode, dir));
   });
 };
 

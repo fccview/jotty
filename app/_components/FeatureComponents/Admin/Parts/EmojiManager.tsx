@@ -95,7 +95,7 @@ export const EmojiManager = () => {
         isOpen={emojiModalOpen}
         onClose={() => setEmojiModalOpen(false)}
         title={editingEmoji ? "Edit Emoji" : "Add Emoji"}
-        className="!w-full max-w-md"
+        
       >
         <div className="space-y-4">
           <Input

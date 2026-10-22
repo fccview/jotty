@@ -90,7 +90,7 @@ My recommended way to run `jotty·page` is with Docker. You can also use:
 - The [Proxmox community script](https://raw.githubusercontent.com/community-scripts/ProxmoxVE/main/ct/jotty.sh) for Proxmox VE
 - The [Unraid template](howto/DOCKER.md#unraid) for Unraid Community Applications
 
-Running it without Docker, from source or from the prebuilt tarball, needs Node.js 22.15 or later in the 22.x series, or Node.js 23.11 or later.
+Running it without Docker, from source or from the prebuilt tarball, needs Node.js 24 or later.
 
 <a id="docker-compose"></a>
 

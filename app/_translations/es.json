@@ -187,6 +187,7 @@
     "unpinFromHome": "Desanclar del inicio",
     "archive": "Archivar",
     "confirmDeleteItem": "¿Está seguro de que desea eliminar \"{itemTitle}\"?",
+    "confirmDeleteEntry": "¿Seguro que quieres eliminar esta entrada?",
     "sharedBy": "Compartido por {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} completados",
     "releaseNotes": "Notas de la versión v{version}",
@@ -679,7 +680,17 @@
     "startTime": "Inicio",
     "endTime": "Fin",
     "addItemToColumn": "Agregar elemento a {column}",
-    "addItemPlaceholder": "Nuevo elemento..."
+    "addItemPlaceholder": "Nuevo elemento...",
+    "agentAvatar": "Agente {agent}",
+    "agentInvalid": "Los nombres de agente usan de 1 a 64 letras, dígitos, puntos, guiones o guiones bajos, sin espacios.",
+    "assigneeSearch": "Busca usuarios o escribe el nombre de un agente...",
+    "assignAgentAs": "Asignar al agente {agent}",
+    "assigneeWillShare": "Compartirá el tablero",
+    "assigneeNoAccess": "No puede ver este tablero",
+    "assigneeShareTitle": "¿Compartir este tablero?",
+    "assigneeShareMessage": "{user} todavía no puede ver este tablero. Al asignarlo se compartirá con permiso de edición.",
+    "assigneeShareConfirm": "Compartir y asignar",
+    "assignFailed": "No se pudo cambiar la persona asignada"
   },
   "profile": {
     "userProfile": "Usuario",
@@ -871,6 +882,8 @@
     "confirmPassword": "Confirmar contraseña",
     "passwordChanged": "Contraseña cambiada",
     "settingsSaved": "Configuración guardada",
+    "settingsSaveFailed": "No se pudieron guardar los ajustes",
+    "settingsSaveFailedDescription": "Tu cambio no se guardó. Inténtalo de nuevo.",
     "dashCase": "Guion medio (ej., mi-archivo-nombre.md)",
     "minimal": "Mínimo (solo eliminar caracteres inválidos)",
     "noRename": "Sin renombrar (mantener el nombre original)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Predeterminado",
+    "defaultOption": "Predeterminado ({value})",
     "dark": "Oscuro",
     "funky": "Divertido",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Continúe donde lo dejó",
     "homePinboard": "Tablón",
     "homePinboardDescription": "Si se desactiva, los elementos fijados se muestran como tarjetas normales en la parte superior.",
-    "homeTags": "Etiquetas"
+    "homeTags": "Etiquetas",
+    "notesFontSize": "Tamaño del texto de las notas",
+    "notesFontSizeDescription": "Tamaño del texto para leer y editar notas en todos tus dispositivos. Los ajustes rápidos pueden cambiarlo en un solo navegador.",
+    "borderRadiusDescription": "Redondea las esquinas en toda la app. Los ajustes rápidos pueden cambiarlo en un solo navegador.",
+    "browseViewModeDescription": "Cómo se organizan las notas y listas al explorarlas.",
+    "notesCardPreviewDescription": "Muestra el inicio formateado de cada nota en su tarjeta.",
+    "notesCompactModeDescription": "Usa un diseño más estrecho al leer y editar notas.",
+    "kanbanColumnWidthDescription": "Define un ancho personalizado para las columnas de estado del kanban. Por defecto, las columnas se ajustan al espacio disponible."
   },
   "admin": {
     "title": "Administrador",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "La configuración del editor debe ser un objeto, no se guardó nada",
     "invalidEditorSetting": "El ajuste del editor {field} tiene un tipo incorrecto, no se guardó nada",
     "categoryOutOfBounds": "Esa categoría está fuera de sus notas, así que no se creó nada",
+    "filenameOutOfBounds": "Ese título pondría el archivo fuera de su categoría, así que no se guardó nada",
     "requiredField": "Este campo es obligatorio",
     "emailInvalid": "Por favor, ingrese un correo válido",
     "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Alternar modo de editor enriquecido",
     "toggleMarkdownMode": "Alternar modo Markdown",
+    "editorMode": "Modo del editor",
+    "currentEditorMode": "Editando en {mode}",
+    "switchToRichEditor": "Cambiar al editor enriquecido",
+    "switchToMarkdown": "Cambiar a markdown",
     "quickControls": "Controles del editor",
     "toggleBold": "Alternar negrita",
     "toggleItalic": "Alternar cursiva",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Editar diagrama",
     "deleteDiagram": "Eliminar diagrama",
+    "diagramDarkMode": "Mostrar en modo oscuro",
+    "diagramLightMode": "Mostrar en modo claro",
+    "diagramLoadFailed": "No se pudo cargar el editor de diagramas. Revisa tu conexión e inténtalo de nuevo.",
+    "diagramSaveFailed": "No se pudo guardar el diagrama. Tu dibujo sigue abierto.",
+    "diagramDataUnreadable": "No se pudieron leer los datos de este diagrama, así que no se puede editar aquí.",
+    "drawioEditor": "Editor de Draw.io",
+    "diagramRichModeOnly": "Solo en modo enriquecido",
+    "diagramUnavailableInMarkdown": "No disponible en modo markdown",
     "enterMermaidCode": "Ingresa el código del diagrama Mermaid...",
     "widthPx": "Ancho (px)",
     "heightPx": "Alto (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Números de línea",
     "inlineCode": "Código en línea",
     "moreTools": "Más herramientas",
-    "moreToolsCount": "Más herramientas ({count} guardadas aquí)",
-    "diagramDarkMode": "Mostrar en modo oscuro",
-    "diagramLightMode": "Mostrar en modo claro",
-    "diagramLoadFailed": "No se pudo cargar el editor de diagramas. Revisa tu conexión e inténtalo de nuevo.",
-    "diagramSaveFailed": "No se pudo guardar el diagrama. Tu dibujo sigue abierto.",
-    "diagramDataUnreadable": "No se pudieron leer los datos de este diagrama, así que no se puede editar aquí.",
-    "drawioEditor": "Editor de Draw.io",
-    "diagramRichModeOnly": "Solo en modo enriquecido",
-    "diagramUnavailableInMarkdown": "No disponible en modo markdown"
+    "moreToolsCount": "Más herramientas ({count} guardadas aquí)"
   },
   "sharing": {
     "share": "Compartir",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Soy un marcador de posición porque no puedes cifrar una nota vacía."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Estas opciones solo se aplican a esta sesión del navegador. Para configuraciones permanentes, revise sus",
-    "accountSettings": "preferencias de usuario",
-    "autosaveNotes": "Guardar notas automáticamente",
     "showNotePreview": "Mostrar vista previa de la nota en las tarjetas",
     "notesCompactMode": "Modo compacto de notas",
     "showEmojis": "Mostrar emojis en las Listas",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Lista",
     "viewModeGrid": "Cuadrícula",
     "borderRadius": "Redondeo de esquinas",
-    "useInstanceDefault": "Usar el valor predeterminado",
-    "borderRadiusDescription": "Las esquinas se actualizan en toda la aplicación mientras arrastras.",
     "kanbanColumnWidth": "Ancho de columnas de Kanban",
-    "kanbanColumnWidthDescription": "Establece un ancho personalizado para las columnas de estado de Kanban. El valor predeterminado de la instancia ajusta las columnas automáticamente al espacio disponible.",
     "kanbanColumnWidthCompact": "Compacto",
     "kanbanColumnWidthComfortable": "Confortable",
     "kanbanColumnWidthWide": "Ancho",
-    "kanbanColumnWidthAutoFit": "Ajuste automático"
+    "kanbanColumnWidthAutoFit": "Ajuste automático",
+    "useAccountSetting": "Usar el ajuste de la cuenta"
   },
   "migration": {
     "migrationComplete": "Migración Completa",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Guía de Markdown",
     "brain": "Enlaces y Brain",
     "customisations": "Personalizaciones",
+    "selfHosting": "Autoalojamiento",
     "envVariables": "Variables de Entorno",
     "mfa": "MFA",
     "encryption": "Encriptación",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Traducciones"
+    "translations": "Traducciones",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Página no encontrada",
@@ -1826,7 +1849,9 @@
     "linked": "Mención enlazada en {title}",
     "linkFailed": "No se pudo enlazar esa mención",
     "kind": {
+      "link": "Enlace",
       "mention": "Enlace",
+      "checklist": "Lista",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Etiqueta"
     },
     "edges": {
+      "link": "Enlace",
       "mention": "Enlace",
+      "checklist": "Lista",
       "wiki": "Wikilink",
       "suggested": "Sugerido",
       "tag": "Etiqueta"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty reescribirá el frontmatter al principio de este archivo. Pone entre comillas los valores que no son YAML válido, cambia las tabulaciones por espacios, pasa a previousUuid un uuid que no sea de Jotty y añade su propio uuid. El resto del archivo no cambia. Jotty no puede deshacerlo, así que guarda una copia si otra aplicación lee este frontmatter. Necesitas permiso de edición en este elemento y su carpeta tiene que admitir escritura.",
     "confirm": "Arreglar el frontmatter",
     "fixed": "Arreglado. Ya puedes editar este elemento."
+  },
+  "live": {
+    "currentlyEditing": "Editando ahora",
+    "dropped": "Alguien cambió esta nota mientras estabas sin conexión, así que se descartaron tus cambios sin guardar.",
+    "copyDropped": "Copiar mis cambios",
+    "status": {
+      "offline": "Sin conexión. Si alguien cambia esta nota antes de que vuelvas a conectarte, se descartarán tus cambios sin guardar.",
+      "refused": "La edición en vivo se detuvo porque cambió tu acceso o esta nota. Recarga para continuar.",
+      "unavailable": "La edición en vivo no está disponible, así que editas por tu cuenta. Tus cambios se siguen guardando."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " y todo lo que contiene",
     "only": " únicamente",
     "categoriesMore": "{first} + {count} más",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "todas las notas",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} nota} other {{notes} notas}}, {pinned} fijadas",
     "checklistsKicker": "{done} de {total} casillas marcadas",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} tarjeta} other {{cards} tarjetas}} en {boardsCount, plural, one {{boards} tablero} other {{boards} tableros}}, {inProgress} en progreso"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} tarjeta} other {{cards} tarjetas}} en {boardsCount, plural, one {{boards} tablero} other {{boards} tableros}}, {inProgress} en progreso",
+    "hideWidget": "Ocultar {widget}",
+    "widgetHidden": "{widget} oculto",
+    "widgetHiddenHint": "Puedes volver a activarlo cuando quieras en las preferencias de usuario."
+  },
+  "quickSettings": {
+    "title": "Ajustes rápidos",
+    "browserOnly": "Solo en este navegador",
+    "saveToAccount": "Guardar en la cuenta",
+    "savedToAccount": "Guardado en tu cuenta",
+    "allPreferences": "Todas las preferencias",
+    "heading": "Ponte cómodo",
+    "subtitle": "Los cambios se quedan en este navegador. Guarda los que quieras en tu cuenta para usarlos en todos tus dispositivos.",
+    "overrideCount": "{count, plural, one {# fijado aquí} other {# fijados aquí}}",
+    "saving": "Guardando...",
+    "labels": {
+      "theme": "Tema",
+      "borderRadius": "Redondeo de esquinas",
+      "noteFontSize": "Tamaño del texto de las notas",
+      "kanbanColumnWidth": "Ancho de columnas kanban",
+      "viewMode": "Ver como",
+      "cardPreview": "Vista previa en tarjetas",
+      "compactMode": "Ancho compacto de notas",
+      "autosave": "Autoguardar notas",
+      "showEmojis": "Emojis en las listas",
+      "completedSuggestions": "Sugerir elementos completados"
+    },
+    "hints": {
+      "borderRadius": "Las esquinas cambian en toda la app mientras arrastras.",
+      "noteFontSize": "Para leer y escribir notas.",
+      "kanbanColumnWidth": "Automático estira las columnas para llenar el tablero.",
+      "cardPreview": "Muestra markdown formateado en las tarjetas en lugar de texto plano.",
+      "compactMode": "Limita el editor a 900px de ancho."
+    }
   }
 }

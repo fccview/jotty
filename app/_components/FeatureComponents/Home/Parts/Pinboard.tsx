@@ -11,6 +11,7 @@ import { cn } from "@/app/_utils/global-utils";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { usePinnedBoard } from "@/app/_hooks/usePinnedBoard";
+import { WidgetDismiss } from "./WidgetDismiss";
 
 const CAP = { desktop: 8, mobile: 4 };
 const SCROLL_AFTER = 16;
@@ -90,9 +91,12 @@ export const Pinboard = <T extends { uuid: string }>({
       className={cn(
         "jotty-pinboard min-w-0",
         isBoard &&
-          "rounded-jotty border border-dashed border-border p-4 sm:p-6 bg-[radial-gradient(rgb(var(--muted-foreground)/0.22)_1px,transparent_1.3px)] [background-size:18px_18px] [background-position:9px_9px]",
+          "group/widget relative rounded-jotty border border-dashed border-border p-4 sm:p-6 bg-[radial-gradient(rgb(var(--muted-foreground)/0.22)_1px,transparent_1.3px)] [background-size:18px_18px] [background-position:9px_9px]",
       )}
     >
+      {isBoard && (
+        <WidgetDismiss widget="homePinboard" className="absolute right-2 top-2 z-20 bg-card/80" />
+      )}
       <DndContext
         sensors={board.sensors}
         collisionDetection={closestCenter}

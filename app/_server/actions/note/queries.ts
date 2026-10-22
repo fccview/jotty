@@ -16,11 +16,16 @@ import {
   extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
-import { readNotesRecursively } from "./readers";
+import { readNotesRecursively, type ListedNote, type NoteReadOptions } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import {
+  getOrCompute,
+  metaCacheKey,
+  summaryCacheKey,
+} from "@/app/_server/actions/lib/metadata-cache";
+import { withNoteBody } from "@/app/_utils/note-display-utils";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
@@ -33,13 +38,7 @@ export const getAllNotes = async (allowArchived?: boolean) => {
       const userDir = NOTES_DIR(user.username);
 
       try {
-        const userDocs = await readNotesRecursively(
-          userDir,
-          "",
-          user.username,
-          allowArchived,
-          false,
-        );
+        const userDocs = await readNotesRecursively(userDir, user.username, { allowArchived });
         allDocs.push(...userDocs);
       } catch (error) {
         continue;
@@ -146,6 +145,30 @@ export const getNoteById = async (
   };
 };
 
+const _bodied = async (note: ListedNote): Promise<ListedNote> => {
+  const raw = note.sourcePath ? await serverReadExisting(note.sourcePath) : null;
+  if (raw === null) return note;
+  return withNoteBody(note, extractYamlMetadata(raw).contentWithoutMetadata);
+};
+
+const _unlisted = (note: ListedNote): Note => {
+  const bare = { ...note };
+  delete bare.sourcePath;
+  return bare;
+};
+
+const _withBodies = async (
+  notes: ListedNote[],
+  bodiesFor?: (notes: Note[]) => string[],
+  keepSources = false,
+): Promise<Note[]> => {
+  const wanted = new Set(bodiesFor ? bodiesFor(notes) : []);
+  const filled = await Promise.all(
+    notes.map((note) => (wanted.has(note.uuid) ? _bodied(note) : note)),
+  );
+  return keepSources ? filled : filled.map(_unlisted);
+};
+
 export const getUserNotes = async (options: GetNotesOptions = {}) => {
   const {
     username,
@@ -159,6 +182,9 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     offset,
     pinnedPaths,
     preserveOrder = false,
+    summarize = false,
+    bodiesFor,
+    keepSources = false,
   } = options;
 
   try {
@@ -184,39 +210,28 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     const layoutTiming = metadataOnly;
     const t1 = layoutTiming ? performance.now() : 0;
 
-    const canCache = metadataOnly && !allowArchived && !isRaw && !excerptLength;
+    const isSummary = summarize && !metadataOnly && !isRaw && !excerptLength;
+    const canCache = (metadataOnly || isSummary) && !allowArchived && !isRaw && !excerptLength;
+    const cacheKeyOf = isSummary ? summaryCacheKey : metaCacheKey;
 
     const ownCacheKey = canCache
-      ? metaCacheKey(Modes.NOTES, resolvedDir)
+      ? cacheKeyOf(Modes.NOTES, resolvedDir)
       : null;
 
-    const cached: Note[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, resolvedDir, () =>
-        readNotesRecursively(
-          resolvedDir,
-          "",
-          currentUser.username,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-          excerptLength,
-          undefined,
-          undefined,
-        ),
-      )
-      : await readNotesRecursively(
-        resolvedDir,
-        "",
-        currentUser.username,
-        allowArchived,
-        isRaw,
-        metadataOnly,
-        excerptLength,
-        undefined,
-        undefined,
-      );
+    const readOptions: NoteReadOptions = {
+      allowArchived,
+      isRaw,
+      metadataOnly,
+      excerptLength,
+      summarize: isSummary,
+    };
+    const readOwn = () => readNotesRecursively(resolvedDir, currentUser.username, readOptions);
 
-    const notes: Note[] = dropClashes(cached, resolvedDir);
+    const cached: ListedNote[] = ownCacheKey
+      ? await getOrCompute(ownCacheKey, resolvedDir, readOwn)
+      : await readOwn();
+
+    const notes: ListedNote[] = dropClashes(cached, resolvedDir);
 
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
@@ -241,30 +256,13 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
           ? ownerDir
           : path.join(process.cwd(), ownerDir);
         const ownerCacheKey = canCache
-          ? metaCacheKey(Modes.NOTES, ownerAbsDir)
+          ? cacheKeyOf(Modes.NOTES, ownerAbsDir)
           : null;
 
+        const readOwner = () => readNotesRecursively(ownerDir, mount.owner, readOptions);
         const ownerNotes = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerAbsDir, () =>
-            readNotesRecursively(
-              ownerDir,
-              "",
-              mount.owner,
-              allowArchived,
-              isRaw,
-              metadataOnly,
-              excerptLength,
-            ),
-          )
-          : await readNotesRecursively(
-            ownerDir,
-            "",
-            mount.owner,
-            allowArchived,
-            isRaw,
-            metadataOnly,
-            excerptLength,
-          );
+          ? await getOrCompute(ownerCacheKey, ownerAbsDir, readOwner)
+          : await readOwner();
 
         const shared = await mountedItems(
           Modes.NOTES,
@@ -283,7 +281,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       }
     }
 
-    let filteredNotes = notes;
+    let filteredNotes: Note[] = notes;
     if (filter) {
       if (filter.type === "category") {
         filteredNotes = notes.filter((note: any) => {
@@ -336,6 +334,10 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       filteredNotes = filteredNotes.slice(offsetNum, offsetNum + limit);
     } else if (offsetNum > 0) {
       filteredNotes = filteredNotes.slice(offsetNum);
+    }
+
+    if (isSummary) {
+      filteredNotes = await _withBodies(filteredNotes, bodiesFor, keepSources);
     }
 
     if (projection && projection.length > 0) {

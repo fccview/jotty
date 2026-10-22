@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Checklist } from "@/app/_types";
 import { isKanbanType, Modes } from "@/app/_types/enums";
-import { countItems } from "@/app/_utils/checklist-count-utils";
+import { useListSummary } from "@/app/_hooks/useListCardStats";
 import { useItemSharing } from "@/app/_hooks/useItemSharing";
 import { TickGrid } from "@/app/_components/GlobalComponents/Cards/Parts/TickGrid";
 import { NextUp } from "@/app/_components/GlobalComponents/Cards/Parts/NextUp";
@@ -19,10 +18,8 @@ export const ChecklistPickUp = ({ list, onOpen }: { list: Checklist; onOpen: () 
   const t = useTranslations();
   const { people } = useItemSharing(list.uuid, Modes.CHECKLISTS);
   const isBoard = isKanbanType(list.type);
-  const { total, completed } = useMemo(
-    () => countItems(list.items, list.type),
-    [list.items, list.type],
-  );
+  const summary = useListSummary(list);
+  const { total, completed } = summary;
 
   return (
     <PickUpCard
@@ -43,12 +40,12 @@ export const ChecklistPickUp = ({ list, onOpen }: { list: Checklist; onOpen: () 
       }
     >
       {isBoard ? (
-        <MiniBoard board={list} />
+        <MiniBoard summary={summary} />
       ) : (
         <>
-          <TickGrid items={list.items} type={list.type} />
+          <TickGrid summary={summary} />
           <div className="mt-3">
-            <NextUp list={list} />
+            <NextUp uuid={list.uuid} summary={summary} />
           </div>
         </>
       )}

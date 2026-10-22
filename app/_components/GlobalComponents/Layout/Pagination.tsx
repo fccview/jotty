@@ -5,10 +5,10 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { cn } from "@/app/_utils/global-utils";
+import { PER_PAGE_OPTIONS } from "@/app/_consts/browse";
 
 const PAGE_DELTA = 2;
 const GAP = "...";
-const PER_PAGE_OPTIONS = [12, 24, 36, 72, 84, 120];
 
 type PageSlot = number | typeof GAP;
 

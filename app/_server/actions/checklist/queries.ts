@@ -17,13 +17,22 @@ import {
   extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
-import { readListsRecursively, type ChecklistReadResult } from "./readers";
+import {
+  readListsRecursively,
+  type ChecklistReadResult,
+  type ListReadOptions,
+} from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
 import { countItems } from "@/app/_utils/checklist-count-utils";
+import { summarizeList } from "@/app/_utils/browse/list-summary-utils";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import {
+  getOrCompute,
+  metaCacheKey,
+  summaryCacheKey,
+} from "@/app/_server/actions/lib/metadata-cache";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
@@ -39,6 +48,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     pinnedPaths,
     preserveOrder = false,
     countOpenItems = false,
+    summarize = false,
   } = options;
 
   try {
@@ -60,37 +70,27 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     const layoutTiming = metadataOnly;
     const t1 = layoutTiming ? performance.now() : 0;
 
-    const canCache = metadataOnly && !allowArchived && !isRaw;
+    const isSummary = summarize && !metadataOnly && !isRaw;
+    const canCache = (metadataOnly || isSummary) && !allowArchived && !isRaw;
+    const cacheKeyOf = isSummary ? summaryCacheKey : metaCacheKey;
     const absUserDir = path.isAbsolute(userDir)
       ? userDir
       : path.join(process.cwd(), userDir);
     const ownCacheKey = canCache
-      ? metaCacheKey(Modes.CHECKLISTS, absUserDir)
+      ? cacheKeyOf(Modes.CHECKLISTS, absUserDir)
       : null;
 
+    const readOptions: ListReadOptions = {
+      allowArchived,
+      isRaw,
+      metadataOnly,
+      summarize: isSummary,
+    };
+    const readOwn = () => readListsRecursively(userDir, currentUser.username, readOptions);
+
     const cached: ChecklistReadResult[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, absUserDir, () =>
-        readListsRecursively(
-          userDir,
-          "",
-          currentUser.username,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-          undefined,
-          undefined,
-        ),
-      )
-      : await readListsRecursively(
-        userDir,
-        "",
-        currentUser.username,
-        allowArchived,
-        isRaw,
-        metadataOnly,
-        undefined,
-        undefined,
-      );
+      ? await getOrCompute(ownCacheKey, absUserDir, readOwn)
+      : await readOwn();
 
     let lists: ChecklistReadResult[] = dropClashes(cached, absUserDir);
 
@@ -119,28 +119,13 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         await ensureDir(ownerDir);
 
         const ownerCacheKey = canCache
-          ? metaCacheKey(Modes.CHECKLISTS, ownerDir)
+          ? cacheKeyOf(Modes.CHECKLISTS, ownerDir)
           : null;
 
+        const readOwner = () => readListsRecursively(ownerDir, mount.owner, readOptions);
         const ownerLists = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerDir, () =>
-            readListsRecursively(
-              ownerDir,
-              "",
-              mount.owner,
-              allowArchived,
-              isRaw,
-              metadataOnly,
-            ),
-          )
-          : await readListsRecursively(
-            ownerDir,
-            "",
-            mount.owner,
-            allowArchived,
-            isRaw,
-            metadataOnly,
-          );
+          ? await getOrCompute(ownerCacheKey, ownerDir, readOwner)
+          : await readOwner();
 
         const shared = await mountedItems(
           Modes.CHECKLISTS,
@@ -188,7 +173,8 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 
     const openItems = countOpenItems
       ? lists.reduce((open, list) => {
-          const { total, completed } = countItems(list.items || [], list.type);
+          const { total, completed } =
+            list.summary || countItems(list.items || [], list.type);
           return open + total - completed;
         }, 0)
       : undefined;
@@ -244,7 +230,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           const { checklist } = await checkAndRefreshRecurringItems(
             list as Checklist,
           );
-          return checklist;
+          return isSummary && !checklist.summary
+            ? { ...checklist, items: [], summary: summarizeList(checklist) }
+            : checklist;
         }),
       );
     }
@@ -389,13 +377,10 @@ export const getAllLists = async (
       );
 
       try {
-        const userLists = await readListsRecursively(
-          userDir,
-          "",
-          user.username,
+        const userLists = await readListsRecursively(userDir, user.username, {
           allowArchived,
           isRaw,
-        );
+        });
         allLists.push(...(userLists as Checklist[]));
       } catch (error) {
         continue;

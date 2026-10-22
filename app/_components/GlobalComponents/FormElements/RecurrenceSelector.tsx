@@ -15,7 +15,7 @@ import {
 } from "@/app/_utils/recurrence-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import Calendar from "@/app/_components/FeatureComponents/Calendar/Calendar";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
 
@@ -203,7 +203,7 @@ export const RecurrenceSelector = ({
         isOpen={showStartCalendar}
         onClose={() => setShowStartCalendar(false)}
         title={t('common.selectStartDate')}
-        className="!max-w-[380px] mx-auto"
+        width={ModalWidth.NARROW}
       >
         <Calendar
           selectedDate={startDate}
@@ -217,7 +217,7 @@ export const RecurrenceSelector = ({
         isOpen={showEndCalendar}
         onClose={() => setShowEndCalendar(false)}
         title={t('common.selectEndDateOptional')}
-        className="!max-w-[380px] mx-auto"
+        width={ModalWidth.NARROW}
       >
         <Calendar
           selectedDate={endDate}

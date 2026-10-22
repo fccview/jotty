@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal } from "../Modal";
+import { Modal, ModalVariant } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
@@ -40,7 +40,19 @@ export const FolderShareModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={true} onClose={onClose} title={t("sharing.shareFolder")}>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      variant={ModalVariant.PANEL}
+      title={t("sharing.shareFolder")}
+      footer={(close) => (
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={close} disabled={isLoading}>
+            {t("common.close")}
+          </Button>
+        </div>
+      )}
+    >
       <div className="space-y-4 pb-4">
         <h3 className="font-semibold text-lg">{categoryPath}</h3>
         <p className="text-sm text-muted-foreground">
@@ -157,12 +169,6 @@ export const FolderShareModal = ({
             {t("sharing.publicFolderWarning")}
           </p>
         </div>
-      </div>
-
-      <div className="-mx-6 -mb-6 flex justify-end gap-2 px-6 py-3 border-t border-border bg-muted/20 rounded-b-jotty">
-        <Button variant="outline" onClick={onClose} disabled={isLoading}>
-          {t("common.close")}
-        </Button>
       </div>
     </Modal>
   );

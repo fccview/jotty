@@ -1,18 +1,23 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Category, DefaultNoteFilter, Note, SanitisedUser } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
+import { ViewMode } from "@/app/_consts/view-modes";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useBrowse } from "@/app/_hooks/useBrowse";
+import { useNoteBodies } from "@/app/_hooks/browse/useNoteBodies";
 import { usePins } from "@/app/_hooks/usePins";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
-import { BrowseScope, NOTE_FILTERS, RECENT_NOTES_LIMIT } from "@/app/_consts/browse";
+import { BodyCookie, BrowseScope, DESKTOP_QUERY, NOTE_FILTERS } from "@/app/_consts/browse";
+import { matchesNoteFilter, noteLimitFor } from "@/app/_utils/browse-utils";
+import { bodyNeedOf } from "@/app/_utils/browse/body-cookie";
 import { NoteItems } from "@/app/_components/GlobalComponents/Cards/NoteItems";
 import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
 import { BrowseShell } from "@/app/_components/FeatureComponents/Browse/BrowseShell";
@@ -20,7 +25,7 @@ import { CategoryFilter } from "@/app/_components/FeatureComponents/Browse/Categ
 import { SCOPE_CONFIG } from "@/app/_components/FeatureComponents/Browse/scope-config";
 import { NotePreview } from "./Parts/NotePreview";
 
-const DESKTOP_QUERY = "(min-width: 1024px)";
+const NO_NOTES: Note[] = [];
 
 interface NotesPageClientProps {
   initialNotes: Note[];
@@ -32,7 +37,8 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
   const t = useTranslations();
   const router = useRouter();
   const compact = useCompactNumber();
-  const { viewMode } = useSettings();
+  const viewMode = useQuickValue(QuickSettingId.VIEW_MODE);
+  const showMarkdownPreview = useQuickValue(QuickSettingId.CARD_PREVIEW);
   const { openCreateNoteModal } = useShortcut();
   const pins = usePins(initialNotes, user?.pinnedNotes, ItemTypes.NOTE);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
@@ -40,19 +46,28 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
   const { isPinned } = pins;
 
   const matches = useCallback(
-    (note: Note, filter: DefaultNoteFilter) => filter !== "pinned" || isPinned(note),
+    (note: Note, filter: DefaultNoteFilter) => matchesNoteFilter(filter, isPinned(note)),
     [isPinned],
   );
-  const limitFor = useCallback(
-    (filter: DefaultNoteFilter) => (filter === "recent" ? RECENT_NOTES_LIMIT : undefined),
-    [],
-  );
   const defaultFilter = user?.defaultNoteFilter || "all";
-  const browse = useBrowse({ items: initialNotes, defaultFilter, matches, limitFor });
+  const browse = useBrowse({ items: initialNotes, defaultFilter, matches, limitFor: noteLimitFor });
+  const need = bodyNeedOf({ showMarkdownPreview, viewMode, isDesktop });
+  const wanted = useMemo(() => {
+    if (need === BodyCookie.ON) return browse.pageItems;
+    if (need === BodyCookie.OFF) return NO_NOTES;
+    const focus = browse.pageItems.find((note) => note.uuid === selectedUuid) || browse.pageItems[0];
+    return focus ? [focus] : NO_NOTES;
+  }, [need, browse.pageItems, selectedUuid]);
+  const shown = useNoteBodies({
+    notes: initialNotes,
+    pageItems: browse.pageItems,
+    wanted,
+    upcoming: need === BodyCookie.ON ? browse.nextItems : NO_NOTES,
+    isActive: need !== BodyCookie.OFF,
+  });
 
   const open = (note: Note) => router.push(itemHref(ItemTypes.NOTE, note.uuid));
-  const selected =
-    browse.pageItems.find((note) => note.uuid === selectedUuid) || browse.pageItems[0];
+  const selected = shown.find((note) => note.uuid === selectedUuid) || shown[0];
 
   return (
     <BrowseShell
@@ -69,7 +84,7 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
       browse={browse}
       onCreate={() => openCreateNoteModal()}
     >
-      {viewMode === "list" ? (
+      {viewMode === ViewMode.LIST ? (
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 items-start lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] min-[1500px]:grid-cols-[210px_minmax(0,360px)_minmax(0,1fr)]">
           <div className="hidden min-[1500px]:block">
             <CategoryFilter
@@ -82,7 +97,7 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
             />
           </div>
           <div className="bg-card border border-border rounded-jotty divide-y divide-border overflow-hidden min-w-0">
-            {browse.pageItems.map((note) => (
+            {shown.map((note) => (
               <NoteListItem
                 key={note.uuid}
                 note={note}
@@ -110,7 +125,7 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
         </div>
       ) : (
         <NoteItems
-          notes={browse.pageItems}
+          notes={shown}
           view={viewMode}
           columns={SCOPE_CONFIG[BrowseScope.NOTES].columns}
           gap="tight"

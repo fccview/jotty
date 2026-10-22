@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { AiBrain04Icon } from "hugeicons-react";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
@@ -50,6 +50,7 @@ export const BrainPageClient = ({
   user,
 }: BrainPageClientProps) => {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const { showToast } = useToast();
   const { openSettings, openCreateNoteModal, openCreateCategoryModal } =
@@ -147,7 +148,7 @@ export const BrainPageClient = ({
         <MobileHeader
           user={user}
           onOpenSettings={openSettings}
-          currentLocale={user?.preferredLocale || "en"}
+          currentLocale={locale}
         />
 
         <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-background">

@@ -25,6 +25,9 @@ import { Modes } from "@/app/_types/enums";
 import { buildTagsIndex } from "../_utils/tag-utils";
 import { useSidebarStore } from "../_utils/sidebar-store";
 
+const sameUser = (left: SanitisedUser | null, right: SanitisedUser) =>
+  JSON.stringify(left) === JSON.stringify(right);
+
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
 export const AppModeProvider = ({
@@ -108,9 +111,8 @@ export const AppModeProvider = ({
   }, []);
 
   useEffect(() => {
-    if (initialUser && (!user || user.username !== initialUser.username)) {
-      setUser(initialUser);
-    }
+    if (!initialUser) return;
+    setUser((prev) => (sameUser(prev, initialUser) ? prev : initialUser));
   }, [initialUser]);
 
   const { setMode: setStoredMode } = useSidebarStore();

@@ -5,7 +5,8 @@ import { Note } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
 import { formatShortTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { UnifiedMarkdownRenderer } from "../../FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { noteDisplayOf } from "@/app/_utils/note-display-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
@@ -17,6 +18,10 @@ import { SealedPanel } from "./Parts/SealedPanel";
 import { ItemShareMark } from "./Parts/ItemShareMark";
 
 const CARD_TAG_LIMIT = 2;
+const INTERACTIVE_SELECTOR = "a, button, input, textarea, select, summary, label, [role='button']";
+
+const isInteractiveTarget = (target: EventTarget) =>
+  target instanceof Element && target.closest(INTERACTIVE_SELECTOR) !== null;
 
 interface NoteCardProps {
   note: Note;
@@ -35,8 +40,9 @@ export const NoteCard = ({
 }: NoteCardProps) => {
   const t = useTranslations();
   const compact = useCompactNumber();
-  const { showMarkdownPreview } = useSettings();
-  const { title, content, isEncrypted, stats } = useMemo(() => noteDisplayOf(note), [note]);
+  const showMarkdownPreview = useQuickValue(QuickSettingId.CARD_PREVIEW);
+  const { title, content, isEncrypted, hasBody, stats } = useMemo(() => noteDisplayOf(note), [note]);
+  const isRich = hasBody && (showMarkdownPreview || fullScrollableContent);
 
   return (
     <article
@@ -66,7 +72,10 @@ export const NoteCard = ({
       <button
         type="button"
         onClick={() => onSelect(note)}
-        className="jotty-note-card-title block w-full text-left px-4 pt-3 pb-3"
+        className={cn(
+          "jotty-note-card-title block w-full text-left px-4 pt-3",
+          isRich && !isEncrypted ? "pb-0" : "pb-3",
+        )}
       >
         <h3 className="font-semibold text-lg leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-3">
           {title}
@@ -75,21 +84,27 @@ export const NoteCard = ({
           <div className="mt-3">
             <SealedPanel />
           </div>
-        ) : showMarkdownPreview || fullScrollableContent ? (
-          <div
-            className={cn(
-              "jotty-note-card-content mt-2 text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>p]:!text-sm [&>pre]:!text-xs [&>img]:!max-h-32",
-              fullScrollableContent ? "max-h-[200px] overflow-y-auto" : "line-clamp-5",
-            )}
-          >
-            <UnifiedMarkdownRenderer content={content} />
-          </div>
         ) : (
-          <p className="jotty-note-card-content mt-2 text-md lg:text-sm text-muted-foreground leading-relaxed line-clamp-5">
-            {stats.excerpt}
-          </p>
+          !isRich && (
+            <p className="jotty-note-card-content mt-2 text-md lg:text-sm text-muted-foreground leading-relaxed line-clamp-5">
+              {stats.excerpt}
+            </p>
+          )
         )}
       </button>
+      {isRich && !isEncrypted && (
+        <div
+          onClick={(event) => {
+            if (!isInteractiveTarget(event.target)) onSelect(note);
+          }}
+          className={cn(
+            "jotty-note-card-content mx-4 mt-2 mb-3 cursor-pointer text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>p]:!text-sm [&>pre]:!text-xs [&>img]:!max-h-32",
+            fullScrollableContent ? "max-h-[200px] overflow-y-auto" : "line-clamp-5",
+          )}
+        >
+          <UnifiedMarkdownRenderer content={content} />
+        </div>
+      )}
 
       <div className="jotty-note-card-footer px-4 pb-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-2 min-w-0">

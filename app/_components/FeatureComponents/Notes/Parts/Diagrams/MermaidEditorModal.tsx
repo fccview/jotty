@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { MermaidRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/MermaidRenderer";
 
@@ -54,7 +54,7 @@ export const MermaidEditorModal = ({ content, onSave, onClose }: MermaidEditorMo
   };
 
   return (
-    <Modal isOpen onClose={saveAndClose} title={t("editor.editDiagram")} size="fullscreen">
+    <Modal isOpen onClose={saveAndClose} title={t("editor.editDiagram")} variant={ModalVariant.WORKSPACE} flush>
       <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
         <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-2">
           <textarea

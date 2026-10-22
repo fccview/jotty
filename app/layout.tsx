@@ -46,6 +46,7 @@ import { WebSocketProvider } from "./_providers/WebSocketProvider";
 import { isEnvEnabled } from "./_utils/env-utils";
 import {
   ADMIN_BORDER_RADIUS_VAR,
+  USER_BORDER_RADIUS_VAR,
   USER_NOTE_FONT_SIZE_VAR,
   normaliseNoteFontSize,
   noteFontSizeToPx,
@@ -232,6 +233,9 @@ export default async function RootLayout({
       style={
         {
           [ADMIN_BORDER_RADIUS_VAR]: radiusToRem(settings?.borderRadius),
+          ...(typeof user?.preferredBorderRadius === "number" && {
+            [USER_BORDER_RADIUS_VAR]: radiusToRem(user.preferredBorderRadius),
+          }),
           ...(normaliseNoteFontSize(user?.notesFontSize) && {
             [USER_NOTE_FONT_SIZE_VAR]: noteFontSizeToPx(user?.notesFontSize),
           }),
@@ -283,7 +287,7 @@ export default async function RootLayout({
           >
             <WebSocketProvider>
               <KonamiProvider>
-                <ThemeProvider user={user || {}}>
+                <ThemeProvider>
                   <EmojiProvider>
                     <NavigationGuardProvider>
                       <ToastProvider>

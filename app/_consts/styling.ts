@@ -1,5 +1,6 @@
 export const BORDER_RADIUS_VAR = "--jotty-radius";
 export const ADMIN_BORDER_RADIUS_VAR = "--jotty-radius-admin";
+export const USER_BORDER_RADIUS_VAR = "--jotty-radius-user";
 
 export const DEFAULT_BORDER_RADIUS = 0.25;
 export const MIN_BORDER_RADIUS = 0;
@@ -31,10 +32,17 @@ export const clampKanbanColumnWidth = (value?: number): number => {
   );
 };
 
+export const KANBAN_COLUMN_WIDTH_AUTO = 0;
+
+export const normaliseKanbanColumnWidth = (value?: number): number =>
+  !value || !Number.isFinite(value)
+    ? KANBAN_COLUMN_WIDTH_AUTO
+    : clampKanbanColumnWidth(value);
+
 export const SMALL_RADIUS_CLASS =
-  "rounded-[min(calc(var(--jotty-radius,var(--jotty-radius-admin,0.25rem))*0.5),4px)]";
+  "rounded-[min(calc(var(--jotty-radius-effective)*0.5),4px)]";
 export const TICK_RADIUS_CLASS =
-  "rounded-[min(calc(var(--jotty-radius,var(--jotty-radius-admin,0.25rem))*0.6),3px)]";
+  "rounded-[min(calc(var(--jotty-radius-effective)*0.6),3px)]";
 
 export const NOTE_FONT_SIZE_VAR = "--jotty-note-font-size";
 export const USER_NOTE_FONT_SIZE_VAR = "--jotty-note-font-size-user";

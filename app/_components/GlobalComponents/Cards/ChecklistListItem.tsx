@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Checklist } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
-import { countItems } from "@/app/_utils/checklist-count-utils";
+import { useListSummary } from "@/app/_hooks/useListCardStats";
 import { formatShortTime } from "@/app/_utils/date-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
 import { PinToggle } from "./Parts/PinToggle";
@@ -26,10 +25,7 @@ export const ChecklistListItem = ({
   onTogglePin,
 }: ChecklistListItemProps) => {
   const t = useTranslations();
-  const { total, completed } = useMemo(
-    () => countItems(list.items, list.type),
-    [list.items, list.type],
-  );
+  const { total, completed } = useListSummary(list);
   const percent = total ? Math.round((completed / total) * 100) : 0;
 
   return (

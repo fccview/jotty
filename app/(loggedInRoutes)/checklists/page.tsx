@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ChecklistsPage() {
   const [listsResult, user, categoriesResult] = await Promise.all([
-    getUserChecklists(),
+    getUserChecklists({ summarize: true }),
     getCurrentUser(),
     getCategories(Modes.CHECKLISTS),
   ]);

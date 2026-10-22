@@ -59,7 +59,6 @@ export const ImageSizeModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t("editor.imageSize")}
-      className="!max-w-md"
     >
       <div className="space-y-4">
         {imageUrl && (

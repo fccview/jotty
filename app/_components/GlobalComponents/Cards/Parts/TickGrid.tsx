@@ -1,44 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
 import { useTranslations } from "next-intl";
-import { Item } from "@/app/_types";
-import { isItemCompleted, leafItems } from "@/app/_utils/checklist-count-utils";
+import { ListSummary } from "@/app/_types";
+import { TICK_COLUMNS } from "@/app/_utils/browse/list-summary-utils";
 import { cn } from "@/app/_utils/global-utils";
-import { plainItemText } from "@/app/_utils/item-href-utils";
 import { TICK_RADIUS_CLASS } from "@/app/_consts/styling";
 
-const COLUMNS = 16;
-const ROWS = 3;
-
-interface TickGridProps {
-  items: Item[];
-  type: string;
-}
-
-export const TickGrid = ({ items, type }: TickGridProps) => {
+export const TickGrid = ({ summary }: { summary: ListSummary }) => {
   const t = useTranslations();
-
-  const { cells, bucket, done, total } = useMemo(() => {
-    const leaves = leafItems(items);
-    const size = Math.max(1, Math.ceil(leaves.length / (COLUMNS * ROWS)));
-    const groups = Array.from(
-      { length: Math.ceil(leaves.length / size) },
-      (_, index) => leaves.slice(index * size, index * size + size),
-    );
-
-    return {
-      bucket: size,
-      total: leaves.length,
-      done: leaves.filter((item) => isItemCompleted(item, type)).length,
-      cells: groups.map((group) => ({
-        key: group[0].id,
-        label: group.length === 1 ? plainItemText(group[0].text) : "",
-        done: group.filter((item) => isItemCompleted(item, type)).length,
-        size: group.length,
-      })),
-    };
-  }, [items, type]);
+  const { total, completed: done } = summary;
+  const { cells, bucket } = summary.ticks;
 
   if (!total) {
     return <div className="h-[10px] rounded-jotty border border-dashed border-border" />;
@@ -48,7 +19,7 @@ export const TickGrid = ({ items, type }: TickGridProps) => {
     <div>
       <div
         className="grid gap-[3px]"
-        style={{ gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 15px))` }}
+        style={{ gridTemplateColumns: `repeat(${TICK_COLUMNS}, minmax(0, 15px))` }}
         aria-label={t("browse.tickedOf", { done, total })}
       >
         {cells.map((cell) => {

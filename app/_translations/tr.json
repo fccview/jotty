@@ -187,6 +187,7 @@
     "unpinFromHome": "Ana Sayfadan Kaldır",
     "archive": "Arşivle",
     "confirmDeleteItem": "\"{itemTitle}\" öğesini silmek istediğinizden emin misiniz?",
+    "confirmDeleteEntry": "Bu kaydı silmek istediğinizden emin misiniz?",
     "sharedBy": "{sharer} tarafından paylaşıldı",
     "itemsCompleted": "{completedItems}/{totalItems} tamamlandı",
     "releaseNotes": "Sürüm Notları v{version}",
@@ -679,7 +680,17 @@
     "startTime": "Başlangıç",
     "endTime": "Bitiş",
     "addItemToColumn": "{column} sütununa öğe ekle",
-    "addItemPlaceholder": "Yeni öğe..."
+    "addItemPlaceholder": "Yeni öğe...",
+    "agentAvatar": "Ajan {agent}",
+    "agentInvalid": "Ajan adları boşluk içermeden 1-64 harf, rakam, nokta, tire veya alt çizgiden oluşur.",
+    "assigneeSearch": "Kullanıcı ara veya bir ajana ad ver...",
+    "assignAgentAs": "{agent} ajanını ata",
+    "assigneeWillShare": "Panoyu paylaşacak",
+    "assigneeNoAccess": "Bu panoyu göremiyor",
+    "assigneeShareTitle": "Bu pano paylaşılsın mı?",
+    "assigneeShareMessage": "{user} bu panoyu henüz göremiyor. Atamak panoyu düzenleme erişimiyle paylaşır.",
+    "assigneeShareConfirm": "Paylaş ve ata",
+    "assignFailed": "Atanan kişi değiştirilemedi"
   },
   "profile": {
     "userProfile": "Kullanıcı Profili",
@@ -871,6 +882,8 @@
     "confirmPassword": "Şifreyi Onayla",
     "passwordChanged": "Şifre değiştirildi",
     "settingsSaved": "Ayarlar kaydedildi",
+    "settingsSaveFailed": "Ayarlar kaydedilemedi",
+    "settingsSaveFailedDescription": "Değişikliğin kaydedilmedi. Tekrar dene.",
     "dashCase": "Kısa çizgi (örneğin; dosya-adim.md)",
     "minimal": "Minimal (sadece geçersiz karakterleri kaldır)",
     "noRename": "Yeniden adlandırma yok (orijinal dosya adını koru)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Varsayılan",
+    "defaultOption": "Varsayılan ({value})",
     "dark": "Karanlık",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Kaldığınız yerden devam edin",
     "homePinboard": "Pano",
     "homePinboardDescription": "Devre dışı bırakıldığında sabitlenmiş öğeler en üstte normal kartlar olarak gösterilir.",
-    "homeTags": "Etiketler"
+    "homeTags": "Etiketler",
+    "notesFontSize": "Not metin boyutu",
+    "notesFontSizeDescription": "Notları her cihazda okumak ve düzenlemek için metin boyutu. Hızlı ayarlar bunu tek bir tarayıcı için değiştirebilir.",
+    "borderRadiusDescription": "Uygulamanın her yerinde köşeleri yuvarlar. Hızlı ayarlar bunu yine de tek bir tarayıcı için değiştirebilir.",
+    "browseViewModeDescription": "Notlara ve listelere göz atarken nasıl yerleştirildikleri.",
+    "notesCardPreviewDescription": "Her notun biçimlendirilmiş başlangıcını kartında gösterir.",
+    "notesCompactModeDescription": "Notları okurken ve düzenlerken daha dar bir düzen kullanır.",
+    "kanbanColumnWidthDescription": "Kanban durum sütunları için özel bir genişlik belirle. Varsayılan olarak sütunlar mevcut alana sığar."
   },
   "admin": {
     "title": "Yönetici",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "Düzenleyici ayarları bir nesne olmalı, hiçbir şey kaydedilmedi",
     "invalidEditorSetting": "{field} düzenleyici ayarının türü yanlış, hiçbir şey kaydedilmedi",
     "categoryOutOfBounds": "Bu kategori notlarınızın dışında, bu yüzden hiçbir şey oluşturulmadı",
+    "filenameOutOfBounds": "Bu başlık dosyayı kategorisinin dışına koyacağından hiçbir şey kaydedilmedi",
     "requiredField": "Bu alan zorunludur",
     "emailInvalid": "Lütfen geçerli bir e-posta adresi girin",
     "passwordTooShort": "Şifre en az 8 karakter olmalıdır",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Zengin düzenleyici moduna geç",
     "toggleMarkdownMode": "Markdown moduna geç",
+    "editorMode": "Düzenleyici modu",
+    "currentEditorMode": "Şu anda {mode} içinde düzenleniyor",
+    "switchToRichEditor": "Zengin düzenleyiciye geç",
+    "switchToMarkdown": "Markdown'a geç",
     "quickControls": "Düzenleyici kontrolleri",
     "toggleBold": "Kalın yap/kaldır",
     "toggleItalic": "İtalik yap/kaldır",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Diyagramı düzenle",
     "deleteDiagram": "Diyagramı sil",
+    "diagramDarkMode": "Karanlık modda göster",
+    "diagramLightMode": "Aydınlık modda göster",
+    "diagramLoadFailed": "Diyagram düzenleyici yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.",
+    "diagramSaveFailed": "Diyagram kaydedilemedi. Çiziminiz hâlâ açık.",
+    "diagramDataUnreadable": "Bu diyagramın verileri okunamadı, bu yüzden burada düzenlenemez.",
+    "drawioEditor": "Draw.io düzenleyici",
+    "diagramRichModeOnly": "Yalnızca zengin modda",
+    "diagramUnavailableInMarkdown": "Markdown modunda kullanılamaz",
     "enterMermaidCode": "Mermaid diyagram kodunu girin...",
     "widthPx": "Genişlik (px)",
     "heightPx": "Yükseklik (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Satır numaraları",
     "inlineCode": "Satır içi kod",
     "moreTools": "Daha fazla araç",
-    "moreToolsCount": "Daha fazla araç ({count} tanesi burada)",
-    "diagramDarkMode": "Karanlık modda göster",
-    "diagramLightMode": "Aydınlık modda göster",
-    "diagramLoadFailed": "Diyagram düzenleyici yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.",
-    "diagramSaveFailed": "Diyagram kaydedilemedi. Çiziminiz hâlâ açık.",
-    "diagramDataUnreadable": "Bu diyagramın verileri okunamadı, bu yüzden burada düzenlenemez.",
-    "drawioEditor": "Draw.io düzenleyici",
-    "diagramRichModeOnly": "Yalnızca zengin modda",
-    "diagramUnavailableInMarkdown": "Markdown modunda kullanılamaz"
+    "moreToolsCount": "Daha fazla araç ({count} tanesi burada)"
   },
   "sharing": {
     "share": "Paylaş",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Ben yer tutucuyum çünkü boş bir notu şifreleyemezsiniz."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Bu seçenekler yalnızca bu tarayıcı oturumunda geçerlidir. Kalıcı ayarlar için şuraya bakın:",
-    "accountSettings": "kullanıcı tercihleri",
-    "autosaveNotes": "Notları Otomatik Kaydet",
     "showNotePreview": "Kartlarda Not Önizlemesini Göster",
     "notesCompactMode": "Notlar kompakt modu",
     "showEmojis": "Listelerinde emojileri göster",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Liste",
     "viewModeGrid": "Izgara",
     "borderRadius": "Köşe yuvarlaklığı",
-    "useInstanceDefault": "Varsayılanı kullan",
-    "borderRadiusDescription": "Sürüklerken köşeler tüm uygulamada güncellenir.",
     "kanbanColumnWidth": "Kanban sütun genişliği",
-    "kanbanColumnWidthDescription": "Kanban durum sütunları için özel bir genişlik ayarlayın. Örnek varsayılanı sütunları kullanılabilir alana otomatik olarak sığdırır.",
     "kanbanColumnWidthCompact": "Kompakt",
     "kanbanColumnWidthComfortable": "Konforli",
     "kanbanColumnWidthWide": "Genis",
-    "kanbanColumnWidthAutoFit": "Otomatik"
+    "kanbanColumnWidthAutoFit": "Otomatik",
+    "useAccountSetting": "Hesap ayarını kullan"
   },
   "migration": {
     "migrationComplete": "Taşıma Tamamlandı",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Markdown Kılavuzu",
     "brain": "Bağlantılar ve Beyin",
     "customisations": "Özelleştirmeler",
+    "selfHosting": "Kendi sunucunda barındırma",
     "envVariables": "Ortam Değişkenleri",
     "mfa": "MFA (İki Faktörlü Doğrulama)",
     "encryption": "Şifreleme",
     "sso": "SSO (Tekli Giriş)",
     "ldap": "LDAP",
-    "translations": "Çeviriler"
+    "translations": "Çeviriler",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Sayfa Bulunamadı",
@@ -1826,7 +1849,9 @@
     "linked": "{title} içindeki geçiş bağlandı",
     "linkFailed": "Bu geçiş bağlanamadı",
     "kind": {
+      "link": "Bağlantı",
       "mention": "Bağlantı",
+      "checklist": "Liste",
       "wiki": "Wiki bağlantısı"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Etiket"
     },
     "edges": {
+      "link": "Bağlantı",
       "mention": "Bağlantı",
+      "checklist": "Liste",
       "wiki": "Wiki bağlantısı",
       "suggested": "Önerilen",
       "tag": "Etiket"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty bu dosyanın başındaki frontmatter'ı yeniden yazacak. Geçerli YAML olmayan değerleri tırnak içine alır, sekmeleri boşluğa çevirir, Jotty kimliği olmayan bir uuid'yi previousUuid alanına taşır ve kendi uuid'sini ekler. Dosyanın geri kalanı olduğu gibi kalır. Jotty bunu geri alamaz, bu yüzden başka bir uygulama bu frontmatter'ı okuyorsa bir kopya saklayın. Bu öğeyi düzenleme iznine ihtiyacınız var ve klasörü yazılabilir olmalı.",
     "confirm": "Frontmatter'ı düzelt",
     "fixed": "Düzeltildi. Artık bu öğeyi düzenleyebilirsiniz."
+  },
+  "live": {
+    "currentlyEditing": "Şu anda düzenliyor",
+    "dropped": "Sen çevrimdışıyken biri bu notu değiştirdi, bu yüzden kaydedilmemiş değişikliklerin atıldı.",
+    "copyDropped": "Değişikliklerimi kopyala",
+    "status": {
+      "offline": "Çevrimdışı. Sen yeniden bağlanmadan önce biri bu notu değiştirirse kaydedilmemiş değişikliklerin atılır.",
+      "refused": "Erişimin veya bu not değiştiği için canlı düzenleme durdu. Devam etmek için sayfayı yenile.",
+      "unavailable": "Canlı düzenleme kullanılamıyor, bu yüzden tek başına düzenliyorsun. Değişikliklerin yine de kaydediliyor."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " ve içindekiler",
     "only": " (yalnızca)",
     "categoriesMore": "{first} + {count} daha",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "tüm notları",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} not} other {{notes} not}}, {pinned} sabitlenmiş",
     "checklistsKicker": "{total} kutudan {done} tanesi işaretli",
-    "kanbanKicker": "{boardsCount, plural, one {{boards} panoda} other {{boards} panoda}} {cardsCount, plural, one {{cards} kart} other {{cards} kart}}, {inProgress} devam ediyor"
+    "kanbanKicker": "{boardsCount, plural, one {{boards} panoda} other {{boards} panoda}} {cardsCount, plural, one {{cards} kart} other {{cards} kart}}, {inProgress} devam ediyor",
+    "hideWidget": "{widget} gizle",
+    "widgetHidden": "{widget} gizlendi",
+    "widgetHiddenHint": "Kullanıcı tercihlerinden istediğiniz zaman yeniden açabilirsiniz."
+  },
+  "quickSettings": {
+    "title": "Hızlı ayarlar",
+    "browserOnly": "Yalnızca bu tarayıcıda",
+    "saveToAccount": "Hesaba kaydet",
+    "savedToAccount": "Hesabına kaydedildi",
+    "allPreferences": "Tüm tercihler",
+    "heading": "Kendini evinde hisset",
+    "subtitle": "Değişiklikler bu tarayıcıda kalır. Her cihazda kullanmak istediklerini hesabına kaydet.",
+    "overrideCount": "{count, plural, one {# tanesi burada ayarlı} other {# tanesi burada ayarlı}}",
+    "saving": "Kaydediliyor...",
+    "labels": {
+      "theme": "Tema",
+      "borderRadius": "Köşe yuvarlama",
+      "noteFontSize": "Not metin boyutu",
+      "kanbanColumnWidth": "Kanban sütun genişliği",
+      "viewMode": "Görünüm",
+      "cardPreview": "Kartlarda not önizlemesi",
+      "compactMode": "Kompakt not genişliği",
+      "autosave": "Notları otomatik kaydet",
+      "showEmojis": "Listelerde emojiler",
+      "completedSuggestions": "Tamamlanan öğeleri öner"
+    },
+    "hints": {
+      "borderRadius": "Sürükledikçe köşeler uygulamanın her yerinde değişir.",
+      "noteFontSize": "Not okumak ve yazmak için.",
+      "kanbanColumnWidth": "Otomatik, sütunları panoyu dolduracak şekilde genişletir.",
+      "cardPreview": "Kartlarda düz metin yerine biçimlendirilmiş markdown gösterir.",
+      "compactMode": "Düzenleyiciyi 900px genişlikle sınırlar."
+    }
   }
 }

@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ViewMode } from "@/app/_consts/view-modes";
+import {
+  QuickOverrides,
+  QuickSettingId,
+  QuickSettingValues,
+  SETTINGS_STORAGE_KEY,
+  SETTINGS_STORE_VERSION,
+  SYSTEM_THEME,
+} from "@/app/_consts/quick-settings";
+import { migrateSettings } from "@/app/_utils/settings/quick-settings-migrate";
 
 type BuiltInTheme =
   | "system"
@@ -37,85 +45,43 @@ const getSystemTheme = (
 };
 
 interface SettingsState {
-  theme: Theme;
-  showEmojis: boolean | null;
-  autosaveNotes: boolean;
-  showMarkdownPreview: boolean;
-  showCompletedSuggestions: boolean;
-  viewMode: ViewMode;
-  borderRadius: number | null;
-  kanbanColumnWidth: number | null;
-  noteFontSize: number | null;
-  setBorderRadius: (radius: number | null) => void;
-  setKanbanColumnWidth: (width: number | null) => void;
-  setNoteFontSize: (size: number | null) => void;
-  setTheme: (theme: Theme) => void;
-  setShowEmojis: (show: boolean | null) => void;
-  setAutosaveNotes: (enabled: boolean) => void;
-  setShowMarkdownPreview: (show: boolean) => void;
-  setShowCompletedSuggestions: (show: boolean) => void;
-  setCompactMode: (compact: boolean) => void;
-  setViewMode: (mode: ViewMode) => void;
+  overrides: QuickOverrides;
+  setOverride: <K extends QuickSettingId>(id: K, value: QuickSettingValues[K]) => void;
+  clearOverride: (id: QuickSettingId) => void;
   getResolvedTheme: (
     isRwMarkable: boolean,
     userPreferredTheme?: string
   ) => "rwmarkable-light" | "rwmarkable-dark" | "light" | "dark" | string;
-  compactMode: boolean;
 }
 
-export const useSettings = create<SettingsState & { isRwMarkable?: boolean }>()(
+export const resolveTheme = (
+  theme: Theme,
+  isRwMarkable: boolean,
+): "rwmarkable-light" | "rwmarkable-dark" | "light" | "dark" | string =>
+  theme && theme !== SYSTEM_THEME ? theme : getSystemTheme(isRwMarkable);
+
+export const useSettings = create<SettingsState>()(
   persist(
     (set, get) => ({
-      theme: "system",
-      showEmojis: null,
-      autosaveNotes: true,
-      showMarkdownPreview: false,
-      showCompletedSuggestions: true,
-      compactMode: false,
-      viewMode: 'card',
-      borderRadius: null,
-      kanbanColumnWidth: null,
-      noteFontSize: null,
-      setBorderRadius: (radius) => set({ borderRadius: radius }),
-      setKanbanColumnWidth: (width) => set({ kanbanColumnWidth: width }),
-      setNoteFontSize: (size) => set({ noteFontSize: size }),
-      setTheme: (theme) => set({ theme }),
-      setShowEmojis: (show) => set({ showEmojis: show }),
-      setAutosaveNotes: (enabled) => set({ autosaveNotes: enabled }),
-      setShowMarkdownPreview: (show) => set({ showMarkdownPreview: show }),
-      setShowCompletedSuggestions: (show) =>
-        set({ showCompletedSuggestions: show }),
-      setCompactMode: (compact) => set({ compactMode: compact }),
-      setViewMode: (mode) => set({ viewMode: mode }),
-      getResolvedTheme: (
-        isRwMarkable: boolean,
-        userPreferredTheme?: string
-      ) => {
-        const { theme: localStorageTheme } = get();
-
-        if (localStorageTheme && localStorageTheme !== "system") {
-          return localStorageTheme;
-        } else if (userPreferredTheme && userPreferredTheme !== "system") {
-          return userPreferredTheme;
-        } else if (
-          localStorageTheme === "system" ||
-          userPreferredTheme === "system"
-        ) {
-          return getSystemTheme(isRwMarkable);
-        } else {
-          return isRwMarkable ? "rwmarkable-light" : "light";
-        }
+      overrides: {},
+      setOverride: (id, value) =>
+        set((state) => ({ overrides: { ...state.overrides, [id]: value } })),
+      clearOverride: (id) =>
+        set((state) => {
+          const rest = { ...state.overrides };
+          delete rest[id];
+          return { overrides: rest };
+        }),
+      getResolvedTheme: (isRwMarkable, userPreferredTheme) => {
+        const local = get().overrides[QuickSettingId.THEME];
+        return resolveTheme(local ?? userPreferredTheme ?? SYSTEM_THEME, isRwMarkable);
       },
     }),
     {
-      name: "checklist-settings",
-      version: 1,
-      migrate: (persisted, version) => {
-        if (version < 1) {
-          return { ...(persisted as SettingsState), showEmojis: null };
-        }
-        return persisted as SettingsState;
-      },
+      name: SETTINGS_STORAGE_KEY,
+      version: SETTINGS_STORE_VERSION,
+      partialize: (state) => ({ overrides: state.overrides }),
+      migrate: (persisted, version) => migrateSettings(persisted, version),
     }
   )
 );

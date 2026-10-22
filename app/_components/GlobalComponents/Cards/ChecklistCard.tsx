@@ -32,7 +32,7 @@ export const ChecklistCard = ({
 }: ChecklistCardProps) => {
   const t = useTranslations();
   const trackedTime = useTrackedTime();
-  const { isBoard, total, completed, assignees, seconds } = useListCardStats(list);
+  const { isBoard, total, completed, assignees, seconds, summary } = useListCardStats(list);
   const updated = formatRelativeTime(list.updatedAt, t);
 
   return (
@@ -48,15 +48,15 @@ export const ChecklistCard = ({
 
       <div className={isBoard ? "px-3" : "px-4"}>
         {isBoard ? (
-          <MiniBoard board={list} />
+          <MiniBoard summary={summary} />
         ) : (
-          <TickGrid items={list.items} type={list.type} />
+          <TickGrid summary={summary} />
         )}
       </div>
 
       {!isBoard && (
         <div className="mt-3 px-4">
-          <NextUp list={list} />
+          <NextUp uuid={list.uuid} summary={summary} />
         </div>
       )}
 

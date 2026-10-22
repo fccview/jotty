@@ -1,368 +1,106 @@
 "use client";
 
-import {
-  FloppyDiskIcon,
-  SmileIcon,
-  File02Icon,
-  ArrowHorizontalIcon,
-  CheckmarkSquare04Icon,
-} from "hugeicons-react";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { useSettings } from "@/app/_utils/settings-store";
-import { useEffect, useState } from "react";
-import { getAllThemes } from "@/app/_consts/themes";
 import Link from "next/link";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
-import { RadiusSlider } from "@/app/_components/GlobalComponents/FormElements/RadiusSlider";
-import { ColumnWidthSlider } from "@/app/_components/GlobalComponents/FormElements/ColumnWidthSlider";
-import { NoteFontSizeSlider } from "@/app/_components/GlobalComponents/FormElements/NoteFontSizeSlider";
+import { ArrowRight01Icon } from "hugeicons-react";
 import {
-  clampRadius,
-  clampKanbanColumnWidth,
-  clampNoteFontSize,
-  normaliseNoteFontSize,
-} from "@/app/_consts/styling";
-import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
-import { VIEW_MODE_OPTIONS } from "@/app/_consts/view-modes";
+  QUICK_TABS,
+  QuickSettingId,
+  QuickTab,
+  accountValueOf,
+  quickSettingsFor,
+} from "@/app/_consts/quick-settings";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useSettings } from "@/app/_utils/settings-store";
+import { useThemeOptions } from "@/app/_hooks/settings/useThemeOptions";
+import { cn } from "@/app/_utils/global-utils";
+import { Modal, ModalVariant } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { QuickSettingRow } from "./Parts/QuickSettingRow";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const SECTION_LABELS: Record<QuickTab, string> = {
+  [QuickTab.APPEARANCE]: "settings.appearance",
+  [QuickTab.NOTES]: "notes.title",
+  [QuickTab.LISTS]: "checklists.lists",
+};
+
+const KICKER_CLASS = "font-mono text-[11px] uppercase tracking-widest text-muted-foreground";
+
+const PanelKicker = () => {
+  const t = useTranslations();
+  const { user } = useAppMode();
+  const overrides = useSettings((state) => state.overrides);
+  const overrideCount = (Object.keys(overrides) as QuickSettingId[]).filter(
+    (id) => overrides[id] !== accountValueOf(id, user),
+  ).length;
+
+  return (
+    <>
+      <span className={KICKER_CLASS}>{t("quickSettings.title")}</span>
+      <span
+        className={cn(KICKER_CLASS, "text-primary transition-opacity duration-200", overrideCount ? "opacity-100" : "opacity-0")}
+        aria-live="polite"
+      >
+        {overrideCount > 0 && `· ${t("quickSettings.overrideCount", { count: overrideCount })}`}
+      </span>
+    </>
+  );
+};
+
+const PanelFooter = ({ close }: { close: () => void }) => {
+  const t = useTranslations();
+
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <Link
+        href="/settings/user-preferences"
+        onClick={close}
+        className="group inline-flex items-center gap-1 text-md lg:text-sm text-muted-foreground transition-colors hover:text-primary"
+      >
+        {t("quickSettings.allPreferences")}
+        <ArrowRight01Icon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+      <Button size="sm" onClick={close}>
+        {t("common.done")}
+      </Button>
+    </div>
+  );
+};
+
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const t = useTranslations();
-  const { user, appSettings } = useAppMode();
-  const showEmojis = useShowEmojis();
-  const {
-    theme,
-    autosaveNotes,
-    showMarkdownPreview,
-    showCompletedSuggestions,
-    viewMode,
-    setTheme,
-    setShowEmojis,
-    setAutosaveNotes,
-    setShowMarkdownPreview,
-    setShowCompletedSuggestions,
-    setCompactMode,
-    setViewMode,
-    compactMode,
-    borderRadius,
-    setBorderRadius,
-    kanbanColumnWidth,
-    setKanbanColumnWidth,
-    noteFontSize,
-    setNoteFontSize,
-  } = useSettings();
-
-  const radius = borderRadius ?? clampRadius(appSettings?.borderRadius);
-  const columnWidth =
-    kanbanColumnWidth ?? clampKanbanColumnWidth(undefined);
-  const fontSize = clampNoteFontSize(
-    noteFontSize ?? (normaliseNoteFontSize(user?.notesFontSize) || undefined),
-  );
-  const [themes, setThemes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadThemes = async () => {
-      try {
-        const allThemes = await getAllThemes();
-        setThemes(allThemes);
-      } catch (error) {
-        console.error("Failed to load themes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen) {
-      loadThemes();
-    }
-  }, [isOpen]);
+  const themes = useThemeOptions(isOpen);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t("profile.quickSettingsHeader")}
+      title={t("quickSettings.heading")}
+      kicker={<PanelKicker />}
+      description={t("quickSettings.subtitle")}
+      footer={(close) => <PanelFooter close={close} />}
+      variant={ModalVariant.PANEL}
+      flush
     >
-      <p className="text-md lg:text-sm text-muted-foreground mb-6">
-        {t("settingsModal.sessionOnlyPrefix")}{" "}
-        <Link
-          href="/settings/user-preferences"
-          className="text-primary hover:underline"
+      {QUICK_TABS.map((section, index) => (
+        <section
+          key={section}
+          aria-labelledby={`quick-section-${section}`}
+          className={cn("jotty-quick-settings-section py-2", index > 0 && "border-t border-dashed border-border")}
         >
-          {t("settingsModal.accountSettings")}
-        </Link>
-        .
-      </p>
-      <div className="mb-6">
-        <h3 className="text-md lg:text-sm font-medium mb-3">
-          {t("common.theme")}
-        </h3>
-        {loading ? (
-          <div className="text-md lg:text-sm text-muted-foreground">
-            {t("settings.loadingThemes")}
-          </div>
-        ) : (
-          <Dropdown value={theme} options={themes} onChange={setTheme} />
-        )}
-      </div>
-
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-md lg:text-sm font-medium">
-            {t("settingsModal.borderRadius")}
+          <h3 id={`quick-section-${section}`} className={cn(KICKER_CLASS, "px-6 pt-3 pb-1")}>
+            {t(SECTION_LABELS[section])}
           </h3>
-          {borderRadius !== null && (
-            <button
-              onClick={() => setBorderRadius(null)}
-              className="text-md lg:text-xs text-primary hover:underline"
-            >
-              {t("settingsModal.useInstanceDefault")}
-            </button>
-          )}
-        </div>
-        <RadiusSlider
-          value={radius}
-          onChange={(value) => setBorderRadius(clampRadius(value))}
-        />
-        <p className="text-md lg:text-xs text-muted-foreground mt-2">
-          {t("settingsModal.borderRadiusDescription")}
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-md lg:text-sm font-medium">
-            {t("settingsModal.kanbanColumnWidth")}
-          </h3>
-          {kanbanColumnWidth !== null && (
-            <button
-              onClick={() => setKanbanColumnWidth(null)}
-              className="text-md lg:text-xs text-primary hover:underline"
-            >
-              {t("settingsModal.useInstanceDefault")}
-            </button>
-          )}
-        </div>
-        <ColumnWidthSlider
-          value={columnWidth}
-          onChange={(value) => setKanbanColumnWidth(clampKanbanColumnWidth(value))}
-          isDefault={kanbanColumnWidth === null}
-        />
-        <p className="text-md lg:text-xs text-muted-foreground mt-2">
-          {t("settingsModal.kanbanColumnWidthDescription")}
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-md lg:text-sm font-medium">
-            {t("settingsModal.noteFontSize")}
-          </h3>
-          {noteFontSize !== null && (
-            <button
-              onClick={() => setNoteFontSize(null)}
-              className="text-md lg:text-xs text-primary hover:underline"
-            >
-              {t("settingsModal.useAccountSetting")}
-            </button>
-          )}
-        </div>
-        <NoteFontSizeSlider
-          value={fontSize}
-          onChange={(value) => setNoteFontSize(clampNoteFontSize(value))}
-        />
-        <p className="text-md lg:text-xs text-muted-foreground mt-2">
-          {t("settingsModal.noteFontSizeDescription")}
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <h3 className="text-md lg:text-sm font-medium mb-3">
-          {t("settingsModal.viewMode")}
-        </h3>
-        <div className="grid grid-cols-3 gap-2">
-          {VIEW_MODE_OPTIONS.map(({ id, icon: Icon, labelKey }) => (
-            <button
-              key={id}
-              onClick={() => setViewMode(id)}
-              className={`flex flex-col items-center gap-2 p-3 rounded-jotty border transition-all ${
-                viewMode === id
-                  ? "border-primary color-primary"
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              <span className="text-md lg:text-xs font-medium">{t(labelKey)}</span>
-            </button>
+          {quickSettingsFor(section).map((id) => (
+            <QuickSettingRow key={id} id={id} themes={themes} />
           ))}
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <h3 className="text-md lg:text-sm font-medium mb-3">
-          {t("notes.title")}
-        </h3>
-        <div className="space-y-3">
-          {user?.notesAutoSaveInterval !== 0 && (
-            <label className="flex items-center justify-between cursor-pointer">
-              <div className="flex items-center gap-2">
-                <FloppyDiskIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-md lg:text-sm">
-                  {t("settingsModal.autosaveNotes")}
-                </span>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={autosaveNotes}
-                  onChange={(e) => setAutosaveNotes(e.target.checked)}
-                  className="sr-only"
-                />
-                <div
-                  className={`block w-10 h-6 rounded-full transition-colors ${
-                    autosaveNotes ? "bg-primary" : "bg-muted"
-                  }`}
-                >
-                  <div
-                    className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                      autosaveNotes ? "translate-x-4" : "translate-x-0"
-                    }`}
-                  />
-                </div>
-              </div>
-            </label>
-          )}
-
-          <label className="flex items-center justify-between cursor-pointer">
-            <div className="flex items-center gap-2">
-              <File02Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-md lg:text-sm">
-                {t("settingsModal.showNotePreview")}
-              </span>
-            </div>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={showMarkdownPreview}
-                onChange={(e) => setShowMarkdownPreview(e.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  showMarkdownPreview ? "bg-primary" : "bg-muted"
-                }`}
-              >
-                <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    showMarkdownPreview ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </div>
-            </div>
-          </label>
-
-          <label className="flex items-center justify-between cursor-pointer">
-            <div className="flex items-center gap-2">
-              <ArrowHorizontalIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-md lg:text-sm">
-                {t("settingsModal.notesCompactMode")}
-              </span>
-            </div>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={compactMode}
-                onChange={(e) => setCompactMode(e.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  compactMode ? "bg-primary" : "bg-muted"
-                }`}
-              >
-                <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    compactMode ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </div>
-            </div>
-          </label>
-        </div>
-
-        <h3 className="text-md lg:text-sm font-medium mb-3 mt-6">
-          {t("checklists.title")}
-        </h3>
-        <div className="space-y-3">
-          <label className="flex items-center justify-between cursor-pointer">
-            <div className="flex items-center gap-2">
-              <SmileIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-md lg:text-sm">
-                {t("settingsModal.showEmojis")}
-              </span>
-            </div>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={showEmojis}
-                onChange={(e) => setShowEmojis(e.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  showEmojis ? "bg-primary" : "bg-muted"
-                }`}
-              >
-                <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    showEmojis ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </div>
-            </div>
-          </label>
-
-          <label className="flex items-center justify-between cursor-pointer">
-            <div className="flex items-center gap-2">
-              <CheckmarkSquare04Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="text-md lg:text-sm">
-                {t("settings.showCompletedSuggestions")}
-              </span>
-            </div>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={showCompletedSuggestions}
-                onChange={(e) => setShowCompletedSuggestions(e.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className={`block w-10 h-6 rounded-full transition-colors ${
-                  showCompletedSuggestions ? "bg-primary" : "bg-muted"
-                }`}
-              >
-                <div
-                  className={`absolute left-1 top-1 bg-card w-4 h-4 rounded-full transition-transform ${
-                    showCompletedSuggestions ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </div>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <Button onClick={onClose}>{t("common.done")}</Button>
-      </div>
+        </section>
+      ))}
     </Modal>
   );
 };

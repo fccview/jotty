@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { NOTE_FONT_SIZE_VAR, noteFontSizeToPx } from "@/app/_consts/styling";
 
 export const useNoteFontSizeOverride = () => {
-  const { noteFontSize } = useSettings();
+  const noteFontSize = useQuickValue(QuickSettingId.NOTE_FONT_SIZE);
 
   useEffect(() => {
     const root = document.documentElement;

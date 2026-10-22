@@ -187,6 +187,7 @@
     "unpinFromHome": "Pry from Port",
     "archive": "The Hold",
     "confirmDeleteItem": "Ye sure ye want to scuttle \"{itemTitle}\"?",
+    "confirmDeleteEntry": "Be ye sure ye want to scuttle this entry?",
     "sharedBy": "Divvied by {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} plundered",
     "releaseNotes": "Captain's Log v{version}",
@@ -421,7 +422,7 @@
     "tableOfContents": "Ship's manifest",
     "wordCount": "{count, plural, one {# word} other {# words}}",
     "charCount": "{count, plural, one {# character} other {# characters}}",
-    "readingTime": "{count, plural, one {# minute o' readin'} other {# minutes o' readin'}}",
+    "readingTime": "{count, plural, one {# minute o'' readin''} other {# minutes o'' readin''}}",
     "tags": "Flags",
     "noTagsFound": "No flags hoist",
     "searchTags": "Spy for flags...",
@@ -679,7 +680,17 @@
     "startTime": "Start o’ bell",
     "endTime": "End o’ bell",
     "addItemToColumn": "Plunder {column} with a new item",
-    "addItemPlaceholder": "New plunder..."
+    "addItemPlaceholder": "New plunder...",
+    "agentAvatar": "Agent {agent}",
+    "agentInvalid": "Agent names be 1-64 letters, digits, dots, dashes or underscores, an' no spaces, matey.",
+    "assigneeSearch": "Search fer crew or name an agent...",
+    "assignAgentAs": "Put agent {agent} on the job",
+    "assigneeWillShare": "Will share the board",
+    "assigneeNoAccess": "Can't spy this board",
+    "assigneeShareTitle": "Share this board?",
+    "assigneeShareMessage": "{user} can't see this board yet. Puttin' 'em on the job will share it with edit rights.",
+    "assigneeShareConfirm": "Share an' assign",
+    "assignFailed": "Couldn't change who be on the job"
   },
   "profile": {
     "userProfile": "Deckhand",
@@ -871,6 +882,8 @@
     "confirmPassword": "Confirm Code",
     "passwordChanged": "Code changed",
     "settingsSaved": "Rigging secured",
+    "settingsSaveFailed": "Couldn't stow yer settings",
+    "settingsSaveFailedDescription": "Yer change weren't saved. Try again.",
     "dashCase": "Dash-case",
     "minimal": "Minimal",
     "noRename": "Leave it be",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Standard",
+    "defaultOption": "Default o' the ship ({value})",
     "dark": "Midnight",
     "funky": "Groggy",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Pick up where ye dropped anchor",
     "homePinboard": "Notice Board",
     "homePinboardDescription": "When stowed, nailed-down items show as regular cards up top.",
-    "homeTags": "Flags"
+    "homeTags": "Flags",
+    "notesFontSize": "Note scribble size",
+    "notesFontSizeDescription": "How big the scribbles be when readin' an' editin' notes on every ship. Quick settings can change it fer one browser.",
+    "borderRadiusDescription": "Rounds the corners across the whole ship. Quick settings can still change it fer one browser.",
+    "browseViewModeDescription": "How notes an' lists be laid out when ye browse 'em.",
+    "notesCardPreviewDescription": "Show the fancy start o' each note on its card.",
+    "notesCompactModeDescription": "Use a narrower deck when readin' an' editin' notes.",
+    "kanbanColumnWidthDescription": "Set yer own width fer the kanban columns. By default they stretch to fill the deck."
   },
   "admin": {
     "title": "Captain",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "Quill settings must be an object, nothin' was stowed",
     "invalidEditorSetting": "Quill setting {field} be the wrong type, nothin' was stowed",
     "categoryOutOfBounds": "That heading be outside yer own waters, so nothin' was made",
+    "filenameOutOfBounds": "That title would toss the file outside its hold, so nothin' were saved",
     "requiredField": "Ye must fill this",
     "emailInvalid": "That ain't an email",
     "passwordTooShort": "Code's too short",
@@ -1285,6 +1307,10 @@
     "markdown": "Runes",
     "toggleRichEditorMode": "Fancy Mode",
     "toggleMarkdownMode": "Rune Mode",
+    "editorMode": "Editor mode",
+    "currentEditorMode": "Now editin' in {mode}",
+    "switchToRichEditor": "Switch to the fancy editor",
+    "switchToMarkdown": "Switch to markdown",
     "quickControls": "Quill controls",
     "toggleBold": "Heavy",
     "toggleItalic": "Lean",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Refit Map",
     "deleteDiagram": "Burn Map",
+    "diagramDarkMode": "Show it by moonlight",
+    "diagramLightMode": "Show it by daylight",
+    "diagramLoadFailed": "Arr, the chart-drawin' contraption won't come aboard. Check yer riggin' an' try again.",
+    "diagramSaveFailed": "Blimey, couldn't stow the chart. Yer scribblin' be still open.",
+    "diagramDataUnreadable": "This chart's markings be unreadable, so ye can't be changin' it here.",
+    "drawioEditor": "Draw.io chart table",
+    "diagramRichModeOnly": "Fancy sailin' only",
+    "diagramUnavailableInMarkdown": "Not fer markdown waters",
     "enterMermaidCode": "Enter Mermaid runes...",
     "widthPx": "Beam",
     "heightPx": "Draft",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Line numbers",
     "inlineCode": "Inline code, arr",
     "moreTools": "More riggin'",
-    "moreToolsCount": "More riggin' ({count} stowed in the hold)",
-    "diagramDarkMode": "Show it by moonlight",
-    "diagramLightMode": "Show it by daylight",
-    "diagramLoadFailed": "Arr, the chart-drawin' contraption won't come aboard. Check yer riggin' an' try again.",
-    "diagramSaveFailed": "Blimey, couldn't stow the chart. Yer scribblin' be still open.",
-    "diagramDataUnreadable": "This chart's markings be unreadable, so ye can't be changin' it here.",
-    "drawioEditor": "Draw.io chart table",
-    "diagramRichModeOnly": "Fancy sailin' only",
-    "diagramUnavailableInMarkdown": "Not fer markdown waters"
+    "moreToolsCount": "More riggin' ({count} stowed in the hold)"
   },
   "sharing": {
     "share": "Divvy",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "I am a placeholder because you can't encrypt an empty note."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "These rules only last 'til ye leave port. For permanent rules, check",
-    "accountSettings": "preferences",
-    "autosaveNotes": "Auto-Stow Logs",
     "showNotePreview": "Spy Logs on Cards",
     "notesCompactMode": "Tiny Logs",
     "showEmojis": "Show Runes on manifests",
@@ -1617,14 +1640,12 @@
     "viewModeList": "List",
     "viewModeGrid": "Grid",
     "borderRadius": "Corner roundin'",
-    "useInstanceDefault": "Follow the cap'n's orders",
-    "borderRadiusDescription": "Every corner on the ship changes as ye haul the slider.",
     "kanbanColumnWidth": "Kanban column width",
-    "kanbanColumnWidthDescription": "Set yer own width for the Kanban status columns. The cap'n's default fits the columns to whatever space be on deck.",
     "kanbanColumnWidthCompact": "Cramped",
     "kanbanColumnWidthComfortable": "Comfy",
     "kanbanColumnWidthWide": "Roomy",
-    "kanbanColumnWidthAutoFit": "Ship-fit"
+    "kanbanColumnWidthAutoFit": "Ship-fit",
+    "useAccountSetting": "Use the account settin'"
   },
   "migration": {
     "migrationComplete": "Refit Complete",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Rune Guide",
     "brain": "Links & Brain",
     "customisations": "Tweaks",
+    "selfHosting": "Self-hostin'",
     "envVariables": "Winds",
     "mfa": "Handshake",
     "encryption": "Locker",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Lingos"
+    "translations": "Lingos",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Chart Leads Nowhere",
@@ -1826,7 +1849,9 @@
     "linked": "Tied the mention in {title}",
     "linkFailed": "Couldn't tie that mention",
     "kind": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Checklist",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Tag"
     },
     "edges": {
+      "link": "Link",
       "mention": "Link",
+      "checklist": "Checklist",
       "wiki": "Wikilink",
       "suggested": "Hunch",
       "tag": "Tag"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty will rewrite the frontmatter atop this scroll. It quotes values that ain't proper YAML, swaps tabs for spaces, stows a uuid that ain't a Jotty id in previousUuid, and adds its own uuid. The rest o' the scroll stays as it be. Jotty can't undo this, so keep a copy if another ship reads this frontmatter. Ye need leave to edit this booty, and its folder must be writable.",
     "confirm": "Patch the frontmatter",
     "fixed": "Patched! Ye can edit this booty now."
+  },
+  "live": {
+    "currentlyEditing": "Editin' now",
+    "dropped": "Some scallywag changed this note while ye were adrift, so yer unsaved changes went overboard.",
+    "copyDropped": "Copy me changes",
+    "status": {
+      "offline": "Adrift. If someone changes this note before ye be back, yer unsaved changes go overboard.",
+      "refused": "Live editin' stopped 'cause yer access or this note changed. Refresh to carry on.",
+      "unavailable": "Live editin' ain't available, so ye be sailin' solo. Yer changes still get saved."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " and all below decks",
     "only": " alone",
     "categoriesMore": "{first} + {count} more",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "all logs",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, one {{notes} log} other {{notes} logs}}, {pinned} nailed down",
     "checklistsKicker": "{done} of {total} boxes marked",
-    "kanbanKicker": "{cardsCount, plural, one {{cards} card} other {{cards} cards}} on {boardsCount, plural, one {{boards} chart} other {{boards} charts}}, {inProgress} under way"
+    "kanbanKicker": "{cardsCount, plural, one {{cards} card} other {{cards} cards}} on {boardsCount, plural, one {{boards} chart} other {{boards} charts}}, {inProgress} under way",
+    "hideWidget": "Stow {widget}",
+    "widgetHidden": "{widget} stowed below",
+    "widgetHiddenHint": "Haul it back up any time in yer user preferences."
+  },
+  "quickSettings": {
+    "title": "Quick settings",
+    "browserOnly": "Only on this ship",
+    "saveToAccount": "Stow in yer account",
+    "savedToAccount": "Stowed in yer account",
+    "allPreferences": "All the preferences",
+    "heading": "Make yerself at home",
+    "subtitle": "Changes stay on this browser. Stow any o' them in yer account to use 'em on every ship.",
+    "overrideCount": "{count, plural, one {# set here} other {# set here}}",
+    "saving": "Stowin'...",
+    "labels": {
+      "theme": "Colours",
+      "borderRadius": "Corner roundin'",
+      "noteFontSize": "Note scribble size",
+      "kanbanColumnWidth": "Kanban column width",
+      "viewMode": "Browse as",
+      "cardPreview": "Peek at notes on cards",
+      "compactMode": "Narrow note width",
+      "autosave": "Autosave notes",
+      "showEmojis": "Emojis on checklists",
+      "completedSuggestions": "Suggest finished items"
+    },
+    "hints": {
+      "borderRadius": "Corners change across the whole ship as ye drag.",
+      "noteFontSize": "Fer readin' an' writin' notes.",
+      "kanbanColumnWidth": "Auto fit stretches columns to fill the board.",
+      "cardPreview": "Show fancy markdown on cards instead o' plain text.",
+      "compactMode": "Caps the editor at 900px wide."
+    }
   }
 }

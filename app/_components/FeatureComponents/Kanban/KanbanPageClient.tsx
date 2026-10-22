@@ -3,8 +3,8 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
-import { TaskStatus } from "@/app/_types/enums";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
+import { listSummaryOf } from "@/app/_utils/browse/list-summary-utils";
 import { ListsBrowser } from "@/app/_components/FeatureComponents/Checklists/Parts/ListsBrowser";
 import { BrowseScope } from "@/app/_consts/browse";
 
@@ -18,13 +18,17 @@ export const KanbanPageClient = ({ initialLists, categories, user }: KanbanPageC
   const t = useTranslations();
   const compact = useCompactNumber();
 
-  const { cards, inProgress } = useMemo(() => {
-    const items = initialLists.flatMap((list) => list.items.filter((item) => !item.isArchived));
-    return {
-      cards: items.length,
-      inProgress: items.filter((item) => item.status === TaskStatus.IN_PROGRESS).length,
-    };
-  }, [initialLists]);
+  const { cards, inProgress } = useMemo(
+    () =>
+      initialLists.reduce(
+        (sum, list) => {
+          const summary = listSummaryOf(list);
+          return { cards: sum.cards + summary.cards, inProgress: sum.inProgress + summary.inProgress };
+        },
+        { cards: 0, inProgress: 0 },
+      ),
+    [initialLists],
+  );
 
   return (
     <ListsBrowser

@@ -3,7 +3,7 @@
 import { plainItemText } from "@/app/_utils/item-href-utils";
 import { useState, useMemo } from "react";
 import { Archive02Icon } from "hugeicons-react";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Item, KanbanStatus } from "@/app/_types";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -64,7 +64,13 @@ export const ArchivedItemsModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t("checklists.archivedItems")}
-      className="lg:max-w-2xl"
+      variant={ModalVariant.PANEL}
+      width={ModalWidth.WIDE}
+      footer={(close) => (
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={close}>{t('common.close')}</Button>
+        </div>
+      )}
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -86,7 +92,7 @@ export const ArchivedItemsModal = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+          <div className="space-y-2">
             {filteredItems.map((item) => (
               <div
                 key={item.id}
@@ -136,10 +142,6 @@ export const ArchivedItemsModal = ({
             ))}
           </div>
         )}
-
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>{t('common.close')}</Button>
-        </div>
       </div>
     </Modal>
   );

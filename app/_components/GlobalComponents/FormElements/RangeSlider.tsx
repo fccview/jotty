@@ -1,17 +1,33 @@
 "use client";
 
+import { CSSProperties } from "react";
+import { cn, rangeFill } from "@/app/_utils/global-utils";
+
 interface RangeSliderProps {
   id: string;
   label: string;
   value: number;
   min: number;
   max: number;
-  step: number;
+  step?: number;
   valueText: string;
   onChange: (value: number) => void;
+  onCommit?: () => void;
   disabled?: boolean;
-  valueClassName?: string;
+  showValue?: boolean;
+  className?: string;
 }
+
+const COMMIT_KEYS = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Home",
+  "End",
+  "PageUp",
+  "PageDown",
+]);
 
 export const RangeSlider = ({
   id,
@@ -19,13 +35,15 @@ export const RangeSlider = ({
   value,
   min,
   max,
-  step,
+  step = 1,
   valueText,
   onChange,
+  onCommit,
   disabled = false,
-  valueClassName = "font-mono",
+  showValue = true,
+  className,
 }: RangeSliderProps) => (
-  <div className="flex items-center gap-4">
+  <div className={cn("flex min-w-0 w-full items-center gap-3", className)}>
     <input
       id={id}
       type="range"
@@ -37,12 +55,17 @@ export const RangeSlider = ({
       aria-label={label}
       aria-valuetext={valueText}
       onChange={(event) => onChange(Number(event.target.value))}
-      className="w-full accent-primary disabled:opacity-50"
+      onPointerUp={() => onCommit?.()}
+      onKeyUp={(event) => {
+        if (COMMIT_KEYS.has(event.key)) onCommit?.();
+      }}
+      className="jotty-range min-w-0 flex-1"
+      style={{ "--range-fill": rangeFill(value, min, max) } as CSSProperties}
     />
-    <span
-      className={`w-20 shrink-0 whitespace-nowrap overflow-hidden text-right text-md lg:text-xs text-muted-foreground ${valueClassName}`}
-    >
-      {valueText}
-    </span>
+    {showValue && (
+      <span className="min-w-[4.5rem] shrink-0 truncate rounded-jotty jotty-value-chip px-2 py-0.5 text-center font-mono text-sm lg:text-xs tabular-nums text-foreground">
+        {valueText}
+      </span>
+    )}
   </div>
 );

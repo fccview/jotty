@@ -187,6 +187,7 @@
     "unpinFromHome": "Bỏ ghim khỏi Trang chủ",
     "archive": "Lưu trữ",
     "confirmDeleteItem": "Bạn có chắc chắn muốn xóa \"{itemTitle}\" không?",
+    "confirmDeleteEntry": "Bạn có chắc muốn xóa mục này không?",
     "sharedBy": "Được chia sẻ bởi {sharer}",
     "itemsCompleted": "{completedItems}/{totalItems} đã hoàn thành",
     "releaseNotes": "Ghi chú phát hành v {version}",
@@ -679,7 +680,17 @@
     "startTime": "Bắt đầu",
     "endTime": "Kết thúc",
     "addItemToColumn": "Thêm mục vào {column}",
-    "addItemPlaceholder": "Mặt hàng mới..."
+    "addItemPlaceholder": "Mặt hàng mới...",
+    "agentAvatar": "Tác tử {agent}",
+    "agentInvalid": "Tên tác tử gồm 1-64 chữ cái, chữ số, dấu chấm, gạch ngang hoặc gạch dưới, không có khoảng trắng.",
+    "assigneeSearch": "Tìm người dùng hoặc đặt tên cho tác tử...",
+    "assignAgentAs": "Giao cho tác tử {agent}",
+    "assigneeWillShare": "Sẽ chia sẻ bảng",
+    "assigneeNoAccess": "Không thể xem bảng này",
+    "assigneeShareTitle": "Chia sẻ bảng này?",
+    "assigneeShareMessage": "{user} chưa thể xem bảng này. Giao việc sẽ chia sẻ bảng với quyền chỉnh sửa.",
+    "assigneeShareConfirm": "Chia sẻ và giao việc",
+    "assignFailed": "Không thể thay đổi người được giao"
   },
   "profile": {
     "userProfile": "người dùng",
@@ -871,6 +882,8 @@
     "confirmPassword": "Xác nhận mật khẩu",
     "passwordChanged": "Đã đổi mật khẩu",
     "settingsSaved": "Đã lưu cài đặt",
+    "settingsSaveFailed": "Không thể lưu cài đặt",
+    "settingsSaveFailedDescription": "Thay đổi của bạn chưa được lưu. Hãy thử lại.",
     "dashCase": "Định dạng dấu gạch ngang (ví dụ: my-file-name.md)",
     "minimal": "Tối thiểu (chỉ xóa các ký tự không hợp lệ)",
     "noRename": "Không đổi tên (giữ tên file gốc)",
@@ -884,6 +897,7 @@
     "markdownTableSyntax": "Markdown",
     "htmlTableSyntax": "HTML",
     "default": "Mặc định",
+    "defaultOption": "Mặc định ({value})",
     "dark": "Tối",
     "funky": "Funky",
     "okaidia": "Okaidia",
@@ -974,7 +988,14 @@
     "homePickUp": "Tiếp tục từ chỗ bạn đã dừng",
     "homePinboard": "Bảng ghim",
     "homePinboardDescription": "Khi tắt, các mục đã ghim sẽ hiển thị như thẻ thông thường ở trên cùng.",
-    "homeTags": "Thẻ"
+    "homeTags": "Thẻ",
+    "notesFontSize": "Cỡ chữ ghi chú",
+    "notesFontSizeDescription": "Cỡ chữ để đọc và chỉnh sửa ghi chú trên mọi thiết bị. Cài đặt nhanh có thể thay đổi nó cho một trình duyệt.",
+    "borderRadiusDescription": "Bo tròn các góc trong toàn bộ ứng dụng. Cài đặt nhanh vẫn có thể thay đổi nó cho một trình duyệt.",
+    "browseViewModeDescription": "Cách ghi chú và danh sách được sắp xếp khi bạn duyệt.",
+    "notesCardPreviewDescription": "Hiển thị phần đầu đã định dạng của mỗi ghi chú trên thẻ.",
+    "notesCompactModeDescription": "Dùng bố cục hẹp hơn khi đọc và chỉnh sửa ghi chú.",
+    "kanbanColumnWidthDescription": "Đặt độ rộng riêng cho các cột trạng thái kanban. Mặc định các cột tự vừa với không gian có sẵn."
   },
   "admin": {
     "title": "Quản trị viên",
@@ -1180,6 +1201,7 @@
     "invalidEditorSettings": "Cài đặt trình chỉnh sửa phải là một đối tượng, chưa lưu gì",
     "invalidEditorSetting": "Cài đặt trình chỉnh sửa {field} sai kiểu, chưa lưu gì",
     "categoryOutOfBounds": "Danh mục đó nằm ngoài ghi chú của bạn, nên chưa tạo gì",
+    "filenameOutOfBounds": "Tiêu đề đó sẽ đưa tệp ra ngoài danh mục của nó, nên không có gì được lưu",
     "requiredField": "Trường này là bắt buộc",
     "emailInvalid": "Vui lòng nhập email hợp lệ",
     "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự",
@@ -1285,6 +1307,10 @@
     "markdown": "Markdown",
     "toggleRichEditorMode": "Chuyển đổi chế độ soạn thảo phong phú",
     "toggleMarkdownMode": "Chuyển đổi chế độ Markdown",
+    "editorMode": "Chế độ trình soạn thảo",
+    "currentEditorMode": "Đang chỉnh sửa trong {mode}",
+    "switchToRichEditor": "Chuyển sang trình soạn thảo đầy đủ",
+    "switchToMarkdown": "Chuyển sang markdown",
     "quickControls": "Điều khiển trình chỉnh sửa",
     "toggleBold": "Chuyển đổi in đậm",
     "toggleItalic": "Chuyển đổi chữ nghiêng",
@@ -1353,6 +1379,14 @@
     "urlPrompt": "URL",
     "editDiagram": "Chỉnh sửa sơ đồ",
     "deleteDiagram": "Xóa sơ đồ",
+    "diagramDarkMode": "Hiển thị ở chế độ tối",
+    "diagramLightMode": "Hiển thị ở chế độ sáng",
+    "diagramLoadFailed": "Không thể tải trình chỉnh sửa sơ đồ. Hãy kiểm tra kết nối và thử lại.",
+    "diagramSaveFailed": "Không thể lưu sơ đồ. Bản vẽ của bạn vẫn đang mở.",
+    "diagramDataUnreadable": "Không thể đọc dữ liệu của sơ đồ này nên không thể chỉnh sửa tại đây.",
+    "drawioEditor": "Trình chỉnh sửa Draw.io",
+    "diagramRichModeOnly": "Chỉ ở chế độ đầy đủ",
+    "diagramUnavailableInMarkdown": "Không khả dụng ở chế độ markdown",
     "enterMermaidCode": "Nhập mã sơ đồ Mermaid...",
     "widthPx": "Chiều rộng (px)",
     "heightPx": "Chiều cao (px)",
@@ -1386,15 +1420,7 @@
     "lineNumbers": "Số dòng",
     "inlineCode": "Mã nội dòng",
     "moreTools": "Thêm công cụ",
-    "moreToolsCount": "Thêm công cụ ({count} công cụ được cất ở đây)",
-    "diagramDarkMode": "Hiển thị ở chế độ tối",
-    "diagramLightMode": "Hiển thị ở chế độ sáng",
-    "diagramLoadFailed": "Không thể tải trình chỉnh sửa sơ đồ. Hãy kiểm tra kết nối và thử lại.",
-    "diagramSaveFailed": "Không thể lưu sơ đồ. Bản vẽ của bạn vẫn đang mở.",
-    "diagramDataUnreadable": "Không thể đọc dữ liệu của sơ đồ này nên không thể chỉnh sửa tại đây.",
-    "drawioEditor": "Trình chỉnh sửa Draw.io",
-    "diagramRichModeOnly": "Chỉ ở chế độ đầy đủ",
-    "diagramUnavailableInMarkdown": "Không khả dụng ở chế độ markdown"
+    "moreToolsCount": "Thêm công cụ ({count} công cụ được cất ở đây)"
   },
   "sharing": {
     "share": "Chia sẻ",
@@ -1606,9 +1632,6 @@
     "notePlaceholder": "Tôi là người giữ chỗ vì bạn không thể mã hóa một ghi chú trống."
   },
   "settingsModal": {
-    "sessionOnlyPrefix": "Các tùy chọn này chỉ áp dụng cho phiên trình duyệt này. Để cài đặt cố định, hãy xem",
-    "accountSettings": "sở thích của người dùng",
-    "autosaveNotes": "Tự động lưu ghi chú",
     "showNotePreview": "Hiển thị bản xem trước ghi chú trên thẻ",
     "notesCompactMode": "Chế độ thu gọn ghi chú",
     "showEmojis": "Hiển thị biểu tượng cảm xúc trên danh sách kiểm tra",
@@ -1617,14 +1640,12 @@
     "viewModeList": "Danh sách",
     "viewModeGrid": "Lưới",
     "borderRadius": "Bo góc",
-    "useInstanceDefault": "Dùng mặc định của phiên bản",
-    "borderRadiusDescription": "Các góc cập nhật trên toàn ứng dụng khi bạn kéo.",
     "kanbanColumnWidth": "Độ rộng cột Kanban",
-    "kanbanColumnWidthDescription": "Đặt độ rộng tùy chỉnh cho các cột trạng thái Kanban. Mặc định của phiên bản tự điều chỉnh cột theo không gian có sẵn.",
     "kanbanColumnWidthCompact": "Gọn",
     "kanbanColumnWidthComfortable": "Thoải mái",
     "kanbanColumnWidthWide": "Rộng",
-    "kanbanColumnWidthAutoFit": "Tự vừa"
+    "kanbanColumnWidthAutoFit": "Tự vừa",
+    "useAccountSetting": "Dùng cài đặt của tài khoản"
   },
   "migration": {
     "migrationComplete": "Quá trình di chuyển hoàn tất",
@@ -1784,12 +1805,14 @@
     "markdownGuide": "Hướng dẫn Markdown",
     "brain": "Liên kết & Bộ não",
     "customisations": "Tùy chỉnh",
+    "selfHosting": "Tự lưu trữ",
     "envVariables": "Biến Env",
     "mfa": "MFA",
     "encryption": "Mã hóa",
     "sso": "SSO",
     "ldap": "LDAP",
-    "translations": "Bản dịch"
+    "translations": "Bản dịch",
+    "mcp": "MCP"
   },
   "notFound": {
     "title": "Không tìm thấy trang",
@@ -1826,7 +1849,9 @@
     "linked": "Đã liên kết lời nhắc trong {title}",
     "linkFailed": "Không thể liên kết lời nhắc đó",
     "kind": {
+      "link": "Liên kết",
       "mention": "Liên kết",
+      "checklist": "Danh sách",
       "wiki": "Wikilink"
     }
   },
@@ -1862,7 +1887,9 @@
       "tag": "Thẻ"
     },
     "edges": {
+      "link": "Liên kết",
       "mention": "Liên kết",
+      "checklist": "Danh sách",
       "wiki": "Wikilink",
       "suggested": "Gợi ý",
       "tag": "Thẻ"
@@ -1917,6 +1944,16 @@
     "confirmMessage": "Jotty sẽ viết lại frontmatter ở đầu tệp này. Jotty đặt các giá trị không phải YAML hợp lệ trong dấu ngoặc kép, đổi tab thành dấu cách, chuyển uuid không phải id của Jotty sang previousUuid và thêm uuid riêng. Phần còn lại của tệp giữ nguyên. Jotty không thể hoàn tác việc này, nên hãy giữ một bản sao nếu ứng dụng khác đọc frontmatter này. Bạn cần quyền chỉnh sửa mục này và thư mục của nó phải cho phép ghi.",
     "confirm": "Sửa frontmatter",
     "fixed": "Đã sửa. Giờ bạn có thể chỉnh sửa mục này."
+  },
+  "live": {
+    "currentlyEditing": "Đang chỉnh sửa",
+    "dropped": "Có người đã thay đổi ghi chú này khi bạn ngoại tuyến, nên các thay đổi chưa lưu của bạn đã bị bỏ.",
+    "copyDropped": "Sao chép thay đổi của tôi",
+    "status": {
+      "offline": "Ngoại tuyến. Nếu có người thay đổi ghi chú này trước khi bạn kết nối lại, các thay đổi chưa lưu của bạn sẽ bị bỏ.",
+      "refused": "Chỉnh sửa trực tiếp đã dừng vì quyền truy cập của bạn hoặc ghi chú này đã thay đổi. Hãy tải lại để tiếp tục.",
+      "unavailable": "Chỉnh sửa trực tiếp không khả dụng, nên bạn đang chỉnh sửa một mình. Thay đổi của bạn vẫn được lưu."
+    }
   },
   "browse": {
     "greeting": {
@@ -1997,6 +2034,7 @@
     "andInside": " và mọi thứ bên trong",
     "only": " mà thôi",
     "categoriesMore": "{first} + {count} nữa",
+    "categoriesPair": "{first} + {second}",
     "filters": {
       "notes": {
         "all": "tất cả ghi chú",
@@ -2027,6 +2065,39 @@
     },
     "notesKicker": "{notesCount, plural, other {{notes} ghi chú}}, {pinned} đã ghim",
     "checklistsKicker": "Đã đánh dấu {done}/{total} ô",
-    "kanbanKicker": "{cardsCount, plural, other {{cards} thẻ}} trên {boardsCount, plural, other {{boards} bảng}}, {inProgress} đang tiến hành"
+    "kanbanKicker": "{cardsCount, plural, other {{cards} thẻ}} trên {boardsCount, plural, other {{boards} bảng}}, {inProgress} đang tiến hành",
+    "hideWidget": "Ẩn {widget}",
+    "widgetHidden": "Đã ẩn {widget}",
+    "widgetHiddenHint": "Bạn có thể bật lại bất cứ lúc nào trong tùy chọn người dùng."
+  },
+  "quickSettings": {
+    "title": "Cài đặt nhanh",
+    "browserOnly": "Chỉ trong trình duyệt này",
+    "saveToAccount": "Lưu vào tài khoản",
+    "savedToAccount": "Đã lưu vào tài khoản của bạn",
+    "allPreferences": "Tất cả tùy chọn",
+    "heading": "Cứ tự nhiên như ở nhà",
+    "subtitle": "Thay đổi chỉ áp dụng cho trình duyệt này. Lưu những mục bạn muốn vào tài khoản để dùng trên mọi thiết bị.",
+    "overrideCount": "{count, plural, other {# mục đặt ở đây}}",
+    "saving": "Đang lưu...",
+    "labels": {
+      "theme": "Giao diện",
+      "borderRadius": "Bo góc",
+      "noteFontSize": "Cỡ chữ ghi chú",
+      "kanbanColumnWidth": "Độ rộng cột kanban",
+      "viewMode": "Xem dạng",
+      "cardPreview": "Xem trước ghi chú trên thẻ",
+      "compactMode": "Độ rộng ghi chú gọn",
+      "autosave": "Tự động lưu ghi chú",
+      "showEmojis": "Emoji trong danh sách",
+      "completedSuggestions": "Gợi ý mục đã xong"
+    },
+    "hints": {
+      "borderRadius": "Các góc thay đổi trên toàn ứng dụng khi bạn kéo.",
+      "noteFontSize": "Dùng khi đọc và viết ghi chú.",
+      "kanbanColumnWidth": "Tự động kéo giãn các cột cho đầy bảng.",
+      "cardPreview": "Hiển thị markdown đã định dạng trên thẻ thay vì văn bản thường.",
+      "compactMode": "Giới hạn trình soạn thảo rộng 900px."
+    }
   }
 }

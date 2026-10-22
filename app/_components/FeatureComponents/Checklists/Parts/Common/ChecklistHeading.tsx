@@ -14,7 +14,8 @@ import { RecurrenceRule, Checklist, Item } from "@/app/_types";
 import { handleScroll, isMobileDevice } from "@/app/_utils/global-utils";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
@@ -62,13 +63,9 @@ export const ChecklistHeading = ({
   const tagMentionsRef = useRef<{ onKeyDown: (event: KeyboardEvent) => boolean; focusSearch: () => void }>(null);
   const { user, tagsIndex, tagsEnabled } = useAppMode();
   const linkSuggestions = useItemLinkSuggestions(newItemText, setNewItemText, inputRef);
-  const { showCompletedSuggestions: sessionShowCompletedSuggestions } =
-    useSettings();
+  const showCompletedSuggestions = useQuickValue(QuickSettingId.COMPLETED_SUGGESTIONS);
 
-  const shouldShowSuggestions =
-    (user?.showCompletedSuggestions === "enable" ||
-      sessionShowCompletedSuggestions) &&
-    checklist;
+  const shouldShowSuggestions = showCompletedSuggestions && checklist;
 
   const getAllCompletedItems = (items: Item[]): Item[] => {
     if (!shouldShowSuggestions) return [];

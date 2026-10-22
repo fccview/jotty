@@ -18,17 +18,20 @@ export const useFilteredFeed = <T>(
   const [firstPage, setFirstPage] = useState<T[]>([]);
 
   useEffect(() => {
-    if (!filter) {
-      setFirstPage([]);
-      return;
-    }
+    let isStale = false;
+    setFirstPage([]);
+    if (!filter) return;
 
     startTransition(async () => {
       const result = await load(filter, FILTER_PAGE_SIZE, 0);
-      if (result.success && Array.isArray(result.data)) {
+      if (!isStale && result.success && Array.isArray(result.data)) {
         setFirstPage(result.data as T[]);
       }
     });
+
+    return () => {
+      isStale = true;
+    };
   }, [filter, load]);
 
   const fetchPage = useCallback(
