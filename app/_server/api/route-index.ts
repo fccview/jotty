@@ -42,6 +42,8 @@ import * as relationsLinks from "@/app/api/relations/links/route";
 import * as relationsOrphans from "@/app/api/relations/orphans/route";
 import * as search from "@/app/api/search/route";
 import * as shares from "@/app/api/shares/route";
+import * as sharesItemId from "@/app/api/shares/[itemId]/route";
+import * as sharesItemIdUsername from "@/app/api/shares/[itemId]/[username]/route";
 import * as summary from "@/app/api/summary/route";
 import * as tags from "@/app/api/tags/route";
 import * as tasks from "@/app/api/tasks/route";
@@ -99,6 +101,8 @@ export const ROUTE_MODULES: object[] = [
   relationsOrphans,
   search,
   shares,
+  sharesItemId,
+  sharesItemIdUsername,
   summary,
   tags,
   tasks,
