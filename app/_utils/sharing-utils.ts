@@ -66,7 +66,7 @@ export const parseSharedWith = (value: unknown): ParsedSharedWith | null => {
     return { optedOut: true, users: {} };
   }
 
-  const users: Record<string, SharingPermissions> = {};
+  const users: Record<string, SharingPermissions> = Object.create(null);
 
   entries.forEach((entry) => {
     const [username, code] = String(entry).split(SHARE_CODE_SEPARATOR);

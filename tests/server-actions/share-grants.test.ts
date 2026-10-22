@@ -44,23 +44,32 @@ import {
   NOT_OWNER,
   OWN_ITEM,
   PUBLIC_READ_ONLY,
+  Sharer,
   grantItem,
   revokeItem,
 } from "@/app/_server/actions/share/grants";
 import { editNote } from "@/app/_server/actions/note/editor";
 import { dropMounts } from "@/app/_server/actions/share/mounts";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
-import { permsFromCode } from "@/app/_utils/sharing-utils";
-import { PUBLIC_USER } from "@/app/_consts/sharing";
+import { parseSharedWith } from "@/app/_utils/sharing-utils";
+import { pathUuid } from "@/app/_server/actions/lib/read-only";
+import { CATEGORY_INFO_FILE, PUBLIC_USER } from "@/app/_consts/sharing";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
-import { Modes, SharePerms } from "@/app/_types/enums";
+import { Modes } from "@/app/_types/enums";
+import type { SanitisedUser, SharingPermissions } from "@/app/_types";
 
 const NOTE = "5a5a5a5a-5a5a-4a5a-8a5a-5a5a5a5a5a5a";
-const ALICE = { username: "alice", isAdmin: false };
-const BOB = { username: "bob", isAdmin: false };
-const ADMIN = { username: "root", isAdmin: true };
-const READ = permsFromCode(SharePerms.READ)!;
-const WRITE = permsFromCode(SharePerms.WRITE)!;
+const ALICE: SanitisedUser = {
+  username: "alice",
+  isAdmin: false,
+  fileRenameMode: "minimal",
+  preferredDateFormat: "dd/mm/yyyy",
+  preferredTimeFormat: "24-hours",
+};
+const BOB: Sharer = { username: "bob", isAdmin: false };
+const ADMIN: Sharer = { username: "root", isAdmin: true };
+const READ: SharingPermissions = { canRead: true, canEdit: false, canDelete: false };
+const WRITE: SharingPermissions = { canRead: true, canEdit: true, canDelete: false };
 
 const noteFile = path.join(root, DATA_DIR, Modes.NOTES, "alice", "Work", "plan.md");
 
@@ -133,6 +142,23 @@ describe("Granting an item to someone", () => {
   });
 });
 
+describe("Granting an item that inherits its folder's shares", () => {
+  beforeEach(() => {
+    writeFileSync(
+      path.join(path.dirname(noteFile), CATEGORY_INFO_FILE),
+      JSON.stringify({ sharing: { users: { root: WRITE }, inherit: true } }),
+    );
+    dropMounts(Modes.NOTES);
+  });
+
+  it("keeps everyone the folder already gave it to", async () => {
+    const result = await grantItem(ALICE, Modes.NOTES, NOTE, "bob", READ);
+
+    expect(result).toEqual({ success: true, data: { root: WRITE, bob: READ } });
+    expect(parseSharedWith(sharedWith())?.users).toEqual({ root: WRITE, bob: READ });
+  });
+});
+
 describe("Revoking a grant", () => {
   it("drops only that person", async () => {
     await grantItem(ALICE, Modes.NOTES, NOTE, "bob", WRITE);
@@ -148,6 +174,17 @@ describe("Revoking a grant", () => {
     const before = readFileSync(noteFile, "utf-8");
 
     expect(await revokeItem(ALICE, Modes.NOTES, NOTE, "bob")).toMatchObject({ success: true });
+    expect(readFileSync(noteFile, "utf-8")).toBe(before);
+  });
+
+  it("treats object keys as usernames nobody holds", async () => {
+    await grantItem(ALICE, Modes.NOTES, NOTE, "bob", WRITE);
+    const before = readFileSync(noteFile, "utf-8");
+
+    expect(await revokeItem(ALICE, Modes.NOTES, NOTE, "__proto__")).toEqual({
+      success: true,
+      data: { bob: WRITE },
+    });
     expect(readFileSync(noteFile, "utf-8")).toBe(before);
   });
 
@@ -179,5 +216,43 @@ describe("Editing a shared note", () => {
     expect(edited).toMatchObject({ success: true });
     expect(sharedWith()).toBe("bob:rw");
     expect(readFileSync(noteFile, "utf-8")).toContain("written while sharing");
+  });
+});
+
+describe("A locked item in a shared folder", () => {
+  const lockedFile = path.join(path.dirname(noteFile), "broken.md");
+  const broken = ["---", "title: [broken", "tags: : :", 'note: "unterminated', "---", "body", ""].join("\n");
+
+  beforeEach(() => {
+    writeFileSync(lockedFile, broken);
+    writeFileSync(
+      path.join(path.dirname(noteFile), CATEGORY_INFO_FILE),
+      JSON.stringify({ sharing: { users: { bob: WRITE, root: READ }, inherit: true } }),
+    );
+    dropMounts(Modes.NOTES);
+  });
+
+  it("refuses to rewrite its frontmatter when someone is removed", async () => {
+    const result = await revokeItem(ALICE, Modes.NOTES, pathUuid(lockedFile), "bob");
+
+    expect(result.success).toBe(false);
+    expect(readFileSync(lockedFile, "utf-8")).toBe(broken);
+  });
+
+  it("refuses to share it", async () => {
+    const result = await grantItem(ALICE, Modes.NOTES, pathUuid(lockedFile), "bob", READ);
+
+    expect(result.success).toBe(false);
+    expect(readFileSync(lockedFile, "utf-8")).toBe(broken);
+  });
+});
+
+describe("Parsing grants from a hand-edited file", () => {
+  it("keeps object keys as plain usernames", () => {
+    const parsed = parseSharedWith("__proto__:rw, constructor:r, bob:r");
+
+    expect(Object.keys(parsed!.users)).toEqual(["__proto__", "constructor", "bob"]);
+    expect(Object.getPrototypeOf(parsed!.users)).toBeNull();
+    expect(parsed!.users.toString).toBeUndefined();
   });
 });

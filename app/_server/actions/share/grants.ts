@@ -72,10 +72,6 @@ export const itemPathOf = async (
   return found ? found.filePath : null;
 };
 
-/**
- * Every sharing write is owner-only. The sharer comes from the session or the
- * API key, never from anything the caller sent, and admins may act for owners.
- */
 export const gandalf = async (
   owner: string,
   sharer: Sharer | null,
@@ -148,6 +144,9 @@ const _tell = async (
   }
 };
 
+export const lockRefusal = async (mode: Modes, uuid: string): Promise<string | null> =>
+  (await isLockedUuid(itemTypeOf(mode), uuid)) ? lockedNotice() : null;
+
 export const writeShares = async (
   filePath: string,
   users: Grants,
@@ -190,9 +189,8 @@ export const grantItem = async (
   try {
     const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: ITEM_MISSING };
-    if (await isLockedUuid(itemTypeOf(mode), uuid)) {
-      return { success: false, error: await lockedNotice() };
-    }
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
 
     const refusal = await gandalf(owner, sharer);
     if (refusal) return { success: false, error: refusal };
@@ -207,8 +205,7 @@ export const grantItem = async (
         if (!filePath) return { success: false, error: ITEM_MISSING };
 
         const access = await resolveAccess(mode, filePath);
-        const current = access && !access.inherited ? access.users : {};
-        const next = { ...current, [receiver]: permissions };
+        const next = { ...access?.users, [receiver]: permissions };
 
         return (await writeShares(filePath, next))
           ? { success: true, data: next }
@@ -238,6 +235,18 @@ export const grantItem = async (
   }
 };
 
+interface Revoked {
+  result: Result<Grants>;
+  wasInherited: boolean;
+  changed: boolean;
+}
+
+const _unchanged = (result: Result<Grants>): Revoked => ({
+  result,
+  wasInherited: false,
+  changed: false,
+});
+
 export const revokeItem = async (
   sharer: Sharer | null,
   mode: Modes,
@@ -248,34 +257,37 @@ export const revokeItem = async (
     const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: ITEM_MISSING };
 
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
+
     const refusal = await gandalf(owner, sharer);
     if (refusal) return { success: false, error: refusal };
 
-    let wasInherited = false;
-    let changed = false;
-
-    const result = await runQueued(
+    const { result, wasInherited, changed } = await runQueued(
       itemLane(mode, uuid),
-      async (): Promise<Result<Grants>> => {
+      async (): Promise<Revoked> => {
         const filePath = await itemPathOf(mode, uuid, owner);
-        if (!filePath) return { success: false, error: ITEM_MISSING };
+        if (!filePath) return _unchanged({ success: false, error: ITEM_MISSING });
 
         const access = await resolveAccess(mode, filePath);
-        if (!access) return { success: false, error: ITEM_MISSING };
-        if (!access.users[receiver]) return { success: true, data: access.users };
+        if (!access) return _unchanged({ success: false, error: ITEM_MISSING });
+        if (!Object.hasOwn(access.users, receiver)) {
+          return _unchanged({ success: true, data: access.users });
+        }
 
         const next = { ...access.users };
         delete next[receiver];
-        wasInherited = access.inherited;
-        changed = true;
 
-        return (await writeShares(filePath, next))
-          ? { success: true, data: next }
-          : { success: false, error: UNSHARE_FAILED };
+        const written = await writeShares(filePath, next);
+        return {
+          result: written ? { success: true, data: next } : { success: false, error: UNSHARE_FAILED },
+          wasInherited: access.inherited,
+          changed: written,
+        };
       },
     );
 
-    if (!result.success || !changed) return result;
+    if (!changed) return result;
 
     await logAudit({
       level: "INFO",

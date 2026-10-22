@@ -25,6 +25,7 @@ import {
   isChecklistMode,
   itemTypeOf,
   itemPathOf,
+  lockRefusal,
   ownerOf,
   revokeItem,
   userDirOf,
@@ -104,6 +105,9 @@ const _optOut = async (
     const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
 
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
+
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };
 
@@ -148,6 +152,9 @@ const _inherit = async (
   try {
     const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
+
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
 
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };
@@ -355,6 +362,9 @@ const _leave = async (
 
     const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
+
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
     if (owner === caller) {
       return { success: false, error: "You own this item" };
     }
