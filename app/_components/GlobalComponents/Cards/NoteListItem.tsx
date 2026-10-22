@@ -11,6 +11,7 @@ import { categoryTrail } from "@/app/_utils/category-path-utils";
 import { PinToggle } from "./Parts/PinToggle";
 import { ItemShareMark } from "./Parts/ItemShareMark";
 import { ItemGlyph } from "./Parts/ItemGlyph";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 interface NoteListItemProps {
   note: Note;
@@ -33,12 +34,14 @@ export const NoteListItem = ({
 }: NoteListItemProps) => {
   const t = useTranslations();
   const isEncrypted = isNoteEncrypted(note);
+  const handleClick = useCardClick(note, onSelect);
   const excerpt = useMemo(() => (showExcerpt ? noteExcerptOf(note) : ""), [showExcerpt, note]);
 
   return (
     <div
+      onClick={handleClick}
       className={cn(
-        "jotty-note-list-item group flex items-start gap-3 px-4 py-3 transition-colors",
+        "jotty-note-list-item group cursor-pointer flex items-start gap-3 px-4 py-3 transition-colors",
         !isBare && "bg-card border border-border rounded-jotty",
         isSelected ? "bg-primary/10" : "hover:bg-muted/40",
       )}

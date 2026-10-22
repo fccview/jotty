@@ -6,11 +6,13 @@ import { useTranslations } from "next-intl";
 import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Masonry from "react-masonry-css";
 import { ItemType } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { usePinnedBoard } from "@/app/_hooks/usePinnedBoard";
+import { SectionHeading } from "@/app/_components/GlobalComponents/Layout/SectionHeading";
 import { WidgetDismiss } from "./WidgetDismiss";
 
 const CAP = { desktop: 8, mobile: 4 };
@@ -62,6 +64,7 @@ interface PinboardProps<T extends { uuid: string }> {
   items: T[];
   type: ItemType;
   gridClassName: string;
+  columns: Record<string, number>;
   isBoard: boolean;
   renderItem: (item: T, position: number) => ReactNode;
 }
@@ -70,6 +73,7 @@ export const Pinboard = <T extends { uuid: string }>({
   items,
   type,
   gridClassName,
+  columns,
   isBoard,
   renderItem,
 }: PinboardProps<T>) => {
@@ -86,6 +90,17 @@ export const Pinboard = <T extends { uuid: string }>({
   const total = board.ordered.length;
   const shown = showAll || !isBoard ? board.ordered : board.ordered.slice(0, cap);
 
+  const frames = shown.map((item, index) => (
+    <SortableFrame
+      key={item.uuid}
+      id={item.uuid}
+      isBoard={isBoard}
+      tilt={TILTS[index % TILTS.length]}
+    >
+      {renderItem(item, index + 1)}
+    </SortableFrame>
+  ));
+
   return (
     <div
       className={cn(
@@ -94,6 +109,7 @@ export const Pinboard = <T extends { uuid: string }>({
           "group/widget relative rounded-jotty border border-dashed border-border p-4 sm:p-6 bg-[radial-gradient(rgb(var(--muted-foreground)/0.22)_1px,transparent_1.3px)] [background-size:18px_18px] [background-position:9px_9px]",
       )}
     >
+      {!isBoard && <SectionHeading title={t("common.pinned")} />}
       {isBoard && (
         <WidgetDismiss widget="homePinboard" className="absolute right-2 top-2 z-20 bg-card/80" />
       )}
@@ -105,25 +121,25 @@ export const Pinboard = <T extends { uuid: string }>({
         onDragCancel={board.onDragCancel}
       >
         <SortableContext items={shown.map((item) => item.uuid)} strategy={rectSortingStrategy}>
-          <div
-            className={cn(
-              "grid items-start",
-              isBoard ? "gap-5" : "gap-6",
-              gridClassName,
-              isBoard && showAll && total > SCROLL_AFTER && "max-h-[46rem] overflow-y-auto -mx-2 px-2 pt-2",
-            )}
-          >
-            {shown.map((item, index) => (
-              <SortableFrame
-                key={item.uuid}
-                id={item.uuid}
-                isBoard={isBoard}
-                tilt={TILTS[index % TILTS.length]}
-              >
-                {renderItem(item, index + 1)}
-              </SortableFrame>
-            ))}
-          </div>
+          {isBoard ? (
+            <div
+              className={cn(
+                "grid items-start gap-5",
+                gridClassName,
+                showAll && total > SCROLL_AFTER && "max-h-[46rem] overflow-y-auto -mx-2 px-2 pt-2",
+              )}
+            >
+              {frames}
+            </div>
+          ) : (
+            <Masonry
+              breakpointCols={columns}
+              className="flex w-auto -ml-6"
+              columnClassName="pl-6 bg-clip-padding min-w-0 [&>*]:mb-6"
+            >
+              {frames}
+            </Masonry>
+          )}
         </SortableContext>
         {isMounted &&
           createPortal(

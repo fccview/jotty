@@ -11,6 +11,7 @@ import { ListCardHead } from "./Parts/ListCardHead";
 import { TickGrid } from "./Parts/TickGrid";
 import { MiniBoard } from "./Parts/MiniBoard";
 import { Tally } from "./Parts/Tally";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 interface PinnedChecklistCardProps {
   list: Checklist;
@@ -22,9 +23,12 @@ export const PinnedChecklistCard = ({ list, onSelect, onTogglePin }: PinnedCheck
   const t = useTranslations();
   const { isBoard, total, completed, assignees, summary } = useListCardStats(list);
   const updated = formatShortTime(list.updatedAt, t);
+  const handleClick = useCardClick(list, onSelect);
 
   return (
-    <article className="jotty-checklist-card group flex flex-col bg-card border border-border rounded-jotty transition-colors duration-200 hover:border-primary/50 [overflow-wrap:anywhere]">
+    <article
+      onClick={handleClick}
+      className="jotty-checklist-card group cursor-pointer flex flex-col bg-card border border-border rounded-jotty transition-colors duration-200 hover:border-primary/50 [overflow-wrap:anywhere]">
       <ListCardHead
         list={list}
         onSelect={onSelect}

@@ -10,6 +10,7 @@ import { categoryLeaf } from "@/app/_utils/category-path-utils";
 import { PinToggle } from "./Parts/PinToggle";
 import { SealedPanel, SealedSize } from "./Parts/SealedPanel";
 import { ItemShareMark } from "./Parts/ItemShareMark";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 interface PinnedNoteCardProps {
   note: Note;
@@ -21,9 +22,12 @@ interface PinnedNoteCardProps {
 export const PinnedNoteCard = ({ note, position, onSelect, onTogglePin }: PinnedNoteCardProps) => {
   const t = useTranslations();
   const { title, isEncrypted, stats } = useMemo(() => noteDisplayOf(note), [note]);
+  const handleClick = useCardClick(note, onSelect);
 
   return (
-    <article className="jotty-note-card group bg-card border border-border rounded-jotty p-3.5 pt-4 transition-colors hover:border-primary/50 [overflow-wrap:anywhere]">
+    <article
+      onClick={handleClick}
+      className="jotty-note-card group cursor-pointer bg-card border border-border rounded-jotty p-3.5 pt-4 transition-colors hover:border-primary/50 [overflow-wrap:anywhere]">
       <div className="flex items-start gap-2">
         <span className="font-mono text-[11px] font-semibold text-primary mt-0.5">
           {String(position).padStart(2, "0")}

@@ -8,6 +8,7 @@ import { ItemTypes } from "@/app/_types/enums";
 import { isNoteEncrypted } from "@/app/_utils/note-display-utils";
 import { PinToggle } from "./Parts/PinToggle";
 import { ItemGlyph } from "./Parts/ItemGlyph";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 interface NoteGridItemProps {
   note: Note;
@@ -23,12 +24,15 @@ export const NoteGridItem = ({
   onTogglePin,
 }: NoteGridItemProps) => {
   const t = useTranslations();
+  const handleClick = useCardClick(note, onSelect);
+
   return (
     <div
-      className="jotty-note-grid-item group relative bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
+      onClick={handleClick}
+      className="jotty-note-grid-item group relative cursor-pointer bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
     >
       <div className="flex items-start justify-between gap-1">
-<ItemGlyph type={ItemTypes.NOTE} isEncrypted={isNoteEncrypted(note)} />
+        <ItemGlyph type={ItemTypes.NOTE} isEncrypted={isNoteEncrypted(note)} />
         {onTogglePin && (
           <PinToggle
             isPinned={isPinned}

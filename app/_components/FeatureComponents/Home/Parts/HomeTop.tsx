@@ -28,7 +28,7 @@ interface HomeTopProps<T extends { uuid: string }> {
   summary: string;
   pickUp: ReactNode;
   pinned: T[];
-  pinnedGrid: string;
+  pinnedColumns: Record<string, number>;
   renderPin: (item: T, position: number, isBoard: boolean) => ReactNode;
   tagCount: (tag: TagInfo) => number;
   onCreate: (category?: string, prefill?: CreatePrefill) => void;
@@ -43,7 +43,7 @@ export const HomeTop = <T extends { uuid: string }>({
   summary,
   pickUp,
   pinned,
-  pinnedGrid,
+  pinnedColumns,
   renderPin,
   tagCount,
   onCreate,
@@ -119,13 +119,8 @@ export const HomeTop = <T extends { uuid: string }>({
               items={pinned}
               isBoard={widgets.pinboard}
               type={type}
-              gridClassName={
-                !widgets.pinboard
-                  ? pinnedGrid
-                  : showTags
-                    ? PINBOARD_BESIDE_TAGS_GRID
-                    : PINBOARD_GRID
-              }
+              gridClassName={showTags ? PINBOARD_BESIDE_TAGS_GRID : PINBOARD_GRID}
+              columns={pinnedColumns}
               renderItem={(item, position) => renderPin(item, position, widgets.pinboard)}
             />
           )}

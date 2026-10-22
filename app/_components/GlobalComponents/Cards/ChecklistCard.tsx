@@ -14,6 +14,7 @@ import { TickGrid } from "./Parts/TickGrid";
 import { NextUp } from "./Parts/NextUp";
 import { MiniBoard } from "./Parts/MiniBoard";
 import { Tally } from "./Parts/Tally";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 export const ASSIGNEE_LIMIT = 3;
 
@@ -34,9 +35,12 @@ export const ChecklistCard = ({
   const trackedTime = useTrackedTime();
   const { isBoard, total, completed, assignees, seconds, summary } = useListCardStats(list);
   const updated = formatRelativeTime(list.updatedAt, t);
+  const handleClick = useCardClick(list, onSelect);
 
   return (
-    <article className="jotty-checklist-card group flex flex-col bg-card border border-border rounded-jotty transition-colors duration-200 hover:border-primary/50 [overflow-wrap:anywhere]">
+    <article
+      onClick={handleClick}
+      className="jotty-checklist-card group cursor-pointer flex flex-col bg-card border border-border rounded-jotty transition-colors duration-200 hover:border-primary/50 [overflow-wrap:anywhere]">
       <ListCardHead
         list={list}
         onSelect={onSelect}

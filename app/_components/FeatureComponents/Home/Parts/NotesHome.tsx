@@ -13,7 +13,7 @@ import { getNotesForDisplay } from "@/app/_server/actions/note";
 import { useHomeFeed } from "@/app/_hooks/useHomeFeed";
 import { usePins } from "@/app/_hooks/usePins";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
-import { NOTE_CARD_COLUMNS, PINNED_NOTES_GRID } from "@/app/_consts/columns";
+import { NOTE_CARD_COLUMNS } from "@/app/_consts/columns";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { PinnedNoteCard } from "@/app/_components/GlobalComponents/Cards/PinnedNoteCard";
 import { NoteItems } from "@/app/_components/GlobalComponents/Cards/NoteItems";
@@ -89,7 +89,7 @@ export const NotesHome = ({ notes, user, onCreate, onSelectNote }: NotesHomeProp
           lastEdited && <NotePickUp note={lastEdited} onOpen={() => onSelectNote(lastEdited)} />
         }
         pinned={pins.pinned}
-        pinnedGrid={PINNED_NOTES_GRID}
+        pinnedColumns={NOTE_CARD_COLUMNS}
         tagCount={noteTagCount}
         onCreate={onCreate}
         renderPin={(note, position, isBoard) =>

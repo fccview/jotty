@@ -16,12 +16,9 @@ import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { PinToggle } from "./Parts/PinToggle";
 import { SealedPanel } from "./Parts/SealedPanel";
 import { ItemShareMark } from "./Parts/ItemShareMark";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 const CARD_TAG_LIMIT = 2;
-const INTERACTIVE_SELECTOR = "a, button, input, textarea, select, summary, label, [role='button']";
-
-const isInteractiveTarget = (target: EventTarget) =>
-  target instanceof Element && target.closest(INTERACTIVE_SELECTOR) !== null;
 
 interface NoteCardProps {
   note: Note;
@@ -43,15 +40,14 @@ export const NoteCard = ({
   const showMarkdownPreview = useQuickValue(QuickSettingId.CARD_PREVIEW);
   const { title, content, isEncrypted, hasBody, stats } = useMemo(() => noteDisplayOf(note), [note]);
   const isRich = hasBody && (showMarkdownPreview || fullScrollableContent);
+  const handleClick = useCardClick(note, onSelect);
 
   return (
     <article
-      className={cn(
-        "jotty-note-card group bg-card border border-border rounded-jotty overflow-hidden transition-colors duration-200 hover:border-primary/50 flex flex-col [overflow-wrap:anywhere]",
-      )}
+      onClick={handleClick}
+      className="jotty-note-card group cursor-pointer bg-card border border-border rounded-jotty overflow-hidden transition-colors duration-200 hover:border-primary/50 flex flex-col [overflow-wrap:anywhere]"
     >
-      <div className="h-1 bg-primary/70" />
-      <div className="flex items-center justify-between gap-2 pl-4 pr-2 h-9 border-b border-dashed border-border">
+      <div className="flex items-center justify-between gap-2 pl-4 pr-2 pt-3 min-h-7">
         <span className="font-mono text-[11px] text-muted-foreground truncate">
           {categoryTrail(note.category, t("notes.uncategorized"))}
         </span>
@@ -73,11 +69,11 @@ export const NoteCard = ({
         type="button"
         onClick={() => onSelect(note)}
         className={cn(
-          "jotty-note-card-title block w-full text-left px-4 pt-3",
+          "jotty-note-card-title block w-full text-left px-4 pt-0.5",
           isRich && !isEncrypted ? "pb-0" : "pb-3",
         )}
       >
-        <h3 className="font-semibold text-lg leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-3">
+        <h3 className="font-semibold text-base leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-3">
           {title}
         </h3>
         {isEncrypted ? (
@@ -86,7 +82,7 @@ export const NoteCard = ({
           </div>
         ) : (
           !isRich && (
-            <p className="jotty-note-card-content mt-2 text-md lg:text-sm text-muted-foreground leading-relaxed line-clamp-5">
+            <p className="jotty-note-card-content mt-2 text-md lg:text-sm text-muted-foreground leading-relaxed line-clamp-3">
               {stats.excerpt}
             </p>
           )
@@ -94,12 +90,9 @@ export const NoteCard = ({
       </button>
       {isRich && !isEncrypted && (
         <div
-          onClick={(event) => {
-            if (!isInteractiveTarget(event.target)) onSelect(note);
-          }}
           className={cn(
-            "jotty-note-card-content mx-4 mt-2 mb-3 cursor-pointer text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>p]:!text-sm [&>pre]:!text-xs [&>img]:!max-h-32",
-            fullScrollableContent ? "max-h-[200px] overflow-y-auto" : "line-clamp-5",
+            "jotty-note-card-content mx-4 mt-2 mb-3 text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>p]:!text-sm [&>pre]:!text-xs [&>img]:!max-h-32",
+            fullScrollableContent ? "max-h-[200px] overflow-y-auto" : "line-clamp-3",
           )}
         >
           <UnifiedMarkdownRenderer content={content} />
@@ -121,7 +114,7 @@ export const NoteCard = ({
             <span>{t("encryption.encrypted")}</span>
           ) : (
             <span
-              className="inline-flex items-center gap-1"
+              className="inline-flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
               title={t("notes.wordCount", { count: stats.wordCount })}
             >
               <TextNumberSignIcon className="h-3 w-3" />

@@ -7,6 +7,7 @@ import { useListSummary } from "@/app/_hooks/useListCardStats";
 import { categoryLeaf } from "@/app/_utils/category-path-utils";
 import { PinToggle } from "./Parts/PinToggle";
 import { ItemGlyph } from "./Parts/ItemGlyph";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 interface ChecklistGridItemProps {
   list: Checklist;
@@ -23,13 +24,15 @@ export const ChecklistGridItem = ({
 }: ChecklistGridItemProps) => {
   const t = useTranslations();
   const { total, completed } = useListSummary(list);
+  const handleClick = useCardClick(list, onSelect);
 
   return (
     <div
-      className="jotty-checklist-grid-item group bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
+      onClick={handleClick}
+      className="jotty-checklist-grid-item group cursor-pointer bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
     >
       <div className="flex items-start justify-between gap-1">
-<ItemGlyph type={ItemTypes.CHECKLIST} listType={list.type} />
+        <ItemGlyph type={ItemTypes.CHECKLIST} listType={list.type} />
         {onTogglePin && (
           <PinToggle
             isPinned={isPinned}

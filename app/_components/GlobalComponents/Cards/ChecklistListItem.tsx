@@ -10,6 +10,7 @@ import { PinToggle } from "./Parts/PinToggle";
 import { ItemShareMark } from "./Parts/ItemShareMark";
 import { Tally } from "./Parts/Tally";
 import { ItemIcon } from "./Parts/ItemGlyph";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 interface ChecklistListItemProps {
   list: Checklist;
@@ -26,11 +27,13 @@ export const ChecklistListItem = ({
 }: ChecklistListItemProps) => {
   const t = useTranslations();
   const { total, completed } = useListSummary(list);
+  const handleClick = useCardClick(list, onSelect);
   const percent = total ? Math.round((completed / total) * 100) : 0;
 
   return (
     <div
-      className="jotty-checklist-list-item group bg-card border border-border rounded-jotty hover:border-primary transition-colors"
+      onClick={handleClick}
+      className="jotty-checklist-list-item group cursor-pointer bg-card border border-border rounded-jotty hover:border-primary transition-colors"
     >
       <div className="p-3 flex items-center gap-3">
         <ItemIcon type={ItemTypes.CHECKLIST} listType={list.type} className="h-5 w-5 text-primary shrink-0" />

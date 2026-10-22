@@ -13,7 +13,7 @@ import { getChecklistsForDisplay } from "@/app/_server/actions/checklist";
 import { useHomeFeed } from "@/app/_hooks/useHomeFeed";
 import { usePins } from "@/app/_hooks/usePins";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
-import { BOARD_CARD_COLUMNS, LIST_CARD_COLUMNS, PINNED_LISTS_GRID } from "@/app/_consts/columns";
+import { BOARD_CARD_COLUMNS, LIST_CARD_COLUMNS } from "@/app/_consts/columns";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { PinnedChecklistCard } from "@/app/_components/GlobalComponents/Cards/PinnedChecklistCard";
 import { ChecklistItems } from "@/app/_components/GlobalComponents/Cards/ChecklistItems";
@@ -107,7 +107,7 @@ export const ChecklistHome = ({
           )
         }
         pinned={pins.pinned}
-        pinnedGrid={PINNED_LISTS_GRID}
+        pinnedColumns={LIST_CARD_COLUMNS}
         tagCount={listTagCount}
         onCreate={onCreate}
         renderPin={(list, _position, isBoard) =>
