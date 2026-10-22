@@ -1,6 +1,6 @@
 import { Folder02Icon } from "hugeicons-react";
-import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 import { useTranslations } from "next-intl";
+import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
 
 interface InheritedNoticeProps {
   inheritedFrom: string | null;
@@ -22,27 +22,27 @@ export const InheritedNotice = ({
   if (!inheritedFrom && !isOptedOut) return null;
 
   return (
-    <div className="rounded-jotty border border-border bg-muted/30 p-3 space-y-3">
+    <div className="mx-6 mt-4 mb-3 rounded-jotty border border-dashed border-primary/30 bg-primary/5 px-4 py-3">
       {inheritedFrom && (
-        <div className="flex items-start gap-2 text-sm text-muted-foreground">
-          <Folder02Icon className="h-4 w-4 shrink-0 mt-0.5" />
-          <span>
-            {t("sharing.inheritedVia", {
-              category: inheritedFrom,
-              user: itemOwner,
-            })}
-          </span>
-        </div>
+        <p className="mb-3 flex items-start gap-2 text-sm lg:text-xs text-muted-foreground">
+          <Folder02Icon className="mt-px h-4 w-4 shrink-0 text-primary" />
+          <span>{t("sharing.inheritedVia", { category: inheritedFrom, user: itemOwner })}</span>
+        </p>
       )}
-
       <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium">{t("sharing.optOut")}</p>
-          <p className="text-xs text-muted-foreground">
+        <div className="min-w-0">
+          <label
+            htmlFor="share-opt-out"
+            className="block text-md lg:text-sm font-medium leading-snug text-foreground"
+          >
+            {t("sharing.optOut")}
+          </label>
+          <p className="mt-0.5 text-sm lg:text-xs leading-snug text-muted-foreground">
             {t("sharing.optOutHint")}
           </p>
         </div>
         <Toggle
+          id="share-opt-out"
           checked={isOptedOut}
           onCheckedChange={onToggle}
           disabled={isLoading}

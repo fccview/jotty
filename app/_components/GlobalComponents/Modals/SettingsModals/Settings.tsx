@@ -14,6 +14,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSettings } from "@/app/_utils/settings-store";
 import { useThemeOptions } from "@/app/_hooks/settings/useThemeOptions";
 import { cn } from "@/app/_utils/global-utils";
+import { KICKER_CLASS } from "@/app/_consts/styling";
 import { Modal, ModalVariant } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { QuickSettingRow } from "./Parts/QuickSettingRow";
@@ -28,8 +29,6 @@ const SECTION_LABELS: Record<QuickTab, string> = {
   [QuickTab.NOTES]: "notes.title",
   [QuickTab.LISTS]: "checklists.lists",
 };
-
-const KICKER_CLASS = "font-mono text-[11px] uppercase tracking-widest text-muted-foreground";
 
 const PanelKicker = () => {
   const t = useTranslations();

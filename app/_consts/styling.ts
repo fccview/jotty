@@ -70,3 +70,6 @@ export const normaliseNoteFontSize = (value?: number): number =>
   !value || !Number.isFinite(value)
     ? NOTE_FONT_SIZE_AUTO
     : clampNoteFontSize(value);
+
+export const KICKER_CLASS =
+  "font-mono text-[11px] uppercase tracking-widest text-muted-foreground";

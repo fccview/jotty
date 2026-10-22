@@ -1,17 +1,19 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Modal, ModalVariant } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
 import { useSharingTools } from "@/app/_hooks/useSharingTools";
-import { FeedbackMessage } from "./Parts/SharingFeedbackMessage";
-import { ShareTabs } from "./Parts/ShareTabs";
-import { UsersShareTab } from "./Parts/UsersShareTab";
-import { InheritedNotice } from "./Parts/InheritedNotice";
-import { PublicShareTab } from "./Parts/PublicShareTabs";
-import { ItemType } from "@/app/_types";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
-import { useTranslations } from "next-intl";
+import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
+import { InheritedNotice } from "./Parts/InheritedNotice";
+import { PeopleSection } from "./Parts/PeopleSection";
+import { ITEM_CHIPS } from "./Parts/PermissionChips";
+import { PublicLinkSection } from "./Parts/PublicLinkSection";
+
+const READ_ONLY = { canRead: true, canEdit: false, canDelete: false };
 
 export const ShareModal = ({
   isOpen,
@@ -22,77 +24,82 @@ export const ShareModal = ({
 }) => {
   const t = useTranslations();
   const metadata = useMetadata();
+  const itemType = metadata.type as ItemType;
+  const typeLabel = t(itemType === ItemTypes.CHECKLIST ? "common.checklist" : "common.note");
 
-  const hookResult = useSharingTools({
+  const sharing = useSharingTools({
     isOpen,
     onClose,
     enabled: true,
     itemTitle: metadata.title,
-    itemType: metadata.type as ItemType,
+    itemType,
     itemOwner: metadata.owner || "",
     itemUuid: metadata.uuid || "",
   });
-  const { error, success, activeTab, setActiveTab, resetMessages } = hookResult;
+  const hasAnyShare = sharing.currentSharing.length > 0 || sharing.isPubliclyShared;
 
   if (!isOpen) return null;
-
-  const handleTabChange = (tab: "users" | "public") => {
-    resetMessages();
-    setActiveTab(tab);
-  };
 
   return (
     <Modal
       isOpen={true}
       onClose={onClose}
       variant={ModalVariant.PANEL}
-      title={t('sharing.shareModalTitle', { type: metadata.type === ItemTypes.CHECKLIST ? t("common.checklist") : t("common.note") })}
+      kicker={t("sharing.shareModalTitle", { type: typeLabel })}
+      title={<span className="truncate">{metadata.title}</span>}
+      description={t("sharing.panelHint")}
+      flush
       footer={(close) => (
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            {activeTab === "users" && hookResult.currentSharing.length > 0 && (
+            {hasAnyShare && (
               <Button
                 variant="destructive"
-                onClick={hookResult.handleRemoveAllSharing}
-                disabled={hookResult.isLoading}
+                size="sm"
+                onClick={sharing.handleRemoveAllSharing}
+                disabled={sharing.isLoading}
               >
-                {t('common.removeAll')}
+                {t("sharing.stopSharing")}
               </Button>
             )}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={close}
-              disabled={hookResult.isLoading}
-            >{t('common.close')}</Button>
-          </div>
+          <Button size="sm" onClick={close} disabled={sharing.isLoading}>
+            {t("common.done")}
+          </Button>
         </div>
       )}
     >
-      <div className="space-y-4">
-        <h3 className="font-semibold text-lg">{metadata.title}</h3>
-        <FeedbackMessage error={error} success={success} />
-        <ShareTabs activeTab={activeTab} setActiveTab={handleTabChange} />
-        {activeTab === "users" ? (
-          <>
-            <InheritedNotice
-              inheritedFrom={hookResult.inheritedFrom}
-              itemOwner={metadata.owner || ""}
-              isOptedOut={hookResult.isOptedOut}
-              isLoading={hookResult.isLoading}
-              onToggle={hookResult.handleOptOut}
-            />
-            <UsersShareTab {...hookResult} />
-          </>
-        ) : (
-          <PublicShareTab
-            {...hookResult}
-            itemTitle={metadata.title}
-            itemType={metadata.type as ItemType}
-          />
+      {(sharing.error || sharing.success) && (
+        <div className="px-6 pt-4 pb-3">
+          <FeedbackMessage error={sharing.error} success={sharing.success} />
+        </div>
+      )}
+      <InheritedNotice
+        inheritedFrom={sharing.inheritedFrom}
+        itemOwner={metadata.owner || ""}
+        isOptedOut={sharing.isOptedOut}
+        isLoading={sharing.isLoading}
+        onToggle={sharing.handleOptOut}
+      />
+      <PeopleSection
+        sharees={sharing.users.filter(({ username }) => sharing.currentSharing.includes(username))}
+        candidates={sharing.filteredUsers.filter(
+          ({ username }) => !sharing.currentSharing.includes(username),
         )}
-      </div>
+        chips={ITEM_CHIPS}
+        permissionsOf={(username) => sharing.userPermissions[username] || READ_ONLY}
+        onPermission={sharing.handlePermissionChange}
+        onShare={(username) => sharing.handleShare("share", username)}
+        onUnshare={(username) => sharing.handleShare("unshare", username)}
+        searchQuery={sharing.searchQuery}
+        setSearchQuery={sharing.setSearchQuery}
+        isLoading={sharing.isLoading}
+      />
+      <PublicLinkSection
+        {...sharing}
+        itemTitle={metadata.title}
+        itemType={itemType}
+      />
     </Modal>
   );
 };

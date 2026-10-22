@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { ItemType, PublicUserInfo } from "@/app/_types";
 import { getUsers } from "@/app/_server/actions/users";
 import { publicHref } from "@/app/_utils/global-utils";
@@ -32,6 +33,7 @@ export const useSharingTools = ({
   itemOwner,
   itemUuid,
 }: ShareModalProps) => {
+  const t = useTranslations();
   const [users, setUsers] = useState<PublicUserInfo[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [currentSharing, setCurrentSharing] = useState<string[]>([]);
@@ -48,7 +50,6 @@ export const useSharingTools = ({
     success: string | null;
   }>({ isLoading: false, error: null, success: null });
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"users" | "public">("users");
 
   const resetMessages = () =>
     setStatus((prev) => ({ ...prev, error: null, success: null }));
@@ -154,12 +155,12 @@ export const useSharingTools = ({
       setStatus({
         isLoading: false,
         success: null,
-        error: "Failed to load sharing details.",
+        error: t("sharing.loadFailed"),
       });
     } finally {
       setStatus((prev) => ({ ...prev, isLoading: false }));
     }
-  }, [isOpen, itemUuid, itemType, itemOwner]);
+  }, [isOpen, itemUuid, itemType, itemOwner, t]);
 
   useEffect(() => {
     loadInitialState();
@@ -197,8 +198,7 @@ export const useSharingTools = ({
 
       setStatus((prev) => ({
         ...prev,
-        success: `Item ${action === "share" ? "shared" : "unshared"
-          } successfully!`,
+        success: t(action === "share" ? "sharing.sharedOk" : "sharing.unsharedOk"),
       }));
     }
   };
@@ -226,7 +226,7 @@ export const useSharingTools = ({
         await loadInitialState();
         setStatus((prev) => ({
           ...prev,
-          success: "Item unshared - no permissions remaining",
+          success: t("sharing.noPermissionsLeft"),
         }));
       }
     } else {
@@ -262,7 +262,7 @@ export const useSharingTools = ({
         await loadInitialState();
         setStatus((prev) => ({
           ...prev,
-          success: "Item unshared - no permissions remaining",
+          success: t("sharing.noPermissionsLeft"),
         }));
       }
     } else {
@@ -299,8 +299,7 @@ export const useSharingTools = ({
 
       setStatus((prev) => ({
         ...prev,
-        success: `Item is now ${isPublic ? "publicly" : "no longer"
-          } accessible!`,
+        success: t(isPublic ? "sharing.nowPublic" : "sharing.nowPrivate"),
       }));
 
       if (isPublic) {
@@ -379,7 +378,7 @@ export const useSharingTools = ({
 
       setStatus((prev) => ({
         ...prev,
-        success: "All sharing has been removed.",
+        success: t("sharing.allRemoved"),
       }));
     } catch (error) {
       setStatus({
@@ -417,8 +416,6 @@ export const useSharingTools = ({
     handleShare,
     handlePermissionChange,
     handleAllPermissionsChange,
-    activeTab,
-    setActiveTab,
     handlePublicToggle,
     isPubliclyShared,
     inheritedFrom,

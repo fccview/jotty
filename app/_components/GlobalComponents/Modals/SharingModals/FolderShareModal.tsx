@@ -1,14 +1,16 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { Alert02Icon, Globe02Icon } from "hugeicons-react";
 import { Modal, ModalVariant } from "../Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
-import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
-import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
 import { useFolderShare } from "@/app/_hooks/useFolderShare";
 import { Modes } from "@/app/_types/enums";
-import { Search01Icon, Alert02Icon, Delete02Icon } from "hugeicons-react";
-import { useTranslations } from "next-intl";
+import { PeopleSection } from "./Parts/PeopleSection";
+import { FOLDER_CHIPS } from "./Parts/PermissionChips";
+import { ShareSection } from "./Parts/ShareSection";
+import { ShareToggleRow } from "./Parts/ShareToggleRow";
 
 interface FolderShareModalProps {
   isOpen: boolean;
@@ -16,6 +18,8 @@ interface FolderShareModalProps {
   categoryPath: string;
   onClose: () => void;
 }
+
+const READ_ONLY = { canRead: true, canEdit: false, canDelete: false, canCreate: false };
 
 export const FolderShareModal = ({
   isOpen,
@@ -28,10 +32,11 @@ export const FolderShareModal = ({
     isLoading,
     error,
     grants,
+    sharees,
     isPublic,
     searchQuery,
     setSearchQuery,
-    filteredUsers,
+    candidates,
     toggleUser,
     setPerms,
     togglePublic,
@@ -44,132 +49,53 @@ export const FolderShareModal = ({
       isOpen={true}
       onClose={onClose}
       variant={ModalVariant.PANEL}
-      title={t("sharing.shareFolder")}
+      kicker={t("sharing.shareFolder")}
+      title={<span className="truncate">{categoryPath}</span>}
+      description={t("sharing.folderShareHint")}
+      flush
       footer={(close) => (
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={close} disabled={isLoading}>
-            {t("common.close")}
+        <div className="flex justify-end">
+          <Button size="sm" onClick={close} disabled={isLoading}>
+            {t("common.done")}
           </Button>
         </div>
       )}
     >
-      <div className="space-y-4 pb-4">
-        <h3 className="font-semibold text-lg">{categoryPath}</h3>
-        <p className="text-sm text-muted-foreground">
-          {t("sharing.folderShareHint")}
-        </p>
-
-        {error && (
-          <p className="text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        )}
-
-        <div className="relative">
-          <Search01Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-          <Input
-            id="searchFolderUsers"
-            name="searchFolderUsers"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("sharing.searchUsers")}
-            className="pl-10"
+      {error && (
+        <div className="px-6 pt-4 pb-3">
+          <FeedbackMessage error={error} success={null} />
+        </div>
+      )}
+      <PeopleSection
+        sharees={sharees}
+        candidates={candidates}
+        chips={FOLDER_CHIPS}
+        permissionsOf={(username) => grants[username] || READ_ONLY}
+        onPermission={setPerms}
+        onShare={toggleUser}
+        onUnshare={toggleUser}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        isLoading={isLoading}
+      />
+      <ShareSection id="share-section-public" title={t("sharing.publicLinkTab")}>
+        <div className="px-6 py-1">
+          <ShareToggleRow
+            id="folder-public-toggle"
+            icon={Globe02Icon}
+            label={t("sharing.publicAccess")}
+            hint={
+              <span className="inline-flex items-start gap-1.5">
+                <Alert02Icon className="mt-px h-3.5 w-3.5 shrink-0 text-destructive" />
+                {t("sharing.publicFolderWarning")}
+              </span>
+            }
+            checked={isPublic}
+            onChange={togglePublic}
+            disabled={isLoading}
           />
         </div>
-
-        <div className="max-h-64 overflow-y-auto space-y-2">
-          {filteredUsers.map((entry) => {
-            const username = entry.username || "";
-            const granted = grants[username];
-
-            return (
-              <div
-                key={username}
-                className="flex items-center justify-between gap-3 rounded-jotty border border-border p-2"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <UserAvatar username={username} avatarUrl={entry.avatarUrl} />
-                  <span className="truncate text-sm">{username}</span>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  {granted && (
-                    <>
-                      <label
-                        className="flex items-center gap-1 text-xs text-muted-foreground"
-                        title={t("sharing.createHint")}
-                      >
-                        {t("sharing.canCreate")}
-                        <Toggle
-                          size="sm"
-                          checked={granted.canCreate === true}
-                          onCheckedChange={(value) =>
-                            setPerms(username, "canCreate", value)
-                          }
-                          disabled={isLoading}
-                        />
-                      </label>
-                      <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                        {t("sharing.canEdit")}
-                        <Toggle
-                          size="sm"
-                          checked={granted.canEdit === true}
-                          onCheckedChange={(value) =>
-                            setPerms(username, "canEdit", value)
-                          }
-                          disabled={isLoading}
-                        />
-                      </label>
-                      <label className="flex items-center gap-1 text-xs text-muted-foreground">
-                        {t("sharing.canDelete")}
-                        <Toggle
-                          size="sm"
-                          checked={granted.canDelete === true}
-                          onCheckedChange={(value) =>
-                            setPerms(username, "canDelete", value)
-                          }
-                          disabled={isLoading}
-                        />
-                      </label>
-                    </>
-                  )}
-                  <Button
-                    variant={granted ? "destructive" : "outline"}
-                    size="sm"
-                    onClick={() => toggleUser(username)}
-                    disabled={isLoading}
-                  >
-                    {granted ? (
-                      <Delete02Icon
-                        aria-label={t("sharing.removeAccess")}
-                        className="h-4 w-4"
-                      />
-                    ) : (
-                      t("sharing.share")
-                    )}
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="rounded-jotty border border-border p-3 space-y-2">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm font-medium">{t("sharing.publicAccess")}</p>
-            <Toggle
-              checked={isPublic}
-              onCheckedChange={togglePublic}
-              disabled={isLoading}
-            />
-          </div>
-          <p className="flex items-start gap-2 text-xs text-muted-foreground">
-            <Alert02Icon className="h-4 w-4 shrink-0 mt-0.5" />
-            {t("sharing.publicFolderWarning")}
-          </p>
-        </div>
-      </div>
+      </ShareSection>
     </Modal>
   );
 };
