@@ -2,6 +2,7 @@ import { StampRefusals } from "@/app/_consts/identity";
 import { ItemTypes } from "./enums";
 import { EncryptionMethod } from "./encryption";
 import { SharingPermissions } from "./core";
+import type { SaveState } from "@/app/_utils/autosave-utils";
 
 export interface NoteSummary {
   excerpt: string;
@@ -48,14 +49,16 @@ export interface NoteEditorViewModel {
   editorContent: string;
   isEditing: boolean;
   isEditorVisible: boolean;
+  editorKey: number;
   setIsEditing: (isEditing: boolean) => void;
   status: {
     isSaving: boolean;
     isAutoSaving: boolean;
   };
+  autosaveState: SaveState | null;
   handleEdit: () => void;
   handleCancel: () => void;
-  handleSave: (autosaveNotes?: boolean, passphrase?: string) => void;
+  handleSave: (passphrase?: string) => Promise<boolean | undefined> | void;
   handleDelete: () => void;
   handleEditorContentChange: (
     content: string,
@@ -67,6 +70,7 @@ export interface NoteEditorViewModel {
   setShowUnsavedChangesModal: (show: boolean) => void;
   handleUnsavedChangesSave: () => void;
   handleUnsavedChangesDiscard: () => void;
+  handleUnsavedChangesKeep: () => void;
   derivedMarkdownContent: string;
   handlePrint: () => void;
   isPrinting: boolean;

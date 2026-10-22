@@ -257,7 +257,9 @@
     "daysShort": "{count}g",
     "weeksShort": "{count}sett",
     "monthsShort": "{count}mes",
-    "yearsShort": "{count}a"
+    "yearsShort": "{count}a",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password"
   },
   "history": {
     "noteHistory": "Cronologia della nota",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Attenzione: {count, plural, one {# tentativo} other {# tentativi}} rimanenti prima del blocco dell'account",
     "accountLocked": "Troppi tentativi falliti. Riprova tra {seconds} {seconds, plural, one {secondo} other {secondi}}",
     "notAuthorized": "Non hai accesso a questa app. Chiedi al tuo amministratore.",
-    "rememberMe": "Ricordami"
+    "rememberMe": "Ricordami",
+    "demoMode": "Modalità demo"
   },
   "mfa": {
     "title": "Autenticazione a Due Fattori",

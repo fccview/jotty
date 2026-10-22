@@ -257,7 +257,9 @@
     "daysShort": "{count}d",
     "weeksShort": "{count}w",
     "monthsShort": "{count}mo",
-    "yearsShort": "{count}y"
+    "yearsShort": "{count}y",
+    "showPassword": "Reveal yer secret code",
+    "hidePassword": "Stow yer secret code"
   },
   "history": {
     "noteHistory": "Log History",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Warning: {count} tries left before we throw ye in the brig",
     "accountLocked": "To the brig with ye! Wait {seconds} seconds.",
     "notAuthorized": "Ye lack the clearance! Talk to the Captain.",
-    "rememberMe": "Remember me, matey"
+    "rememberMe": "Remember me, matey",
+    "demoMode": "Practice voyage"
   },
   "mfa": {
     "title": "Two-Step Verification",

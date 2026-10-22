@@ -257,7 +257,9 @@
     "daysShort": "{count}g",
     "weeksShort": "{count}hf",
     "monthsShort": "{count}ay",
-    "yearsShort": "{count}y"
+    "yearsShort": "{count}y",
+    "showPassword": "Şifreyi göster",
+    "hidePassword": "Şifreyi gizle"
   },
   "history": {
     "noteHistory": "Not Geçmişi",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Uyarı: Hesabın kilitlenmesine {count, plural, one {# deneme} other {# deneme}} kaldı",
     "accountLocked": "Çok fazla hatalı deneme. {seconds} {seconds, plural, one {saniye} other {saniye}} sonra tekrar deneyin",
     "notAuthorized": "Bu uygulamaya erişiminiz yok. Yöneticinize başvurun.",
-    "rememberMe": "Beni hatırla"
+    "rememberMe": "Beni hatırla",
+    "demoMode": "Demo modu"
   },
   "mfa": {
     "title": "İki Faktörlü Doğrulama",

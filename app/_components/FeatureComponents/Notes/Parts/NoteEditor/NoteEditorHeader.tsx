@@ -55,6 +55,7 @@ import {
   isEncrypted,
 } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
+import { AutosaveStatus } from "./AutosaveStatus";
 import { NoteHistoryModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/NoteHistoryModal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import {
@@ -102,7 +103,9 @@ export const NoteEditorHeader = ({
     handleDelete,
     isPrinting,
     isEditingEncrypted,
+    autosaveState,
   } = viewModel;
+  const cancelLabel = autosaveState ? t("common.close") : t("common.cancel");
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
@@ -159,6 +162,7 @@ export const NoteEditorHeader = ({
   const handleArchive = async () => {
     const result = await toggleArchive(note, Modes.NOTES);
     if (result.success) {
+      onBack();
       router.refresh();
     }
   };
@@ -188,7 +192,7 @@ export const NoteEditorHeader = ({
     }
     const cached = viewModel.getCachedPassphrase();
     if (cached) {
-      handleSave(false, cached);
+      handleSave(cached);
       return;
     }
     setEncryptionModalMode("save");
@@ -240,7 +244,7 @@ export const NoteEditorHeader = ({
       if (method === "xchacha" && passphrase) {
         viewModel.cachePassphrase(passphrase, method);
       }
-      handleSave(false, saveParam);
+      handleSave(saveParam);
       setShowEncryptionModal(false);
     }
   };
@@ -358,19 +362,22 @@ export const NoteEditorHeader = ({
                   </div>
                 )}
 
+                <AutosaveStatus state={autosaveState} />
+
                 <Button
                   variant="outline"
                   className="hidden lg:flex"
                   size="sm"
                   onClick={handleCancel}
+                  disabled={status.isSaving}
                 >
-                  {t("common.cancel")}
+                  {cancelLabel}
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleSaveClick}
                   className="hidden lg:flex"
-                  disabled={status.isSaving || status.isAutoSaving}
+                  disabled={status.isSaving}
                 >
                   {status.isSaving ? (
                     <>
@@ -393,8 +400,9 @@ export const NoteEditorHeader = ({
                     variant="outline"
                     size="icon"
                     onClick={handleCancel}
-                    title={t("common.cancel")}
-                    aria-label={t("common.cancel")}
+                    disabled={status.isSaving}
+                    title={cancelLabel}
+                    aria-label={cancelLabel}
                     className={quickBarButton}
                   >
                     <Cancel01Icon className="h-5 w-5" />
@@ -404,7 +412,7 @@ export const NoteEditorHeader = ({
                     size="icon"
                     onClick={handleSaveClick}
                     className={quickBarButton}
-                    disabled={status.isSaving || status.isAutoSaving}
+                    disabled={status.isSaving}
                     title={status.isSaving ? t("common.saving") : t("common.save")}
                     aria-label={
                       status.isSaving ? t("common.saving") : t("common.save")

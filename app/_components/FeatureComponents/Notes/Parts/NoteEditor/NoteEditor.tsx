@@ -156,6 +156,7 @@ export const NoteEditor = ({
             className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter min-h-0"
           >
             <NoteEditorContent
+              key={viewModel.editorKey}
               isEditorVisible={viewModel.isEditorVisible}
               noteContent={note.content}
               editorContent={viewModel.editorContent}
@@ -184,7 +185,7 @@ export const NoteEditor = ({
 
         <UnsavedChangesModal
           isOpen={viewModel.showUnsavedChangesModal}
-          onClose={() => viewModel.setShowUnsavedChangesModal(false)}
+          onClose={viewModel.handleUnsavedChangesKeep}
           onSave={viewModel.handleUnsavedChangesSave}
           onDiscard={viewModel.handleUnsavedChangesDiscard}
           noteTitle={note.title}

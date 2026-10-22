@@ -41,7 +41,6 @@ import {
 import { LiveStatusBar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/LiveStatusBar";
 import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
-const DRAFT_DELAY_MS = 300;
 
 type TiptapEditorProps = {
   content: string;
@@ -118,7 +117,6 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
     const markdownModeRef = useRef(defaultEditorIsMarkdown);
     markdownModeRef.current = isMarkdownMode;
     const isDirtyRef = useRef<boolean>(false);
-    const draftTimeoutRef = useRef<NodeJS.Timeout>(undefined);
 
     const uploadHook = useFileUpload(appSettings?.maximumFileSize);
     const tableToolbar = useTableToolbar();
@@ -127,12 +125,7 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       (markdown: string, isMarkdown: boolean, isDirty: boolean) => {
         markdownRef.current = markdown;
         onChange(markdown, isMarkdown, isDirty);
-        if (!collaborationUuid || !isDirty) return;
-        clearTimeout(draftTimeoutRef.current);
-        draftTimeoutRef.current = setTimeout(
-          () => saveDraft(collaborationUuid, markdown),
-          DRAFT_DELAY_MS,
-        );
+        if (collaborationUuid && isDirty) saveDraft(collaborationUuid, markdown);
       },
       [onChange, collaborationUuid],
     );
@@ -301,8 +294,6 @@ export const TiptapEditor = forwardRef<TiptapEditorRef, TiptapEditorProps>(
       isInitialized.current = true;
       if (!isMarkdownMode) sync.show(editor, markdownRef.current);
     }, [editor, live, isMarkdownMode, sync]);
-
-    useEffect(() => () => clearTimeout(draftTimeoutRef.current), []);
 
     const changeMarkdown = useCallback(
       (newContent: string) => {

@@ -34,6 +34,7 @@ import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/Confirma
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
+import { useReturnPath } from "@/app/_hooks/useReturnPath";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -57,6 +58,7 @@ export const SidebarItem = ({
   const t = useTranslations();
   const router = useRouter();
   const { checkNavigation, checkWouldBlock } = useNavigationGuard();
+  const returnPath = useReturnPath(`/?mode=${mode}`);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -176,9 +178,11 @@ export const SidebarItem = ({
             label: t("common.archive"),
             onClick: async () => {
               const result = await toggleArchive(item, mode);
-              if (result.success) {
-                router.refresh();
+              if (!result.success) return;
+              if (isSelected) {
+                checkNavigation(() => router.push(returnPath));
               }
+              router.refresh();
             },
             icon: <Archive02Icon className="h-4 w-4" />,
           },

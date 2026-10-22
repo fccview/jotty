@@ -257,7 +257,9 @@
     "daysShort": "{count} ngày",
     "weeksShort": "{count} tuần",
     "monthsShort": "{count} th",
-    "yearsShort": "{count} năm"
+    "yearsShort": "{count} năm",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu"
   },
   "history": {
     "noteHistory": "Lịch sử ghi chú",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Cảnh báo: còn lại {count, plural, one {# lần thử} other {# lần thử}} trước khi khóa tài khoản",
     "accountLocked": "Quá nhiều lần thử thất bại. Hãy thử lại sau {seconds} {seconds, plural, one {giây} other {giây}}",
     "notAuthorized": "Bạn không có quyền truy cập ứng dụng này. Hãy hỏi quản trị viên.",
-    "rememberMe": "nhớ tôi"
+    "rememberMe": "nhớ tôi",
+    "demoMode": "Chế độ demo"
   },
   "mfa": {
     "title": "Xác thực hai yếu tố",

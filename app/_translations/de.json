@@ -257,7 +257,9 @@
     "daysShort": "{count}T",
     "weeksShort": "{count}W",
     "monthsShort": "{count}Mo",
-    "yearsShort": "{count}J"
+    "yearsShort": "{count}J",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen"
   },
   "history": {
     "noteHistory": "Notizverlauf",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Warnung: Noch {count, plural, one {# Versuch} other {# Versuche}} bis zur Kontosperre",
     "accountLocked": "Zu viele fehlgeschlagene Versuche. Versuch es in {seconds} {seconds, plural, one {Sekunde} other {Sekunden}} erneut.",
     "notAuthorized": "Du hast keinen Zugriff auf diese Anwendung. Wende dich an deinen Administrator.",
-    "rememberMe": "Angemeldet bleiben"
+    "rememberMe": "Angemeldet bleiben",
+    "demoMode": "Demo-Modus"
   },
   "mfa": {
     "title": "Zwei-Faktor-Authentifizierung",

@@ -257,7 +257,9 @@
     "daysShort": "{count}d",
     "weeksShort": "{count}tyg",
     "monthsShort": "{count}mies",
-    "yearsShort": "{count}r"
+    "yearsShort": "{count}r",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło"
   },
   "history": {
     "noteHistory": "Historia notatki",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Uwaga: {count, plural, one {# próba} few {# próby} other {# prób}} pozostało przed zablokowaniem konta",
     "accountLocked": "Zbyt wiele nieudanych prób. Spróbuj ponownie za {seconds} {seconds, plural, one {sekundę} few {sekundy} other {sekund}}",
     "notAuthorized": "Nie masz dostępu do tej aplikacji. Poproś administratora.",
-    "rememberMe": "Zapamiętaj mnie"
+    "rememberMe": "Zapamiętaj mnie",
+    "demoMode": "Tryb demo"
   },
   "mfa": {
     "title": "Autoryzacja dwuskładnikowa",

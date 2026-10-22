@@ -6,6 +6,7 @@ import { WeekDay } from "@/app/_consts/calendar";
 import { SearchModes } from "@/app/_consts/search";
 import { VIEW_MODE_OPTIONS } from "@/app/_consts/view-modes";
 import { SETTING_DEFAULTS } from "@/app/_consts/user-settings";
+import { AUTOSAVE_DEFAULT_MS } from "@/app/_utils/autosave-utils";
 
 export interface ChoiceOption {
   id: string | number;
@@ -24,14 +25,13 @@ export interface ChoiceField {
   contrastParam?: string;
   options: ChoiceOption[];
   defaultValue: string | number;
+  normalise?: (value: string | number) => string | number;
 }
 
 const ENABLE_DISABLE: ChoiceOption[] = [
   { id: ToggleState.ENABLE, labelKey: "settings.enable" },
   { id: ToggleState.DISABLE, labelKey: "settings.disable" },
 ];
-
-const SECONDS = [1, 5, 10, 15, 20, 25, 30];
 
 const NOTE_FILTER_LABELS: Record<(typeof NOTE_FILTERS)[number], string> = {
   all: "notes.allNotes",
@@ -160,12 +160,9 @@ export const NOTE_LEAD_FIELDS: ChoiceField[] = [
     placeholderKey: "settings.selectAutoSaveInterval",
     options: [
       { id: 0, labelKey: "settings.disabled" },
-      ...SECONDS.map((count) => ({
-        id: count * 1000,
-        labelKey: "settings.seconds",
-        labelValues: { count },
-      })),
+      { id: AUTOSAVE_DEFAULT_MS, labelKey: "settings.enabled" },
     ],
+    normalise: (value) => (Number(value) === 0 ? 0 : AUTOSAVE_DEFAULT_MS),
   }),
   field({
     key: "notesDefaultMode",

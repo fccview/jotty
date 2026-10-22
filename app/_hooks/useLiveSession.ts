@@ -48,6 +48,11 @@ const readDraft = (uuid: string): Draft | null => {
 
 const dropDraft = (uuid: string) => storage(() => localStorage.removeItem(draftKey(uuid)));
 
+export const discardDraft = (uuid: string) => {
+  bases.delete(uuid);
+  dropDraft(uuid);
+};
+
 export const saveDraft = (uuid: string, markdown: string) => {
   const base = bases.get(uuid);
   if (base === undefined) return;

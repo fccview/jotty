@@ -257,7 +257,9 @@
     "daysShort": "{count}일",
     "weeksShort": "{count}주",
     "monthsShort": "{count}개월",
-    "yearsShort": "{count}년"
+    "yearsShort": "{count}년",
+    "showPassword": "비밀번호 표시",
+    "hidePassword": "비밀번호 숨기기"
   },
   "history": {
     "noteHistory": "노트 기록",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "경고: {count, plural, one {#회} other {#회}}의 시도가 남아 있습니다",
     "accountLocked": "실패 시도가 너무 많습니다. {seconds} {seconds, plural, one {초} other {초}} 후에 다시 시도하세요",
     "notAuthorized": "이 앱에 접근할 권한이 없습니다. 관리자에게 문의하세요.",
-    "rememberMe": "로그인 상태 유지"
+    "rememberMe": "로그인 상태 유지",
+    "demoMode": "데모 모드"
   },
   "mfa": {
     "title": "2단계 인증 (2FA)",

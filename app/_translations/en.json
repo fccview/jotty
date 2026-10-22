@@ -257,7 +257,9 @@
     "daysShort": "{count}d",
     "weeksShort": "{count}w",
     "monthsShort": "{count}mo",
-    "yearsShort": "{count}y"
+    "yearsShort": "{count}y",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "history": {
     "noteHistory": "Note History",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "{count, plural, one {# attempt} other {# attempts}} left before this account locks",
     "accountLocked": "Too many failed attempts. Try again in {seconds} {seconds, plural, one {second} other {seconds}}",
     "notAuthorized": "You don't have access to this app. Ask your admin.",
-    "rememberMe": "Remember me"
+    "rememberMe": "Remember me",
+    "demoMode": "Demo mode"
   },
   "mfa": {
     "title": "Two-Factor Authentication",
@@ -426,7 +429,10 @@
     "noTagsFound": "No tags found",
     "searchTags": "Search tags...",
     "createNoteFailed": "Could not create the note",
-    "createCategoryFailed": "Couldn't create the category, so the note wasn't created either"
+    "createCategoryFailed": "Couldn't create the category, so the note wasn't created either",
+    "autosaveSaved": "Saved",
+    "autosaveFailed": "Not saved",
+    "autosaveFailedHint": "Couldn't reach the server. Jotty tries again when you keep typing, switch tabs or close the editor."
   },
   "checklists": {
     "sharedPubliclyBy": "{owner} shared this checklist publicly",
@@ -836,9 +842,9 @@
     "rightHanded": "Right-handed",
     "leftHanded": "Left-handed",
     "notesPreferences": "Notes Preferences",
-    "autoSaveInterval": "Auto Save Interval",
-    "selectAutoSaveInterval": "Select auto save interval",
-    "chooseAutoSaveInterval": "How often Jotty saves a note while you write.",
+    "autoSaveInterval": "Autosave",
+    "selectAutoSaveInterval": "Pick autosave",
+    "chooseAutoSaveInterval": "Saves your note as you type. Turn it off to save only when you press Save.",
     "defaultMode": "Default Mode",
     "selectNotesDefaultMode": "Select notes default mode",
     "chooseNotesDefaultMode": "Choose whether notes open in edit mode. You can always switch with the {mode} button in the note editor.",
@@ -994,7 +1000,8 @@
     "browseViewModeDescription": "How notes and lists are laid out when you browse them.",
     "notesCardPreviewDescription": "Show the formatted start of each note on its card.",
     "notesCompactModeDescription": "Use a narrower layout while reading and editing notes.",
-    "kanbanColumnWidthDescription": "Width of each kanban column. Auto stretches the columns to fill the board."
+    "kanbanColumnWidthDescription": "Width of each kanban column. Auto stretches the columns to fill the board.",
+    "enabled": "Enabled"
   },
   "admin": {
     "title": "Admin",

@@ -257,7 +257,9 @@
     "daysShort": "{count}天",
     "weeksShort": "{count}周",
     "monthsShort": "{count}月",
-    "yearsShort": "{count}年"
+    "yearsShort": "{count}年",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码"
   },
   "history": {
     "noteHistory": "笔记历史",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "警告：在账户锁定前还剩 {count, plural, one {# 次尝试} other {# 次尝试}}",
     "accountLocked": "失败次数过多。请在 {seconds} {seconds, plural, one {秒} other {秒}} 后重试",
     "notAuthorized": "您无权访问此应用。请联系管理员。",
-    "rememberMe": "记住我"
+    "rememberMe": "记住我",
+    "demoMode": "演示模式"
   },
   "mfa": {
     "title": "双重认证 (2FA)",

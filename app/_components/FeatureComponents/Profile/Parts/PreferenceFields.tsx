@@ -23,7 +23,8 @@ export const PreferenceFields = ({ fields, settings, errors, onChange }: Prefere
   return (
     <>
       {fields.map((field) => {
-        const value = asValue(settings[field.key]);
+        const stored = asValue(settings[field.key]);
+        const value = stored !== undefined && field.normalise ? field.normalise(stored) : stored;
         const effective = value ?? field.defaultValue;
         const contrast = field.options.find((option) => option.id !== effective);
         const description =

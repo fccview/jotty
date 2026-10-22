@@ -1,31 +1,42 @@
-import { Tick02Icon, AlertCircleIcon } from "hugeicons-react";
+import { ReactNode } from "react";
+import { Tick02Icon, AlertCircleIcon, Alert02Icon } from "hugeicons-react";
+import { cn } from "@/app/_utils/global-utils";
 
 interface FeedbackMessageProps {
   error: string | null;
   success: string | null;
+  warning?: string | null;
+  icon?: ReactNode;
 }
 
-export const FeedbackMessage = ({ error, success }: FeedbackMessageProps) => {
-  if (!error && !success) return null;
-  const isError = !!error;
+const TONES = {
+  error: { box: "bg-destructive/10 border-destructive/20", text: "text-destructive" },
+  warning: { box: "bg-warning/10 border-warning/25", text: "text-warning" },
+  success: { box: "bg-primary/10 border-primary/20", text: "text-primary" },
+};
+
+const ICONS = {
+  error: AlertCircleIcon,
+  warning: Alert02Icon,
+  success: Tick02Icon,
+};
+
+export const FeedbackMessage = ({ error, success, warning, icon }: FeedbackMessageProps) => {
+  const message = error || warning || success;
+  if (!message) return null;
+
+  const tone = error ? "error" : warning ? "warning" : "success";
+  const Icon = ICONS[tone];
+
   return (
     <div
-      className={`jotty-feedback-message flex items-center gap-2 p-3 rounded-jotty border ${
-        isError
-          ? "bg-destructive/10 border-destructive/20"
-          : "bg-primary/10 border-primary/20"
-      }`}
+      role={error ? "alert" : "status"}
+      className={cn("jotty-feedback-message flex items-center gap-2 p-3 rounded-jotty border", TONES[tone].box)}
     >
-      {isError ? (
-        <AlertCircleIcon className="h-4 w-4 text-destructive" />
-      ) : (
-        <Tick02Icon className="h-4 w-4 text-primary" />
-      )}
-      <span
-        className={`text-sm ${isError ? "text-destructive" : "text-primary"}`}
-      >
-        {error || success}
+      <span className={cn("shrink-0 [&>svg]:h-4 [&>svg]:w-4", TONES[tone].text)}>
+        {icon ?? <Icon />}
       </span>
+      <span className={cn("text-sm", TONES[tone].text)}>{message}</span>
     </div>
   );
 };

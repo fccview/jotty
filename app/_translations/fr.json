@@ -257,7 +257,9 @@
     "daysShort": "{count}j",
     "weeksShort": "{count}sem",
     "monthsShort": "{count}mois",
-    "yearsShort": "{count}a"
+    "yearsShort": "{count}a",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
   },
   "history": {
     "noteHistory": "Historique de la note",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Attention : {count, plural, one {# tentative} other {# tentatives}} restantes avant le verrouillage du compte",
     "accountLocked": "Trop de tentatives échouées. Réessayez dans {seconds} {seconds, plural, one {seconde} other {secondes}}",
     "notAuthorized": "Vous n’avez pas accès à cette application. Demandez à votre administrateur.",
-    "rememberMe": "Se souvenir de moi"
+    "rememberMe": "Se souvenir de moi",
+    "demoMode": "Mode démo"
   },
   "mfa": {
     "title": "Authentification à deux facteurs",

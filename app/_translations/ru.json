@@ -257,7 +257,9 @@
     "daysShort": "{count} д",
     "weeksShort": "{count} нед",
     "monthsShort": "{count} мес",
-    "yearsShort": "{count} г"
+    "yearsShort": "{count} г",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль"
   },
   "history": {
     "noteHistory": "История заметки",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "Предупреждение: осталось {count, plural, one {# попытка} few {# попытки} many {# попыток} other {# попыток}} до блокировки аккаунта",
     "accountLocked": "Слишком много неудачных попыток. Попробуйте снова через {seconds} {seconds, plural, one {секунду} few {секунды} many {секунд} other {секунд}}",
     "notAuthorized": "У вас нет доступа к этому приложению. Обратитесь к администратору.",
-    "rememberMe": "Запомнить меня"
+    "rememberMe": "Запомнить меня",
+    "demoMode": "Демо-режим"
   },
   "mfa": {
     "title": "Двухфакторная аутентификация",

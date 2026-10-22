@@ -6,10 +6,19 @@ import { login } from "@/app/_server/actions/auth";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Orbit01Icon } from "hugeicons-react";
+import { Key01Icon, LockIcon } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
+import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
+import { KICKER_CLASS } from "@/app/_consts/styling";
+import { cn } from "@/app/_utils/global-utils";
+
+const OIDC_LOGIN_URL = "/api/oidc/login";
+const DEMO_USERNAME = "demo";
+const DEMO_PASSWORD = "demodemo";
+const DIVIDER_CLASS =
+  "flex items-center gap-3 whitespace-nowrap before:flex-1 before:border-t before:border-dashed before:border-border after:flex-1 after:border-t after:border-dashed after:border-border";
 
 export default function LoginForm({
   ssoEnabled,
@@ -29,7 +38,7 @@ export default function LoginForm({
   const [lockedUntil, setLockedUntil] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState(true);
-  const { isDemoMode, appVersion, isRwMarkable } = useAppMode();
+  const { isDemoMode } = useAppMode();
 
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -96,164 +105,126 @@ export default function LoginForm({
     }
   }
 
+  const isBusy = isLoading || isSsoLoading || countdown > 0;
+  const showAttempts =
+    !countdown && attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining < 4;
+
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {t("welcomeBack")}
-        </h1>
-      </div>
+    <>
+      <FeedbackMessage error={error || null} success={null} />
+      {countdown > 0 && (
+        <FeedbackMessage
+          error={null}
+          success={null}
+          warning={t("accountLocked", { seconds: countdown })}
+          icon={<LockIcon />}
+        />
+      )}
+      {showAttempts && (
+        <FeedbackMessage
+          error={null}
+          success={null}
+          warning={t("attemptsRemaining", { count: attemptsRemaining })}
+        />
+      )}
 
       {ssoEnabled && (
-        <div className="space-y-3">
+        <>
           <Button
-            className="w-full"
+            variant="outline"
+            className="w-full gap-2"
             disabled={isLoading || isSsoLoading}
             onClick={() => {
               setIsSsoLoading(true);
-              window.location.href = "/api/oidc/login";
+              window.location.href = OIDC_LOGIN_URL;
             }}
           >
             {isSsoLoading ? (
-              <>
-                <Logo className="h-4 w-4 mr-2 animate-pulse" /> {t("signingIn")}
-              </>
+              <Logo className="h-4 w-4 animate-pulse" />
             ) : (
-              t("signInWithSSO")
+              <Key01Icon className="h-4 w-4" />
             )}
+            {isSsoLoading ? t("signingIn") : t("signInWithSSO")}
           </Button>
-          <div className="relative !mt-8">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-sm lg:text-xs text-muted-foreground">
-              <span className="bg-background px-2">{t("orContinueWith")}</span>
-            </div>
-          </div>
-        </div>
+          <div className={cn(KICKER_CLASS, DIVIDER_CLASS)}>{t("orContinueWith")}</div>
+        </>
       )}
 
       {isDemoMode && (
-        <div className="bg-muted p-3 rounded-jotty">
-          <strong>{t("usernameLabel")}: </strong>demo <br />
-          <strong>{t("passwordLabel")}: </strong>demodemo
+        <div className="rounded-jotty border border-dashed border-primary/40 bg-muted px-3 py-2.5">
+          <div className={cn(KICKER_CLASS, "mb-1.5 flex items-center gap-2")}>
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {t("demoMode")}
+          </div>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-md lg:text-sm">
+            <dt className="text-muted-foreground">{t("usernameLabel")}</dt>
+            <dd className="font-mono">{DEMO_USERNAME}</dd>
+            <dt className="text-muted-foreground">{t("passwordLabel")}</dt>
+            <dd className="font-mono">{DEMO_PASSWORD}</dd>
+          </dl>
         </div>
       )}
 
       <form onSubmit={handleSubmit} method="POST" className="space-y-4">
-        {error && (
-          <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-jotty">
-            <span className="text-md lg:text-sm text-destructive">{error}</span>
-          </div>
-        )}
+        <Input
+          id="username"
+          label={t("usernameLabel")}
+          name="username"
+          type="text"
+          required
+          disabled={isBusy}
+          placeholder={t("enterUsername")}
+          defaultValue=""
+          autoComplete="username"
+        />
 
-        {countdown > 0 && (
-          <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
-            <span className="text-md lg:text-sm text-warning">
-              {t("accountLocked", { seconds: countdown })}
-            </span>
-          </div>
-        )}
+        <Input
+          id="password"
+          label={t("passwordLabel")}
+          name="password"
+          type="password"
+          required
+          disabled={isBusy}
+          placeholder={t("enterPassword")}
+          autoComplete="current-password"
+          defaultValue=""
+        />
 
-        {!countdown &&
-          attemptsRemaining !== null &&
-          attemptsRemaining > 0 &&
-          attemptsRemaining < 4 && (
-            <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-jotty">
-              <span className="text-md lg:text-sm text-warning">
-                {t("attemptsRemaining", { count: attemptsRemaining })}
-              </span>
-            </div>
-          )}
-
-        <div className="space-y-2">
-          <Input
-            id="username"
-            label={t("usernameLabel")}
-            name="username"
-            type="text"
-            required
-            disabled={isLoading || isSsoLoading || countdown > 0}
-            className="mt-1"
-            placeholder={t("enterUsername")}
-            defaultValue=""
-            autoComplete="username"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Input
-            id="password"
-            label={t("passwordLabel")}
-            name="password"
-            type="password"
-            required
-            disabled={isLoading || isSsoLoading || countdown > 0}
-            className="mt-1"
-            placeholder={t("enterPassword")}
-            autoComplete="current-password"
-            defaultValue=""
-          />
-        </div>
-
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-2.5">
+          <label
+            htmlFor="rememberMe"
+            className="cursor-pointer select-none text-sm text-muted-foreground lg:text-xs"
+          >
+            {t("rememberMe")}
+          </label>
           <Toggle
             id="rememberMe"
             size="sm"
             checked={rememberMe}
             onCheckedChange={setRememberMe}
-            disabled={isLoading || isSsoLoading || countdown > 0}
+            disabled={isBusy}
           />
           <input type="hidden" name="rememberMe" value={String(rememberMe)} />
-          <span
-            onClick={() => setRememberMe(!rememberMe)}
-            className="text-sm lg:text-xs text-muted-foreground cursor-pointer select-none"
-          >
-            {t("rememberMe")}
-          </span>
         </div>
 
-        <Button
-          type="submit"
-          className="w-full !mt-8"
-          disabled={isLoading || isSsoLoading || countdown > 0}
-        >
-          {isLoading ? (
-            <>
-              <Logo
-                className="h-4 w-4 bg-background mr-2 animate-pulse"
-                pathClassName="fill-primary"
-              />{" "}
-              {t("signingIn")}
-            </>
-          ) : (
-            t("signInButton")
+        <Button type="submit" className="w-full gap-2" disabled={isBusy}>
+          {isLoading && (
+            <Logo className="h-4 w-4 bg-background animate-pulse" pathClassName="fill-primary" />
           )}
+          {isLoading ? t("signingIn") : t("signInButton")}
         </Button>
       </form>
 
       {showRegisterLink && (
-        <div className="text-center">
+        <p className="text-center">
           <a
             href="/auth/setup"
-            className="text-sm lg:text-xs text-muted-foreground hover:text-foreground underline"
+            className="text-sm text-muted-foreground underline decoration-dashed underline-offset-4 transition-colors hover:text-foreground lg:text-xs"
           >
             {t("createAccount")}
           </a>
-        </div>
+        </p>
       )}
-
-      {appVersion && (
-        <div className="text-center text-sm lg:text-xs text-muted-foreground">
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href={`https://github.com/fccview/jotty/releases/tag/${appVersion}`}
-          >
-            {t("version", { version: appVersion })}
-          </a>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

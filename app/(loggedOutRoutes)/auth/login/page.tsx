@@ -26,10 +26,8 @@ export default async function LoginPage() {
   const showRegisterLink = allowLocal && !hasExistingUsers;
 
   return (
-    <AuthShell>
-      <div className="space-y-6">
-        <LoginForm ssoEnabled={ssoIsOidc} showRegisterLink={showRegisterLink} />
-      </div>
+    <AuthShell kicker={t("loginTitle")} title={t("welcomeBack")} description={t("signIn")}>
+      <LoginForm ssoEnabled={ssoIsOidc} showRegisterLink={showRegisterLink} />
     </AuthShell>
   );
 }

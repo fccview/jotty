@@ -78,6 +78,7 @@ export const ChecklistClient = ({
   const handleArchive = async () => {
     const result = await toggleArchive(localChecklist, Modes.CHECKLISTS);
     if (result.success) {
+      handleBack();
       router.refresh();
     }
   };

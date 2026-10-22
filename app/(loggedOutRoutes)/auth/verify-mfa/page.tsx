@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { AuthShell } from "@/app/_components/GlobalComponents/Auth/AuthShell";
 import { CodeInput } from "@/app/_components/GlobalComponents/FormElements/CodeInput";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
+import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/FeedbackMessage";
 
 export default function VerifyMfaPage() {
     const t = useTranslations();
@@ -39,39 +40,26 @@ export default function VerifyMfaPage() {
     };
 
     return (
-        <AuthShell>
-            <div className="space-y-6">
-                <div className="text-center space-y-2">
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                        {t("mfa.verifyTitle")}
-                    </h1>
-                    <p className="text-md lg:text-sm text-muted-foreground">
-                        {t("mfa.verifyDescription")}
-                    </p>
+        <AuthShell
+            kicker={t("auth.loginTitle")}
+            title={t("mfa.verifyTitle")}
+            description={t("mfa.verifyDescription")}
+        >
+            <FeedbackMessage error={error || null} success={null} />
+
+            <CodeInput
+                length={6}
+                onComplete={handleCodeComplete}
+                disabled={isLoading}
+                autoFocus
+            />
+
+            {isLoading && (
+                <div className="flex items-center justify-center gap-2 text-md lg:text-sm text-muted-foreground">
+                    <Logo className="h-4 w-4 animate-pulse" />
+                    {t("mfa.verifying")}
                 </div>
-
-                {error && (
-                    <div className="p-3 text-md lg:text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-jotty">
-                        {error}
-                    </div>
-                )}
-
-                <div className="space-y-4">
-                    <CodeInput
-                        length={6}
-                        onComplete={handleCodeComplete}
-                        disabled={isLoading}
-                        autoFocus
-                    />
-
-                    {isLoading && (
-                        <div className="flex items-center justify-center gap-2 text-md lg:text-sm text-muted-foreground">
-                            <Logo className="h-4 w-4 animate-pulse" />
-                            {t("mfa.verifying")}
-                        </div>
-                    )}
-                </div>
-            </div>
+            )}
         </AuthShell>
     );
 }

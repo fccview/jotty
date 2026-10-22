@@ -257,7 +257,9 @@
     "daysShort": "{count}jaj",
     "weeksShort": "{count}hogh",
     "monthsShort": "{count}jar",
-    "yearsShort": "{count}DIS"
+    "yearsShort": "{count}DIS",
+    "showPassword": "mu'pe' yIcha'",
+    "hidePassword": "mu'pe' yISo'"
   },
   "history": {
     "noteHistory": "ghItlh Qu' tetlh",
@@ -318,7 +320,8 @@
     "attemptsRemaining": "ghuH: {count} logh neH bInIDlaH",
     "accountLocked": "bInIDqu'. {seconds} lup 'uy' wa'leS yInIDqa'.",
     "notAuthorized": "bI'el 'e' chaw'be'lu'. ra'wI' yIghel.",
-    "rememberMe": "qaqaw"
+    "rememberMe": "qaqaw",
+    "demoMode": "ngeb Qu'"
   },
   "mfa": {
     "title": "cha'logh ngu'aS",

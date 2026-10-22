@@ -239,7 +239,7 @@ const _editNote = async (
       );
     }
 
-    if (!updatedDoc.encrypted) {
+    if (!updatedDoc.encrypted && !autosaveNotes) {
       await logContentEvent(
         "note_updated",
         "note",
