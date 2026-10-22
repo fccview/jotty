@@ -27,7 +27,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN apk add --no-cache su-exec git grep sed tzdata
+RUN apk add --no-cache su-exec tini git grep sed tzdata
 
 RUN if ! getent group 1000 > /dev/null 2>&1; then \
         addgroup --system --gid 1000 appgroup; \
@@ -63,5 +63,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/docker-entrypoint.sh"]
 CMD ["node", "server.js"] 
