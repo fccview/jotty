@@ -703,7 +703,6 @@
     "profileTab": "Profil",
     "sessionsTab": "Sessions",
     "archiveTab": "Archive",
-    "connectionsTab": "Connexions",
     "encryptionTab": "Chiffrement (bêta)",
     "userPreferencesTab": "Préférences utilisateur",
     "userLogsTab": "Journaux utilisateur",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Chaque entrée de sharedWith doit avoir un nom et r, rw ou rwd, comme bob:rw.",
     "frontmatterSharePublic": "Les liens publics sont en lecture seule, donc public ne peut avoir que r.",
     "frontmatterShareSelf": "Cet élément vous appartient, vous ne pouvez donc pas le partager avec vous-même.",
-    "frontmatterShareUnknown": "Personne ne s'appelle {user} parmi les comptes d'ici."
+    "frontmatterShareUnknown": "Personne ne s'appelle {user} parmi les comptes d'ici.",
+    "templateNotFound": "Ce modèle ne vous appartient pas, rien n’a donc été créé",
+    "templateEncrypted": "Les notes chiffrées ne peuvent pas devenir des modèles",
+    "templateWithContent": "Choisissez un modèle ou écrivez du contenu, pas les deux"
   },
   "pwa": {
     "installPromptTitle": "Installer l’application",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Traductions",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Modèles"
   },
   "notFound": {
     "title": "Page non trouvée",
@@ -2163,5 +2166,24 @@
       "compactMode": "Limite l'éditeur à 900px de large.",
       "detailsPanel": "Table des matières, tags et liens à côté de la note sur les grands écrans."
     }
+  },
+  "templates": {
+    "title": "Modèles",
+    "subtitle": "Des notes à partir desquelles vous en créez d’autres. {title} et {user} sont remplacés par le titre de la nouvelle note et votre nom d’utilisateur.",
+    "badge": "Modèle",
+    "none": "Aucun modèle",
+    "newTemplate": "Nouveau modèle",
+    "namePlaceholder": "Nom du modèle",
+    "use": "Utiliser",
+    "edit": "Modifier le modèle",
+    "search": "Rechercher des modèles...",
+    "empty": "Aucun modèle pour l’instant. Ouvrez une note et choisissez Enregistrer comme modèle, ou créez-en un ici.",
+    "noneFound": "Aucun modèle ne correspond à \"{searchQuery}\"",
+    "saveAsTemplate": "Enregistrer comme modèle",
+    "saved": "Enregistrée comme modèle",
+    "saveFailed": "Impossible d’enregistrer le modèle",
+    "created": "Modèle créé",
+    "createFailed": "Impossible de créer le modèle",
+    "loadFailed": "Impossible de charger vos modèles"
   }
 }

@@ -703,7 +703,6 @@
     "profileTab": "Profilo",
     "sessionsTab": "Sessioni",
     "archiveTab": "Archivio",
-    "connectionsTab": "Connessioni",
     "encryptionTab": "Crittografia (beta)",
     "userPreferencesTab": "Preferenze Utente",
     "userLogsTab": "Log Utente",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Ogni voce di sharedWith ha bisogno di un nome e di r, rw o rwd, come bob:rw.",
     "frontmatterSharePublic": "I link pubblici sono di sola lettura, quindi public può avere solo r.",
     "frontmatterShareSelf": "Questo elemento è tuo, quindi non puoi condividerlo con te stesso.",
-    "frontmatterShareUnknown": "Qui non c'è nessun account di nome {user}."
+    "frontmatterShareUnknown": "Qui non c'è nessun account di nome {user}.",
+    "templateNotFound": "Quel modello non è tuo, quindi non è stato creato nulla",
+    "templateEncrypted": "Le note cifrate non possono essere modelli",
+    "templateWithContent": "Scegli un modello o scrivi un contenuto, non entrambi"
   },
   "pwa": {
     "installPromptTitle": "Installa App",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Traduzioni",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Modelli"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -2163,5 +2166,24 @@
       "compactMode": "Limita l'editor a 900px di larghezza.",
       "detailsPanel": "Indice, tag e collegamenti accanto alla nota sugli schermi larghi."
     }
+  },
+  "templates": {
+    "title": "Modelli",
+    "subtitle": "Note da cui parti per crearne altre. {title} e {user} vengono sostituiti con il titolo della nuova nota e il tuo nome utente.",
+    "badge": "Modello",
+    "none": "Nessun modello",
+    "newTemplate": "Nuovo modello",
+    "namePlaceholder": "Nome del modello",
+    "use": "Usa",
+    "edit": "Modifica modello",
+    "search": "Cerca modelli...",
+    "empty": "Ancora nessun modello. Apri una nota e scegli Salva come modello, oppure creane uno nuovo qui.",
+    "noneFound": "Nessun modello corrisponde a \"{searchQuery}\"",
+    "saveAsTemplate": "Salva come modello",
+    "saved": "Salvata come modello",
+    "saveFailed": "Impossibile salvare il modello",
+    "created": "Modello creato",
+    "createFailed": "Impossibile creare il modello",
+    "loadFailed": "Impossibile caricare i tuoi modelli"
   }
 }

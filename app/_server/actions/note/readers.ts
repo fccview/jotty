@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { hiddenFindFilter, skippedDirs } from "@/app/_consts/files";
 import {
   serverReadDir,
   serverReadFile,
@@ -80,9 +80,7 @@ export const readNotesRecursively = async (
     metadataCache = metadataCache || new Map();
 
     try {
-      const excludeStr = allowArchived
-        ? ""
-        : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
+      const excludeStr = hiddenFindFilter(allowArchived);
       const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "${STAT_PRINTF}"`;
       const metaCmd = metaGrep(["title", "uuid", "tags", "encrypted", "createdAt", SHARED_WITH_KEY]);
       const [statsOut, metaOut] = await Promise.all([
@@ -107,11 +105,7 @@ export const readNotesRecursively = async (
 
   const notes: ListedNote[] = [];
   const entries = await serverReadDir(dir);
-  let excludedDirs = EXCLUDED_DIRS;
-
-  if (!allowArchived) {
-    excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
-  }
+  const excludedDirs = skippedDirs(allowArchived);
 
   const order = await readOrderFile(dir);
   const dirNames = entries

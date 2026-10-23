@@ -332,11 +332,13 @@ const _bodyMatch = async (filePath: string, text: string): Promise<string> => {
 export const grepSearchContent = async (
   dir: string,
   text: string,
+  skipDirs: string[] = [],
 ): Promise<GrepSearchResult[]> => {
   try {
     const { stdout } = await execFileAsync("grep", [
       "-rliF",
       "--include=*.md",
+      ...skipDirs.map((name) => `--exclude-dir=${name}`),
       "--",
       text,
       dir,

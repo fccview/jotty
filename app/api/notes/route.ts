@@ -9,6 +9,7 @@ import { toApiNote } from "@/app/_utils/api-note";
 import { tagMatchesFilter } from "@/app/_utils/tag-utils";
 import { noteCreateBody, noteListQuery, noteSchema } from "@/app/_schemas/api/notes";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { TEMPLATE_ID_FIELD } from "@/app/_consts/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,7 @@ export const POST = defineRoute(
     formData.append("title", body.title);
     formData.append("rawContent", body.content);
     formData.append("category", body.category);
+    if (body.templateId) formData.append(TEMPLATE_ID_FIELD, body.templateId);
 
     const result = await makeNote(user, formData);
     if (result.error) return refuse(result.error, 400);

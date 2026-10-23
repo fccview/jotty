@@ -1,6 +1,6 @@
 import path from "path";
 import { grepExtractFrontmatter, grepSearchContent } from "@/app/_utils/grep-utils";
-import { CHECKLISTS_DIR, NOTES_DIR } from "@/app/_consts/files";
+import { CHECKLISTS_DIR, NOTES_DIR, TEMPLATES_DIR_NAME } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { RelationsStatus } from "@/app/_consts/relations";
 import { SEARCH_HITS_PER_TYPE, SearchModes } from "@/app/_consts/search";
@@ -49,7 +49,7 @@ const _grepHits = async (
 ): Promise<SearchHit[]> => {
   let found: Awaited<ReturnType<typeof grepSearchContent>> = [];
   try {
-    found = await grepSearchContent(DIRS[type](username), query);
+    found = await grepSearchContent(DIRS[type](username), query, [TEMPLATES_DIR_NAME]);
   } catch (error) {
     console.error(`Search grep failed for ${type}:`, error);
   }

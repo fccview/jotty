@@ -1,7 +1,7 @@
 import { Category } from "../_types";
 import { serverReadDir, readOrderFile } from "../_server/actions/file";
 import path from "path";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "../_consts/files";
+import { skippedDirs } from "../_consts/files";
 import { catUuid, dirInfos } from "../_server/actions/share/category-info";
 import { orderByUuids } from "./order-utils";
 
@@ -13,11 +13,7 @@ export const buildCategoryTree = async (
 ): Promise<Category[]> => {
   const categories: Category[] = [];
   const entries = await serverReadDir(dir);
-  let excludedDirs = EXCLUDED_DIRS;
-
-  if (!allowArchived) {
-    excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
-  }
+  const excludedDirs = skippedDirs(allowArchived);
 
   const order = await readOrderFile(dir);
   const dirNames = entries

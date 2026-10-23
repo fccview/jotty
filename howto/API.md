@@ -58,6 +58,10 @@ What changed this week. #work #home/garden
 - `managed: true` marks a note your script rewrites. The API returns `"managed": true` on it, and any call that writes into it comes back with a `warning`, because your script will overwrite the change.
 - Jotty keeps any other keys you add, untouched.
 
+## Templates
+
+`GET /api/templates` lists your note templates. To start a note from one, pass its `id` as `templateId` to `POST /api/notes` and leave `content` out. Jotty fills `{{title}}` with the new note's title and `{{user}}` with your username, and leaves anything else in double braces alone. Templates are left out of `GET /api/notes`, `GET /api/categories` and search. Template files live in the `.templates` folder of your notes, see How to > Templates.
+
 ## Board files
 
 Kanban boards are markdown files too. Each card is one line, with its fields after ` | ` separators:

@@ -34,6 +34,13 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.brain",
   },
   {
+    id: "templates",
+    name: t("help.templates"),
+    filename: "TEMPLATES.md",
+    icon: "template",
+    translationKey: "help.templates",
+  },
+  {
     id: API_GUIDE_ID,
     name: t("common.api"),
     filename: "API.md",

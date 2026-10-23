@@ -703,7 +703,6 @@
     "profileTab": "Perfil",
     "sessionsTab": "Sesiones",
     "archiveTab": "Archivo",
-    "connectionsTab": "Conexiones",
     "encryptionTab": "Encriptación (beta)",
     "userPreferencesTab": "Preferencias de usuario",
     "userLogsTab": "Registros de usuario",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Cada entrada de sharedWith necesita un nombre y r, rw o rwd, como bob:rw.",
     "frontmatterSharePublic": "Los enlaces públicos son de solo lectura, así que public solo puede tener r.",
     "frontmatterShareSelf": "Este elemento es tuyo, así que no puedes compartirlo contigo mismo.",
-    "frontmatterShareUnknown": "Aquí nadie llamado {user} tiene cuenta."
+    "frontmatterShareUnknown": "Aquí nadie llamado {user} tiene cuenta.",
+    "templateNotFound": "Esa plantilla no es suya, así que no se creó nada",
+    "templateEncrypted": "Las notas cifradas no pueden ser plantillas",
+    "templateWithContent": "Elija una plantilla o escriba contenido, no ambas cosas"
   },
   "pwa": {
     "installPromptTitle": "Instalar aplicación",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Traducciones",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Plantillas"
   },
   "notFound": {
     "title": "Página no encontrada",
@@ -2163,5 +2166,24 @@
       "compactMode": "Limita el editor a 900px de ancho.",
       "detailsPanel": "Índice, etiquetas y enlaces junto a la nota en pantallas anchas."
     }
+  },
+  "templates": {
+    "title": "Plantillas",
+    "subtitle": "Notas a partir de las cuales empieza otras notas. {title} y {user} se rellenan con el título de la nueva nota y su nombre de usuario.",
+    "badge": "Plantilla",
+    "none": "Sin plantilla",
+    "newTemplate": "Nueva plantilla",
+    "namePlaceholder": "Nombre de la plantilla",
+    "use": "Usar",
+    "edit": "Editar plantilla",
+    "search": "Buscar plantillas...",
+    "empty": "Aún no hay plantillas. Abra una nota y elija Guardar como plantilla, o cree una nueva aquí.",
+    "noneFound": "Ninguna plantilla coincide con \"{searchQuery}\"",
+    "saveAsTemplate": "Guardar como plantilla",
+    "saved": "Guardada como plantilla",
+    "saveFailed": "No se pudo guardar la plantilla",
+    "created": "Plantilla creada",
+    "createFailed": "No se pudo crear la plantilla",
+    "loadFailed": "No se pudieron cargar sus plantillas"
   }
 }

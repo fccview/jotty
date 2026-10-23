@@ -703,7 +703,6 @@
     "profileTab": "Perfil",
     "sessionsTab": "Sessões",
     "archiveTab": "Arquivo",
-    "connectionsTab": "Ligações",
     "encryptionTab": "Encriptação (beta)",
     "userPreferencesTab": "Preferências do utilizador",
     "userLogsTab": "Registos do utilizador",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Cada entrada de sharedWith precisa de um nome e r, rw ou rwd, como bob:rw.",
     "frontmatterSharePublic": "Links públicos são somente leitura, então public só pode receber r.",
     "frontmatterShareSelf": "Este item é seu, então você não pode compartilhá-lo com você mesmo.",
-    "frontmatterShareUnknown": "Ninguém chamado {user} tem uma conta aqui."
+    "frontmatterShareUnknown": "Ninguém chamado {user} tem uma conta aqui.",
+    "templateNotFound": "Esse modelo não é seu, por isso nada foi criado",
+    "templateEncrypted": "Notas encriptadas não podem ser modelos",
+    "templateWithContent": "Escolha um modelo ou escreva o conteúdo, não os dois"
   },
   "pwa": {
     "installPromptTitle": "Instalar aplicação",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Traduções",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Modelos"
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -2163,5 +2166,24 @@
       "compactMode": "Limita o editor a 900px de largura.",
       "detailsPanel": "Índice, etiquetas e ligações ao lado da nota em ecrãs largos."
     }
+  },
+  "templates": {
+    "title": "Modelos",
+    "subtitle": "Notas a partir das quais começa outras notas. {title} e {user} são preenchidos com o título da nova nota e o seu nome de utilizador.",
+    "badge": "Modelo",
+    "none": "Sem modelo",
+    "newTemplate": "Novo modelo",
+    "namePlaceholder": "Nome do modelo",
+    "use": "Usar",
+    "edit": "Editar modelo",
+    "search": "Pesquisar modelos...",
+    "empty": "Ainda não há modelos. Abra uma nota e escolha Guardar como modelo, ou crie um novo aqui.",
+    "noneFound": "Nenhum modelo corresponde a \"{searchQuery}\"",
+    "saveAsTemplate": "Guardar como modelo",
+    "saved": "Guardada como modelo",
+    "saveFailed": "Não foi possível guardar o modelo",
+    "created": "Modelo criado",
+    "createFailed": "Não foi possível criar o modelo",
+    "loadFailed": "Não foi possível carregar os seus modelos"
   }
 }

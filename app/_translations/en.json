@@ -706,7 +706,6 @@
     "profileTab": "Profile",
     "sessionsTab": "Sessions",
     "archiveTab": "Archive",
-    "connectionsTab": "Connections",
     "encryptionTab": "Encryption (beta)",
     "userPreferencesTab": "User Preferences",
     "userLogsTab": "User Logs",
@@ -1268,7 +1267,10 @@
     "frontmatterShareCode": "Each sharedWith entry needs a name and r, rw or rwd, like bob:rw.",
     "frontmatterSharePublic": "Public links are read only, so public can only get r.",
     "frontmatterShareSelf": "You own this item, so you can't share it with yourself.",
-    "frontmatterShareUnknown": "Nobody called {user} has an account here."
+    "frontmatterShareUnknown": "Nobody called {user} has an account here.",
+    "templateNotFound": "That template isn't one of yours, so nothing was created",
+    "templateEncrypted": "Encrypted notes can't be templates",
+    "templateWithContent": "Pick a template or write content, not both"
   },
   "pwa": {
     "installPromptTitle": "Install App",
@@ -1844,7 +1846,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Translations",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Templates"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -2174,5 +2177,24 @@
       "compactMode": "Caps the editor at 900px wide.",
       "detailsPanel": "Contents, tags and links beside the note on wide screens."
     }
+  },
+  "templates": {
+    "title": "Templates",
+    "subtitle": "Notes you start other notes from. {title} and {user} get filled in with the new note's title and your username.",
+    "badge": "Template",
+    "none": "No template",
+    "newTemplate": "New template",
+    "namePlaceholder": "Template name",
+    "use": "Use",
+    "edit": "Edit template",
+    "search": "Search templates...",
+    "empty": "No templates yet. Open a note and pick Save as template, or start a new one here.",
+    "noneFound": "No templates match \"{searchQuery}\"",
+    "saveAsTemplate": "Save as template",
+    "saved": "Saved as a template",
+    "saveFailed": "Couldn't save the template",
+    "created": "Template created",
+    "createFailed": "Couldn't create the template",
+    "loadFailed": "Couldn't load your templates"
   }
 }

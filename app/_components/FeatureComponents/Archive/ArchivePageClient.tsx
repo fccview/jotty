@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Category, User, Checklist, Note } from "@/app/_types";
+import { Category, Checklist, Note } from "@/app/_types";
 import { useRouter } from "next/navigation";
 import { EditNoteModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/EditNoteModal";
 import { EditChecklistModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/EditChecklistModal";
@@ -20,19 +20,17 @@ import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 
-interface ArchiveTabProps {
-  user: User | null;
+interface ArchivePageClientProps {
   archivedItems: ArchivedItem[];
   listsCategories: Category[];
   notesCategories: Category[];
 }
 
-export const ArchiveTab = ({
-  user,
+export const ArchivePageClient = ({
   archivedItems,
   listsCategories,
   notesCategories,
-}: ArchiveTabProps) => {
+}: ArchivePageClientProps) => {
   const t = useTranslations();
   const [showEditNoteModal, setShowEditNoteModal] = useState(false);
   const [showEditChecklistModal, setShowEditChecklistModal] = useState(false);

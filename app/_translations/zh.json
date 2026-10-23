@@ -703,7 +703,6 @@
     "profileTab": "个人资料",
     "sessionsTab": "会话",
     "archiveTab": "归档",
-    "connectionsTab": "关联",
     "encryptionTab": "加密 (Beta)",
     "userPreferencesTab": "用户偏好",
     "userLogsTab": "用户日志",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "每个 sharedWith 条目都需要一个名称以及 r、rw 或 rwd，例如 bob:rw。",
     "frontmatterSharePublic": "公开链接是只读的，因此 public 只能获得 r。",
     "frontmatterShareSelf": "此项目归你所有，因此不能与自己共享。",
-    "frontmatterShareUnknown": "这里没有名为 {user} 的账户。"
+    "frontmatterShareUnknown": "这里没有名为 {user} 的账户。",
+    "templateNotFound": "该模板不属于您，未创建任何内容",
+    "templateEncrypted": "加密笔记不能作为模板",
+    "templateWithContent": "请选择模板或填写内容，不能同时使用"
   },
   "pwa": {
     "installPromptTitle": "安装应用",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "翻译",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "模板"
   },
   "notFound": {
     "title": "页面未找到",
@@ -2163,5 +2166,24 @@
       "compactMode": "将编辑器宽度限制为 900px。",
       "detailsPanel": "在宽屏上于笔记旁显示目录、标签和链接。"
     }
+  },
+  "templates": {
+    "title": "模板",
+    "subtitle": "用来开始新笔记的笔记。{title} 和 {user} 会被替换为新笔记的标题和您的用户名。",
+    "badge": "模板",
+    "none": "不使用模板",
+    "newTemplate": "新建模板",
+    "namePlaceholder": "模板名称",
+    "use": "使用",
+    "edit": "编辑模板",
+    "search": "搜索模板...",
+    "empty": "还没有模板。打开一篇笔记并选择“另存为模板”，或在这里新建一个。",
+    "noneFound": "没有匹配 \"{searchQuery}\" 的模板",
+    "saveAsTemplate": "另存为模板",
+    "saved": "已另存为模板",
+    "saveFailed": "无法保存模板",
+    "created": "模板已创建",
+    "createFailed": "无法创建模板",
+    "loadFailed": "无法加载您的模板"
   }
 }

@@ -703,7 +703,6 @@
     "profileTab": "Yer Mug",
     "sessionsTab": "Voyages",
     "archiveTab": "The Hold",
-    "connectionsTab": "Alliances",
     "encryptionTab": "Davy Jones' Locker (beta)",
     "userPreferencesTab": "Preferences",
     "userLogsTab": "Personal Log",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Every sharedWith entry needs a name an' r, rw or rwd, like bob:rw.",
     "frontmatterSharePublic": "Public links be read only, so public can only get r.",
     "frontmatterShareSelf": "Ye own this booty, so ye can't share it with yerself.",
-    "frontmatterShareUnknown": "There be no sailor called {user} aboard this ship."
+    "frontmatterShareUnknown": "There be no sailor called {user} aboard this ship.",
+    "templateNotFound": "That blueprint ain't yers, so nothin' was made",
+    "templateEncrypted": "Buried logs can't be blueprints",
+    "templateWithContent": "Pick a blueprint or scrawl yer own words, not both"
   },
   "pwa": {
     "installPromptTitle": "Dock the Ship",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Lingos",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Blueprints"
   },
   "notFound": {
     "title": "Chart Leads Nowhere",
@@ -2163,5 +2166,24 @@
       "compactMode": "Caps the editor at 900px wide.",
       "detailsPanel": "Contents, flags an' ropes beside the note on wide screens."
     }
+  },
+  "templates": {
+    "title": "Blueprints",
+    "subtitle": "Logs ye copy to start fresh ones. {title} and {user} get filled with the new log's name and yer handle.",
+    "badge": "Blueprint",
+    "none": "No blueprint",
+    "newTemplate": "New blueprint",
+    "namePlaceholder": "Name yer blueprint",
+    "use": "Hoist it",
+    "edit": "Refit the blueprint",
+    "search": "Scour the blueprints...",
+    "empty": "No blueprints aboard yet. Open a log and pick Stow as blueprint, or forge a fresh one here.",
+    "noneFound": "No blueprints match \"{searchQuery}\"",
+    "saveAsTemplate": "Stow as blueprint",
+    "saved": "Stowed as a blueprint",
+    "saveFailed": "Couldn't stow the blueprint",
+    "created": "Blueprint forged",
+    "createFailed": "Couldn't forge the blueprint",
+    "loadFailed": "Couldn't haul up yer blueprints"
   }
 }

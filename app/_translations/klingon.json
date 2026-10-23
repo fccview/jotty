@@ -703,7 +703,6 @@
     "profileTab": "De'wI' ghantoH",
     "sessionsTab": "poHmey",
     "archiveTab": "Pol",
-    "connectionsTab": "rar",
     "encryptionTab": "pegh (beta)",
     "userPreferencesTab": "lo'wI' maS",
     "userLogsTab": "lo'wI' Qagh",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Hoch sharedWith Doch pong 'ej r, rw pagh rwd poQ, bob:rw rur.",
     "frontmatterSharePublic": "public rarmeH laD neH, vaj public r neH Hev.",
     "frontmatterShareSelf": "Dochvam Daghaj, vaj SoHvaD DamuvlaHbe'.",
-    "frontmatterShareUnknown": "naDev {user} ponglu'bogh ghot tu'lu'be'."
+    "frontmatterShareUnknown": "naDev {user} ponglu'bogh ghot tu'lu'be'.",
+    "templateNotFound": "nablIj ghaHbe' nabvam, Pagh chenmoHlu'",
+    "templateEncrypted": "ghItlhmey peghlu'bogh nab moj Qo'",
+    "templateWithContent": "nab yIwIv pagh ghItlh yIghItlh, cha' DaqImbe'"
   },
   "pwa": {
     "installPromptTitle": "De'wI' yIlan",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Hol",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "nabmey"
   },
   "notFound": {
     "title": "tu'be'lu'",
@@ -2163,5 +2166,24 @@
       "compactMode": "choHwI' 900px juch neH.",
       "detailsPanel": "HaSta jenDaq ghItlh retlh tetlh, meqmey, lI'mey je."
     }
+  },
+  "templates": {
+    "title": "nabmey",
+    "subtitle": "ghItlhmey chu' tagha'meH ghItlhmeyvam. {title} {user} je lu'ghItlh: ghItlh chu' pong, ponglIj je.",
+    "badge": "nab",
+    "none": "nab tu'be'",
+    "newTemplate": "nab chu'",
+    "namePlaceholder": "nab pong",
+    "use": "yIlo'",
+    "edit": "nab yIchoH",
+    "search": "nabmey yInej...",
+    "empty": "nab tu'be'lu'. ghItlh yIpoSmoH 'ej nab yIPol yIwIv, pagh naDev nab chu' yIchenmoH.",
+    "noneFound": "\"{searchQuery}\" nab tu'be'lu'",
+    "saveAsTemplate": "nab yIPol",
+    "saved": "nab Pollu'pu'",
+    "saveFailed": "nab Pol Qapla'be'",
+    "created": "nab chenmoHlu'pu'",
+    "createFailed": "nab chenmoH Qapla'be'",
+    "loadFailed": "nabmeylIj lI' Qapla'be'"
   }
 }

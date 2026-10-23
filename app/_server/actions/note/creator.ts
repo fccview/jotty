@@ -25,19 +25,66 @@ import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { noteToMarkdown } from "./parsers";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
+import { ownTemplate } from "@/app/_server/actions/template/reader";
+import { fillTemplate } from "@/app/_utils/template-utils";
+import { TEMPLATE_ID_FIELD, TemplateVariables } from "@/app/_consts/templates";
+
+type StartingText = { content: string } | { error: string };
+
+const _fromTemplate = async (
+  actor: SanitisedUser,
+  templateId: string,
+  title: string,
+  rawContent: string,
+): Promise<StartingText> => {
+  const t = await getTranslations("errors");
+
+  if (rawContent) {
+    console.warn("Refusing note with both a template and content:", templateId);
+    return { error: t("templateWithContent") };
+  }
+
+  const template = await ownTemplate(actor.username, templateId);
+
+  if (!template) {
+    console.warn("Refusing note from a template the actor does not own:", templateId);
+    return { error: t("templateNotFound") };
+  }
+
+  if (template.encrypted) {
+    console.warn("Refusing note from an encrypted template:", templateId);
+    return { error: t("templateEncrypted") };
+  }
+
+  return {
+    content: fillTemplate(template.content || "", {
+      [TemplateVariables.TITLE]: title,
+      [TemplateVariables.USER]: actor.username,
+    }),
+  };
+};
 
 export const makeNote = async (
   actor: SanitisedUser,
   formData: FormData,
 ): Promise<{ success?: boolean; data?: Note; error?: string }> => {
   try {
-    const { title, category, rawContent } = getFormData(formData, [
+    const { title, category, rawContent, templateId } = getFormData(formData, [
       "title",
       "category",
       "rawContent",
+      TEMPLATE_ID_FIELD,
     ]);
 
-    const sanitizedContent = sanitizeMarkdown(rawContent);
+    const starting: StartingText = templateId
+      ? await _fromTemplate(actor, templateId, title, rawContent)
+      : { content: rawContent };
+
+    if ("error" in starting) {
+      return { error: starting.error };
+    }
+
+    const sanitizedContent = sanitizeMarkdown(starting.content);
     const { metadata, contentWithoutMetadata } = stripYaml(sanitizedContent);
     const body = contentWithoutMetadata.trim();
     const encryptionMethod = detectEncryptionMethod(body) || undefined;

@@ -703,7 +703,6 @@
     "profileTab": "Profil",
     "sessionsTab": "Sitzungen",
     "archiveTab": "Archiv",
-    "connectionsTab": "Verbindungen",
     "encryptionTab": "Verschlüsselung (beta)",
     "userPreferencesTab": "Benutzereinstellungen",
     "userLogsTab": "Benutzerlogs",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Jeder sharedWith-Eintrag braucht einen Namen und r, rw oder rwd, etwa bob:rw.",
     "frontmatterSharePublic": "Öffentliche Links sind schreibgeschützt, deshalb kann public nur r bekommen.",
     "frontmatterShareSelf": "Dieses Element gehört dir, also kannst du es nicht mit dir selbst teilen.",
-    "frontmatterShareUnknown": "Hier hat niemand namens {user} ein Konto."
+    "frontmatterShareUnknown": "Hier hat niemand namens {user} ein Konto.",
+    "templateNotFound": "Diese Vorlage gehört nicht dir, deshalb wurde nichts erstellt",
+    "templateEncrypted": "Verschlüsselte Notizen können keine Vorlagen sein",
+    "templateWithContent": "Wähle eine Vorlage oder schreib Inhalt, nicht beides"
   },
   "pwa": {
     "installPromptTitle": "Anwendung installieren",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Übersetzungen",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Vorlagen"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -2163,5 +2166,24 @@
       "compactMode": "Begrenzt den Editor auf 900px Breite.",
       "detailsPanel": "Inhaltsverzeichnis, Tags und Links neben der Notiz auf breiten Bildschirmen."
     }
+  },
+  "templates": {
+    "title": "Vorlagen",
+    "subtitle": "Notizen, aus denen du neue Notizen startest. {title} und {user} werden mit dem Titel der neuen Notiz und deinem Benutzernamen gefüllt.",
+    "badge": "Vorlage",
+    "none": "Keine Vorlage",
+    "newTemplate": "Neue Vorlage",
+    "namePlaceholder": "Name der Vorlage",
+    "use": "Verwenden",
+    "edit": "Vorlage bearbeiten",
+    "search": "Vorlagen durchsuchen...",
+    "empty": "Noch keine Vorlagen. Öffne eine Notiz und wähle Als Vorlage speichern, oder leg hier eine neue an.",
+    "noneFound": "Keine Vorlagen passen auf \"{searchQuery}\"",
+    "saveAsTemplate": "Als Vorlage speichern",
+    "saved": "Als Vorlage gespeichert",
+    "saveFailed": "Die Vorlage konnte nicht gespeichert werden",
+    "created": "Vorlage erstellt",
+    "createFailed": "Die Vorlage konnte nicht erstellt werden",
+    "loadFailed": "Deine Vorlagen konnten nicht geladen werden"
   }
 }

@@ -17,7 +17,7 @@ import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
 import { freeFilename } from "@/app/_utils/filename-utils";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { skippedDirs } from "@/app/_consts/files";
 import {
   catUuid,
   dirItemUuids,
@@ -39,9 +39,7 @@ const _seededOrder = async (
   mountUuids: string[] = [],
   allowArchived: boolean = false,
 ): Promise<{ categories: string[]; items: string[] }> => {
-  const excluded = allowArchived
-    ? EXCLUDED_DIRS
-    : [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const excluded = skippedDirs(allowArchived);
 
   const [order, presentItems, presentCats] = await Promise.all([
     readOrderFile(dirPath),

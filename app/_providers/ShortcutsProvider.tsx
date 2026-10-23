@@ -29,6 +29,7 @@ import { useToast } from "./ToastProvider";
 export interface CreatePrefill {
   title?: string;
   type?: ChecklistType;
+  templateId?: string;
 }
 
 interface ShortcutContextType {
@@ -126,7 +127,7 @@ export const ShortcutProvider = ({
 
   const openCreateNoteModal = useCallback(
     (category?: string, nextPrefill: CreatePrefill = {}) => {
-      if (user?.quickCreateNotes === "enable") {
+      if (user?.quickCreateNotes === "enable" && !nextPrefill.templateId) {
         checkNavigation(() => quickCreate(category, nextPrefill.title));
         return;
       }
@@ -288,6 +289,7 @@ export const ShortcutProvider = ({
           categories={noteCategories}
           initialCategory={initialCategory}
           initialTitle={prefill.title}
+          initialTemplate={prefill.templateId}
         />
       )}
       {showCreateChecklistModal && (

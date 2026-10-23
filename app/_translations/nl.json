@@ -703,7 +703,6 @@
     "profileTab": "Profiel",
     "sessionsTab": "Sessies",
     "archiveTab": "Archief",
-    "connectionsTab": "Verbindingen",
     "encryptionTab": "Versleuteling (beta)",
     "userPreferencesTab": "Gebruikersvoorkeuren",
     "userLogsTab": "Gebruikerslogboeken",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Elk sharedWith-item heeft een naam en r, rw of rwd nodig, zoals bob:rw.",
     "frontmatterSharePublic": "Openbare links zijn alleen-lezen, dus public kan alleen r krijgen.",
     "frontmatterShareSelf": "Dit item is van jou, dus je kunt het niet met jezelf delen.",
-    "frontmatterShareUnknown": "Niemand met de naam {user} heeft hier een account."
+    "frontmatterShareUnknown": "Niemand met de naam {user} heeft hier een account.",
+    "templateNotFound": "Dat sjabloon is niet van jou, dus er is niets aangemaakt",
+    "templateEncrypted": "Versleutelde notities kunnen geen sjabloon zijn",
+    "templateWithContent": "Kies een sjabloon of schrijf inhoud, niet allebei"
   },
   "pwa": {
     "installPromptTitle": "App installeren",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Vertalingen",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Sjablonen"
   },
   "notFound": {
     "title": "Pagina niet gevonden",
@@ -2163,5 +2166,24 @@
       "compactMode": "Beperkt de editor tot 900px breed.",
       "detailsPanel": "Inhoudsopgave, tags en links naast de notitie op brede schermen."
     }
+  },
+  "templates": {
+    "title": "Sjablonen",
+    "subtitle": "Notities waarmee je andere notities begint. {title} en {user} worden ingevuld met de titel van de nieuwe notitie en je gebruikersnaam.",
+    "badge": "Sjabloon",
+    "none": "Geen sjabloon",
+    "newTemplate": "Nieuw sjabloon",
+    "namePlaceholder": "Naam van het sjabloon",
+    "use": "Gebruiken",
+    "edit": "Sjabloon bewerken",
+    "search": "Sjablonen zoeken...",
+    "empty": "Nog geen sjablonen. Open een notitie en kies Opslaan als sjabloon, of maak hier een nieuwe.",
+    "noneFound": "Geen sjablonen gevonden voor \"{searchQuery}\"",
+    "saveAsTemplate": "Opslaan als sjabloon",
+    "saved": "Opgeslagen als sjabloon",
+    "saveFailed": "Het sjabloon kon niet worden opgeslagen",
+    "created": "Sjabloon aangemaakt",
+    "createFailed": "Het sjabloon kon niet worden aangemaakt",
+    "loadFailed": "Je sjablonen konden niet worden geladen"
   }
 }

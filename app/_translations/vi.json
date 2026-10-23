@@ -703,7 +703,6 @@
     "profileTab": "Hồ sơ",
     "sessionsTab": "Phiên",
     "archiveTab": "Lưu trữ",
-    "connectionsTab": "Kết nối",
     "encryptionTab": "Mã hóa (beta)",
     "userPreferencesTab": "Tùy chọn người dùng",
     "userLogsTab": "Nhật ký người dùng",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Mỗi mục sharedWith cần một tên và r, rw hoặc rwd, ví dụ bob:rw.",
     "frontmatterSharePublic": "Liên kết công khai chỉ cho phép đọc, nên public chỉ có thể nhận r.",
     "frontmatterShareSelf": "Mục này là của bạn, nên bạn không thể chia sẻ nó với chính mình.",
-    "frontmatterShareUnknown": "Không có ai tên {user} có tài khoản ở đây."
+    "frontmatterShareUnknown": "Không có ai tên {user} có tài khoản ở đây.",
+    "templateNotFound": "Mẫu đó không phải của bạn, nên chưa tạo gì",
+    "templateEncrypted": "Ghi chú đã mã hóa không thể làm mẫu",
+    "templateWithContent": "Hãy chọn một mẫu hoặc viết nội dung, không phải cả hai"
   },
   "pwa": {
     "installPromptTitle": "Cài đặt ứng dụng",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Bản dịch",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Mẫu"
   },
   "notFound": {
     "title": "Không tìm thấy trang",
@@ -2163,5 +2166,24 @@
       "compactMode": "Giới hạn trình soạn thảo rộng 900px.",
       "detailsPanel": "Mục lục, thẻ và liên kết bên cạnh ghi chú trên màn hình rộng."
     }
+  },
+  "templates": {
+    "title": "Mẫu",
+    "subtitle": "Những ghi chú bạn dùng để bắt đầu ghi chú khác. {title} và {user} sẽ được thay bằng tiêu đề ghi chú mới và tên người dùng của bạn.",
+    "badge": "Mẫu",
+    "none": "Không dùng mẫu",
+    "newTemplate": "Mẫu mới",
+    "namePlaceholder": "Tên mẫu",
+    "use": "Dùng",
+    "edit": "Sửa mẫu",
+    "search": "Tìm kiếm mẫu...",
+    "empty": "Chưa có mẫu nào. Mở một ghi chú và chọn Lưu làm mẫu, hoặc tạo mẫu mới tại đây.",
+    "noneFound": "Không có mẫu nào khớp với \"{searchQuery}\"",
+    "saveAsTemplate": "Lưu làm mẫu",
+    "saved": "Đã lưu làm mẫu",
+    "saveFailed": "Không lưu được mẫu",
+    "created": "Đã tạo mẫu",
+    "createFailed": "Không tạo được mẫu",
+    "loadFailed": "Không tải được các mẫu của bạn"
   }
 }

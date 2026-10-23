@@ -4,9 +4,8 @@ import { Modes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";
 import { SharedMount } from "@/app/_types/sharing";
 import {
-  ARCHIVED_DIR_NAME,
   DATA_DIR,
-  EXCLUDED_DIRS,
+  RESERVED_DIRS,
   NOTES_DIR,
   CHECKLISTS_DIR,
 } from "@/app/_consts/files";
@@ -33,7 +32,7 @@ const _ownTopNames = async (
   username: string,
 ): Promise<string[]> => {
   const dir = path.join(process.cwd(), userDirFor(mode, username));
-  const excluded = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const excluded = RESERVED_DIRS;
 
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });

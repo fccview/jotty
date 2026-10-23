@@ -6,13 +6,13 @@ import { ERRORS } from "@/app/_schemas/api/common";
 import { categoriesSchema } from "@/app/_schemas/api/discovery";
 import { Category } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
+import { HIDDEN_DIRS } from "@/app/_consts/files";
 
 export const dynamic = "force-dynamic";
 
 const _visible = (categories: Category[]) =>
   categories
-    .filter((category) => !category.path.includes(ARCHIVED_DIR_NAME))
+    .filter((category) => !category.path.split("/").some((part) => HIDDEN_DIRS.includes(part)))
     .map(({ name, path, count, level }) => ({ name, path, count, level }));
 
 export const GET = defineRoute(
@@ -22,7 +22,7 @@ export const GET = defineRoute(
     path: "/categories",
     tag: ApiTag.DISCOVERY,
     summary: "List categories",
-    description: "Your note and checklist categories, including shared ones. Archived categories are left out.",
+    description: "Your note and checklist categories, including shared ones. Archived categories and templates are left out.",
     responses: {
       200: { description: "Categories per mode", schema: categoriesSchema },
       401: ERRORS[401],

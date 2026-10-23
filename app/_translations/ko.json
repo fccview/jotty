@@ -703,7 +703,6 @@
     "profileTab": "프로필",
     "sessionsTab": "세션",
     "archiveTab": "보관함",
-    "connectionsTab": "연결",
     "encryptionTab": "암호화 (베타)",
     "userPreferencesTab": "사용자 환경설정",
     "userLogsTab": "사용자 로그",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "각 sharedWith 항목에는 bob:rw처럼 이름과 r, rw 또는 rwd가 있어야 합니다.",
     "frontmatterSharePublic": "공개 링크는 읽기 전용이라 public에는 r만 줄 수 있습니다.",
     "frontmatterShareSelf": "이 항목은 내 소유라서 나 자신과 공유할 수 없습니다.",
-    "frontmatterShareUnknown": "{user}라는 이름의 계정이 여기에 없습니다."
+    "frontmatterShareUnknown": "{user}라는 이름의 계정이 여기에 없습니다.",
+    "templateNotFound": "내 템플릿이 아니어서 아무것도 만들지 않았습니다",
+    "templateEncrypted": "암호화된 노트는 템플릿이 될 수 없습니다",
+    "templateWithContent": "템플릿을 고르거나 내용을 쓰세요. 둘 다는 안 됩니다"
   },
   "pwa": {
     "installPromptTitle": "앱 설치",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "번역",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "템플릿"
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",
@@ -2163,5 +2166,24 @@
       "compactMode": "편집기 너비를 900px로 제한합니다.",
       "detailsPanel": "넓은 화면에서 노트 옆에 목차, 태그, 링크를 표시합니다."
     }
+  },
+  "templates": {
+    "title": "템플릿",
+    "subtitle": "다른 노트를 시작할 때 쓰는 노트입니다. {title}와 {user}는 새 노트의 제목과 내 사용자 이름으로 채워집니다.",
+    "badge": "템플릿",
+    "none": "템플릿 없음",
+    "newTemplate": "새 템플릿",
+    "namePlaceholder": "템플릿 이름",
+    "use": "사용",
+    "edit": "템플릿 편집",
+    "search": "템플릿 검색...",
+    "empty": "아직 템플릿이 없습니다. 노트를 열고 템플릿으로 저장을 고르거나 여기서 새로 만드세요.",
+    "noneFound": "\"{searchQuery}\"와 일치하는 템플릿이 없습니다",
+    "saveAsTemplate": "템플릿으로 저장",
+    "saved": "템플릿으로 저장했습니다",
+    "saveFailed": "템플릿을 저장하지 못했습니다",
+    "created": "템플릿을 만들었습니다",
+    "createFailed": "템플릿을 만들지 못했습니다",
+    "loadFailed": "템플릿을 불러오지 못했습니다"
   }
 }

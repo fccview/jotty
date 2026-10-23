@@ -703,7 +703,6 @@
     "profileTab": "Profil",
     "sessionsTab": "Sesje",
     "archiveTab": "Archiwum",
-    "connectionsTab": "Połączenia",
     "encryptionTab": "Szyfrowanie (beta)",
     "userPreferencesTab": "Ustawienia użytkownika",
     "userLogsTab": "Dzienniki użytkownika",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Każdy wpis w sharedWith potrzebuje nazwy oraz r, rw lub rwd, np. bob:rw.",
     "frontmatterSharePublic": "Linki publiczne są tylko do odczytu, więc public może dostać tylko r.",
     "frontmatterShareSelf": "Ten element należy do Ciebie, więc nie możesz udostępnić go samemu sobie.",
-    "frontmatterShareUnknown": "Nikt o nazwie {user} nie ma tu konta."
+    "frontmatterShareUnknown": "Nikt o nazwie {user} nie ma tu konta.",
+    "templateNotFound": "Ten szablon nie należy do Ciebie, więc nic nie zostało utworzone",
+    "templateEncrypted": "Zaszyfrowane notatki nie mogą być szablonami",
+    "templateWithContent": "Wybierz szablon albo wpisz treść, nie oba naraz"
   },
   "pwa": {
     "installPromptTitle": "Zainstaluj aplikację",
@@ -1840,7 +1842,8 @@
     "sso": "SSO",
     "ldap": "LDAP",
     "translations": "Tłumaczenia",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Szablony"
   },
   "notFound": {
     "title": "Strona nie znaleziona",
@@ -2163,5 +2166,24 @@
       "compactMode": "Ogranicza edytor do szerokości 900px.",
       "detailsPanel": "Spis treści, tagi i linki obok notatki na szerokich ekranach."
     }
+  },
+  "templates": {
+    "title": "Szablony",
+    "subtitle": "Notatki, od których zaczynasz kolejne. {title} i {user} zostaną zastąpione tytułem nowej notatki i Twoją nazwą użytkownika.",
+    "badge": "Szablon",
+    "none": "Bez szablonu",
+    "newTemplate": "Nowy szablon",
+    "namePlaceholder": "Nazwa szablonu",
+    "use": "Użyj",
+    "edit": "Edytuj szablon",
+    "search": "Szukaj szablonów…",
+    "empty": "Nie masz jeszcze szablonów. Otwórz notatkę i wybierz Zapisz jako szablon albo utwórz nowy tutaj.",
+    "noneFound": "Żaden szablon nie pasuje do „{searchQuery}”",
+    "saveAsTemplate": "Zapisz jako szablon",
+    "saved": "Zapisano jako szablon",
+    "saveFailed": "Nie udało się zapisać szablonu",
+    "created": "Utworzono szablon",
+    "createFailed": "Nie udało się utworzyć szablonu",
+    "loadFailed": "Nie udało się wczytać Twoich szablonów"
   }
 }

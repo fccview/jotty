@@ -703,7 +703,6 @@
     "profileTab": "Profil",
     "sessionsTab": "Oturumlar",
     "archiveTab": "Arşiv",
-    "connectionsTab": "Bağlantılar",
     "encryptionTab": "Şifreleme (beta)",
     "userPreferencesTab": "Kullanıcı Tercihleri",
     "userLogsTab": "Kullanıcı Günlükleri",
@@ -1264,7 +1263,10 @@
     "frontmatterShareCode": "Her sharedWith girdisinde bob:rw gibi bir ad ve r, rw ya da rwd olmalı.",
     "frontmatterSharePublic": "Herkese açık bağlantılar salt okunurdur, bu yüzden public yalnızca r alabilir.",
     "frontmatterShareSelf": "Bu öğe sizin, bu yüzden onu kendinizle paylaşamazsınız.",
-    "frontmatterShareUnknown": "Burada {user} adında bir hesap yok."
+    "frontmatterShareUnknown": "Burada {user} adında bir hesap yok.",
+    "templateNotFound": "Bu şablon size ait değil, bu yüzden hiçbir şey oluşturulmadı",
+    "templateEncrypted": "Şifrelenmiş notlar şablon olamaz",
+    "templateWithContent": "Bir şablon seçin ya da içerik yazın, ikisini birden değil"
   },
   "pwa": {
     "installPromptTitle": "Uygulamayı Yükle",
@@ -1840,7 +1842,8 @@
     "sso": "SSO (Tekli Giriş)",
     "ldap": "LDAP",
     "translations": "Çeviriler",
-    "mcp": "MCP"
+    "mcp": "MCP",
+    "templates": "Şablonlar"
   },
   "notFound": {
     "title": "Sayfa Bulunamadı",
@@ -2163,5 +2166,24 @@
       "compactMode": "Düzenleyiciyi 900px genişlikle sınırlar.",
       "detailsPanel": "Geniş ekranlarda notun yanında içindekiler, etiketler ve bağlantılar."
     }
+  },
+  "templates": {
+    "title": "Şablonlar",
+    "subtitle": "Başka notlara başlarken kullandığınız notlar. {title} ve {user}, yeni notun başlığı ve kullanıcı adınızla doldurulur.",
+    "badge": "Şablon",
+    "none": "Şablon yok",
+    "newTemplate": "Yeni şablon",
+    "namePlaceholder": "Şablon adı",
+    "use": "Kullan",
+    "edit": "Şablonu düzenle",
+    "search": "Şablonlarda ara...",
+    "empty": "Henüz şablon yok. Bir not açıp Şablon olarak kaydet seçeneğini seçin ya da burada yeni bir tane oluşturun.",
+    "noneFound": "\"{searchQuery}\" ile eşleşen şablon bulunamadı",
+    "saveAsTemplate": "Şablon olarak kaydet",
+    "saved": "Şablon olarak kaydedildi",
+    "saveFailed": "Şablon kaydedilemedi",
+    "created": "Şablon oluşturuldu",
+    "createFailed": "Şablon oluşturulamadı",
+    "loadFailed": "Şablonlarınız yüklenemedi"
   }
 }

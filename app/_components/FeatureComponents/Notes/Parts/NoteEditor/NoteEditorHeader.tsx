@@ -28,6 +28,7 @@ import {
   GitCompareIcon,
   Copy02Icon,
   SourceCodeIcon,
+  LicenseDraftIcon,
 } from "hugeicons-react";
 import { PinStateIcon } from "@/app/_components/GlobalComponents/Cards/Parts/PinToggle";
 import { Note, Category } from "@/app/_types";
@@ -59,6 +60,8 @@ import { useTranslations } from "next-intl";
 import { AutosaveStatus } from "./AutosaveStatus";
 import { NoteHistoryModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/NoteHistoryModal";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTemplateMaker } from "@/app/_hooks/useTemplates";
+import { isTemplateCategory } from "@/app/_utils/template-utils";
 import {
   QuickBarPortal,
   QuickBarSlots,
@@ -126,6 +129,8 @@ export const NoteEditorHeader = ({
   const router = useRouter();
   const { permissions } = usePermissions();
   const { showToast } = useToast();
+  const { copyToTemplates } = useTemplateMaker();
+  const isTemplate = isTemplateCategory(note?.category);
 
   useEffect(() => {
     setHasPromptedForDecryption(false);
@@ -330,6 +335,11 @@ export const NoteEditorHeader = ({
                     {note?.encrypted && (
                       <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     )}
+                    {isTemplate && (
+                      <span className="jotty-template-badge text-md lg:text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
+                        {t("templates.badge")}
+                      </span>
+                    )}
                     <SharedFromBadge
                       owner={note?.sharedFrom}
                       permissions={note?.permissions}
@@ -342,7 +352,7 @@ export const NoteEditorHeader = ({
                       }
                     />
                   </div>
-                  {category && category !== t("notes.uncategorized") && (
+                  {category && !isTemplate && category !== t("notes.uncategorized") && (
                     <div className="flex items-center gap-1.5 mt-1 text-md lg:text-sm text-muted-foreground">
                       <Folder02Icon className="h-3 w-3" />
                       <span>{category}</span>
@@ -355,7 +365,7 @@ export const NoteEditorHeader = ({
           <div className="flex items-center gap-2 flex-shrink-0">
             {isEditing ? (
               <>
-                {isOwner && (
+                {isOwner && !isTemplate && (
                   <div className="lg:w-[400px]">
                     <CategoryTreeSelector
                       categories={categories}
@@ -518,7 +528,7 @@ export const NoteEditorHeader = ({
                           },
                         ]
                         : []),
-                      ...(permissions?.isOwner && !permissions?.isLocked
+                      ...(permissions?.isOwner && !permissions?.isLocked && !isTemplate
                         ? [
                           {
                             type: "item" as const,
@@ -538,7 +548,17 @@ export const NoteEditorHeader = ({
                           },
                         ]
                         : []),
-                      ...(permissions?.canDelete
+                      ...(!note?.encrypted && !isTemplate && !permissions?.isLocked
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: t("templates.saveAsTemplate"),
+                            icon: <LicenseDraftIcon className="h-4 w-4" />,
+                            onClick: () => copyToTemplates(note.uuid!),
+                          },
+                        ]
+                        : []),
+                      ...(permissions?.canDelete && !isTemplate
                         ? [
                           {
                             type: "item" as const,

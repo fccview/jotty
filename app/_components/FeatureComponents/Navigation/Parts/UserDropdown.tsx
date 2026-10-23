@@ -8,6 +8,9 @@ import {
   ArrowDown01Icon,
   LaptopPhoneSyncIcon,
   TranslateIcon,
+  Archive02Icon,
+  LicenseDraftIcon,
+  AiBrain04Icon,
 } from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useRouter } from "next/navigation";
@@ -20,6 +23,9 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { AboutModal } from "@/app/_components/GlobalComponents/Modals/AboutModal";
 import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
 import { cn } from "@/app/_utils/global-utils";
+import { ARCHIVE_PATH } from "@/app/_consts/files";
+import { TEMPLATES_PATH } from "@/app/_consts/templates";
+import { BRAIN_PATH } from "@/app/_consts/relations";
 import {
   MENU_CLASS,
   MENU_DIVIDER_CLASS,
@@ -100,6 +106,28 @@ export const UserDropdown = ({
       icon: <LaptopPhoneSyncIcon className="h-4 w-4" />,
       onClick: () => checkNavigation(() => onOpenSettings()),
     },
+    {
+      type: "divider" as const,
+    },
+    {
+      label: t("templates.title"),
+      icon: <LicenseDraftIcon className="h-4 w-4" />,
+      onClick: () => checkNavigation(() => router.push(TEMPLATES_PATH)),
+    },
+    {
+      label: t("profile.archiveTab"),
+      icon: <Archive02Icon className="h-4 w-4" />,
+      onClick: () => checkNavigation(() => router.push(ARCHIVE_PATH)),
+    },
+    ...(appSettings?.editor?.enableBilateralLinks === false
+      ? []
+      : [
+          {
+            label: t("brain.title"),
+            icon: <AiBrain04Icon className="h-4 w-4" />,
+            onClick: () => checkNavigation(() => router.push(BRAIN_PATH)),
+          },
+        ]),
     {
       type: "divider" as const,
     },

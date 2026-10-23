@@ -53,6 +53,7 @@ import * as tasksTaskIdItemsItemIndex from "@/app/api/tasks/[taskId]/items/[item
 import * as tasksTaskIdItemsItemIndexStatus from "@/app/api/tasks/[taskId]/items/[itemIndex]/status/route";
 import * as tasksTaskIdStatuses from "@/app/api/tasks/[taskId]/statuses/route";
 import * as tasksTaskIdStatusesStatusId from "@/app/api/tasks/[taskId]/statuses/[statusId]/route";
+import * as templates from "@/app/api/templates/route";
 import * as user from "@/app/api/user/route";
 import * as userUsername from "@/app/api/user/[username]/route";
 
@@ -112,6 +113,7 @@ export const ROUTE_MODULES: object[] = [
   tasksTaskIdItemsItemIndexStatus,
   tasksTaskIdStatuses,
   tasksTaskIdStatusesStatusId,
+  templates,
   user,
   userUsername,
 ];

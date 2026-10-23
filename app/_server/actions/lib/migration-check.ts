@@ -3,8 +3,7 @@ import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
 import {
   DATA_DIR,
-  ARCHIVED_DIR_NAME,
-  EXCLUDED_DIRS,
+  RESERVED_DIRS,
   DATA_SCHEMA_VERSION,
   SCHEMA_VERSION_FILE,
 } from "@/app/_consts/files";
@@ -37,7 +36,7 @@ export const stampSchema = async (): Promise<void> => {
 };
 
 const _hasOrderFile = async (dirPath: string): Promise<boolean> => {
-  const excluded = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const excluded = RESERVED_DIRS;
 
   try {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
