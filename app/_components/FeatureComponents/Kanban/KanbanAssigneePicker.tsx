@@ -15,6 +15,7 @@ import {
 } from "@/app/_components/GlobalComponents/Agent/AgentAvatar";
 import { AgentChip } from "./AgentChip";
 import { MENU_CLASS } from "@/app/_consts/styling";
+import { PROPERTY_FIELD_CLASS } from "@/app/_consts/kanban";
 
 interface KanbanAssigneePickerProps {
   checklist: Checklist;
@@ -144,7 +145,7 @@ export const KanbanAssigneePicker = ({
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={_onKeyDown}
           placeholder={t("kanban.assigneeSearch")}
-          className="w-full p-3 text-md lg:text-sm bg-background border border-ring rounded-jotty focus:outline-none"
+          className={cn(PROPERTY_FIELD_CLASS, "border-ring")}
         />
       ) : (
         <button
@@ -152,7 +153,8 @@ export const KanbanAssigneePicker = ({
           onClick={_open}
           disabled={disabled}
           className={cn(
-            "w-full flex items-center justify-between gap-2 p-3 rounded-jotty border border-border transition-colors",
+            PROPERTY_FIELD_CLASS,
+            "flex items-center justify-between gap-2",
             disabled ? "bg-muted text-muted-foreground cursor-not-allowed" : "hover:bg-muted/50",
           )}
         >

@@ -36,6 +36,12 @@ export enum KanbanPriorityLevel {
   NONE = "none",
 }
 
+export enum KanbanCardPane {
+  TASK = "task",
+  DETAILS = "details",
+  COMMENTS = "comments",
+}
+
 export enum TaskStatus {
   TODO = "todo",
   IN_PROGRESS = "in_progress",

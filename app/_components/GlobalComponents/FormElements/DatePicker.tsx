@@ -7,6 +7,8 @@ import { cn } from "@/app/_utils/global-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useWeekStart } from "@/app/_hooks/useWeekStart";
 import { MENU_CLASS } from "@/app/_consts/styling";
+import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
+import { menuPlacementClasses } from "@/app/_utils/menu-placement-utils";
 
 interface DatePickerProps {
   value: string;
@@ -48,6 +50,8 @@ const DatePickerComponent = ({
 }: DatePickerProps) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const placement = useMenuPlacement(open, containerRef, menuRef);
   const weekStart = useWeekStart();
 
   useEffect(() => {
@@ -86,7 +90,7 @@ const DatePickerComponent = ({
       </button>
 
       {open && (
-        <div className={`absolute z-50 mt-1 left-0 p-3 ${MENU_CLASS}`}>
+        <div ref={menuRef} className={cn("absolute z-50 p-3", menuPlacementClasses(placement), MENU_CLASS)}>
           <DayPicker
             mode="single"
             selected={_toDateValue(value)}
@@ -158,6 +162,8 @@ const TimePickerComponent = ({
   const timeFormat = resolvedTimeFormat === "24-hours" ? "24-hours" : "12-hours";
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const placement = useMenuPlacement(open, containerRef, menuRef);
   const hoursListRef = useRef<HTMLDivElement>(null);
   const minutesListRef = useRef<HTMLDivElement>(null);
 
@@ -238,7 +244,7 @@ const TimePickerComponent = ({
       </button>
 
       {open && (
-        <div className={`absolute z-50 mt-1 left-0 p-2 ${MENU_CLASS}`}>
+        <div ref={menuRef} className={cn("absolute z-50 p-2", menuPlacementClasses(placement), MENU_CLASS)}>
           <div className="flex gap-1">
             <div
               ref={hoursListRef}

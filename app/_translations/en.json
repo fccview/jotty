@@ -698,7 +698,10 @@
     "assigneeShareTitle": "Share this board?",
     "assigneeShareMessage": "{user} can't see this board yet. Assigning them will share it with edit access.",
     "assigneeShareConfirm": "Share and assign",
-    "assignFailed": "Could not change the assignee"
+    "assignFailed": "Could not change the assignee",
+    "cardPanes": "Task sections",
+    "paneTask": "Task",
+    "paneDetails": "Details"
   },
   "profile": {
     "userProfile": "User",

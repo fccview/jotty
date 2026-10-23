@@ -49,3 +49,6 @@ export const unknownStatus = (statuses?: KanbanStatus[]): string =>
   `${UNKNOWN_STATUS}. Its columns are ${boardColumns(statuses).map((column) => column.id).join(", ")}`;
 
 export const isUnknownStatus = (error?: string): boolean => !!error?.startsWith(UNKNOWN_STATUS);
+
+export const PROPERTY_FIELD_CLASS =
+  "w-full px-3 py-2 text-md lg:text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-colors";

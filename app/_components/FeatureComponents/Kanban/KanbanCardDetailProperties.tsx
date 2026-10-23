@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { DatePicker, DateTimePicker } from "@/app/_components/GlobalComponents/FormElements/DatePicker";
 import { Item, KanbanPriority, KanbanStatus } from "@/app/_types";
 import { KanbanPriorityLevel } from "@/app/_types/enums";
-import {
-  getPriorityDotColor,
-  getPriorityLabel,
-} from "@/app/_utils/kanban/index";
-import { ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
+import { getPriorityDotColor, getPriorityLabel } from "@/app/_utils/kanban/index";
+import { toDateKey } from "@/app/_utils/kanban/calendar-utils";
 import { useTranslations } from "next-intl";
-import { cn } from "@/app/_utils/global-utils";
-import { FALLBACK_STATUS_COLOR } from "@/app/_consts/kanban";
+import { FALLBACK_STATUS_COLOR, PROPERTY_FIELD_CLASS } from "@/app/_consts/kanban";
+import { PropertyDot, PropertyField, PropertySelect } from "./KanbanPropertyFields";
 
 interface KanbanCardDetailPropertiesProps {
   item: Item;
@@ -24,14 +21,12 @@ interface KanbanCardDetailPropertiesProps {
   startDateInput: string;
   estimatedTimeInput: string;
   canEdit: boolean;
-  toLocalDateTimeValue: (iso: string) => string;
-  toLocalDateValue: (iso: string) => string;
+  trackedSeconds: number;
   onStatusChange: (status: string) => void;
   onPriorityChange: (p: KanbanPriority) => void;
   onScoreChange: (v: string) => void;
   onScoreSave: () => void;
   onReminderChange: (v: string) => void;
-  onReminderSave: () => void;
   onTargetDateChange: (v: string) => void;
   onStartDateChange: (v: string) => void;
   onEstimatedTimeChange: (v: string) => void;
@@ -41,37 +36,22 @@ interface KanbanCardDetailPropertiesProps {
   assigneePicker?: ReactNode;
 }
 
-interface PropertySectionProps {
-  title: string;
-  children: ReactNode;
-  defaultOpen?: boolean;
-}
+const PRIORITIES: KanbanPriority[] = [
+  KanbanPriorityLevel.CRITICAL,
+  KanbanPriorityLevel.HIGH,
+  KanbanPriorityLevel.MEDIUM,
+  KanbanPriorityLevel.LOW,
+  KanbanPriorityLevel.NONE,
+];
 
-const PropertySection = ({
-  title,
-  children,
-  defaultOpen = true,
-}: PropertySectionProps) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+const SECTION_CLASS = "space-y-2 border-t border-border pt-4";
 
-  return (
-    <div className="border-b border-border/70 pb-4 last:border-b-0 last:pb-0">
-      <button
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-foreground transition-colors"
-      >
-        <span>{title}</span>
-        {isOpen ? (
-          <ArrowDown01Icon className="h-3.5 w-3.5" />
-        ) : (
-          <ArrowRight01Icon className="h-3.5 w-3.5" />
-        )}
-      </button>
-      {isOpen && <div className="mt-3 space-y-5">{children}</div>}
-    </div>
-  );
-};
+const _dotted = (color: string | null, label: string) => (
+  <span className="flex min-w-0 items-center gap-2">
+    {color && <PropertyDot color={color} />}
+    <span className="truncate">{label}</span>
+  </span>
+);
 
 export const KanbanCardDetailProperties = ({
   item,
@@ -84,14 +64,12 @@ export const KanbanCardDetailProperties = ({
   startDateInput,
   estimatedTimeInput,
   canEdit,
-  toLocalDateTimeValue,
-  toLocalDateValue,
+  trackedSeconds,
   onStatusChange,
   onPriorityChange,
   onScoreChange,
   onScoreSave,
   onReminderChange,
-  onReminderSave,
   onTargetDateChange,
   onStartDateChange,
   onEstimatedTimeChange,
@@ -102,92 +80,77 @@ export const KanbanCardDetailProperties = ({
 }: KanbanCardDetailPropertiesProps) => {
   const t = useTranslations();
 
-  const priorities: KanbanPriority[] = [
-    KanbanPriorityLevel.CRITICAL,
-    KanbanPriorityLevel.HIGH,
-    KanbanPriorityLevel.MEDIUM,
-    KanbanPriorityLevel.LOW,
-    KanbanPriorityLevel.NONE,
-  ];
+  const statusOptions = [...statuses]
+    .sort((a, b) => a.order - b.order)
+    .map((status) => ({
+      id: status.id,
+      name: _dotted(status.color || FALLBACK_STATUS_COLOR, status.label),
+    }));
 
-  const sortedStatuses = [...statuses].sort((a, b) => a.order - b.order);
+  const priorityOptions = PRIORITIES.map((priority) => ({
+    id: priority,
+    name: _dotted(
+      priority === KanbanPriorityLevel.NONE ? null : getPriorityDotColor(priority),
+      getPriorityLabel(priority, t),
+    ),
+  }));
 
-  const metadata = [];
-  if (item.createdBy) {
-    metadata.push(
-      t("common.createdByOn", {
-        user: item.createdBy,
-        date: formatDateTimeString(item.createdAt!),
-      }),
-    );
-  }
-  if (item.lastModifiedBy) {
-    metadata.push(
+  const stamps = [
+    item.createdBy &&
+      t("common.createdByOn", { user: item.createdBy, date: formatDateTimeString(item.createdAt!) }),
+    item.lastModifiedBy &&
       t("common.lastModifiedByOn", {
         user: item.lastModifiedBy,
         date: formatDateTimeString(item.lastModifiedAt!),
       }),
-    );
-  }
-  if (item.history?.length) {
-    metadata.push(t("common.statusChanges", { count: item.history.length }));
-  }
+  ].filter((stamp): stamp is string => !!stamp);
+
+  const hasLoggedTime = !!item.estimatedTime && trackedSeconds > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {canEdit && (
-        <>
-          <PropertySection title={t("kanban.status")}>
-            <div className="flex flex-wrap gap-1.5">
-              {sortedStatuses.map((status) => (
-                <button
-                  key={status.id}
-                  type="button"
-                  onClick={() => onStatusChange(status.id)}
-                  className={cn(
-                    "text-[11px] px-2.5 py-1.5 rounded-jotty border transition-all flex items-center gap-1.5",
-                    statusInput === status.id
-                      ? "border-primary/50 bg-primary/5 text-foreground font-semibold"
-                      : "border-border text-muted-foreground hover:border-primary/30 hover:bg-muted/50",
-                  )}
-                >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: status.color || FALLBACK_STATUS_COLOR }}
-                  />
-                  {status.label}
-                </button>
-              ))}
-            </div>
-          </PropertySection>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+          <PropertyField label={t("kanban.status")}>
+            <PropertySelect value={statusInput} options={statusOptions} onChange={onStatusChange} />
+          </PropertyField>
 
-          <PropertySection title={t("kanban.priority")}>
-            <div className="flex flex-wrap gap-1.5">
-              {priorities.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => onPriorityChange(p)}
-                  className={cn(
-                    "text-[11px] px-2.5 py-1.5 rounded-jotty border transition-all flex items-center gap-1.5",
-                    priorityInput === p
-                      ? "border-primary/50 bg-primary/5 text-foreground font-semibold"
-                      : "border-border text-muted-foreground hover:border-primary/30 hover:bg-muted/50",
-                  )}
-                >
-                  {p !== KanbanPriorityLevel.NONE && (
-                    <span
-                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: getPriorityDotColor(p) }}
-                    />
-                  )}
-                  {getPriorityLabel(p, t)}
-                </button>
-              ))}
-            </div>
-          </PropertySection>
+          <PropertyField label={t("kanban.priority")}>
+            <PropertySelect
+              value={priorityInput}
+              options={priorityOptions}
+              onChange={(value) => {
+                const priority = PRIORITIES.find((level) => level === value);
+                if (priority) onPriorityChange(priority);
+              }}
+            />
+          </PropertyField>
 
-          <PropertySection title={t("kanban.score")}>
+          {assigneePicker && (
+            <PropertyField label={t("kanban.assignee")} wide>
+              {assigneePicker}
+            </PropertyField>
+          )}
+
+          <PropertyField label={t("common.startDate")}>
+            <DatePicker
+              value={toDateKey(startDateInput)}
+              onChange={onStartDateChange}
+            />
+          </PropertyField>
+
+          <PropertyField label={t("kanban.targetDate")}>
+            <DatePicker
+              value={toDateKey(targetDateInput)}
+              onChange={onTargetDateChange}
+            />
+          </PropertyField>
+
+          <PropertyField label={t("kanban.reminder")} wide>
+            <DateTimePicker value={reminderInput} onChange={onReminderChange} />
+          </PropertyField>
+
+          <PropertyField label={t("kanban.score")}>
             <input
               type="number"
               min="0"
@@ -196,38 +159,12 @@ export const KanbanCardDetailProperties = ({
               onChange={(e) => onScoreChange(e.target.value)}
               onBlur={onScoreSave}
               onKeyDown={(e) => e.key === "Enter" && onScoreSave()}
-              className="w-full px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-colors"
+              className={PROPERTY_FIELD_CLASS}
               placeholder="0"
             />
-          </PropertySection>
+          </PropertyField>
 
-          {assigneePicker && (
-            <PropertySection title={t("kanban.assignee")}>{assigneePicker}</PropertySection>
-          )}
-
-          <PropertySection title={t("kanban.reminder")}>
-            <DateTimePicker
-              value={reminderInput}
-              onChange={onReminderChange}
-              onBlur={onReminderSave}
-            />
-          </PropertySection>
-
-          <PropertySection title={t("common.startDate")}>
-            <DatePicker
-              value={startDateInput ? toLocalDateValue(startDateInput) : ""}
-              onChange={onStartDateChange}
-            />
-          </PropertySection>
-
-          <PropertySection title={t("kanban.targetDate")}>
-            <DatePicker
-              value={targetDateInput ? toLocalDateValue(targetDateInput) : ""}
-              onChange={onTargetDateChange}
-            />
-          </PropertySection>
-
-          <PropertySection title={t("kanban.estimatedTime")}>
+          <PropertyField label={t("kanban.estimatedTime")}>
             <input
               type="number"
               min="0"
@@ -236,44 +173,39 @@ export const KanbanCardDetailProperties = ({
               onChange={(e) => onEstimatedTimeChange(e.target.value)}
               onBlur={onEstimatedTimeSave}
               onKeyDown={(e) => e.key === "Enter" && onEstimatedTimeSave()}
-              className="w-full px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-colors"
+              className={PROPERTY_FIELD_CLASS}
               placeholder="0"
             />
-            {item.estimatedTime && item.timeEntries && item.timeEntries.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-1.5">
-                {t("kanban.actualVsEstimated", {
-                  actual: (item.timeEntries.reduce((sum, e) => sum + (e.duration || 0), 0) / 3600).toFixed(1) + "h",
-                  estimated: item.estimatedTime + "h",
-                })}
-              </p>
-            )}
-          </PropertySection>
-        </>
+          </PropertyField>
+
+          {hasLoggedTime && (
+            <p className="col-span-2 -mt-2 text-xs text-muted-foreground">
+              {t("kanban.actualVsEstimated", {
+                actual: (trackedSeconds / 3600).toFixed(1) + "h",
+                estimated: item.estimatedTime + "h",
+              })}
+            </p>
+          )}
+        </div>
       )}
 
       {timeTracking && (
-        <PropertySection title={t("kanban.timeTracking")}>
+        <div className={SECTION_CLASS}>
+          <span className="block text-xs font-medium text-muted-foreground">
+            {t("kanban.timeTracking")}
+          </span>
           {timeTracking}
-        </PropertySection>
+        </div>
       )}
 
-      {metadata.length > 0 && (
-        <PropertySection
-          title={t("auditLogs.metadata")}
-          defaultOpen={false}
-        >
-          <div className="space-y-1.5">
-            {metadata.map((text, i) => (
-              <p
-                key={i}
-                className="text-xs text-muted-foreground flex items-start gap-2"
-              >
-                <span className="text-muted-foreground/40">&bull;</span>
-                <span>{text}</span>
-              </p>
-            ))}
-          </div>
-        </PropertySection>
+      {stamps.length > 0 && (
+        <div className="space-y-1 border-t border-dashed border-border pt-4">
+          {stamps.map((text) => (
+            <p key={text} className="text-xs text-muted-foreground">
+              {text}
+            </p>
+          ))}
+        </div>
       )}
     </div>
   );
