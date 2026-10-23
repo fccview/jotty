@@ -3,7 +3,6 @@ import {
   TiptapEditorRef,
 } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
-import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
@@ -173,7 +172,6 @@ export const NoteEditorContent = ({
               content={encrypted ? editorContent : noteContent || ""}
               className={NOTE_PROSE_CLASS}
             />
-            <ReferencedBySection />
           </div>
         </>
       )}

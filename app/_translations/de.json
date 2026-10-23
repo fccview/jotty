@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "Wie Notizen und Listen beim Durchsuchen angeordnet werden.",
     "notesCardPreviewDescription": "Zeigt den formatierten Anfang jeder Notiz auf ihrer Karte.",
     "notesCompactModeDescription": "Nutzt beim Lesen und Bearbeiten von Notizen ein schmaleres Layout.",
-    "kanbanColumnWidthDescription": "Lege eine eigene Breite für die Kanban-Statusspalten fest. Standardmäßig passen sich die Spalten dem verfügbaren Platz an."
+    "kanbanColumnWidthDescription": "Lege eine eigene Breite für die Kanban-Statusspalten fest. Standardmäßig passen sich die Spalten dem verfügbaren Platz an.",
+    "notesDetailsPanelDescription": "Zeigt Inhaltsverzeichnis, Tags und Links auf breiten Bildschirmen in einem Bereich neben der Notiz."
   },
   "admin": {
     "title": "Administration",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Dieser Ordner ist auf dem Server schreibgeschützt, die Änderung konnte nicht gespeichert werden.",
     "itemLocked": "Dieses Element kann erst geändert werden, wenn sein Frontmatter repariert ist.",
     "frontmatterUnfixable": "Jotty konnte dieses Frontmatter nicht selbst reparieren. Bearbeite die Datei von Hand und lade die Seite neu.",
-    "frontmatterNothingToFix": "Am Frontmatter dieses Elements gibt es nichts zu reparieren."
+    "frontmatterNothingToFix": "Am Frontmatter dieses Elements gibt es nichts zu reparieren.",
+    "frontmatterUnreadable": "Jotty konnte das Frontmatter dieses Elements nicht lesen und hat die Datei unverändert gelassen.",
+    "frontmatterSaveFailed": "Das Frontmatter wurde nicht gespeichert. Versuch es noch einmal.",
+    "frontmatterInvalidYaml": "Das ist kein gültiges YAML. Prüfe die Einrückung und die Doppelpunkte.",
+    "frontmatterNotMap": "Frontmatter muss eine Liste aus Schlüsseln und Werten sein, etwa status: draft.",
+    "frontmatterAliases": "Anker und Aliase (& und *) werden hier nicht unterstützt. Schreib die Werte vollständig aus.",
+    "frontmatterTagsList": "tags muss eine Liste sein, etwa [work, ideas].",
+    "frontmatterUuidInvalid": "uuid muss im Frontmatter bleiben und eine gültige ID sein.",
+    "frontmatterUuidTaken": "Ein anderes Element nutzt diese uuid bereits.",
+    "frontmatterSharesFormat": "sharedWith muss eine Liste sein, etwa [bob:rw, public:r], oder none.",
+    "frontmatterShareCode": "Jeder sharedWith-Eintrag braucht einen Namen und r, rw oder rwd, etwa bob:rw.",
+    "frontmatterSharePublic": "Öffentliche Links sind schreibgeschützt, deshalb kann public nur r bekommen.",
+    "frontmatterShareSelf": "Dieses Element gehört dir, also kannst du es nicht mit dir selbst teilen.",
+    "frontmatterShareUnknown": "Hier hat niemand namens {user} ein Konto."
   },
   "pwa": {
     "installPromptTitle": "Anwendung installieren",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Komfortabel",
     "kanbanColumnWidthWide": "Breit",
     "kanbanColumnWidthAutoFit": "Auto-Anpassung",
-    "useAccountSetting": "Kontoeinstellung verwenden"
+    "useAccountSetting": "Kontoeinstellung verwenden",
+    "notesDetailsPanel": "Notiz-Detailbereich"
   },
   "migration": {
     "migrationComplete": "Migration vollständig",
@@ -1958,6 +1973,40 @@
     "confirm": "Frontmatter reparieren",
     "fixed": "Repariert. Du kannst dieses Element jetzt bearbeiten."
   },
+  "frontmatter": {
+    "edit": "Frontmatter bearbeiten",
+    "title": "Frontmatter",
+    "hint": "Füge eigene Schlüssel in YAML hinzu. Tags, die als #hashtags im Text stehen, bleiben in der tags-Liste, solange sie dort stehen.",
+    "saved": "Frontmatter gespeichert",
+    "saveNoteFirst": "Speichere die Notiz, bevor du ihre uuid änderst, sonst geht dein ungespeicherter Text verloren.",
+    "warnings": {
+      "uuid": "Eine neue uuid gibt diesem Element eine neue ID. Links, Pins und Lesezeichen mit der alten ID funktionieren dann nicht mehr.",
+      "sharedWith": "sharedWith legt fest, wer das sonst noch öffnen kann und was er damit tun darf. Die Änderung gilt, sobald du speicherst.",
+      "encryption": "Jotty entscheidet anhand von encrypted und encryptionMethod, wie diese Notiz geöffnet wird. Falsche Werte können verhindern, dass sie sich öffnet.",
+      "checklistType": "checklistType wechselt zwischen Liste und Board. Umwandeln im Menü erledigt das für dich.",
+      "statuses": "statuses sind die Spalten des Boards. Prüfe, ob der Status jeder Karte noch eine Spalte hat."
+    }
+  },
+  "notePanel": {
+    "title": "Details",
+    "show": "Details anzeigen",
+    "hide": "Details ausblenden",
+    "noTags": "Noch keine Tags. Schreib einen #tag in die Notiz oder füge einen im Frontmatter hinzu.",
+    "noLinks": "Hierher verlinkt noch nichts.",
+    "links": "Links",
+    "tagGroups": {
+      "adding": "Wird beim Speichern hinzugefügt",
+      "removing": "Wird beim Speichern entfernt",
+      "frontmatter": "Nur im Frontmatter",
+      "text": "Im Text"
+    }
+  },
+  "menuGroups": {
+    "organise": "Ordnen",
+    "view": "Ansicht",
+    "export": "Export",
+    "advanced": "Erweitert"
+  },
   "live": {
     "currentlyEditing": "Bearbeitet gerade",
     "dropped": "Jemand hat diese Notiz geändert, während du offline warst. Deine ungespeicherten Änderungen wurden verworfen.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Kompakte Notizbreite",
       "autosave": "Notizen automatisch speichern",
       "showEmojis": "Emojis in Checklisten",
-      "completedSuggestions": "Erledigte Einträge vorschlagen"
+      "completedSuggestions": "Erledigte Einträge vorschlagen",
+      "detailsPanel": "Notiz-Detailbereich"
     },
     "hints": {
       "borderRadius": "Die Ecken ändern sich in der ganzen App, während du ziehst.",
       "noteFontSize": "Zum Lesen und Schreiben von Notizen.",
       "kanbanColumnWidth": "Automatisch passt die Spalten an das Board an.",
       "cardPreview": "Zeigt formatiertes Markdown statt reinem Text auf Karten.",
-      "compactMode": "Begrenzt den Editor auf 900px Breite."
+      "compactMode": "Begrenzt den Editor auf 900px Breite.",
+      "detailsPanel": "Inhaltsverzeichnis, Tags und Links neben der Notiz auf breiten Bildschirmen."
     }
   }
 }

@@ -9,6 +9,7 @@ import {
   FloppyDiskIcon,
   Layout3ColumnIcon,
   PaintBoardIcon,
+  SidebarRightIcon,
   SmileIcon,
   SquareIcon,
   TextAlignLeftIcon,
@@ -39,6 +40,7 @@ const ICONS: Record<QuickSettingId, ComponentType<{ className?: string }>> = {
   [QuickSettingId.VIEW_MODE]: DashboardSquare01Icon,
   [QuickSettingId.CARD_PREVIEW]: File02Icon,
   [QuickSettingId.COMPACT_MODE]: TextAlignLeftIcon,
+  [QuickSettingId.DETAILS_PANEL]: SidebarRightIcon,
   [QuickSettingId.AUTOSAVE]: FloppyDiskIcon,
   [QuickSettingId.SHOW_EMOJIS]: SmileIcon,
   [QuickSettingId.COMPLETED_SUGGESTIONS]: CheckmarkSquare04Icon,
@@ -50,6 +52,7 @@ const HINTS: Partial<Record<QuickSettingId, string>> = {
   [QuickSettingId.KANBAN_COLUMN_WIDTH]: "quickSettings.hints.kanbanColumnWidth",
   [QuickSettingId.CARD_PREVIEW]: "quickSettings.hints.cardPreview",
   [QuickSettingId.COMPACT_MODE]: "quickSettings.hints.compactMode",
+  [QuickSettingId.DETAILS_PANEL]: "quickSettings.hints.detailsPanel",
 };
 
 const controlIdOf = (id: QuickSettingId) => `quick-setting-${id}`;

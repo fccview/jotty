@@ -407,7 +407,7 @@
     "drawioNoPreview": "Draw.io diagram (no preview available)",
     "excalidrawNoPreview": "Excalidraw diagram (no preview available)",
     "mermaidError": "Mermaid Error:",
-    "referencedBy": "Referenced By",
+    "referencedBy": "Referenced by",
     "noHeadingsFound": "No headings found",
     "contents": "Contents",
     "searchNotesAndChecklists": "Search notes and checklists...",
@@ -1004,7 +1004,8 @@
     "notesCardPreviewDescription": "Show the formatted start of each note on its card.",
     "notesCompactModeDescription": "Use a narrower layout while reading and editing notes.",
     "kanbanColumnWidthDescription": "Width of each kanban column. Auto stretches the columns to fill the board.",
-    "enabled": "Enabled"
+    "enabled": "Enabled",
+    "notesDetailsPanelDescription": "Show contents, tags and links in a panel beside the note on wide screens."
   },
   "admin": {
     "title": "Admin",
@@ -1254,7 +1255,20 @@
     "readOnlyFolder": "This folder is read-only on the server, so Jotty couldn't save the change.",
     "itemLocked": "This item can't be changed until its frontmatter is fixed.",
     "frontmatterUnfixable": "Jotty couldn't fix this frontmatter on its own. Edit the file by hand, then reload.",
-    "frontmatterNothingToFix": "There's nothing to fix in this item's frontmatter."
+    "frontmatterNothingToFix": "There's nothing to fix in this item's frontmatter.",
+    "frontmatterUnreadable": "Jotty couldn't read this item's frontmatter, so it left the file alone.",
+    "frontmatterSaveFailed": "The frontmatter wasn't saved. Try again.",
+    "frontmatterInvalidYaml": "That isn't valid YAML. Check the indentation and the colons.",
+    "frontmatterNotMap": "Frontmatter has to be a list of keys and values, like status: draft.",
+    "frontmatterAliases": "Anchors and aliases (& and *) aren't supported here. Write the values out in full.",
+    "frontmatterTagsList": "tags has to be a list, like [work, ideas].",
+    "frontmatterUuidInvalid": "uuid has to stay in the frontmatter, and it has to be a valid id.",
+    "frontmatterUuidTaken": "Another item already uses that uuid.",
+    "frontmatterSharesFormat": "sharedWith has to be a list like [bob:rw, public:r], or none.",
+    "frontmatterShareCode": "Each sharedWith entry needs a name and r, rw or rwd, like bob:rw.",
+    "frontmatterSharePublic": "Public links are read only, so public can only get r.",
+    "frontmatterShareSelf": "You own this item, so you can't share it with yourself.",
+    "frontmatterShareUnknown": "Nobody called {user} has an account here."
   },
   "pwa": {
     "installPromptTitle": "Install App",
@@ -1662,7 +1676,8 @@
     "kanbanColumnWidthComfortable": "Comfortable",
     "kanbanColumnWidthWide": "Wide",
     "kanbanColumnWidthAutoFit": "Auto fit",
-    "useAccountSetting": "Use account setting"
+    "useAccountSetting": "Use account setting",
+    "notesDetailsPanel": "Note details panel"
   },
   "migration": {
     "migrationComplete": "Migration Complete",
@@ -1969,6 +1984,40 @@
     "confirm": "Fix the frontmatter",
     "fixed": "Fixed. You can edit this item now."
   },
+  "frontmatter": {
+    "edit": "Edit frontmatter",
+    "title": "Frontmatter",
+    "hint": "Add your own keys in YAML. Tags written as #hashtags in the text stay in the tags list for as long as they're there.",
+    "saved": "Frontmatter saved",
+    "saveNoteFirst": "Save the note before you change its uuid, or your unsaved text will be lost.",
+    "warnings": {
+      "uuid": "A new uuid gives this item a new id. Links, pins and bookmarks that use the old one stop working.",
+      "sharedWith": "sharedWith decides who else can open this and what they can do. The change applies as soon as you save.",
+      "encryption": "Jotty uses encrypted and encryptionMethod to decide how to open this note. Wrong values can stop it opening.",
+      "checklistType": "checklistType switches between a list and a board. Convert in the menu does this for you.",
+      "statuses": "statuses are the board's columns. Check that every card's status still has a column."
+    }
+  },
+  "notePanel": {
+    "title": "Details",
+    "show": "Show details",
+    "hide": "Hide details",
+    "noTags": "No tags yet. Type a #tag in the note or add one to the frontmatter.",
+    "noLinks": "Nothing links here yet.",
+    "links": "Links",
+    "tagGroups": {
+      "adding": "Added when you save",
+      "removing": "Removed when you save",
+      "frontmatter": "Frontmatter only",
+      "text": "In the text"
+    }
+  },
+  "menuGroups": {
+    "organise": "Organise",
+    "view": "View",
+    "export": "Export",
+    "advanced": "Advanced"
+  },
   "live": {
     "currentlyEditing": "Currently editing",
     "dropped": "Someone changed this note while you were offline, so your unsaved changes were dropped.",
@@ -2114,14 +2163,16 @@
       "compactMode": "Compact note width",
       "autosave": "Autosave notes",
       "showEmojis": "Emojis on checklists",
-      "completedSuggestions": "Suggest completed items"
+      "completedSuggestions": "Suggest completed items",
+      "detailsPanel": "Note details panel"
     },
     "hints": {
       "borderRadius": "Corners update across the whole app as you drag.",
       "noteFontSize": "For reading and writing notes.",
       "kanbanColumnWidth": "Auto fit stretches columns to fill the board.",
       "cardPreview": "Show formatted markdown on cards instead of plain text.",
-      "compactMode": "Caps the editor at 900px wide."
+      "compactMode": "Caps the editor at 900px wide.",
+      "detailsPanel": "Contents, tags and links beside the note on wide screens."
     }
   }
 }

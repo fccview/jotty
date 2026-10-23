@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "Cách ghi chú và danh sách được sắp xếp khi bạn duyệt.",
     "notesCardPreviewDescription": "Hiển thị phần đầu đã định dạng của mỗi ghi chú trên thẻ.",
     "notesCompactModeDescription": "Dùng bố cục hẹp hơn khi đọc và chỉnh sửa ghi chú.",
-    "kanbanColumnWidthDescription": "Đặt độ rộng riêng cho các cột trạng thái kanban. Mặc định các cột tự vừa với không gian có sẵn."
+    "kanbanColumnWidthDescription": "Đặt độ rộng riêng cho các cột trạng thái kanban. Mặc định các cột tự vừa với không gian có sẵn.",
+    "notesDetailsPanelDescription": "Hiển thị mục lục, thẻ và liên kết trong một bảng bên cạnh ghi chú trên màn hình rộng."
   },
   "admin": {
     "title": "Quản trị viên",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Thư mục này chỉ đọc trên máy chủ, nên không lưu được thay đổi.",
     "itemLocked": "Không thể thay đổi mục này cho đến khi frontmatter của nó được sửa.",
     "frontmatterUnfixable": "Jotty không tự sửa được frontmatter này. Hãy sửa tệp bằng tay rồi tải lại.",
-    "frontmatterNothingToFix": "Frontmatter của mục này không có gì cần sửa."
+    "frontmatterNothingToFix": "Frontmatter của mục này không có gì cần sửa.",
+    "frontmatterUnreadable": "Jotty không đọc được frontmatter của mục này nên đã để nguyên tệp.",
+    "frontmatterSaveFailed": "Chưa lưu được frontmatter. Hãy thử lại.",
+    "frontmatterInvalidYaml": "Đây không phải YAML hợp lệ. Hãy kiểm tra thụt lề và dấu hai chấm.",
+    "frontmatterNotMap": "Frontmatter phải là danh sách các khóa và giá trị, ví dụ status: draft.",
+    "frontmatterAliases": "Không hỗ trợ anchor và alias (& và *) ở đây. Hãy viết đầy đủ các giá trị.",
+    "frontmatterTagsList": "tags phải là một danh sách, ví dụ [work, ideas].",
+    "frontmatterUuidInvalid": "uuid phải được giữ trong frontmatter và phải là một id hợp lệ.",
+    "frontmatterUuidTaken": "Một mục khác đã dùng uuid này.",
+    "frontmatterSharesFormat": "sharedWith phải là một danh sách, ví dụ [bob:rw, public:r], hoặc none.",
+    "frontmatterShareCode": "Mỗi mục sharedWith cần một tên và r, rw hoặc rwd, ví dụ bob:rw.",
+    "frontmatterSharePublic": "Liên kết công khai chỉ cho phép đọc, nên public chỉ có thể nhận r.",
+    "frontmatterShareSelf": "Mục này là của bạn, nên bạn không thể chia sẻ nó với chính mình.",
+    "frontmatterShareUnknown": "Không có ai tên {user} có tài khoản ở đây."
   },
   "pwa": {
     "installPromptTitle": "Cài đặt ứng dụng",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Thoải mái",
     "kanbanColumnWidthWide": "Rộng",
     "kanbanColumnWidthAutoFit": "Tự vừa",
-    "useAccountSetting": "Dùng cài đặt của tài khoản"
+    "useAccountSetting": "Dùng cài đặt của tài khoản",
+    "notesDetailsPanel": "Bảng chi tiết ghi chú"
   },
   "migration": {
     "migrationComplete": "Quá trình di chuyển hoàn tất",
@@ -1958,6 +1973,40 @@
     "confirm": "Sửa frontmatter",
     "fixed": "Đã sửa. Giờ bạn có thể chỉnh sửa mục này."
   },
+  "frontmatter": {
+    "edit": "Sửa frontmatter",
+    "title": "Frontmatter",
+    "hint": "Thêm khóa của riêng bạn bằng YAML. Các thẻ viết dạng #hashtags trong văn bản sẽ ở lại danh sách tags chừng nào chúng còn ở đó.",
+    "saved": "Đã lưu frontmatter",
+    "saveNoteFirst": "Hãy lưu ghi chú trước khi đổi uuid, nếu không phần văn bản chưa lưu sẽ bị mất.",
+    "warnings": {
+      "uuid": "uuid mới sẽ cho mục này một id mới. Liên kết, ghim và dấu trang dùng id cũ sẽ ngừng hoạt động.",
+      "sharedWith": "sharedWith quyết định ai khác có thể mở mục này và họ được làm gì. Thay đổi có hiệu lực ngay khi bạn lưu.",
+      "encryption": "Jotty dùng encrypted và encryptionMethod để biết cách mở ghi chú này. Giá trị sai có thể khiến nó không mở được.",
+      "checklistType": "checklistType chuyển giữa danh sách và bảng. Mục Chuyển đổi trong menu sẽ làm việc này cho bạn.",
+      "statuses": "statuses là các cột của bảng. Hãy kiểm tra trạng thái của mỗi thẻ vẫn còn cột tương ứng."
+    }
+  },
+  "notePanel": {
+    "title": "Chi tiết",
+    "show": "Hiện chi tiết",
+    "hide": "Ẩn chi tiết",
+    "noTags": "Chưa có thẻ nào. Gõ một #tag trong ghi chú hoặc thêm vào frontmatter.",
+    "noLinks": "Chưa có gì liên kết đến đây.",
+    "links": "Liên kết",
+    "tagGroups": {
+      "adding": "Thêm khi bạn lưu",
+      "removing": "Xóa khi bạn lưu",
+      "frontmatter": "Chỉ trong frontmatter",
+      "text": "Trong văn bản"
+    }
+  },
+  "menuGroups": {
+    "organise": "Sắp xếp",
+    "view": "Xem",
+    "export": "Xuất",
+    "advanced": "Nâng cao"
+  },
   "live": {
     "currentlyEditing": "Đang chỉnh sửa",
     "dropped": "Có người đã thay đổi ghi chú này khi bạn ngoại tuyến, nên các thay đổi chưa lưu của bạn đã bị bỏ.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Độ rộng ghi chú gọn",
       "autosave": "Tự động lưu ghi chú",
       "showEmojis": "Emoji trong danh sách",
-      "completedSuggestions": "Gợi ý mục đã xong"
+      "completedSuggestions": "Gợi ý mục đã xong",
+      "detailsPanel": "Bảng chi tiết ghi chú"
     },
     "hints": {
       "borderRadius": "Các góc thay đổi trên toàn ứng dụng khi bạn kéo.",
       "noteFontSize": "Dùng khi đọc và viết ghi chú.",
       "kanbanColumnWidth": "Tự động kéo giãn các cột cho đầy bảng.",
       "cardPreview": "Hiển thị markdown đã định dạng trên thẻ thay vì văn bản thường.",
-      "compactMode": "Giới hạn trình soạn thảo rộng 900px."
+      "compactMode": "Giới hạn trình soạn thảo rộng 900px.",
+      "detailsPanel": "Mục lục, thẻ và liên kết bên cạnh ghi chú trên màn hình rộng."
     }
   }
 }

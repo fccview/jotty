@@ -41,6 +41,7 @@ const SECTION_KEYS: [SettingsSchema, (keyof User)[]][] = [
       "browseViewMode",
       "notesCardPreview",
       "notesCompactMode",
+      "notesDetailsPanel",
       "notesDefaultEditor",
       "tableSyntax",
       "disableRichEditor",

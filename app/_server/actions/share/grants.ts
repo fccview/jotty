@@ -120,7 +120,7 @@ const ITEM_TARGET: Record<Modes.CHECKLISTS | Modes.NOTES, NotificationTargets> =
   [Modes.NOTES]: NotificationTargets.NOTE,
 };
 
-const _tell = async (
+export const tellReceiver = async (
   mode: Modes,
   uuid: string,
   sharer: string,
@@ -226,7 +226,7 @@ export const grantItem = async (
     });
 
     await announceShare(mode, uuid, [owner, receiver]);
-    await _tell(mode, uuid, owner, receiver);
+    await tellReceiver(mode, uuid, owner, receiver);
 
     return result;
   } catch (error) {

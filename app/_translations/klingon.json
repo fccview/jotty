@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "ghItlhmey 'ej tetlhmey Dalegh mIw.",
     "notesCardPreviewDescription": "ghItlh tagh 'ay' ngoq Daq 'agh.",
     "notesCompactModeDescription": "ghItlh DalaDtaHvIS yIQaw' HeH.",
-    "kanbanColumnWidthDescription": "kanban tetlh juch DaneHbogh yIwIv. Hoch tetlh Daqvo' Hoch Daq tIn."
+    "kanbanColumnWidthDescription": "kanban tetlh juch DaneHbogh yIwIv. Hoch tetlh Daqvo' Hoch Daq tIn.",
+    "notesDetailsPanelDescription": "HaSta jenDaq ghItlh retlh tetlh, meqmey, lI'mey je 'agh."
   },
   "admin": {
     "title": "ra'wI'",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "serverDaq qachvam laD neH, choH PollaHbe'lu'.",
     "itemLocked": "Dochvam choHlaHbe'. frontmatter DIr tI'nIS.",
     "frontmatterUnfixable": "frontmatter tI'laHbe' Jotty. ghItlh De'wI' ghitlh, ghIq yIchu'qa'.",
-    "frontmatterNothingToFix": "frontmatter Dochvam tI'nISbe'."
+    "frontmatterNothingToFix": "frontmatter Dochvam tI'nISbe'.",
+    "frontmatterUnreadable": "frontmatter laDlaHbe' Jotty, vaj ghitlh choHbe'.",
+    "frontmatterSaveFailed": "frontmatter polbe'lu'. yInIDqa'.",
+    "frontmatterInvalidYaml": "YAML lI'be' ghaH. tlhegh nach 'ej colons yInuD.",
+    "frontmatterNotMap": "frontmatter ghaHnIS pong 'ej mI' tetlh, status: draft rur.",
+    "frontmatterAliases": "naDev & 'ej * lo'laHbe'. Hoch mI' naQ yIghItlh.",
+    "frontmatterTagsList": "tags tetlh ghaHnIS, [work, ideas] rur.",
+    "frontmatterUuidInvalid": "uuid frontmatterDaq ratlhnIS, 'ej mI' lI' ghaHnIS.",
+    "frontmatterUuidTaken": "latlh Doch uuid vam lo'taH.",
+    "frontmatterSharesFormat": "sharedWith tetlh ghaHnIS, [bob:rw, public:r] rur, pagh none.",
+    "frontmatterShareCode": "Hoch sharedWith Doch pong 'ej r, rw pagh rwd poQ, bob:rw rur.",
+    "frontmatterSharePublic": "public rarmeH laD neH, vaj public r neH Hev.",
+    "frontmatterShareSelf": "Dochvam Daghaj, vaj SoHvaD DamuvlaHbe'.",
+    "frontmatterShareUnknown": "naDev {user} ponglu'bogh ghot tu'lu'be'."
   },
   "pwa": {
     "installPromptTitle": "De'wI' yIlan",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "QaQ",
     "kanbanColumnWidthWide": "jen",
     "kanbanColumnWidthAutoFit": "nIjDuH",
-    "useAccountSetting": "mI' SeHlaw yIlo'"
+    "useAccountSetting": "mI' SeHlaw yIlo'",
+    "notesDetailsPanel": "ghItlh De' HaSta"
   },
   "migration": {
     "migrationComplete": "choH rIn",
@@ -1958,6 +1973,40 @@
     "confirm": "frontmatter yItI'",
     "fixed": "tI'lu'ta'. DaH Dochvam DachoHlaH."
   },
+  "frontmatter": {
+    "edit": "frontmatter yIchoH",
+    "title": "frontmatter",
+    "hint": "YAML Daq pong DIr yIchel. ghItlhDaq #hashtags ghItlhlu'bogh tags tetlhDaq ratlh, pa' ratlhtaHvIS.",
+    "saved": "frontmatter pollu'ta'",
+    "saveNoteFirst": "uuid DachoHpa' ghItlh yIpol, pagh ghItlh polbe'lu'bogh DaQaw'.",
+    "warnings": {
+      "uuid": "uuid chu' Dochvam mI' chu' nob. mI' ngo' lo'bogh lI'mey, Hum, 'ej laDmeH tetlh Qapbe'.",
+      "sharedWith": "sharedWith wIv: 'Iv latlh poSmoHlaH 'ej nuq ta'laH. DapolDI' choH lo'lu'.",
+      "encryption": "ghItlhvam poSmoHmeH encrypted 'ej encryptionMethod lo' Jotty. mI' muj lo'lu'chugh, poSbe'laH.",
+      "checklistType": "checklistType tetlh beQ je choH. tetlhDaq choH yIlo'; Qu'vam ta'.",
+      "statuses": "statuses beQ tutmey ghaH. Hoch ngoq ghu' tut ghajtaH'a'? yInuD."
+    }
+  },
+  "notePanel": {
+    "title": "De'",
+    "show": "De' yI'agh",
+    "hide": "De' yISo'",
+    "noTags": "meq pagh. ghItlhDaq #tag yIghItlh pagh frontmatterDaq yIchel.",
+    "noLinks": "naDev rar pagh.",
+    "links": "lI'mey",
+    "tagGroups": {
+      "adding": "DapolDI' chellu'",
+      "removing": "DapolDI' teqlu'",
+      "frontmatter": "frontmatter neH",
+      "text": "ghItlhDaq"
+    }
+  },
+  "menuGroups": {
+    "organise": "nab",
+    "view": "legh",
+    "export": "vergh",
+    "advanced": "Hach"
+  },
   "live": {
     "currentlyEditing": "DaH choHtaH",
     "dropped": "QIt DaHtaHvIS ghItlhvam choH vay'. vaj choHmeylIj pollu'be'bogh lo'laHbe'.",
@@ -2103,14 +2152,16 @@
       "compactMode": "ghItlh juch mach",
       "autosave": "ghItlh nom pol",
       "showEmojis": "tetlh Daq emoji",
-      "completedSuggestions": "Qapta'bogh Doch yIpeS"
+      "completedSuggestions": "Qapta'bogh Doch yIpeS",
+      "detailsPanel": "ghItlh De' HaSta"
     },
     "hints": {
       "borderRadius": "DatlhuchtaHvIS Hoch Daq HeH choH.",
       "noteFontSize": "ghItlh laDmeH 'ej ghItlhmeH.",
       "kanbanColumnWidth": "nom tetlh juch, ghItlh Hoch Daq tIn.",
       "cardPreview": "ngoq Daq markdown Qatlh 'agh, ghItlh nap 'aghbe'.",
-      "compactMode": "choHwI' 900px juch neH."
+      "compactMode": "choHwI' 900px juch neH.",
+      "detailsPanel": "HaSta jenDaq ghItlh retlh tetlh, meqmey, lI'mey je."
     }
   }
 }

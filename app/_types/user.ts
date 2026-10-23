@@ -45,6 +45,7 @@ export type ChecklistItemClickAction = "toggle" | "edit";
 export type NewItemInsertion = "top" | "bottom";
 export type NotesCardPreview = `${ToggleState}`;
 export type NotesCompactMode = `${ToggleState}`;
+export type NotesDetailsPanel = `${ToggleState}`;
 
 export interface User extends Partial<Record<HomeWidgetKey, ToggleState>> {
   username: string;
@@ -65,6 +66,7 @@ export interface User extends Partial<Record<HomeWidgetKey, ToggleState>> {
   notesFontSize?: number;
   notesCardPreview?: NotesCardPreview;
   notesCompactMode?: NotesCompactMode;
+  notesDetailsPanel?: NotesDetailsPanel;
   preferredBorderRadius?: number;
   kanbanColumnWidth?: number;
   browseViewMode?: ViewMode;

@@ -86,6 +86,23 @@ describe("spliceNote", () => {
     expect(onDisk().endsWith("---\nText #fresh\n")).toBe(true);
   });
 
+  it("keeps tags written as a comma separated string, the same way the editor does", async () => {
+    put(`---\nuuid: ${NOTE}\ntitle: Plan\ncreatedAt: 2020-01-01T00:00:00.000Z\ntags: legacy, ideas\n---\nText #old\n`);
+
+    const result = await spliceNote(alice, NOTE, (body) => findReplace(body, "#old", "#fresh"));
+
+    expect(result.data?.tags).toEqual(["fresh", "ideas", "legacy"]);
+  });
+
+  it("leaves the frontmatter bytes alone when the hashtags didn't change", async () => {
+    const head = `---\nuuid: ${NOTE}\ntitle: Plan\ncreatedAt: 2020-01-01T00:00:00.000Z\ntags: [work, ideas]\n---\n`;
+    put(`${head}Body #work\n`);
+
+    await spliceNote(alice, NOTE, (body) => findReplace(body, "Body", "Text"));
+
+    expect(onDisk()).toBe(`${head}Text #work\n`);
+  });
+
   it("drops a tag that only lives in frontmatter when asked to untag it", async () => {
     put(`---\nuuid: ${NOTE}\ntitle: Plan\ncreatedAt: 2020-01-01T00:00:00.000Z\ntags:\n  - hidden\n  - work\n---\nBody #work\n`);
 

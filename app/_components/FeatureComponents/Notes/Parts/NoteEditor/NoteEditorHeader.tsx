@@ -27,6 +27,7 @@ import {
   Clock01Icon,
   GitCompareIcon,
   Copy02Icon,
+  SourceCodeIcon,
 } from "hugeicons-react";
 import { PinStateIcon } from "@/app/_components/GlobalComponents/Cards/Parts/PinToggle";
 import { Note, Category } from "@/app/_types";
@@ -70,8 +71,10 @@ interface NoteEditorHeaderProps {
   isOwner: boolean;
   onBack: () => void;
   onClone?: () => void;
-  showTOC: boolean;
-  setShowTOC: (show: boolean) => void;
+  showPanel: boolean;
+  onTogglePanel: () => void;
+  onOpenSheet: () => void;
+  onEditFrontmatter: () => void;
   viewModel: NoteEditorViewModel;
   onOpenDecryptModal?: React.MutableRefObject<(() => void) | null>;
   onOpenViewModal?: React.MutableRefObject<(() => void) | null>;
@@ -84,8 +87,10 @@ export const NoteEditorHeader = ({
   onBack,
   onClone,
   viewModel,
-  showTOC,
-  setShowTOC,
+  showPanel,
+  onTogglePanel,
+  onOpenSheet,
+  onEditFrontmatter,
   onOpenDecryptModal,
   onOpenViewModal,
 }: NoteEditorHeaderProps) => {
@@ -502,6 +507,7 @@ export const NoteEditorHeader = ({
                       </Button>
                     }
                     items={[
+                      { type: "heading" as const, label: t("menuGroups.organise") },
                       ...(!permissions?.isLocked
                         ? [
                           {
@@ -532,8 +538,42 @@ export const NoteEditorHeader = ({
                           },
                         ]
                         : []),
-                      ...(note?.encrypted
+                      ...(permissions?.canDelete
                         ? [
+                          {
+                            type: "item" as const,
+                            label: t("profile.archiveTab"),
+                            icon: <Archive02Icon className="h-4 w-4" />,
+                            onClick: handleArchive,
+                          },
+                        ]
+                        : []),
+                      { type: "divider" as const },
+                      { type: "heading" as const, label: t("menuGroups.view") },
+                      {
+                        type: "item" as const,
+                        label: showPanel ? t("notePanel.hide") : t("notePanel.show"),
+                        icon: <SidebarRightIcon className="h-4 w-4" />,
+                        onClick: onTogglePanel,
+                        className: "hidden lg:flex",
+                      },
+                      {
+                        type: "item" as const,
+                        label: t("notePanel.show"),
+                        icon: <SidebarRightIcon className="h-4 w-4" />,
+                        onClick: onOpenSheet,
+                        className: "lg:!hidden",
+                      },
+                      ...(!note?.encrypted
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: t("common.history"),
+                            icon: <GitCompareIcon className="h-4 w-4" />,
+                            onClick: handleHistoryClick,
+                          },
+                        ]
+                        : [
                           {
                             type: "item" as const,
                             label: !isInViewMode
@@ -553,35 +593,9 @@ export const NoteEditorHeader = ({
                               }
                             },
                           },
-                          ...(!isInViewMode && permissions?.canEdit
-                            ? [
-                              {
-                                type: "item" as const,
-                                label: t("encryption.decrypt"),
-                                icon: <LockKeyIcon className="h-4 w-4" />,
-                                onClick: () => {
-                                  setEncryptionModalMode("decrypt");
-                                  setShowEncryptionModal(true);
-                                },
-                              },
-                            ]
-                            : []),
-                        ]
-                        : [
-                          ...(permissions?.canEdit
-                            ? [
-                              {
-                                type: "item" as const,
-                                label: t("encryption.encryptNote"),
-                                icon: <LockKeyIcon className="h-4 w-4" />,
-                                onClick: () => {
-                                  setEncryptionModalMode("encrypt");
-                                  setShowEncryptionModal(true);
-                                },
-                              },
-                            ]
-                            : []),
                         ]),
+                      { type: "divider" as const },
+                      { type: "heading" as const, label: t("menuGroups.export") },
                       {
                         type: "item" as const,
                         label: t("notes.copyRawContent"),
@@ -606,33 +620,46 @@ export const NoteEditorHeader = ({
                         ),
                         onClick: viewModel.handlePrint,
                       },
-                      ...(!note?.encrypted
+                      { type: "divider" as const },
+                      { type: "heading" as const, label: t("menuGroups.advanced") },
+                      ...(permissions?.canEdit && !permissions?.isLocked
                         ? [
                           {
                             type: "item" as const,
-                            label: t("common.history"),
-                            icon: <GitCompareIcon className="h-4 w-4" />,
-                            onClick: handleHistoryClick,
+                            label: t("frontmatter.edit"),
+                            icon: <SourceCodeIcon className="h-4 w-4" />,
+                            onClick: onEditFrontmatter,
                           },
                         ]
                         : []),
-                      {
-                        type: "item" as const,
-                        label: t("notes.tableOfContents"),
-                        icon: <SidebarRightIcon className="h-4 w-4" />,
-                        onClick: () => setShowTOC(!showTOC),
-                        className: "hidden lg:flex",
-                      },
-                      ...(permissions?.canDelete
-                        ? [
-                          {
-                            type: "item" as const,
-                            label: t("profile.archiveTab"),
-                            icon: <Archive02Icon className="h-4 w-4" />,
-                            onClick: handleArchive,
-                          },
-                        ]
-                        : []),
+                      ...(note?.encrypted
+                        ? !isInViewMode && permissions?.canEdit
+                          ? [
+                            {
+                              type: "item" as const,
+                              label: t("encryption.decrypt"),
+                              icon: <LockKeyIcon className="h-4 w-4" />,
+                              onClick: () => {
+                                setEncryptionModalMode("decrypt");
+                                setShowEncryptionModal(true);
+                              },
+                            },
+                          ]
+                          : []
+                        : permissions?.canEdit
+                          ? [
+                            {
+                              type: "item" as const,
+                              label: t("encryption.encryptNote"),
+                              icon: <LockKeyIcon className="h-4 w-4" />,
+                              onClick: () => {
+                                setEncryptionModalMode("encrypt");
+                                setShowEncryptionModal(true);
+                              },
+                            },
+                          ]
+                          : []),
+                      { type: "divider" as const },
                       ...(canDelete
                         ? [
                           {

@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "How notes an' lists be laid out when ye browse 'em.",
     "notesCardPreviewDescription": "Show the fancy start o' each note on its card.",
     "notesCompactModeDescription": "Use a narrower deck when readin' an' editin' notes.",
-    "kanbanColumnWidthDescription": "Set yer own width fer the kanban columns. By default they stretch to fill the deck."
+    "kanbanColumnWidthDescription": "Set yer own width fer the kanban columns. By default they stretch to fill the deck.",
+    "notesDetailsPanelDescription": "Show the contents, flags an' ropes in a panel beside the note on wide screens."
   },
   "admin": {
     "title": "Captain",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "This hold be read-only on the ship's server, so the change couldn't be stowed.",
     "itemLocked": "This here booty can't be touched till its frontmatter be patched up.",
     "frontmatterUnfixable": "Jotty couldn't patch this frontmatter on its own, matey. Fix the scroll by hand, then reload.",
-    "frontmatterNothingToFix": "There be nothin' to patch in this booty's frontmatter."
+    "frontmatterNothingToFix": "There be nothin' to patch in this booty's frontmatter.",
+    "frontmatterUnreadable": "Jotty couldn't read this booty's frontmatter, so it left the scroll be.",
+    "frontmatterSaveFailed": "The frontmatter weren't saved. Try again, matey.",
+    "frontmatterInvalidYaml": "That ain't proper YAML. Check yer indentation an' yer colons.",
+    "frontmatterNotMap": "Frontmatter has to be a list o' keys an' values, like status: draft.",
+    "frontmatterAliases": "Anchors an' aliases (& an' *) ain't welcome aboard here. Write the values out in full.",
+    "frontmatterTagsList": "tags has to be a list, like [work, ideas].",
+    "frontmatterUuidInvalid": "uuid has to stay in the frontmatter, an' it has to be a proper id.",
+    "frontmatterUuidTaken": "Another booty already flies that uuid.",
+    "frontmatterSharesFormat": "sharedWith has to be a list like [bob:rw, public:r], or none, matey.",
+    "frontmatterShareCode": "Every sharedWith entry needs a name an' r, rw or rwd, like bob:rw.",
+    "frontmatterSharePublic": "Public links be read only, so public can only get r.",
+    "frontmatterShareSelf": "Ye own this booty, so ye can't share it with yerself.",
+    "frontmatterShareUnknown": "There be no sailor called {user} aboard this ship."
   },
   "pwa": {
     "installPromptTitle": "Dock the Ship",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Comfy",
     "kanbanColumnWidthWide": "Roomy",
     "kanbanColumnWidthAutoFit": "Ship-fit",
-    "useAccountSetting": "Use the account settin'"
+    "useAccountSetting": "Use the account settin'",
+    "notesDetailsPanel": "Note spyglass panel"
   },
   "migration": {
     "migrationComplete": "Refit Complete",
@@ -1958,6 +1973,40 @@
     "confirm": "Patch the frontmatter",
     "fixed": "Patched! Ye can edit this booty now."
   },
+  "frontmatter": {
+    "edit": "Edit the frontmatter",
+    "title": "Frontmatter",
+    "hint": "Add yer own keys in YAML. Flags written as #hashtags in the text stay in the tags list fer as long as they be there.",
+    "saved": "Frontmatter stowed",
+    "saveNoteFirst": "Stow the scroll before ye change its uuid, or yer unsaved scribblin's be lost to the deep.",
+    "warnings": {
+      "uuid": "A new uuid gives this booty a new id. Ropes, nails an' bookmarks that use the old one stop workin'.",
+      "sharedWith": "sharedWith decides which other sailors can open this an' what they can do. The change takes hold the moment ye save.",
+      "encryption": "Jotty uses encrypted an' encryptionMethod to know how to dig up this note. Wrong values can keep it buried.",
+      "checklistType": "checklistType swaps between a list an' a board. Refit in the menu does this fer ye.",
+      "statuses": "statuses be the board's beams. Check every card's status still has a beam to hang on."
+    }
+  },
+  "notePanel": {
+    "title": "Spyglass",
+    "show": "Raise the spyglass",
+    "hide": "Stow the spyglass",
+    "noTags": "No flags yet. Scribble a #tag in the note or add one to the frontmatter.",
+    "noLinks": "No ropes tied here yet.",
+    "links": "Ropes",
+    "tagGroups": {
+      "adding": "Hoisted when ye save",
+      "removing": "Struck when ye save",
+      "frontmatter": "Frontmatter only",
+      "text": "In the scribbles"
+    }
+  },
+  "menuGroups": {
+    "organise": "Riggin'",
+    "view": "Spy",
+    "export": "Ship Out",
+    "advanced": "Deep Sea"
+  },
   "live": {
     "currentlyEditing": "Editin' now",
     "dropped": "Some scallywag changed this note while ye were adrift, so yer unsaved changes went overboard.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Narrow note width",
       "autosave": "Autosave notes",
       "showEmojis": "Emojis on checklists",
-      "completedSuggestions": "Suggest finished items"
+      "completedSuggestions": "Suggest finished items",
+      "detailsPanel": "Note spyglass panel"
     },
     "hints": {
       "borderRadius": "Corners change across the whole ship as ye drag.",
       "noteFontSize": "Fer readin' an' writin' notes.",
       "kanbanColumnWidth": "Auto fit stretches columns to fill the board.",
       "cardPreview": "Show fancy markdown on cards instead o' plain text.",
-      "compactMode": "Caps the editor at 900px wide."
+      "compactMode": "Caps the editor at 900px wide.",
+      "detailsPanel": "Contents, flags an' ropes beside the note on wide screens."
     }
   }
 }

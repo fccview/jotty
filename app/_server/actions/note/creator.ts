@@ -9,7 +9,7 @@ import {
   isEncrypted,
 } from "@/app/_utils/encryption-utils";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
-import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
+import { mergeTags } from "@/app/_utils/tag-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { tidyItemLinks } from "@/app/_server/actions/relations/tidy";
@@ -83,7 +83,7 @@ export const makeNote = async (
     const id = path.basename(filename, ".md");
     const filePath = path.join(categoryDir, filename);
 
-    const extractedTags = extractHashtagsFromContent(content);
+    const noteTags = mergeTags(metadata?.tags, "", content);
 
     const newDoc: Note = {
       id,
@@ -94,7 +94,7 @@ export const makeNote = async (
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       owner: target.owner,
-      tags: extractedTags.length > 0 ? extractedTags : undefined,
+      tags: noteTags.length > 0 ? noteTags : undefined,
       encrypted: encrypted || undefined,
       encryptionMethod,
       extraMetadata: strayMeta(metadata),

@@ -140,6 +140,42 @@ export const extractHashtagsFromContent = (content: string): string[] => {
   return Array.from(tags);
 };
 
+const TAG_SPLIT = /[,\s]+/;
+
+export const tagList = (value: unknown): string[] => {
+  const raw = typeof value === "string" ? value.split(TAG_SPLIT) : Array.isArray(value) ? value : [];
+  const tags = raw.map((tag) => normalizeTag(String(tag))).filter(Boolean);
+  return Array.from(new Set(tags)).sort();
+};
+
+export const mergeTags = (stored: unknown, before: string, after: string): string[] => {
+  const was = new Set(extractHashtagsFromContent(before));
+  const kept = tagList(stored).filter((tag) => !was.has(tag));
+  return tagList([...kept, ...extractHashtagsFromContent(after)]);
+};
+
+export interface TagSource {
+  tag: string;
+  inText: boolean;
+  inFrontmatter: boolean;
+  leaving: boolean;
+}
+
+export const tagSources = (frontmatter: unknown, text: string, savedText = text): TagSource[] => {
+  const stored = new Set(tagList(frontmatter));
+  const written = new Set(extractHashtagsFromContent(text));
+  const saved = new Set(extractHashtagsFromContent(savedText));
+  return tagList([...Array.from(stored), ...Array.from(written)]).map((tag) => ({
+    tag,
+    inText: written.has(tag),
+    inFrontmatter: stored.has(tag),
+    leaving: stored.has(tag) && saved.has(tag) && !written.has(tag),
+  }));
+};
+
+export const tagHref = (tag: string): string =>
+  `/?mode=tags&tag=${encodeURIComponent(normalizeTag(tag))}`;
+
 export const tagMatchesFilter = (
   noteTag: string,
   filterTag: string,

@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "Notlara ve listelere göz atarken nasıl yerleştirildikleri.",
     "notesCardPreviewDescription": "Her notun biçimlendirilmiş başlangıcını kartında gösterir.",
     "notesCompactModeDescription": "Notları okurken ve düzenlerken daha dar bir düzen kullanır.",
-    "kanbanColumnWidthDescription": "Kanban durum sütunları için özel bir genişlik belirle. Varsayılan olarak sütunlar mevcut alana sığar."
+    "kanbanColumnWidthDescription": "Kanban durum sütunları için özel bir genişlik belirle. Varsayılan olarak sütunlar mevcut alana sığar.",
+    "notesDetailsPanelDescription": "Geniş ekranlarda içindekileri, etiketleri ve bağlantıları notun yanındaki bir panelde gösterir."
   },
   "admin": {
     "title": "Yönetici",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Bu klasör sunucuda salt okunur, bu yüzden değişiklik kaydedilemedi.",
     "itemLocked": "Bu öğe, frontmatter düzeltilene kadar değiştirilemez.",
     "frontmatterUnfixable": "Jotty bu frontmatter'ı kendi başına düzeltemedi. Dosyayı elle düzenleyip sayfayı yenileyin.",
-    "frontmatterNothingToFix": "Bu öğenin frontmatter'ında düzeltilecek bir şey yok."
+    "frontmatterNothingToFix": "Bu öğenin frontmatter'ında düzeltilecek bir şey yok.",
+    "frontmatterUnreadable": "Jotty bu öğenin frontmatter'ını okuyamadı, bu yüzden dosyaya dokunmadı.",
+    "frontmatterSaveFailed": "Frontmatter kaydedilmedi. Tekrar deneyin.",
+    "frontmatterInvalidYaml": "Bu geçerli bir YAML değil. Girintileri ve iki nokta üst üste işaretlerini kontrol edin.",
+    "frontmatterNotMap": "Frontmatter, status: draft gibi anahtar ve değerlerden oluşan bir liste olmalı.",
+    "frontmatterAliases": "Çapalar ve takma adlar (& ve *) burada desteklenmiyor. Değerleri tam olarak yazın.",
+    "frontmatterTagsList": "tags, [work, ideas] gibi bir liste olmalı.",
+    "frontmatterUuidInvalid": "uuid frontmatter'da kalmalı ve geçerli bir kimlik olmalı.",
+    "frontmatterUuidTaken": "Bu uuid'yi başka bir öğe zaten kullanıyor.",
+    "frontmatterSharesFormat": "sharedWith, [bob:rw, public:r] gibi bir liste ya da none olmalı.",
+    "frontmatterShareCode": "Her sharedWith girdisinde bob:rw gibi bir ad ve r, rw ya da rwd olmalı.",
+    "frontmatterSharePublic": "Herkese açık bağlantılar salt okunurdur, bu yüzden public yalnızca r alabilir.",
+    "frontmatterShareSelf": "Bu öğe sizin, bu yüzden onu kendinizle paylaşamazsınız.",
+    "frontmatterShareUnknown": "Burada {user} adında bir hesap yok."
   },
   "pwa": {
     "installPromptTitle": "Uygulamayı Yükle",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Konforli",
     "kanbanColumnWidthWide": "Genis",
     "kanbanColumnWidthAutoFit": "Otomatik",
-    "useAccountSetting": "Hesap ayarını kullan"
+    "useAccountSetting": "Hesap ayarını kullan",
+    "notesDetailsPanel": "Not ayrıntıları paneli"
   },
   "migration": {
     "migrationComplete": "Taşıma Tamamlandı",
@@ -1958,6 +1973,40 @@
     "confirm": "Frontmatter'ı düzelt",
     "fixed": "Düzeltildi. Artık bu öğeyi düzenleyebilirsiniz."
   },
+  "frontmatter": {
+    "edit": "Frontmatter'ı düzenle",
+    "title": "Frontmatter",
+    "hint": "Kendi anahtarlarınızı YAML olarak ekleyin. Metinde #hashtags olarak yazılan etiketler, orada kaldıkça tags listesinde kalır.",
+    "saved": "Frontmatter kaydedildi",
+    "saveNoteFirst": "uuid'yi değiştirmeden önce notu kaydedin, yoksa kaydedilmemiş metniniz kaybolur.",
+    "warnings": {
+      "uuid": "Yeni bir uuid bu öğeye yeni bir kimlik verir. Eskisini kullanan bağlantılar, sabitlemeler ve yer imleri çalışmayı bırakır.",
+      "sharedWith": "sharedWith, bunu başka kimin açabileceğini ve ne yapabileceğini belirler. Değişiklik kaydettiğiniz anda geçerli olur.",
+      "encryption": "Jotty bu notu nasıl açacağına encrypted ve encryptionMethod ile karar verir. Yanlış değerler notun açılmasını engelleyebilir.",
+      "checklistType": "checklistType liste ile pano arasında geçiş yapar. Menüdeki Dönüştür seçeneği bunu sizin için yapar.",
+      "statuses": "statuses panonun sütunlarıdır. Her kartın durumunun hâlâ bir sütunu olduğundan emin olun."
+    }
+  },
+  "notePanel": {
+    "title": "Ayrıntılar",
+    "show": "Ayrıntıları göster",
+    "hide": "Ayrıntıları gizle",
+    "noTags": "Henüz etiket yok. Nota bir #tag yazın veya frontmatter'a bir tane ekleyin.",
+    "noLinks": "Henüz buraya bağlantı veren bir şey yok.",
+    "links": "Bağlantılar",
+    "tagGroups": {
+      "adding": "Kaydedince eklenecek",
+      "removing": "Kaydedince kaldırılacak",
+      "frontmatter": "Yalnızca frontmatter'da",
+      "text": "Metinde"
+    }
+  },
+  "menuGroups": {
+    "organise": "Düzen",
+    "view": "Görünüm",
+    "export": "Dışa Aktar",
+    "advanced": "Gelişmiş"
+  },
   "live": {
     "currentlyEditing": "Şu anda düzenliyor",
     "dropped": "Sen çevrimdışıyken biri bu notu değiştirdi, bu yüzden kaydedilmemiş değişikliklerin atıldı.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Kompakt not genişliği",
       "autosave": "Notları otomatik kaydet",
       "showEmojis": "Listelerde emojiler",
-      "completedSuggestions": "Tamamlanan öğeleri öner"
+      "completedSuggestions": "Tamamlanan öğeleri öner",
+      "detailsPanel": "Not ayrıntıları paneli"
     },
     "hints": {
       "borderRadius": "Sürükledikçe köşeler uygulamanın her yerinde değişir.",
       "noteFontSize": "Not okumak ve yazmak için.",
       "kanbanColumnWidth": "Otomatik, sütunları panoyu dolduracak şekilde genişletir.",
       "cardPreview": "Kartlarda düz metin yerine biçimlendirilmiş markdown gösterir.",
-      "compactMode": "Düzenleyiciyi 900px genişlikle sınırlar."
+      "compactMode": "Düzenleyiciyi 900px genişlikle sınırlar.",
+      "detailsPanel": "Geniş ekranlarda notun yanında içindekiler, etiketler ve bağlantılar."
     }
   }
 }

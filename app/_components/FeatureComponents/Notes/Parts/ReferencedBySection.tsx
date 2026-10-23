@@ -50,9 +50,9 @@ export const ReferencedBySection = ({
     <div className={className}>
       {backlinks.length > 0 && (
         <section className="jotty-backlinks mt-8">
-          <h3 className="jotty-backlinks-title">
+          <h3 className="jotty-section-title">
             <span>{t("notes.referencedBy")}</span>
-            <span className="jotty-backlinks-count">{backlinks.length}</span>
+            <span className="jotty-section-count">{backlinks.length}</span>
           </h3>
 
           <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">

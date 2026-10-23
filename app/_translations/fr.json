@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "La façon dont les notes et les listes sont disposées quand tu les parcours.",
     "notesCardPreviewDescription": "Affiche le début mis en forme de chaque note sur sa carte.",
     "notesCompactModeDescription": "Utilise une mise en page plus étroite pour lire et modifier les notes.",
-    "kanbanColumnWidthDescription": "Définis une largeur personnalisée pour les colonnes de statut kanban. Par défaut, les colonnes s'adaptent à l'espace disponible."
+    "kanbanColumnWidthDescription": "Définis une largeur personnalisée pour les colonnes de statut kanban. Par défaut, les colonnes s'adaptent à l'espace disponible.",
+    "notesDetailsPanelDescription": "Affiche la table des matières, les tags et les liens dans un panneau à côté de la note sur les grands écrans."
   },
   "admin": {
     "title": "Admin",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Ce dossier est en lecture seule sur le serveur, la modification n’a donc pas pu être enregistrée.",
     "itemLocked": "Cet élément ne peut pas être modifié tant que son frontmatter n'est pas corrigé.",
     "frontmatterUnfixable": "Jotty n'a pas pu corriger ce frontmatter tout seul. Modifiez le fichier à la main, puis rechargez.",
-    "frontmatterNothingToFix": "Il n'y a rien à corriger dans le frontmatter de cet élément."
+    "frontmatterNothingToFix": "Il n'y a rien à corriger dans le frontmatter de cet élément.",
+    "frontmatterUnreadable": "Jotty n'a pas pu lire le frontmatter de cet élément, il n'a donc pas touché au fichier.",
+    "frontmatterSaveFailed": "Le frontmatter n'a pas été enregistré. Réessayez.",
+    "frontmatterInvalidYaml": "Ce n'est pas du YAML valide. Vérifiez l'indentation et les deux-points.",
+    "frontmatterNotMap": "Le frontmatter doit être une liste de clés et de valeurs, comme status: draft.",
+    "frontmatterAliases": "Les ancres et les alias (& et *) ne sont pas pris en charge ici. Écrivez les valeurs en entier.",
+    "frontmatterTagsList": "tags doit être une liste, comme [work, ideas].",
+    "frontmatterUuidInvalid": "uuid doit rester dans le frontmatter et être un identifiant valide.",
+    "frontmatterUuidTaken": "Un autre élément utilise déjà cet uuid.",
+    "frontmatterSharesFormat": "sharedWith doit être une liste, comme [bob:rw, public:r], ou none.",
+    "frontmatterShareCode": "Chaque entrée de sharedWith doit avoir un nom et r, rw ou rwd, comme bob:rw.",
+    "frontmatterSharePublic": "Les liens publics sont en lecture seule, donc public ne peut avoir que r.",
+    "frontmatterShareSelf": "Cet élément vous appartient, vous ne pouvez donc pas le partager avec vous-même.",
+    "frontmatterShareUnknown": "Personne ne s'appelle {user} parmi les comptes d'ici."
   },
   "pwa": {
     "installPromptTitle": "Installer l’application",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Confortable",
     "kanbanColumnWidthWide": "Large",
     "kanbanColumnWidthAutoFit": "Ajustement auto",
-    "useAccountSetting": "Utiliser le réglage du compte"
+    "useAccountSetting": "Utiliser le réglage du compte",
+    "notesDetailsPanel": "Panneau de détails de la note"
   },
   "migration": {
     "migrationComplete": "Migration terminée",
@@ -1958,6 +1973,40 @@
     "confirm": "Corriger le frontmatter",
     "fixed": "Corrigé. Vous pouvez maintenant modifier cet élément."
   },
+  "frontmatter": {
+    "edit": "Modifier le frontmatter",
+    "title": "Frontmatter",
+    "hint": "Ajoutez vos propres clés en YAML. Les tags écrits en #hashtags dans le texte restent dans la liste tags tant qu'ils y figurent.",
+    "saved": "Frontmatter enregistré",
+    "saveNoteFirst": "Enregistrez la note avant de changer son uuid, sinon votre texte non enregistré sera perdu.",
+    "warnings": {
+      "uuid": "Un nouvel uuid donne un nouvel identifiant à cet élément. Les liens, épingles et favoris qui utilisent l'ancien cesseront de fonctionner.",
+      "sharedWith": "sharedWith définit qui d'autre peut ouvrir cet élément et ce qu'il peut en faire. Le changement s'applique dès que vous enregistrez.",
+      "encryption": "Jotty se sert de encrypted et encryptionMethod pour savoir comment ouvrir cette note. Des valeurs incorrectes peuvent l'empêcher de s'ouvrir.",
+      "checklistType": "checklistType fait passer d'une liste à un tableau. L'option Convertir du menu le fait pour vous.",
+      "statuses": "statuses correspond aux colonnes du tableau. Vérifiez que le statut de chaque carte a encore une colonne."
+    }
+  },
+  "notePanel": {
+    "title": "Détails",
+    "show": "Afficher les détails",
+    "hide": "Masquer les détails",
+    "noTags": "Pas encore de tags. Tapez un #tag dans la note ou ajoutez-en un au frontmatter.",
+    "noLinks": "Rien ne renvoie ici pour l'instant.",
+    "links": "Liens",
+    "tagGroups": {
+      "adding": "Ajoutés à l'enregistrement",
+      "removing": "Retirés à l'enregistrement",
+      "frontmatter": "Frontmatter uniquement",
+      "text": "Dans le texte"
+    }
+  },
+  "menuGroups": {
+    "organise": "Organiser",
+    "view": "Affichage",
+    "export": "Exporter",
+    "advanced": "Avancé"
+  },
   "live": {
     "currentlyEditing": "En cours de modification",
     "dropped": "Quelqu'un a modifié cette note pendant que tu étais hors ligne, tes modifications non enregistrées ont donc été abandonnées.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Largeur de note compacte",
       "autosave": "Enregistrement automatique",
       "showEmojis": "Emojis dans les listes",
-      "completedSuggestions": "Suggérer les éléments terminés"
+      "completedSuggestions": "Suggérer les éléments terminés",
+      "detailsPanel": "Panneau de détails de la note"
     },
     "hints": {
       "borderRadius": "Les coins changent dans toute l'application pendant que tu fais glisser.",
       "noteFontSize": "Pour lire et écrire des notes.",
       "kanbanColumnWidth": "Auto étire les colonnes pour remplir le tableau.",
       "cardPreview": "Affiche le markdown mis en forme sur les cartes au lieu du texte brut.",
-      "compactMode": "Limite l'éditeur à 900px de large."
+      "compactMode": "Limite l'éditeur à 900px de large.",
+      "detailsPanel": "Table des matières, tags et liens à côté de la note sur les grands écrans."
     }
   }
 }

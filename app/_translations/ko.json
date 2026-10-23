@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "노트와 목록을 둘러볼 때의 배치 방식입니다.",
     "notesCardPreviewDescription": "각 노트의 서식이 적용된 앞부분을 카드에 표시합니다.",
     "notesCompactModeDescription": "노트를 읽고 편집할 때 더 좁은 레이아웃을 사용합니다.",
-    "kanbanColumnWidthDescription": "칸반 상태 열의 너비를 직접 지정합니다. 기본값은 사용 가능한 공간에 맞춰 열을 자동 조정합니다."
+    "kanbanColumnWidthDescription": "칸반 상태 열의 너비를 직접 지정합니다. 기본값은 사용 가능한 공간에 맞춰 열을 자동 조정합니다.",
+    "notesDetailsPanelDescription": "넓은 화면에서 노트 옆 패널에 목차, 태그, 링크를 표시합니다."
   },
   "admin": {
     "title": "관리자",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "서버에서 이 폴더는 읽기 전용이라 변경 사항을 저장하지 못했습니다.",
     "itemLocked": "프런트매터를 고치기 전까지 이 항목은 변경할 수 없습니다.",
     "frontmatterUnfixable": "Jotty가 이 프런트매터를 스스로 고치지 못했습니다. 파일을 직접 수정한 뒤 새로고침하세요.",
-    "frontmatterNothingToFix": "이 항목의 프런트매터에는 고칠 것이 없습니다."
+    "frontmatterNothingToFix": "이 항목의 프런트매터에는 고칠 것이 없습니다.",
+    "frontmatterUnreadable": "Jotty가 이 항목의 프런트매터를 읽지 못해 파일을 그대로 두었습니다.",
+    "frontmatterSaveFailed": "프런트매터가 저장되지 않았습니다. 다시 시도하세요.",
+    "frontmatterInvalidYaml": "올바른 YAML이 아닙니다. 들여쓰기와 콜론을 확인하세요.",
+    "frontmatterNotMap": "프런트매터는 status: draft처럼 키와 값의 목록이어야 합니다.",
+    "frontmatterAliases": "여기서는 앵커와 별칭(&, *)을 지원하지 않습니다. 값을 모두 직접 적어 주세요.",
+    "frontmatterTagsList": "tags는 [work, ideas]처럼 목록이어야 합니다.",
+    "frontmatterUuidInvalid": "uuid는 프런트매터에 남아 있어야 하고, 올바른 id여야 합니다.",
+    "frontmatterUuidTaken": "다른 항목이 이미 이 uuid를 사용하고 있습니다.",
+    "frontmatterSharesFormat": "sharedWith는 [bob:rw, public:r]처럼 목록이거나 none이어야 합니다.",
+    "frontmatterShareCode": "각 sharedWith 항목에는 bob:rw처럼 이름과 r, rw 또는 rwd가 있어야 합니다.",
+    "frontmatterSharePublic": "공개 링크는 읽기 전용이라 public에는 r만 줄 수 있습니다.",
+    "frontmatterShareSelf": "이 항목은 내 소유라서 나 자신과 공유할 수 없습니다.",
+    "frontmatterShareUnknown": "{user}라는 이름의 계정이 여기에 없습니다."
   },
   "pwa": {
     "installPromptTitle": "앱 설치",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "보통",
     "kanbanColumnWidthWide": "넓은",
     "kanbanColumnWidthAutoFit": "자동 맞춤",
-    "useAccountSetting": "계정 설정 사용"
+    "useAccountSetting": "계정 설정 사용",
+    "notesDetailsPanel": "노트 세부 정보 패널"
   },
   "migration": {
     "migrationComplete": "마이그레이션 완료",
@@ -1958,6 +1973,40 @@
     "confirm": "프런트매터 고치기",
     "fixed": "고쳤습니다. 이제 이 항목을 편집할 수 있습니다."
   },
+  "frontmatter": {
+    "edit": "프런트매터 편집",
+    "title": "프런트매터",
+    "hint": "YAML로 원하는 키를 추가하세요. 본문에 #hashtags로 쓴 태그는 본문에 남아 있는 동안 tags 목록에도 남아 있습니다.",
+    "saved": "프런트매터를 저장했습니다",
+    "saveNoteFirst": "uuid를 바꾸기 전에 노트를 저장하세요. 그렇지 않으면 저장하지 않은 내용이 사라집니다.",
+    "warnings": {
+      "uuid": "새 uuid를 쓰면 이 항목의 id가 바뀝니다. 이전 id를 쓰는 링크, 고정, 북마크는 더 이상 작동하지 않습니다.",
+      "sharedWith": "sharedWith는 누가 이 항목을 열 수 있고 무엇을 할 수 있는지 정합니다. 저장하는 즉시 적용됩니다.",
+      "encryption": "Jotty는 encrypted와 encryptionMethod로 이 노트를 여는 방법을 정합니다. 값이 잘못되면 열리지 않을 수 있습니다.",
+      "checklistType": "checklistType은 목록과 보드를 전환합니다. 메뉴의 변환을 쓰면 알아서 처리됩니다.",
+      "statuses": "statuses는 보드의 열입니다. 모든 카드의 상태에 해당하는 열이 아직 있는지 확인하세요."
+    }
+  },
+  "notePanel": {
+    "title": "세부 정보",
+    "show": "세부 정보 보기",
+    "hide": "세부 정보 숨기기",
+    "noTags": "아직 태그가 없습니다. 노트에 #tag를 입력하거나 프런트매터에 추가하세요.",
+    "noLinks": "아직 여기로 연결된 항목이 없습니다.",
+    "links": "링크",
+    "tagGroups": {
+      "adding": "저장할 때 추가됨",
+      "removing": "저장할 때 제거됨",
+      "frontmatter": "프런트매터에만 있음",
+      "text": "본문에 있음"
+    }
+  },
+  "menuGroups": {
+    "organise": "정리",
+    "view": "보기",
+    "export": "내보내기",
+    "advanced": "고급"
+  },
   "live": {
     "currentlyEditing": "편집 중",
     "dropped": "오프라인인 동안 누군가 이 노트를 변경해서 저장하지 않은 변경 사항이 삭제되었습니다.",
@@ -2103,14 +2152,16 @@
       "compactMode": "좁은 노트 너비",
       "autosave": "노트 자동 저장",
       "showEmojis": "체크리스트 이모지",
-      "completedSuggestions": "완료한 항목 추천"
+      "completedSuggestions": "완료한 항목 추천",
+      "detailsPanel": "노트 세부 정보 패널"
     },
     "hints": {
       "borderRadius": "드래그하는 동안 앱 전체의 모서리가 바뀝니다.",
       "noteFontSize": "노트를 읽고 쓸 때 적용됩니다.",
       "kanbanColumnWidth": "자동은 열을 보드에 꽉 차게 늘립니다.",
       "cardPreview": "카드에 일반 텍스트 대신 서식이 적용된 마크다운을 표시합니다.",
-      "compactMode": "편집기 너비를 900px로 제한합니다."
+      "compactMode": "편집기 너비를 900px로 제한합니다.",
+      "detailsPanel": "넓은 화면에서 노트 옆에 목차, 태그, 링크를 표시합니다."
     }
   }
 }

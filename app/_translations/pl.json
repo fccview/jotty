@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "Jak układają się notatki i listy podczas przeglądania.",
     "notesCardPreviewDescription": "Pokazuje sformatowany początek każdej notatki na jej karcie.",
     "notesCompactModeDescription": "Używa węższego układu podczas czytania i edycji notatek.",
-    "kanbanColumnWidthDescription": "Ustaw własną szerokość kolumn statusów kanban. Domyślnie kolumny dopasowują się do dostępnego miejsca."
+    "kanbanColumnWidthDescription": "Ustaw własną szerokość kolumn statusów kanban. Domyślnie kolumny dopasowują się do dostępnego miejsca.",
+    "notesDetailsPanelDescription": "Pokazuje spis treści, tagi i linki w panelu obok notatki na szerokich ekranach."
   },
   "admin": {
     "title": "Admin",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Ten folder jest na serwerze tylko do odczytu, więc zmiany nie dało się zapisać.",
     "itemLocked": "Tego elementu nie można zmienić, dopóki jego frontmatter nie zostanie naprawiony.",
     "frontmatterUnfixable": "Jotty nie udało się samodzielnie naprawić tego frontmattera. Popraw plik ręcznie i odśwież stronę.",
-    "frontmatterNothingToFix": "We frontmatterze tego elementu nie ma nic do naprawienia."
+    "frontmatterNothingToFix": "We frontmatterze tego elementu nie ma nic do naprawienia.",
+    "frontmatterUnreadable": "Jotty nie udało się odczytać frontmattera tego elementu, więc zostawiło plik bez zmian.",
+    "frontmatterSaveFailed": "Frontmatter nie został zapisany. Spróbuj ponownie.",
+    "frontmatterInvalidYaml": "To nie jest poprawny YAML. Sprawdź wcięcia i dwukropki.",
+    "frontmatterNotMap": "Frontmatter musi być listą kluczy i wartości, np. status: draft.",
+    "frontmatterAliases": "Kotwice i aliasy (& i *) nie są tu obsługiwane. Wpisz wartości w całości.",
+    "frontmatterTagsList": "tags musi być listą, np. [work, ideas].",
+    "frontmatterUuidInvalid": "uuid musi zostać we frontmatterze i musi być poprawnym identyfikatorem.",
+    "frontmatterUuidTaken": "Inny element już używa tego uuid.",
+    "frontmatterSharesFormat": "sharedWith musi być listą, np. [bob:rw, public:r], albo none.",
+    "frontmatterShareCode": "Każdy wpis w sharedWith potrzebuje nazwy oraz r, rw lub rwd, np. bob:rw.",
+    "frontmatterSharePublic": "Linki publiczne są tylko do odczytu, więc public może dostać tylko r.",
+    "frontmatterShareSelf": "Ten element należy do Ciebie, więc nie możesz udostępnić go samemu sobie.",
+    "frontmatterShareUnknown": "Nikt o nazwie {user} nie ma tu konta."
   },
   "pwa": {
     "installPromptTitle": "Zainstaluj aplikację",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Komfortowy",
     "kanbanColumnWidthWide": "Szeroki",
     "kanbanColumnWidthAutoFit": "Dopasowanie",
-    "useAccountSetting": "Użyj ustawienia konta"
+    "useAccountSetting": "Użyj ustawienia konta",
+    "notesDetailsPanel": "Panel szczegółów notatki"
   },
   "migration": {
     "migrationComplete": "Migracja zakończona",
@@ -1958,6 +1973,40 @@
     "confirm": "Napraw frontmatter",
     "fixed": "Naprawiono. Możesz teraz edytować ten element."
   },
+  "frontmatter": {
+    "edit": "Edytuj frontmatter",
+    "title": "Frontmatter",
+    "hint": "Dodaj własne klucze w YAML. Tagi zapisane w tekście jako #hashtags zostają na liście tags, dopóki tam są.",
+    "saved": "Zapisano frontmatter",
+    "saveNoteFirst": "Zapisz notatkę, zanim zmienisz jej uuid, inaczej stracisz niezapisany tekst.",
+    "warnings": {
+      "uuid": "Nowe uuid nadaje temu elementowi nowy identyfikator. Linki, przypięcia i zakładki, które używają starego, przestaną działać.",
+      "sharedWith": "sharedWith decyduje, kto jeszcze może to otworzyć i co może z tym zrobić. Zmiana obowiązuje od razu po zapisaniu.",
+      "encryption": "Jotty używa encrypted i encryptionMethod, żeby wiedzieć, jak otworzyć tę notatkę. Błędne wartości mogą sprawić, że się nie otworzy.",
+      "checklistType": "checklistType przełącza między listą a tablicą. Opcja Konwertuj w menu zrobi to za ciebie.",
+      "statuses": "statuses to kolumny tablicy. Sprawdź, czy status każdej karty nadal ma swoją kolumnę."
+    }
+  },
+  "notePanel": {
+    "title": "Szczegóły",
+    "show": "Pokaż szczegóły",
+    "hide": "Ukryj szczegóły",
+    "noTags": "Brak tagów. Wpisz #tag w notatce albo dodaj go do frontmattera.",
+    "noLinks": "Nic tu jeszcze nie linkuje.",
+    "links": "Linki",
+    "tagGroups": {
+      "adding": "Dodane przy zapisie",
+      "removing": "Usunięte przy zapisie",
+      "frontmatter": "Tylko we frontmatterze",
+      "text": "W tekście"
+    }
+  },
+  "menuGroups": {
+    "organise": "Organizuj",
+    "view": "Widok",
+    "export": "Eksport",
+    "advanced": "Zaawansowane"
+  },
   "live": {
     "currentlyEditing": "Teraz edytuje",
     "dropped": "Ktoś zmienił tę notatkę, gdy byłeś offline, więc twoje niezapisane zmiany zostały odrzucone.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Kompaktowa szerokość notatek",
       "autosave": "Autozapis notatek",
       "showEmojis": "Emoji na listach",
-      "completedSuggestions": "Podpowiadaj ukończone elementy"
+      "completedSuggestions": "Podpowiadaj ukończone elementy",
+      "detailsPanel": "Panel szczegółów notatki"
     },
     "hints": {
       "borderRadius": "Rogi zmieniają się w całej aplikacji podczas przeciągania.",
       "noteFontSize": "Do czytania i pisania notatek.",
       "kanbanColumnWidth": "Automatycznie rozciąga kolumny na całą tablicę.",
       "cardPreview": "Pokazuje sformatowany markdown na kartach zamiast zwykłego tekstu.",
-      "compactMode": "Ogranicza edytor do szerokości 900px."
+      "compactMode": "Ogranicza edytor do szerokości 900px.",
+      "detailsPanel": "Spis treści, tagi i linki obok notatki na szerokich ekranach."
     }
   }
 }

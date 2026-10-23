@@ -107,10 +107,18 @@ vi.mock("@/app/_utils/markdown-utils", () => ({
   sanitizeMarkdown: vi.fn().mockImplementation((content) => content),
 }));
 
-vi.mock("@/app/_utils/tag-utils", () => ({
-  extractHashtagsFromContent: (...args: any[]) =>
-    mockExtractHashtagsFromContent(...args),
-}));
+vi.mock("@/app/_utils/tag-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/app/_utils/tag-utils")>();
+  const extract = (...args: any[]) => mockExtractHashtagsFromContent(...args);
+  return {
+    ...actual,
+    extractHashtagsFromContent: extract,
+    mergeTags: (stored: unknown, before: string, after: string) => {
+      const was = new Set(extract(before));
+      return actual.tagList([...actual.tagList(stored).filter((tag) => !was.has(tag)), ...extract(after)]);
+    },
+  };
+});
 
 vi.mock("@/app/_utils/encryption-utils", () => ({
   isEncrypted: vi.fn().mockReturnValue(false),

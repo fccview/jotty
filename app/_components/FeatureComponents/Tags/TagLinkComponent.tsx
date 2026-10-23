@@ -7,7 +7,7 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { TagHoverCard } from "@/app/_components/FeatureComponents/Tags/TagHoverCard";
 import { Note } from "@/app/_types";
-import { normalizeTag, tagMatchesFilter } from "@/app/_utils/tag-utils";
+import { normalizeTag, tagHref, tagMatchesFilter } from "@/app/_utils/tag-utils";
 
 interface TagLinkComponentProps {
   node: {
@@ -46,7 +46,7 @@ export const TagLinkComponent = ({ node }: TagLinkComponentProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/?mode=tags&tag=${encodeURIComponent(normalizedTag)}`);
+    router.push(tagHref(normalizedTag));
   };
 
   const handleMouseEnter = () => {
@@ -134,7 +134,7 @@ export const TagLinkViewComponent = ({ tag }: TagLinkViewComponentProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/?mode=tags&tag=${encodeURIComponent(normalizedTag)}`);
+    router.push(tagHref(normalizedTag));
   };
 
   const handleMouseEnter = () => {

@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "Hoe notities en lijsten worden weergegeven als je erdoor bladert.",
     "notesCardPreviewDescription": "Toont het opgemaakte begin van elke notitie op de kaart.",
     "notesCompactModeDescription": "Gebruik een smallere opmaak bij het lezen en bewerken van notities.",
-    "kanbanColumnWidthDescription": "Stel een eigen breedte in voor de kanban-statuskolommen. Standaard passen de kolommen zich aan de beschikbare ruimte aan."
+    "kanbanColumnWidthDescription": "Stel een eigen breedte in voor de kanban-statuskolommen. Standaard passen de kolommen zich aan de beschikbare ruimte aan.",
+    "notesDetailsPanelDescription": "Toont inhoudsopgave, tags en links in een paneel naast de notitie op brede schermen."
   },
   "admin": {
     "title": "Beheer",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Deze map is alleen-lezen op de server, dus de wijziging kon niet worden opgeslagen.",
     "itemLocked": "Dit item kan pas worden gewijzigd als de frontmatter is gerepareerd.",
     "frontmatterUnfixable": "Jotty kon deze frontmatter niet zelf repareren. Pas het bestand met de hand aan en laad de pagina opnieuw.",
-    "frontmatterNothingToFix": "Er valt niets te repareren aan de frontmatter van dit item."
+    "frontmatterNothingToFix": "Er valt niets te repareren aan de frontmatter van dit item.",
+    "frontmatterUnreadable": "Jotty kon de frontmatter van dit item niet lezen en heeft het bestand niet aangeraakt.",
+    "frontmatterSaveFailed": "De frontmatter is niet opgeslagen. Probeer het opnieuw.",
+    "frontmatterInvalidYaml": "Dat is geen geldige YAML. Controleer de inspringing en de dubbele punten.",
+    "frontmatterNotMap": "Frontmatter moet een lijst met sleutels en waarden zijn, zoals status: draft.",
+    "frontmatterAliases": "Ankers en aliassen (& en *) worden hier niet ondersteund. Schrijf de waarden volledig uit.",
+    "frontmatterTagsList": "tags moet een lijst zijn, zoals [work, ideas].",
+    "frontmatterUuidInvalid": "uuid moet in de frontmatter blijven en een geldige id zijn.",
+    "frontmatterUuidTaken": "Een ander item gebruikt die uuid al.",
+    "frontmatterSharesFormat": "sharedWith moet een lijst zijn, zoals [bob:rw, public:r], of none.",
+    "frontmatterShareCode": "Elk sharedWith-item heeft een naam en r, rw of rwd nodig, zoals bob:rw.",
+    "frontmatterSharePublic": "Openbare links zijn alleen-lezen, dus public kan alleen r krijgen.",
+    "frontmatterShareSelf": "Dit item is van jou, dus je kunt het niet met jezelf delen.",
+    "frontmatterShareUnknown": "Niemand met de naam {user} heeft hier een account."
   },
   "pwa": {
     "installPromptTitle": "App installeren",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Comfortabel",
     "kanbanColumnWidthWide": "Breed",
     "kanbanColumnWidthAutoFit": "Auto-passen",
-    "useAccountSetting": "Accountinstelling gebruiken"
+    "useAccountSetting": "Accountinstelling gebruiken",
+    "notesDetailsPanel": "Paneel met notitiedetails"
   },
   "migration": {
     "migrationComplete": "Migratie voltooid",
@@ -1958,6 +1973,40 @@
     "confirm": "Frontmatter repareren",
     "fixed": "Gerepareerd. Je kunt dit item nu bewerken."
   },
+  "frontmatter": {
+    "edit": "Frontmatter bewerken",
+    "title": "Frontmatter",
+    "hint": "Voeg je eigen sleutels toe in YAML. Tags die als #hashtags in de tekst staan, blijven in de tags-lijst zolang ze daar staan.",
+    "saved": "Frontmatter opgeslagen",
+    "saveNoteFirst": "Sla de notitie op voordat je de uuid wijzigt, anders ben je je niet-opgeslagen tekst kwijt.",
+    "warnings": {
+      "uuid": "Een nieuwe uuid geeft dit item een nieuwe id. Links, pins en bladwijzers die de oude gebruiken werken dan niet meer.",
+      "sharedWith": "sharedWith bepaalt wie dit nog meer kan openen en wat diegene ermee mag. De wijziging geldt zodra je opslaat.",
+      "encryption": "Jotty gebruikt encrypted en encryptionMethod om te bepalen hoe deze notitie opent. Met verkeerde waarden opent ze misschien niet meer.",
+      "checklistType": "checklistType wisselt tussen een lijst en een bord. Converteren in het menu doet dit voor je.",
+      "statuses": "statuses zijn de kolommen van het bord. Controleer of de status van elke kaart nog een kolom heeft."
+    }
+  },
+  "notePanel": {
+    "title": "Details",
+    "show": "Details tonen",
+    "hide": "Details verbergen",
+    "noTags": "Nog geen tags. Typ een #tag in de notitie of voeg er een toe aan de frontmatter.",
+    "noLinks": "Er linkt nog niets hierheen.",
+    "links": "Links",
+    "tagGroups": {
+      "adding": "Toegevoegd bij opslaan",
+      "removing": "Verwijderd bij opslaan",
+      "frontmatter": "Alleen in frontmatter",
+      "text": "In de tekst"
+    }
+  },
+  "menuGroups": {
+    "organise": "Ordenen",
+    "view": "Weergave",
+    "export": "Exporteren",
+    "advanced": "Geavanceerd"
+  },
   "live": {
     "currentlyEditing": "Bewerkt nu",
     "dropped": "Iemand heeft deze notitie gewijzigd terwijl je offline was, dus je niet-opgeslagen wijzigingen zijn verworpen.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Compacte notitiebreedte",
       "autosave": "Notities automatisch opslaan",
       "showEmojis": "Emoji's in lijsten",
-      "completedSuggestions": "Afgeronde items voorstellen"
+      "completedSuggestions": "Afgeronde items voorstellen",
+      "detailsPanel": "Paneel met notitiedetails"
     },
     "hints": {
       "borderRadius": "De hoeken veranderen in de hele app terwijl je sleept.",
       "noteFontSize": "Voor het lezen en schrijven van notities.",
       "kanbanColumnWidth": "Automatisch rekt de kolommen op tot het bord vol is.",
       "cardPreview": "Toont opgemaakte markdown op kaarten in plaats van platte tekst.",
-      "compactMode": "Beperkt de editor tot 900px breed."
+      "compactMode": "Beperkt de editor tot 900px breed.",
+      "detailsPanel": "Inhoudsopgave, tags en links naast de notitie op brede schermen."
     }
   }
 }

@@ -5,11 +5,14 @@ import { UnsavedChangesModal } from "@/app/_components/GlobalComponents/Modals/C
 import { useNoteEditor } from "@/app/_hooks/useNoteEditor";
 import { NoteEditorHeader } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorHeader";
 import { NoteEditorContent } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditorContent";
-import { useEffect, useLayoutEffect, useRef, type SyntheticEvent } from "react";
-import { TableOfContents } from "../TableOfContents";
+import { useEffect, useLayoutEffect, useRef, useState, type SyntheticEvent } from "react";
+import { NotePanel, NotePanelSheet } from "@/app/_components/FeatureComponents/Notes/Parts/NotePanel/NotePanel";
+import { FrontmatterModal } from "@/app/_components/GlobalComponents/Modals/FrontmatterModal";
+import { ItemTypes } from "@/app/_types/enums";
 import { useSearchParams } from "next/navigation";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { useNotesStore } from "@/app/_utils/notes-store";
+import { useQuickSetting } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { NoteQuickBar } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteQuickBar";
 
@@ -53,7 +56,9 @@ export const NoteEditor = ({
 }: NoteEditorProps) => {
   const { permissions } = usePermissions();
   const isOwner = permissions?.isOwner || false;
-  const { showTOC, setShowTOC } = useNotesStore();
+  const { value: showPanel, set: setShowPanel } = useQuickSetting(QuickSettingId.DETAILS_PANEL);
+  const [showSheet, setShowSheet] = useState(false);
+  const [showFrontmatter, setShowFrontmatter] = useState(false);
   const decryptModalRef = useRef<(() => void) | null>(null);
   const viewModalRef = useRef<(() => void) | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -128,6 +133,15 @@ export const NoteEditor = ({
     user?.notesDefaultMode === "edit" ||
     searchParams?.get("editor") === "true";
 
+  const canEditFrontmatter = Boolean(permissions?.canEdit && !permissions?.isLocked);
+  const panelBody = {
+    content: _isEditMode ? viewModel.derivedMarkdownContent : note.content || "",
+    savedContent: note.content || "",
+    isEditing: _isEditMode,
+    frontmatterTags: note.tags,
+    onEditFrontmatter: canEditFrontmatter ? () => setShowFrontmatter(true) : undefined,
+  };
+
   return (
     <NoteQuickBar active={viewModel.isEditorVisible}>
       <div
@@ -144,8 +158,10 @@ export const NoteEditor = ({
           onBack={onBack}
           onClone={onClone}
           viewModel={viewModel}
-          showTOC={showTOC}
-          setShowTOC={setShowTOC}
+          showPanel={showPanel}
+          onTogglePanel={() => setShowPanel(!showPanel)}
+          onOpenSheet={() => setShowSheet(true)}
+          onEditFrontmatter={() => setShowFrontmatter(true)}
           onOpenDecryptModal={decryptModalRef}
           onOpenViewModal={viewModalRef}
         />
@@ -169,19 +185,19 @@ export const NoteEditor = ({
               />
           </div>
 
-          {showTOC && (
-            <div className="w-64 border-l border-border">
-              <TableOfContents
-                content={
-                  _isEditMode
-                    ? viewModel.derivedMarkdownContent
-                    : note.content || ""
-                }
-                isEditing={_isEditMode}
-              />
-            </div>
-          )}
+          {showPanel && <NotePanel {...panelBody} onClose={() => setShowPanel(false)} />}
         </div>
+
+        {showSheet && <NotePanelSheet {...panelBody} onClose={() => setShowSheet(false)} />}
+
+        {showFrontmatter && note.uuid && (
+          <FrontmatterModal
+            uuid={note.uuid}
+            itemType={ItemTypes.NOTE}
+            onClose={() => setShowFrontmatter(false)}
+            settle={viewModel.settle}
+          />
+        )}
 
         <UnsavedChangesModal
           isOpen={viewModel.showUnsavedChangesModal}

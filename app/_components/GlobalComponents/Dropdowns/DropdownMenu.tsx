@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { cn } from "@/app/_utils/global-utils";
 import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
 import {
+  KICKER_CLASS,
   MENU_CLASS,
   MENU_DIVIDER_CLASS,
   MENU_ITEM_CLASS,
@@ -19,7 +20,7 @@ import {
 const MENU_MARGIN = 8;
 
 interface DropdownItem {
-  type?: "item" | "divider";
+  type?: "item" | "divider" | "heading";
   label?: React.ReactNode;
   onClick?: () => void;
   icon?: React.ReactNode;
@@ -28,6 +29,15 @@ interface DropdownItem {
 }
 
 const isDivider = (item?: DropdownItem) => item?.type === "divider";
+
+const isHeading = (item?: DropdownItem) => item?.type === "heading";
+
+const tidyHeadings = (items: DropdownItem[]) =>
+  items.filter((item, index, all) => {
+    if (!isHeading(item)) return true;
+    const next = all[index + 1];
+    return Boolean(next) && !isDivider(next) && !isHeading(next);
+  });
 
 const tidyDividers = (items: DropdownItem[]) =>
   items.filter((item, index, all) => {
@@ -148,9 +158,17 @@ export const DropdownMenu = ({
             maxWidth: Math.max(point.x, window.innerWidth - point.x) - MENU_MARGIN,
           } : undefined}
         >
-          {tidyDividers(items).map((item, index) => {
+          {tidyDividers(tidyHeadings(items)).map((item, index) => {
             if (isDivider(item)) {
               return <div key={index} className={MENU_DIVIDER_CLASS} />;
+            }
+
+            if (isHeading(item)) {
+              return (
+                <div key={index} role="presentation" className={cn(KICKER_CLASS, "px-2.5 pb-1 pt-1.5")}>
+                  {item.label}
+                </div>
+              );
             }
 
             return (

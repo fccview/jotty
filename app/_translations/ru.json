@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "Как отображаются заметки и списки при просмотре.",
     "notesCardPreviewDescription": "Показывает отформатированное начало каждой заметки на её карточке.",
     "notesCompactModeDescription": "Использует более узкую разметку при чтении и редактировании заметок.",
-    "kanbanColumnWidthDescription": "Задайте свою ширину колонок статусов канбана. По умолчанию колонки подстраиваются под доступное место."
+    "kanbanColumnWidthDescription": "Задайте свою ширину колонок статусов канбана. По умолчанию колонки подстраиваются под доступное место.",
+    "notesDetailsPanelDescription": "Показывает оглавление, теги и ссылки на панели рядом с заметкой на широких экранах."
   },
   "admin": {
     "title": "Админ",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Эта папка на сервере доступна только для чтения, поэтому изменение не сохранилось.",
     "itemLocked": "Этот элемент нельзя изменить, пока не исправлен его frontmatter.",
     "frontmatterUnfixable": "Jotty не смог сам исправить этот frontmatter. Отредактируйте файл вручную и обновите страницу.",
-    "frontmatterNothingToFix": "Во frontmatter этого элемента нечего исправлять."
+    "frontmatterNothingToFix": "Во frontmatter этого элемента нечего исправлять.",
+    "frontmatterUnreadable": "Jotty не смог прочитать frontmatter этого элемента и не стал трогать файл.",
+    "frontmatterSaveFailed": "Frontmatter не сохранён. Попробуйте ещё раз.",
+    "frontmatterInvalidYaml": "Это некорректный YAML. Проверьте отступы и двоеточия.",
+    "frontmatterNotMap": "Frontmatter должен быть списком ключей и значений, например status: draft.",
+    "frontmatterAliases": "Якоря и алиасы (& и *) здесь не поддерживаются. Напишите значения полностью.",
+    "frontmatterTagsList": "tags должен быть списком, например [work, ideas].",
+    "frontmatterUuidInvalid": "uuid должен оставаться во frontmatter и быть корректным id.",
+    "frontmatterUuidTaken": "Этот uuid уже использует другой элемент.",
+    "frontmatterSharesFormat": "sharedWith должен быть списком, например [bob:rw, public:r], или none.",
+    "frontmatterShareCode": "Каждой записи в sharedWith нужны имя и r, rw или rwd, например bob:rw.",
+    "frontmatterSharePublic": "Публичные ссылки доступны только для чтения, поэтому public может получить только r.",
+    "frontmatterShareSelf": "Этот элемент принадлежит вам, поэтому поделиться им с самим собой нельзя.",
+    "frontmatterShareUnknown": "Здесь нет аккаунта с именем {user}."
   },
   "pwa": {
     "installPromptTitle": "Установить приложение",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Комфортный",
     "kanbanColumnWidthWide": "Широкий",
     "kanbanColumnWidthAutoFit": "Авто-подгон",
-    "useAccountSetting": "Использовать настройку аккаунта"
+    "useAccountSetting": "Использовать настройку аккаунта",
+    "notesDetailsPanel": "Панель подробностей заметки"
   },
   "migration": {
     "migrationComplete": "Миграция завершена",
@@ -1958,6 +1973,40 @@
     "confirm": "Исправить frontmatter",
     "fixed": "Исправлено. Теперь этот элемент можно редактировать."
   },
+  "frontmatter": {
+    "edit": "Редактировать frontmatter",
+    "title": "Frontmatter",
+    "hint": "Добавляйте свои ключи в YAML. Теги, написанные в тексте как #hashtags, остаются в списке tags, пока они там есть.",
+    "saved": "Frontmatter сохранён",
+    "saveNoteFirst": "Сохраните заметку, прежде чем менять её uuid, иначе несохранённый текст пропадёт.",
+    "warnings": {
+      "uuid": "Новый uuid даёт этому элементу новый id. Ссылки, закрепления и закладки со старым id перестанут работать.",
+      "sharedWith": "sharedWith определяет, кто ещё может открыть этот элемент и что с ним делать. Изменение вступает в силу сразу после сохранения.",
+      "encryption": "По encrypted и encryptionMethod Jotty решает, как открыть эту заметку. Из-за неверных значений она может не открыться.",
+      "checklistType": "checklistType переключает между списком и доской. Пункт «Преобразовать» в меню сделает это за вас.",
+      "statuses": "statuses - это столбцы доски. Проверьте, что у статуса каждой карточки ещё есть столбец."
+    }
+  },
+  "notePanel": {
+    "title": "Подробности",
+    "show": "Показать подробности",
+    "hide": "Скрыть подробности",
+    "noTags": "Тегов пока нет. Напишите #tag в заметке или добавьте его во frontmatter.",
+    "noLinks": "Сюда пока ничего не ссылается.",
+    "links": "Ссылки",
+    "tagGroups": {
+      "adding": "Добавятся при сохранении",
+      "removing": "Удалятся при сохранении",
+      "frontmatter": "Только во frontmatter",
+      "text": "В тексте"
+    }
+  },
+  "menuGroups": {
+    "organise": "Организация",
+    "view": "Вид",
+    "export": "Экспорт",
+    "advanced": "Дополнительно"
+  },
   "live": {
     "currentlyEditing": "Сейчас редактирует",
     "dropped": "Кто-то изменил эту заметку, пока вы были офлайн, поэтому ваши несохранённые изменения отброшены.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Компактная ширина заметок",
       "autosave": "Автосохранение заметок",
       "showEmojis": "Эмодзи в списках",
-      "completedSuggestions": "Предлагать выполненные пункты"
+      "completedSuggestions": "Предлагать выполненные пункты",
+      "detailsPanel": "Панель подробностей заметки"
     },
     "hints": {
       "borderRadius": "Углы меняются во всём приложении, пока вы двигаете ползунок.",
       "noteFontSize": "Для чтения и написания заметок.",
       "kanbanColumnWidth": "Авто растягивает колонки на всю доску.",
       "cardPreview": "Показывает отформатированный markdown на карточках вместо простого текста.",
-      "compactMode": "Ограничивает ширину редактора 900px."
+      "compactMode": "Ограничивает ширину редактора 900px.",
+      "detailsPanel": "Оглавление, теги и ссылки рядом с заметкой на широких экранах."
     }
   }
 }

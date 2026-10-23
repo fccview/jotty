@@ -31,7 +31,7 @@ Jotty matches a wikilink against your own notes and checklists. Case and extra s
 1. **Title**, from the note's frontmatter `title`, its first `# Heading`, or its filename.
 2. **Filename**, without `.md`, so `[[my-note]]` finds `my-note.md` even when its heading says something else.
 3. **Folder and filename**, like `[[Projects/My Note]]`. You can leave off the folders above, so `[[Projects/My Note]]` also finds `Work/Projects/My Note.md`.
-4. **Aliases**, from an `aliases` or `alias` list in the frontmatter.
+4. **Aliases**, from an `aliases` or `alias` list in the frontmatter. You can add them from **Edit frontmatter** in the item's **...** menu.
 
 `[[My Note.md]]` works too.
 

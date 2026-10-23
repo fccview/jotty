@@ -84,7 +84,8 @@ export type AuditAction =
   | "mfa_backup_code_failed"
   | "mfa_backup_codes_regenerated"
   | "legacy_lookup"
-  | "frontmatter_repaired";
+  | "frontmatter_repaired"
+  | "frontmatter_edited";
 
 export interface AuditMetadata {
   [key: string]: any;

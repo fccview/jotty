@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "浏览笔记和列表时的布局方式。",
     "notesCardPreviewDescription": "在卡片上显示每篇笔记开头的格式化内容。",
     "notesCompactModeDescription": "阅读和编辑笔记时使用更窄的布局。",
-    "kanbanColumnWidthDescription": "为看板状态列设置自定义宽度。默认情况下，列会自动适应可用空间。"
+    "kanbanColumnWidthDescription": "为看板状态列设置自定义宽度。默认情况下，列会自动适应可用空间。",
+    "notesDetailsPanelDescription": "在宽屏上，于笔记旁的面板中显示目录、标签和链接。"
   },
   "admin": {
     "title": "管理",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "此文件夹在服务器上是只读的，无法保存更改。",
     "itemLocked": "修复前置元数据之前，无法更改此项目。",
     "frontmatterUnfixable": "Jotty 无法自动修复此前置元数据。请手动编辑文件，然后重新加载。",
-    "frontmatterNothingToFix": "此项目的前置元数据无需修复。"
+    "frontmatterNothingToFix": "此项目的前置元数据无需修复。",
+    "frontmatterUnreadable": "Jotty 无法读取此项目的前置元数据，因此没有改动文件。",
+    "frontmatterSaveFailed": "前置元数据未保存。请重试。",
+    "frontmatterInvalidYaml": "这不是有效的 YAML。请检查缩进和冒号。",
+    "frontmatterNotMap": "前置元数据必须是键值列表，例如 status: draft。",
+    "frontmatterAliases": "这里不支持锚点和别名（& 和 *）。请把值完整写出来。",
+    "frontmatterTagsList": "tags 必须是列表，例如 [work, ideas]。",
+    "frontmatterUuidInvalid": "uuid 必须保留在前置元数据中，并且必须是有效的 id。",
+    "frontmatterUuidTaken": "已有其他项目使用这个 uuid。",
+    "frontmatterSharesFormat": "sharedWith 必须是列表，例如 [bob:rw, public:r]，或者 none。",
+    "frontmatterShareCode": "每个 sharedWith 条目都需要一个名称以及 r、rw 或 rwd，例如 bob:rw。",
+    "frontmatterSharePublic": "公开链接是只读的，因此 public 只能获得 r。",
+    "frontmatterShareSelf": "此项目归你所有，因此不能与自己共享。",
+    "frontmatterShareUnknown": "这里没有名为 {user} 的账户。"
   },
   "pwa": {
     "installPromptTitle": "安装应用",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "舒适",
     "kanbanColumnWidthWide": "宽松",
     "kanbanColumnWidthAutoFit": "自动适应",
-    "useAccountSetting": "使用账户设置"
+    "useAccountSetting": "使用账户设置",
+    "notesDetailsPanel": "笔记详情面板"
   },
   "migration": {
     "migrationComplete": "迁移完成",
@@ -1958,6 +1973,40 @@
     "confirm": "修复前置元数据",
     "fixed": "已修复。现在可以编辑此项目了。"
   },
+  "frontmatter": {
+    "edit": "编辑前置元数据",
+    "title": "前置元数据",
+    "hint": "用 YAML 添加你自己的键。正文中写成 #hashtags 的标签，只要还在正文里，就会保留在 tags 列表中。",
+    "saved": "前置元数据已保存",
+    "saveNoteFirst": "请先保存笔记再修改它的 uuid，否则未保存的文本会丢失。",
+    "warnings": {
+      "uuid": "新的 uuid 会让此项目获得新的 id。使用旧 id 的链接、置顶和书签将失效。",
+      "sharedWith": "sharedWith 决定还有谁可以打开它，以及他们能做什么。保存后立即生效。",
+      "encryption": "Jotty 根据 encrypted 和 encryptionMethod 决定如何打开这篇笔记。值不对可能导致无法打开。",
+      "checklistType": "checklistType 用于在清单和看板之间切换。菜单中的“转换”可以替你完成。",
+      "statuses": "statuses 是看板的列。请检查每张卡片的状态是否仍有对应的列。"
+    }
+  },
+  "notePanel": {
+    "title": "详情",
+    "show": "显示详情",
+    "hide": "隐藏详情",
+    "noTags": "还没有标签。在笔记中输入 #tag，或在前置元数据中添加。",
+    "noLinks": "还没有内容链接到这里。",
+    "links": "链接",
+    "tagGroups": {
+      "adding": "保存时添加",
+      "removing": "保存时移除",
+      "frontmatter": "仅在前置元数据中",
+      "text": "在正文中"
+    }
+  },
+  "menuGroups": {
+    "organise": "整理",
+    "view": "查看",
+    "export": "导出",
+    "advanced": "高级"
+  },
   "live": {
     "currentlyEditing": "正在编辑",
     "dropped": "你离线时有人修改了这篇笔记，因此你未保存的更改已被丢弃。",
@@ -2103,14 +2152,16 @@
       "compactMode": "紧凑笔记宽度",
       "autosave": "自动保存笔记",
       "showEmojis": "清单中的表情",
-      "completedSuggestions": "建议已完成的项目"
+      "completedSuggestions": "建议已完成的项目",
+      "detailsPanel": "笔记详情面板"
     },
     "hints": {
       "borderRadius": "拖动时整个应用的圆角会随之变化。",
       "noteFontSize": "用于阅读和书写笔记。",
       "kanbanColumnWidth": "自动会拉伸各列以填满看板。",
       "cardPreview": "在卡片上显示格式化的 Markdown，而不是纯文本。",
-      "compactMode": "将编辑器宽度限制为 900px。"
+      "compactMode": "将编辑器宽度限制为 900px。",
+      "detailsPanel": "在宽屏上于笔记旁显示目录、标签和链接。"
     }
   }
 }

@@ -13,6 +13,7 @@ import { ItemTypes, Modes } from "../_types/enums";
 import { itemHref } from "../_utils/global-utils";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { useSidebarStore } from "../_utils/sidebar-store";
+import { tagHref } from "../_utils/tag-utils";
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -182,7 +183,7 @@ export const useSidebar = (props: SidebarProps) => {
       setSelectedFilter({ type: 'tag', value: tagName });
 
       if (!isHomePage) {
-        checkNavigation(() => router.push(`/?mode=tags&tag=${encodeURIComponent(tagName)}`));
+        checkNavigation(() => router.push(tagHref(tagName)));
       }
     }
     onClose();

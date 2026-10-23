@@ -201,6 +201,13 @@ export const NOTE_FIELDS: ChoiceField[] = [
     options: ENABLE_DISABLE,
   }),
   field({
+    key: "notesDetailsPanel",
+    inputId: "notes-details-panel",
+    labelKey: "settingsModal.notesDetailsPanel",
+    descriptionKey: "settings.notesDetailsPanelDescription",
+    options: ENABLE_DISABLE,
+  }),
+  field({
     key: "notesDefaultEditor",
     inputId: "notes-default-editor",
     labelKey: "settings.defaultEditor",

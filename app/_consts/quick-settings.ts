@@ -29,6 +29,7 @@ export enum QuickSettingId {
   VIEW_MODE = "viewMode",
   CARD_PREVIEW = "showMarkdownPreview",
   COMPACT_MODE = "compactMode",
+  DETAILS_PANEL = "detailsPanel",
   AUTOSAVE = "autosaveNotes",
   SHOW_EMOJIS = "showEmojis",
   COMPLETED_SUGGESTIONS = "showCompletedSuggestions",
@@ -61,6 +62,7 @@ export interface QuickSettingValues {
   [QuickSettingId.VIEW_MODE]: ViewMode;
   [QuickSettingId.CARD_PREVIEW]: boolean;
   [QuickSettingId.COMPACT_MODE]: boolean;
+  [QuickSettingId.DETAILS_PANEL]: boolean;
   [QuickSettingId.AUTOSAVE]: boolean;
   [QuickSettingId.SHOW_EMOJIS]: boolean;
   [QuickSettingId.COMPLETED_SUGGESTIONS]: boolean;
@@ -229,6 +231,15 @@ export const QUICK_SETTINGS: QuickSettingsRegistry = {
     labelKey: "quickSettings.labels.compactMode",
     control: { kind: QuickControl.TOGGLE },
     fromUser: (user) => user?.notesCompactMode === ToggleState.ENABLE,
+    toUser: toToggle,
+    sanitise: asBoolean,
+  }),
+  [QuickSettingId.DETAILS_PANEL]: define<QuickSettingId.DETAILS_PANEL, "notesDetailsPanel">({
+    userKey: "notesDetailsPanel",
+    tab: QuickTab.NOTES,
+    labelKey: "quickSettings.labels.detailsPanel",
+    control: { kind: QuickControl.TOGGLE },
+    fromUser: (user) => user?.notesDetailsPanel !== ToggleState.DISABLE,
     toUser: toToggle,
     sanitise: asBoolean,
   }),

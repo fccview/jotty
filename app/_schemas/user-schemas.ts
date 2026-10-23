@@ -65,6 +65,11 @@ export const editorSettingsSchema = z.object({
       message: "Compact mode must be either 'enable' or 'disable'",
     })
     .optional(),
+  notesDetailsPanel: z
+    .enum([ToggleState.ENABLE, ToggleState.DISABLE], {
+      message: "Details panel must be either 'enable' or 'disable'",
+    })
+    .optional(),
   disableRichEditor: z.enum(ToggleState, {
     message: "Disable rich editor must be either 'enable' or 'disable'",
   }),

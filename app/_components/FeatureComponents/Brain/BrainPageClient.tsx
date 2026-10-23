@@ -16,6 +16,7 @@ import { BrainNodeKinds, RelationsStatus } from "@/app/_consts/relations";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { ItemTypes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
+import { tagHref } from "@/app/_utils/tag-utils";
 import type { Category, SanitisedUser } from "@/app/_types";
 import type { BrainGraph, BrainNode } from "@/app/_types/relations";
 import { BrainToolbar } from "./Parts/BrainToolbar";
@@ -40,7 +41,6 @@ interface BrainPageClientProps {
   user: SanitisedUser | null;
 }
 
-const TAG_ROUTE = (tag: string) => `/?mode=tags&tag=${encodeURIComponent(tag)}`;
 
 export const BrainPageClient = ({
   graph,
@@ -86,7 +86,7 @@ export const BrainPageClient = ({
       if (node.kind === BrainNodeKinds.CHECKLIST)
         return router.push(itemHref(ItemTypes.CHECKLIST, node.id));
       if (node.kind === BrainNodeKinds.TAG)
-        return router.push(TAG_ROUTE(node.title.replace(/^#/, "")));
+        return router.push(tagHref(node.title.replace(/^#/, "")));
       if (!isOwnBrain) return;
 
       const formData = new FormData();

@@ -1000,7 +1000,8 @@
     "browseViewModeDescription": "Cómo se organizan las notas y listas al explorarlas.",
     "notesCardPreviewDescription": "Muestra el inicio formateado de cada nota en su tarjeta.",
     "notesCompactModeDescription": "Usa un diseño más estrecho al leer y editar notas.",
-    "kanbanColumnWidthDescription": "Define un ancho personalizado para las columnas de estado del kanban. Por defecto, las columnas se ajustan al espacio disponible."
+    "kanbanColumnWidthDescription": "Define un ancho personalizado para las columnas de estado del kanban. Por defecto, las columnas se ajustan al espacio disponible.",
+    "notesDetailsPanelDescription": "Muestra el índice, las etiquetas y los enlaces en un panel junto a la nota en pantallas anchas."
   },
   "admin": {
     "title": "Administrador",
@@ -1250,7 +1251,20 @@
     "readOnlyFolder": "Esta carpeta es de solo lectura en el servidor, así que el cambio no se pudo guardar.",
     "itemLocked": "Este elemento no se puede cambiar hasta que se arregle su frontmatter.",
     "frontmatterUnfixable": "Jotty no pudo arreglar este frontmatter por sí solo. Edita el archivo a mano y recarga.",
-    "frontmatterNothingToFix": "No hay nada que arreglar en el frontmatter de este elemento."
+    "frontmatterNothingToFix": "No hay nada que arreglar en el frontmatter de este elemento.",
+    "frontmatterUnreadable": "Jotty no pudo leer el frontmatter de este elemento, así que no tocó el archivo.",
+    "frontmatterSaveFailed": "No se guardó el frontmatter. Inténtalo de nuevo.",
+    "frontmatterInvalidYaml": "Eso no es YAML válido. Revisa la sangría y los dos puntos.",
+    "frontmatterNotMap": "El frontmatter tiene que ser una lista de claves y valores, como status: draft.",
+    "frontmatterAliases": "Aquí no se admiten anclas ni alias (& y *). Escribe los valores completos.",
+    "frontmatterTagsList": "tags tiene que ser una lista, como [work, ideas].",
+    "frontmatterUuidInvalid": "uuid tiene que quedarse en el frontmatter y ser un id válido.",
+    "frontmatterUuidTaken": "Otro elemento ya usa ese uuid.",
+    "frontmatterSharesFormat": "sharedWith tiene que ser una lista, como [bob:rw, public:r], o none.",
+    "frontmatterShareCode": "Cada entrada de sharedWith necesita un nombre y r, rw o rwd, como bob:rw.",
+    "frontmatterSharePublic": "Los enlaces públicos son de solo lectura, así que public solo puede tener r.",
+    "frontmatterShareSelf": "Este elemento es tuyo, así que no puedes compartirlo contigo mismo.",
+    "frontmatterShareUnknown": "Aquí nadie llamado {user} tiene cuenta."
   },
   "pwa": {
     "installPromptTitle": "Instalar aplicación",
@@ -1658,7 +1672,8 @@
     "kanbanColumnWidthComfortable": "Confortable",
     "kanbanColumnWidthWide": "Ancho",
     "kanbanColumnWidthAutoFit": "Ajuste automático",
-    "useAccountSetting": "Usar el ajuste de la cuenta"
+    "useAccountSetting": "Usar el ajuste de la cuenta",
+    "notesDetailsPanel": "Panel de detalles de la nota"
   },
   "migration": {
     "migrationComplete": "Migración Completa",
@@ -1958,6 +1973,40 @@
     "confirm": "Arreglar el frontmatter",
     "fixed": "Arreglado. Ya puedes editar este elemento."
   },
+  "frontmatter": {
+    "edit": "Editar frontmatter",
+    "title": "Frontmatter",
+    "hint": "Añade tus propias claves en YAML. Las etiquetas escritas como #hashtags en el texto se quedan en la lista tags mientras sigan ahí.",
+    "saved": "Frontmatter guardado",
+    "saveNoteFirst": "Guarda la nota antes de cambiar su uuid, o perderás el texto que no hayas guardado.",
+    "warnings": {
+      "uuid": "Un uuid nuevo le da a este elemento un id nuevo. Los enlaces, fijados y marcadores que usen el anterior dejarán de funcionar.",
+      "sharedWith": "sharedWith decide quién más puede abrir esto y qué puede hacer. El cambio se aplica en cuanto guardas.",
+      "encryption": "Jotty usa encrypted y encryptionMethod para saber cómo abrir esta nota. Con valores incorrectos puede que no se abra.",
+      "checklistType": "checklistType cambia entre lista y tablero. La opción Convertir del menú lo hace por ti.",
+      "statuses": "statuses son las columnas del tablero. Comprueba que el estado de cada tarjeta siga teniendo columna."
+    }
+  },
+  "notePanel": {
+    "title": "Detalles",
+    "show": "Mostrar detalles",
+    "hide": "Ocultar detalles",
+    "noTags": "Aún no hay etiquetas. Escribe una #tag en la nota o añade una al frontmatter.",
+    "noLinks": "Todavía nada enlaza aquí.",
+    "links": "Enlaces",
+    "tagGroups": {
+      "adding": "Se añaden al guardar",
+      "removing": "Se quitan al guardar",
+      "frontmatter": "Solo en el frontmatter",
+      "text": "En el texto"
+    }
+  },
+  "menuGroups": {
+    "organise": "Organizar",
+    "view": "Ver",
+    "export": "Exportar",
+    "advanced": "Avanzado"
+  },
   "live": {
     "currentlyEditing": "Editando ahora",
     "dropped": "Alguien cambió esta nota mientras estabas sin conexión, así que se descartaron tus cambios sin guardar.",
@@ -2103,14 +2152,16 @@
       "compactMode": "Ancho compacto de notas",
       "autosave": "Autoguardar notas",
       "showEmojis": "Emojis en las listas",
-      "completedSuggestions": "Sugerir elementos completados"
+      "completedSuggestions": "Sugerir elementos completados",
+      "detailsPanel": "Panel de detalles de la nota"
     },
     "hints": {
       "borderRadius": "Las esquinas cambian en toda la app mientras arrastras.",
       "noteFontSize": "Para leer y escribir notas.",
       "kanbanColumnWidth": "Automático estira las columnas para llenar el tablero.",
       "cardPreview": "Muestra markdown formateado en las tarjetas en lugar de texto plano.",
-      "compactMode": "Limita el editor a 900px de ancho."
+      "compactMode": "Limita el editor a 900px de ancho.",
+      "detailsPanel": "Índice, etiquetas y enlaces junto a la nota en pantallas anchas."
     }
   }
 }

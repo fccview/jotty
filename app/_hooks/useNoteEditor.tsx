@@ -138,12 +138,22 @@ export const useNoteEditor = ({
 
   const autosave = useAutosave({ enabled: canAutosave, save: autosaveContent });
 
+  const shownNote = useRef(note);
+
   useEffect(() => {
+    const previous = shownNote.current;
+    shownNote.current = note;
+    const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
+
+    if (previous !== note && extractYamlMetadata(previous.content || "").contentWithoutMetadata === contentWithoutMetadata) {
+      if (previous.title !== note.title) setTitle(note.title);
+      if (previous.category !== note.category) setCategory(note.category || "Uncategorized");
+      return;
+    }
+
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     setContentIsDirty(false);
-
-    const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
     setEditorContent(contentWithoutMetadata);
     setIsMarkdownMode(Boolean(note.encrypted) || isMinimalMode || defaultEditorIsMarkdown);
 
@@ -361,6 +371,11 @@ export const useNoteEditor = ({
     setIsMarkdownMode(isMarkdown);
   };
 
+  const settle = useCallback(async () => {
+    if (canAutosave && !titleChanged && !categoryChanged) return autosave.flush();
+    return !hasUnsavedChanges;
+  }, [canAutosave, titleChanged, categoryChanged, hasUnsavedChanges, autosave.flush]);
+
   const handleEdit = () => setIsEditing(true);
 
   const discardChanges = () => {
@@ -519,6 +534,7 @@ export const useNoteEditor = ({
     status: { isSaving, isAutoSaving: autosave.state === SaveState.SAVING },
     autosaveState: canAutosave ? autosave.state : null,
     hasUnsavedChanges,
+    settle,
     handleEdit,
     handleCancel,
     handleSave,

@@ -1003,7 +1003,7 @@ p > code::after,
   color: rgb(var(--primary) / 0.5);
 }
 
-.jotty-backlinks-title {
+.jotty-section-title {
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -1015,11 +1015,11 @@ p > code::after,
   color: rgb(var(--muted-foreground));
 }
 
-.jotty-backlinks-title span {
+.jotty-section-title span {
   letter-spacing: inherit;
 }
 
-.jotty-backlinks-title .jotty-backlinks-count {
+.jotty-section-title .jotty-section-count {
   font-size: 0.7rem;
   letter-spacing: 0;
   padding: 0 0.45em;

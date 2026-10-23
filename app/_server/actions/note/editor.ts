@@ -14,7 +14,7 @@ import { revalidatePath } from "next/cache";
 import { NOTES_DIR } from "@/app/_consts/files";
 import { PermissionTypes, Modes } from "@/app/_types/enums";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
-import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
+import { mergeTags } from "@/app/_utils/tag-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { tidyItemLinks } from "@/app/_server/actions/relations/tidy";
@@ -132,8 +132,7 @@ const _editNote = async (
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;
 
-    const extractedTags = extractHashtagsFromContent(convertedContent);
-    const sortedTags = Array.from(new Set(extractedTags)).sort();
+    const mergedTags = mergeTags(note.tags, note.content || "", convertedContent);
 
     const updatedDoc = {
       ...note,
@@ -144,7 +143,7 @@ const _editNote = async (
       updatedAt: new Date().toISOString(),
       encrypted: isEncrypted(convertedContent),
       encryptionMethod,
-      tags: sortedTags.length > 0 ? sortedTags : undefined,
+      tags: mergedTags.length > 0 ? mergedTags : undefined,
       extraMetadata: keptMeta(note.extraMetadata, strayMeta(incomingMeta)),
     };
 
