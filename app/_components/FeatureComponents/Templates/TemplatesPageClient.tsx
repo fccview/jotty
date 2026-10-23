@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Add01Icon, MultiplicationSignIcon, Search01Icon } from "hugeicons-react";
-import { Note } from "@/app/_types";
+import { TemplateSummary } from "@/app/_types";
 import { TemplateVariables } from "@/app/_consts/templates";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useTemplateMaker } from "@/app/_hooks/useTemplates";
@@ -13,7 +13,7 @@ import { TemplateNameForm } from "@/app/_components/GlobalComponents/FormElement
 import { TemplateCard } from "@/app/_components/GlobalComponents/Cards/TemplateCard";
 
 interface TemplatesPageClientProps {
-  templates: Note[];
+  templates: TemplateSummary[];
 }
 
 const _placeholder = (name: TemplateVariables): string => `{{${name}}}`;
@@ -32,7 +32,7 @@ export const TemplatesPageClient = ({ templates }: TemplatesPageClientProps) => 
       : templates;
   }, [templates, searchQuery]);
 
-  const handleUse = (template: Note) =>
+  const handleUse = (template: TemplateSummary) =>
     openCreateNoteModal(undefined, { templateId: template.uuid });
 
   return (

@@ -26,10 +26,10 @@ export const GET = defineRoute(
     try {
       const templates = await listTemplates(user.username);
       return NextResponse.json({
-        templates: templates.map(({ uuid, title, createdAt, updatedAt }) => ({
+        templates: templates.map(({ uuid, title, encrypted, updatedAt }) => ({
           id: uuid,
           title,
-          createdAt,
+          ...(encrypted && { encrypted: true }),
           updatedAt,
         })),
       });

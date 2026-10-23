@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "Không có ai tên {user} có tài khoản ở đây.",
     "templateNotFound": "Mẫu đó không phải của bạn, nên chưa tạo gì",
     "templateEncrypted": "Ghi chú đã mã hóa không thể làm mẫu",
-    "templateWithContent": "Hãy chọn một mẫu hoặc viết nội dung, không phải cả hai"
+    "templateWithContent": "Hãy chọn một mẫu hoặc viết nội dung, không phải cả hai",
+    "categoryReserved": "Jotty tự dùng tên thư mục đó, nên chưa lưu gì",
+    "noteNotFound": "Không tìm thấy ghi chú đó"
   },
   "pwa": {
     "installPromptTitle": "Cài đặt ứng dụng",

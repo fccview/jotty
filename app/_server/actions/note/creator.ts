@@ -20,16 +20,23 @@ import {
 } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { commitNote } from "@/app/_server/actions/history/repo";
-import { targetDir, bouncer } from "@/app/_server/actions/share/target";
+import { targetDir, bouncer, reservedRefusal } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { noteToMarkdown } from "./parsers";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
 import { ownTemplate } from "@/app/_server/actions/template/reader";
-import { fillTemplate } from "@/app/_utils/template-utils";
+import { carriedMeta, fillTemplate } from "@/app/_utils/template-utils";
 import { TEMPLATE_ID_FIELD, TemplateVariables } from "@/app/_consts/templates";
 
-type StartingText = { content: string } | { error: string };
+type StartingText = { content: string; meta?: Record<string, unknown> } | { error: string };
+
+const _mergedMeta = (
+  carried?: Record<string, unknown>,
+  written?: Record<string, unknown>,
+): Record<string, unknown> | undefined =>
+  carried || written ? { ...carried, ...written } : undefined;
 
 const _fromTemplate = async (
   actor: SanitisedUser,
@@ -51,7 +58,7 @@ const _fromTemplate = async (
     return { error: t("templateNotFound") };
   }
 
-  if (template.encrypted) {
+  if (template.encrypted || isEncrypted(template.content || "")) {
     console.warn("Refusing note from an encrypted template:", templateId);
     return { error: t("templateEncrypted") };
   }
@@ -61,6 +68,7 @@ const _fromTemplate = async (
       [TemplateVariables.TITLE]: title,
       [TemplateVariables.USER]: actor.username,
     }),
+    meta: carriedMeta(template.extraMetadata),
   };
 };
 
@@ -75,6 +83,10 @@ export const makeNote = async (
       "rawContent",
       TEMPLATE_ID_FIELD,
     ]);
+
+    if (isReservedCategory(category)) {
+      return { error: await reservedRefusal(category) };
+    }
 
     const starting: StartingText = templateId
       ? await _fromTemplate(actor, templateId, title, rawContent)
@@ -144,7 +156,7 @@ export const makeNote = async (
       tags: noteTags.length > 0 ? noteTags : undefined,
       encrypted: encrypted || undefined,
       encryptionMethod,
-      extraMetadata: strayMeta(metadata),
+      extraMetadata: _mergedMeta(starting.meta, strayMeta(metadata)),
     };
 
     await serverWriteFile(filePath, noteToMarkdown(newDoc));

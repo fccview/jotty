@@ -9,6 +9,13 @@ export interface NoteSummary {
   wordCount: number;
 }
 
+export interface TemplateSummary {
+  uuid: string;
+  title: string;
+  encrypted: boolean;
+  updatedAt: string;
+}
+
 export interface NoteBody {
   uuid: string;
   content: string;

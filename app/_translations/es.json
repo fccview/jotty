@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "Aquí nadie llamado {user} tiene cuenta.",
     "templateNotFound": "Esa plantilla no es suya, así que no se creó nada",
     "templateEncrypted": "Las notas cifradas no pueden ser plantillas",
-    "templateWithContent": "Elija una plantilla o escriba contenido, no ambas cosas"
+    "templateWithContent": "Elija una plantilla o escriba contenido, no ambas cosas",
+    "categoryReserved": "Jotty usa ese nombre de carpeta internamente, así que no se guardó nada",
+    "noteNotFound": "No se encontró esa nota"
   },
   "pwa": {
     "installPromptTitle": "Instalar aplicación",

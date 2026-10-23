@@ -73,7 +73,7 @@ export const templateSchema = z
   .object({
     id: z.string().describe("Template uuid, pass it as templateId when creating a note"),
     title: z.string(),
-    createdAt: timestamp.optional(),
+    encrypted: z.boolean().optional().describe("Encrypted templates can't be used to create notes"),
     updatedAt: timestamp.optional(),
   })
   .register(apiNames, { id: "Template" });

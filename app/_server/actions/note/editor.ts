@@ -34,7 +34,9 @@ import {
   shownAs,
   movePlan,
   refusalMessage,
+  reservedRefusal,
 } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import {
   failedWith,
@@ -97,6 +99,10 @@ const _editNote = async (
       note,
       shownCategory,
     );
+
+    if (isMoving && isReservedCategory(destination.category)) {
+      return { error: await reservedRefusal(destination.category) };
+    }
 
     if (isMoving) {
       const verdict = await bouncer(

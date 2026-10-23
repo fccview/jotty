@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "There be no sailor called {user} aboard this ship.",
     "templateNotFound": "That blueprint ain't yers, so nothin' was made",
     "templateEncrypted": "Buried logs can't be blueprints",
-    "templateWithContent": "Pick a blueprint or scrawl yer own words, not both"
+    "templateWithContent": "Pick a blueprint or scrawl yer own words, not both",
+    "categoryReserved": "Jotty keeps that hold name fer herself, so nothin' was stowed",
+    "noteNotFound": "That log be lost at sea"
   },
   "pwa": {
     "installPromptTitle": "Dock the Ship",

@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "Burada {user} adında bir hesap yok.",
     "templateNotFound": "Bu şablon size ait değil, bu yüzden hiçbir şey oluşturulmadı",
     "templateEncrypted": "Şifrelenmiş notlar şablon olamaz",
-    "templateWithContent": "Bir şablon seçin ya da içerik yazın, ikisini birden değil"
+    "templateWithContent": "Bir şablon seçin ya da içerik yazın, ikisini birden değil",
+    "categoryReserved": "Jotty bu klasör adını kendisi kullanıyor, bu yüzden hiçbir şey kaydedilmedi",
+    "noteNotFound": "Bu not bulunamadı"
   },
   "pwa": {
     "installPromptTitle": "Uygulamayı Yükle",

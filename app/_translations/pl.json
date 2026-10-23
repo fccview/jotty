@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "Nikt o nazwie {user} nie ma tu konta.",
     "templateNotFound": "Ten szablon nie należy do Ciebie, więc nic nie zostało utworzone",
     "templateEncrypted": "Zaszyfrowane notatki nie mogą być szablonami",
-    "templateWithContent": "Wybierz szablon albo wpisz treść, nie oba naraz"
+    "templateWithContent": "Wybierz szablon albo wpisz treść, nie oba naraz",
+    "categoryReserved": "Jotty używa tej nazwy folderu wewnętrznie, więc nic nie zostało zapisane",
+    "noteNotFound": "Nie znaleziono tej notatki"
   },
   "pwa": {
     "installPromptTitle": "Zainstaluj aplikację",

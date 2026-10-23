@@ -203,6 +203,12 @@ export const refusalMessage = async (): Promise<string> => {
   return t("requiredPermissions");
 };
 
+export const reservedRefusal = async (category: string): Promise<string> => {
+  console.warn("Refusing a reserved folder name:", category);
+  const t = await getTranslations("errors");
+  return t("categoryReserved");
+};
+
 export const bouncer = async (
   target: TargetLocation,
   username: string,

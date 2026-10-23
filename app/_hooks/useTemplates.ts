@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Note } from "@/app/_types";
+import { TemplateSummary } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { createTemplate, getTemplates, saveAsTemplate } from "@/app/_server/actions/template";
 import { itemHref } from "@/app/_utils/global-utils";
@@ -12,23 +12,29 @@ import { useToast } from "@/app/_providers/ToastProvider";
 export const useTemplateList = () => {
   const t = useTranslations();
   const { showToast } = useToast();
-  const [templates, setTemplates] = useState<Note[]>([]);
+  const [templates, setTemplates] = useState<TemplateSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isLive = true;
 
     const load = async () => {
-      const result = await getTemplates();
-      if (!isLive) return;
+      try {
+        const result = await getTemplates();
+        if (!isLive) return;
 
-      if (!result.success) {
-        console.warn("Templates did not load:", result.error);
-        showToast({ type: "error", title: t("common.error"), message: t("templates.loadFailed") });
+        if (!result.success) {
+          console.warn("Templates did not load:", result.error);
+          showToast({ type: "error", title: t("common.error"), message: result.error || t("templates.loadFailed") });
+        }
+
+        setTemplates(result.data || []);
+      } catch (error) {
+        console.error("Templates did not load:", error);
+        if (isLive) showToast({ type: "error", title: t("common.error"), message: t("templates.loadFailed") });
+      } finally {
+        if (isLive) setIsLoading(false);
       }
-
-      setTemplates(result.data || []);
-      setIsLoading(false);
     };
 
     load();
@@ -70,6 +76,10 @@ export const useTemplateMaker = () => {
         router.push(_editorHref(result.data.uuid));
         router.refresh();
         return true;
+      } catch (error) {
+        console.error("Template creation failed:", error);
+        _complain(t("templates.createFailed"));
+        return false;
       } finally {
         setIsMaking(false);
       }
@@ -89,6 +99,10 @@ export const useTemplateMaker = () => {
         showToast({ type: "success", title: t("templates.saved") });
         router.refresh();
         return true;
+      } catch (error) {
+        console.error("Saving as template failed:", error);
+        _complain(t("templates.saveFailed"));
+        return false;
       } finally {
         setIsMaking(false);
       }

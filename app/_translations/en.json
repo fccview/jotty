@@ -1270,7 +1270,9 @@
     "frontmatterShareUnknown": "Nobody called {user} has an account here.",
     "templateNotFound": "That template isn't one of yours, so nothing was created",
     "templateEncrypted": "Encrypted notes can't be templates",
-    "templateWithContent": "Pick a template or write content, not both"
+    "templateWithContent": "Pick a template or write content, not both",
+    "categoryReserved": "Jotty uses that folder name itself, so nothing was saved",
+    "noteNotFound": "That note couldn't be found"
   },
   "pwa": {
     "installPromptTitle": "Install App",

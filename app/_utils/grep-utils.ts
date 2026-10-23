@@ -14,6 +14,7 @@
 import { execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
+import { TEMPLATES_DIR_NAME } from "@/app/_consts/files";
 import fs from "fs/promises";
 import yaml from "js-yaml";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
@@ -332,7 +333,7 @@ const _bodyMatch = async (filePath: string, text: string): Promise<string> => {
 export const grepSearchContent = async (
   dir: string,
   text: string,
-  skipDirs: string[] = [],
+  skipDirs: string[] = [TEMPLATES_DIR_NAME],
 ): Promise<GrepSearchResult[]> => {
   try {
     const { stdout } = await execFileAsync("grep", [

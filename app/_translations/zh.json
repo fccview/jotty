@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "这里没有名为 {user} 的账户。",
     "templateNotFound": "该模板不属于您，未创建任何内容",
     "templateEncrypted": "加密笔记不能作为模板",
-    "templateWithContent": "请选择模板或填写内容，不能同时使用"
+    "templateWithContent": "请选择模板或填写内容，不能同时使用",
+    "categoryReserved": "Jotty 自身使用该文件夹名称，未保存任何内容",
+    "noteNotFound": "找不到该笔记"
   },
   "pwa": {
     "installPromptTitle": "安装应用",

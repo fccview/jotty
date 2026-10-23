@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "Niemand met de naam {user} heeft hier een account.",
     "templateNotFound": "Dat sjabloon is niet van jou, dus er is niets aangemaakt",
     "templateEncrypted": "Versleutelde notities kunnen geen sjabloon zijn",
-    "templateWithContent": "Kies een sjabloon of schrijf inhoud, niet allebei"
+    "templateWithContent": "Kies een sjabloon of schrijf inhoud, niet allebei",
+    "categoryReserved": "Jotty gebruikt die mapnaam zelf, dus er is niets opgeslagen",
+    "noteNotFound": "Die notitie is niet gevonden"
   },
   "pwa": {
     "installPromptTitle": "App installeren",

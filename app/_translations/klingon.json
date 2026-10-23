@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "naDev {user} ponglu'bogh ghot tu'lu'be'.",
     "templateNotFound": "nablIj ghaHbe' nabvam, Pagh chenmoHlu'",
     "templateEncrypted": "ghItlhmey peghlu'bogh nab moj Qo'",
-    "templateWithContent": "nab yIwIv pagh ghItlh yIghItlh, cha' DaqImbe'"
+    "templateWithContent": "nab yIwIv pagh ghItlh yIghItlh, cha' DaqImbe'",
+    "categoryReserved": "Jotty lo' DIr pongvam, Pagh Pollu'",
+    "noteNotFound": "ghItlhvam tu'be'lu'"
   },
   "pwa": {
     "installPromptTitle": "De'wI' yIlan",

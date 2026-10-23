@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "Ninguém chamado {user} tem uma conta aqui.",
     "templateNotFound": "Esse modelo não é seu, por isso nada foi criado",
     "templateEncrypted": "Notas encriptadas não podem ser modelos",
-    "templateWithContent": "Escolha um modelo ou escreva o conteúdo, não os dois"
+    "templateWithContent": "Escolha um modelo ou escreva o conteúdo, não os dois",
+    "categoryReserved": "O Jotty usa esse nome de pasta internamente, por isso nada foi guardado",
+    "noteNotFound": "Essa nota não foi encontrada"
   },
   "pwa": {
     "installPromptTitle": "Instalar aplicação",

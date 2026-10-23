@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "Hier hat niemand namens {user} ein Konto.",
     "templateNotFound": "Diese Vorlage gehört nicht dir, deshalb wurde nichts erstellt",
     "templateEncrypted": "Verschlüsselte Notizen können keine Vorlagen sein",
-    "templateWithContent": "Wähle eine Vorlage oder schreib Inhalt, nicht beides"
+    "templateWithContent": "Wähle eine Vorlage oder schreib Inhalt, nicht beides",
+    "categoryReserved": "Jotty verwendet diesen Ordnernamen selbst, deshalb wurde nichts gespeichert",
+    "noteNotFound": "Diese Notiz wurde nicht gefunden"
   },
   "pwa": {
     "installPromptTitle": "Anwendung installieren",

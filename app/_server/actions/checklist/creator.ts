@@ -5,7 +5,8 @@ import { ensureDir, serverWriteFile } from "@/app/_server/actions/file";
 import { generateUniqueFilename } from "@/app/_utils/filename-utils";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { targetDir, bouncer } from "@/app/_server/actions/share/target";
+import { targetDir, bouncer, reservedRefusal } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { generateUuid } from "@/app/_utils/yaml-metadata-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
@@ -27,6 +28,10 @@ export const makeList = async (
     const title = formData.get("title") as string;
     const category = (formData.get("category") as string) || UNCATEGORIZED;
     const type = (formData.get("type") as ChecklistType) || "simple";
+
+    if (isReservedCategory(category)) {
+      return { error: await reservedRefusal(category) };
+    }
 
     const target = await targetDir(Modes.CHECKLISTS, actor.username, category);
     const verdict = await bouncer(

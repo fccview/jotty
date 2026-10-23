@@ -1,4 +1,5 @@
 import path from "path";
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 import { Note, SanitisedUser } from "@/app/_types";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
@@ -29,7 +30,9 @@ export const copyNote = async (
   );
 
   if (!canReadSource) {
-    return { error: "Permission denied" };
+    console.warn("Refusing to copy a note the actor cannot read:", note.uuid);
+    const t = await getTranslations("errors");
+    return { error: t("permissionDenied") };
   }
 
   const target = await targetDir(Modes.NOTES, actor.username, category);

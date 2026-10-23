@@ -310,16 +310,10 @@ describe("Notes API", () => {
   })
 
   describe("GET /api/templates", () => {
-    it("should list the caller's templates without their content", async () => {
+    it("should list the caller's templates as summaries", async () => {
       mockListTemplates.mockResolvedValue([
-        {
-          uuid: TEMPLATE_UUID,
-          title: "Standup",
-          category: ".templates",
-          content: "## {{title}}",
-          owner: "testuser",
-          updatedAt: "2024-01-01T00:00:00.000Z",
-        },
+        { uuid: TEMPLATE_UUID, title: "Standup", encrypted: false, updatedAt: "2024-01-01T00:00:00.000Z" },
+        { uuid: "55555555-5555-4555-8555-555555555555", title: "Sealed", encrypted: true, updatedAt: "2024-01-02T00:00:00.000Z" },
       ])
 
       const request = createMockRequest("GET", "http://localhost:3000/api/templates")
@@ -330,6 +324,7 @@ describe("Notes API", () => {
       expect(mockListTemplates).toHaveBeenCalledWith(mockUser.username)
       expect(data.templates).toEqual([
         { id: TEMPLATE_UUID, title: "Standup", updatedAt: "2024-01-01T00:00:00.000Z" },
+        { id: "55555555-5555-4555-8555-555555555555", title: "Sealed", encrypted: true, updatedAt: "2024-01-02T00:00:00.000Z" },
       ])
     })
 

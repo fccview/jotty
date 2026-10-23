@@ -1266,7 +1266,9 @@
     "frontmatterShareUnknown": "{user}라는 이름의 계정이 여기에 없습니다.",
     "templateNotFound": "내 템플릿이 아니어서 아무것도 만들지 않았습니다",
     "templateEncrypted": "암호화된 노트는 템플릿이 될 수 없습니다",
-    "templateWithContent": "템플릿을 고르거나 내용을 쓰세요. 둘 다는 안 됩니다"
+    "templateWithContent": "템플릿을 고르거나 내용을 쓰세요. 둘 다는 안 됩니다",
+    "categoryReserved": "Jotty가 내부에서 쓰는 폴더 이름이라 아무것도 저장하지 않았습니다",
+    "noteNotFound": "그 노트를 찾을 수 없습니다"
   },
   "pwa": {
     "installPromptTitle": "앱 설치",

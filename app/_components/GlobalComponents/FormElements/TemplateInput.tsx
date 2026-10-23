@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Add01Icon } from "hugeicons-react";
-import { Note } from "@/app/_types";
+import { TemplateSummary } from "@/app/_types";
 import { Button } from "../Buttons/Button";
 import { Dropdown } from "../Dropdowns/Dropdown";
 import { TemplateNameForm } from "./TemplateNameForm";
@@ -11,7 +11,7 @@ import { TemplateNameForm } from "./TemplateNameForm";
 const NO_TEMPLATE = "";
 
 interface TemplateInputProps {
-  templates: Note[];
+  templates: TemplateSummary[];
   selectedTemplate: string;
   onTemplateChange: (uuid: string) => void;
   onMakeBlank: (name: string) => Promise<boolean>;
@@ -31,8 +31,8 @@ export const TemplateInput = ({
   const options = [
     { id: NO_TEMPLATE, name: t("templates.none") },
     ...templates
-      .filter((template) => template.uuid && !template.encrypted)
-      .map((template) => ({ id: template.uuid!, name: template.title })),
+      .filter((template) => !template.encrypted)
+      .map((template) => ({ id: template.uuid, name: template.title })),
   ];
 
   return (

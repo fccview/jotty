@@ -1,3 +1,5 @@
+import { EXCLUDED_DIRS, RESERVED_DIRS } from "@/app/_consts/files";
+
 const SEPARATOR = "/";
 const TRAIL_SEPARATOR = " / ";
 
@@ -14,3 +16,9 @@ export const isInCategory = (
 ): boolean =>
   itemCategory === selected ||
   (recursive && itemCategory.startsWith(selected + SEPARATOR));
+
+export const isReservedCategory = (category = ""): boolean =>
+  category.split(SEPARATOR).some((part, index) => {
+    const name = part.trim().toLowerCase();
+    return index === 0 ? EXCLUDED_DIRS.includes(name) : RESERVED_DIRS.includes(name);
+  });

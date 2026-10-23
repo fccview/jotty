@@ -29,7 +29,8 @@ import {
   metaCacheKey,
   summaryCacheKey,
 } from "@/app/_server/actions/lib/metadata-cache";
-import { targetDir, bouncer, shownAs } from "@/app/_server/actions/share/target";
+import { targetDir, bouncer, shownAs, reservedRefusal } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { SharedMount } from "@/app/_types/sharing";
 import { PermissionTypes } from "@/app/_types/enums";
 import { orderByUuids } from "@/app/_utils/order-utils";
@@ -316,6 +317,10 @@ export const moveNode = async (formData: FormData) => {
 
     if (activeMountRoot && destParentPath) {
       return { error: "Shared folders stay at the top level" };
+    }
+
+    if (isReservedCategory(destParentPath)) {
+      return { error: await reservedRefusal(destParentPath) };
     }
 
     const isSameParent = activeParentPath === destParentPath;

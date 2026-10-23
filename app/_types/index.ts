@@ -19,7 +19,7 @@ export type {
   ListSummary,
 } from "./checklist";
 
-export type { Note, NoteBody, NoteEditorViewModel, NoteSummary } from "./note";
+export type { Note, NoteBody, NoteEditorViewModel, NoteSummary, TemplateSummary } from "./note";
 
 export type {
   User,

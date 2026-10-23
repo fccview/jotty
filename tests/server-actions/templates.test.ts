@@ -44,6 +44,7 @@ vi.mock("@/app/_server/actions/users", async (importOriginal) => ({
 }));
 
 import { createTemplate, getTemplates, saveAsTemplate } from "@/app/_server/actions/template";
+import { createCategory } from "@/app/_server/actions/category";
 import { makeNote } from "@/app/_server/actions/note/creator";
 import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { categoriesFor } from "@/app/_server/actions/category/tree";
@@ -88,6 +89,17 @@ const alice: SanitisedUser = {
   preferredTimeFormat: "24-hours",
 };
 
+const MANAGED = "66666666-6666-4666-8666-666666666666";
+const TYPED_TEMPLATE = "77777777-7777-4777-8777-777777777777";
+
+const plainNote = (title: string, category: string) => {
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("category", category);
+  formData.append("rawContent", "hello");
+  return makeNote(alice, formData);
+};
+
 const fromTemplate = (title: string, templateId: string, rawContent = "") => {
   const formData = new FormData();
   formData.append("title", title);
@@ -106,6 +118,8 @@ describe("note templates", () => {
     writeNote("alice", TEMPLATES_DIR_NAME, "Standup", ALICE_TEMPLATE, "## {{ title }}\n- yesterday\n- today, {{user}}");
     writeNote("alice", TEMPLATES_DIR_NAME, "Sealed", SEALED_TEMPLATE, SEALED_BODY, ["encrypted: true"]);
     writeNote("bob", TEMPLATES_DIR_NAME, "Bob only", BOB_TEMPLATE, "bob's secret layout");
+    writeNote("alice", "Scripts", "Feed", MANAGED, "rewritten nightly", ["managed: true", "source: rss"]);
+    writeNote("alice", TEMPLATES_DIR_NAME, "Meeting kind", TYPED_TEMPLATE, "agenda", ["type: meeting", "managed: true", "sharedWith: [bob:r]"]);
   });
 
   afterAll(() => {
@@ -126,8 +140,8 @@ describe("note templates", () => {
   it("refuses to turn an encrypted note into a template", async () => {
     const result = await saveAsTemplate(DIARY);
 
-    expect(result.error).toBe("templateEncrypted");
-    expect(readdirSync(notesDir("alice", TEMPLATES_DIR_NAME))).toHaveLength(2);
+    expect(result.error).toBe("errors.templateEncrypted");
+    expect(readdirSync(notesDir("alice", TEMPLATES_DIR_NAME))).toHaveLength(3);
   });
 
   it("lists only the session user's templates", async () => {
@@ -136,7 +150,8 @@ describe("note templates", () => {
 
     expect(ids).toEqual(expect.arrayContaining([ALICE_TEMPLATE, SEALED_TEMPLATE]));
     expect(ids).not.toContain(BOB_TEMPLATE);
-    expect(result.data?.every((template) => template.category === TEMPLATES_DIR_NAME)).toBe(true);
+    expect(Object.keys(result.data![0]).sort()).toEqual(["encrypted", "title", "updatedAt", "uuid"]);
+    expect(result.data?.find((template) => template.uuid === SEALED_TEMPLATE)?.encrypted).toBe(true);
   });
 
   it("keeps templates out of the note list and the category tree", async () => {
@@ -148,7 +163,7 @@ describe("note templates", () => {
   });
 
   it("keeps templates out of the search grep", async () => {
-    const hits = await grepSearchContent(notesDir("alice"), "yesterday", [TEMPLATES_DIR_NAME]);
+    const hits = await grepSearchContent(notesDir("alice"), "yesterday");
     expect(hits).toHaveLength(0);
   });
 
@@ -200,5 +215,53 @@ describe("note templates", () => {
     expect(result.success).toBe(true);
     expect(result.data?.category).toBe(TEMPLATES_DIR_NAME);
     expect(existsSync(path.join(notesDir("alice", TEMPLATES_DIR_NAME), "Weekly review.md"))).toBe(true);
+  });
+
+  it("drops managed when saving a note as a template and keeps other keys", async () => {
+    const result = await saveAsTemplate(MANAGED);
+    const written = readFileSync(path.join(notesDir("alice", TEMPLATES_DIR_NAME), "Feed.md"), "utf-8");
+
+    expect(result.success).toBe(true);
+    expect(written).not.toContain("managed");
+    expect(written).toContain("source: rss");
+  });
+
+  it("carries a template's own frontmatter into the new note, minus managed and shares", async () => {
+    const result = await fromTemplate("Kickoff", TYPED_TEMPLATE);
+
+    expect(result.success).toBe(true);
+    expect(result.data?.extraMetadata).toEqual({ type: "meeting" });
+
+    const written = readFileSync(path.join(notesDir("alice", "Work"), "Kickoff.md"), "utf-8");
+    expect(written).toContain("type: meeting");
+    expect(written).not.toContain("managed");
+    expect(written).not.toContain("bob");
+  });
+
+  it.each(["Work/.templates", "Work/.archive", "images", "Work/.comments", ".templates/.archive"])(
+    "refuses to create a note in the reserved folder %s",
+    async (category) => {
+      const result = await plainNote("Hidden", category);
+
+      expect(result.error).toBe("categoryReserved");
+      expect(existsSync(path.join(notesDir("alice", category), "Hidden.md"))).toBe(false);
+    },
+  );
+
+  it("still lets a note be created at the top of the templates folder", async () => {
+    const result = await plainNote("Direct", TEMPLATES_DIR_NAME);
+    expect(result.success).toBe(true);
+  });
+
+  it("refuses a category whose name is reserved", async () => {
+    const formData = new FormData();
+    formData.append("name", ".templates");
+    formData.append("parent", "Work");
+    formData.append("mode", Modes.NOTES);
+
+    const result = await createCategory(formData);
+
+    expect(result.error).toBe("categoryReserved");
+    expect(existsSync(notesDir("alice", "Work/.templates"))).toBe(false);
   });
 });

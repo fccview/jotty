@@ -666,7 +666,7 @@ export const NoteEditorHeader = ({
                             },
                           ]
                           : []
-                        : permissions?.canEdit
+                        : permissions?.canEdit && !isTemplate
                           ? [
                             {
                               type: "item" as const,
