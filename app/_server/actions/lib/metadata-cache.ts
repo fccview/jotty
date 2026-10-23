@@ -3,11 +3,26 @@ import fs from "fs";
 import path from "path";
 import { CATEGORY_INFO_FILE, LEGACY_ORDER_FILE } from "@/app/_consts/sharing";
 
-const store = new Map<string, unknown[]>();
-const pending = new Map<string, Promise<unknown[]>>();
-const watchers = new Map<string, fs.FSWatcher>();
-const dirToKeys = new Map<string, Set<string>>();
-const stamps = new Map<string, number>();
+interface MetaCacheState {
+  store: Map<string, unknown[]>;
+  pending: Map<string, Promise<unknown[]>>;
+  watchers: Map<string, fs.FSWatcher>;
+  dirToKeys: Map<string, Set<string>>;
+  stamps: Map<string, number>;
+}
+
+declare global {
+  var __jottyMetaCache: MetaCacheState | undefined;
+}
+
+const { store, pending, watchers, dirToKeys, stamps } =
+  (globalThis.__jottyMetaCache ??= {
+    store: new Map(),
+    pending: new Map(),
+    watchers: new Map(),
+    dirToKeys: new Map(),
+    stamps: new Map(),
+  });
 
 function drop(key: string) {
   store.delete(key);

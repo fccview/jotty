@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import os from "os";
 import path from "path";
 import { mkdtempSync } from "fs";
@@ -84,5 +84,28 @@ describe("metadata cache", () => {
 
     expect(after).toEqual([1]);
     expect(runs).toBe(1);
+  });
+
+  it("should share one cache across separately bundled copies of the module", async () => {
+    const dir = tempDir();
+    let runs = 0;
+
+    const compute = async () => {
+      runs += 1;
+      return [runs];
+    };
+
+    const sidebar = await import("@/app/_server/actions/lib/metadata-cache");
+    vi.resetModules();
+    const api = await import("@/app/_server/actions/lib/metadata-cache");
+
+    expect(api).not.toBe(sidebar);
+
+    await sidebar.getOrCompute("split:one", dir, compute);
+    api.invalidatePath(path.join(dir, "gone.md"));
+
+    const after = await sidebar.getOrCompute("split:one", dir, compute);
+
+    expect(after).toEqual([2]);
   });
 });
