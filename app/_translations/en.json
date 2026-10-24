@@ -159,6 +159,7 @@
     "page": "Page",
     "pageOfPages": "{currentPage} of {totalPages}",
     "searchPlaceholder": "Search notes and checklists... (⌘K)",
+    "searchSidebarPlaceholder": "Find a note, list or folder...",
     "system": "System",
     "errors": "Errors",
     "statistics": "Statistics",

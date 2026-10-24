@@ -9,6 +9,7 @@ import { mapPooled } from "@/app/_server/actions/lib/concurrency";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { hasNoteBody } from "@/app/_utils/note-display-utils";
+import { everyBody } from "./browse";
 import { getNoteById, getUserNotes } from "./queries";
 import type { ListedNote } from "./readers";
 
@@ -99,5 +100,7 @@ export const getNotesForDisplay = async (
     filter: filter || undefined,
     limit,
     offset: filter ? offset : undefined,
+    summarize: true,
+    bodiesFor: everyBody,
   });
 };

@@ -1,7 +1,4 @@
-import {
-  TiptapEditor,
-  TiptapEditorRef,
-} from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
+import { TiptapEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -49,9 +46,8 @@ export const NoteEditorContent = ({
   onOpenViewModal,
 }: NoteEditorContentProps) => {
   const t = useTranslations();
-  const { user, notes, checklists } = useAppMode();
+  const { user } = useAppMode();
   const compactMode = useQuickValue(QuickSettingId.COMPACT_MODE);
-  const editorRef = useRef<TiptapEditorRef>(null);
   const isMinimalMode = useMinimalMode();
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -62,26 +58,6 @@ export const NoteEditorContent = ({
     holdAnchor();
     setModeSwitches((count) => count + 1);
   }, [holdAnchor]);
-
-  useEffect(() => {
-    if (
-      editorRef.current &&
-      isEditorVisible &&
-      !isMinimalMode
-    ) {
-      editorRef.current.updateAtMentionData(
-        notes,
-        checklists,
-        user?.username || "",
-      );
-    }
-  }, [
-    notes,
-    checklists,
-    isEditorVisible,
-    editorRef,
-    isMinimalMode,
-  ]);
 
   const isContentEncrypted = isEncrypted(editorContent || "");
 
@@ -151,14 +127,11 @@ export const NoteEditorContent = ({
         <TiptapEditor
           key={noteId}
           collaborationUuid={!encrypted ? noteId : undefined}
-          ref={editorRef}
           content={editorContent}
           onChange={onEditorContentChange}
           onRemoteChange={onRemoteContentChange}
           onModeChange={handleModeChange}
           tableSyntax={user?.tableSyntax}
-          notes={notes}
-          checklists={checklists}
         />
       ) : (
         <>

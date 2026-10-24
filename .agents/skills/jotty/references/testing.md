@@ -28,6 +28,8 @@ Security tests are not optional colour. If your change makes one fail, the chang
 
 `next/headers` and `next/navigation` are handled in `setup.ts` for the common case.
 
+`fs/promises` is mocked in `setup.ts`, `open` included (ENOENT by default). A test that needs real files points the mocks at the real module, like `note-patch.test.ts`, or uses `vi.unmock` with a temp cwd, like `share-cache-patch.test.ts`.
+
 Do not point tests at the instance `data/` directory. Mock generators: `yarn mock:data:notes <username>` and `yarn mock:data:lists <username>` for local poking only. Do not commit generated notes.
 
 ## What to assert

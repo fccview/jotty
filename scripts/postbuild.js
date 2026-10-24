@@ -35,4 +35,6 @@ for (const name of ["yjs", "y-protocols", "lib0"]) {
   );
 }
 
-console.log("Postbuild: custom server.js and ws module copied to standalone");
+fs.rmSync(path.join(standaloneDir, "data"), { recursive: true, force: true });
+
+console.log("Postbuild: custom server.js and ws module copied to standalone, traced data dropped");

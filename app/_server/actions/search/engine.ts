@@ -5,7 +5,7 @@ import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { RelationsStatus } from "@/app/_consts/relations";
 import { SEARCH_HITS_PER_TYPE, SearchModes } from "@/app/_consts/search";
 import { ItemTypes } from "@/app/_types/enums";
-import { ensureRelations } from "@/app/_server/actions/relations/indexer";
+import { ensureRelations } from "@/app/_server/actions/relations/night-shift";
 import { rankedSearch } from "@/app/_server/actions/relations/search";
 
 export interface SearchHit {

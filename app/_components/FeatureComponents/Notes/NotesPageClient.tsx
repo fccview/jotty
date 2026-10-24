@@ -3,20 +3,19 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Category, DefaultNoteFilter, Note, SanitisedUser } from "@/app/_types";
+import { BrowsePage, Category, DefaultNoteFilter, Note, SanitisedUser } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
 import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { ViewMode } from "@/app/_consts/view-modes";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
-import { useBrowse } from "@/app/_hooks/useBrowse";
+import { useServerBrowse } from "@/app/_hooks/useServerBrowse";
 import { useNoteBodies } from "@/app/_hooks/browse/useNoteBodies";
 import { usePins } from "@/app/_hooks/usePins";
 import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
 import { useMediaQuery } from "@/app/_hooks/useMediaQuery";
 import { BodyCookie, BrowseScope, DESKTOP_QUERY, NOTE_FILTERS } from "@/app/_consts/browse";
-import { matchesNoteFilter, noteLimitFor } from "@/app/_utils/browse-utils";
 import { bodyNeedOf } from "@/app/_utils/browse/body-cookie";
 import { NoteItems } from "@/app/_components/GlobalComponents/Cards/NoteItems";
 import { NoteListItem } from "@/app/_components/GlobalComponents/Cards/NoteListItem";
@@ -28,29 +27,27 @@ import { NotePreview } from "./Parts/NotePreview";
 const NO_NOTES: Note[] = [];
 
 interface NotesPageClientProps {
-  initialNotes: Note[];
+  initialPage: BrowsePage<Note>;
   categories: Category[];
   user: SanitisedUser | null;
 }
 
-export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageClientProps) => {
+export const NotesPageClient = ({ initialPage, categories, user }: NotesPageClientProps) => {
   const t = useTranslations();
   const router = useRouter();
   const compact = useCompactNumber();
   const viewMode = useQuickValue(QuickSettingId.VIEW_MODE);
   const showMarkdownPreview = useQuickValue(QuickSettingId.CARD_PREVIEW);
   const { openCreateNoteModal } = useShortcut();
-  const pins = usePins(initialNotes, user?.pinnedNotes, ItemTypes.NOTE);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
-  const { isPinned } = pins;
-
-  const matches = useCallback(
-    (note: Note, filter: DefaultNoteFilter) => matchesNoteFilter(filter, isPinned(note)),
-    [isPinned],
-  );
-  const defaultFilter = user?.defaultNoteFilter || "all";
-  const browse = useBrowse({ items: initialNotes, defaultFilter, matches, limitFor: noteLimitFor });
+  const defaultFilter: DefaultNoteFilter = user?.defaultNoteFilter || "all";
+  const browse = useServerBrowse<Note, DefaultNoteFilter>({
+    scope: BrowseScope.NOTES,
+    initial: initialPage,
+    defaultFilter,
+  });
+  const pins = usePins(browse.pageItems, user?.pinnedNotes, ItemTypes.NOTE);
   const need = bodyNeedOf({ showMarkdownPreview, viewMode, isDesktop });
   const wanted = useMemo(() => {
     if (need === BodyCookie.ON) return browse.pageItems;
@@ -59,7 +56,7 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
     return focus ? [focus] : NO_NOTES;
   }, [need, browse.pageItems, selectedUuid]);
   const shown = useNoteBodies({
-    notes: initialNotes,
+    notes: browse.pageItems,
     pageItems: browse.pageItems,
     wanted,
     upcoming: need === BodyCookie.ON ? browse.nextItems : NO_NOTES,
@@ -72,11 +69,11 @@ export const NotesPageClient = ({ initialNotes, categories, user }: NotesPageCli
   return (
     <BrowseShell
       scope={BrowseScope.NOTES}
-      isEmpty={!initialNotes.length}
+      isEmpty={!browse.size}
       kicker={t("browse.notesKicker", {
-        notesCount: initialNotes.length,
-        notes: compact(initialNotes.length),
-        pinned: compact(pins.pinned.length),
+        notesCount: browse.size,
+        notes: compact(browse.size),
+        pinned: compact(browse.pinned),
       })}
       filters={NOTE_FILTERS}
       defaultFilter={defaultFilter}

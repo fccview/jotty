@@ -14,6 +14,7 @@ import { KICKER_CLASS } from "@/app/_consts/styling";
 import { cn } from "@/app/_utils/global-utils";
 import { SsoButton } from "@/app/_components/GlobalComponents/Auth/SsoButton";
 import { useSsoError } from "@/app/_hooks/useSsoError";
+import { forgetOfflineSidebar } from "@/app/_utils/offline/sidebar-cache";
 
 const DEMO_USERNAME = "demo";
 const DEMO_PASSWORD = "demodemo";
@@ -38,6 +39,10 @@ export default function LoginForm({
   const [lockedUntil, setLockedUntil] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
   const [rememberMe, setRememberMe] = useState(true);
+
+  useEffect(() => {
+    forgetOfflineSidebar().catch((error) => console.error("Could not clear the offline sidebar:", error));
+  }, []);
   const { isDemoMode } = useAppMode();
 
   useEffect(() => {

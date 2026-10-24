@@ -30,7 +30,7 @@ import { ChecklistPickUp } from "./ChecklistPickUp";
 
 const PROMPTS = "browse.listPrompts";
 
-const listTagCount = (tag: TagInfo) => tag.checklistUuids.length;
+const listTagCount = (tag: TagInfo) => tag.checklistCount;
 
 interface ChecklistHomeProps {
   lists: Checklist[];
@@ -50,7 +50,7 @@ export const ChecklistHome = ({
   const t = useTranslations();
   const compact = useCompactNumber();
   const viewMode = useQuickValue(QuickSettingId.VIEW_MODE);
-  const { checklists: allLists } = useAppMode();
+  const { library } = useAppMode();
   const feed = useHomeFeed<Checklist>(getChecklistsForDisplay);
   const pins = usePins(lists, user?.pinnedLists, ItemTypes.CHECKLIST);
 
@@ -71,7 +71,7 @@ export const ChecklistHome = ({
     };
   }, [feed.filter, feed.items, lists, pins, lastEdited]);
 
-  if (!allLists?.length) {
+  if (!library.checklists) {
     return (
       <HomeFrame isBare>
         <ItemsEmpty
@@ -83,8 +83,8 @@ export const ChecklistHome = ({
     );
   }
 
-  const boardCount = allLists.filter((list) => isKanbanType(list.type)).length;
-  const simpleCount = allLists.length - boardCount;
+  const boardCount = library.boards;
+  const simpleCount = library.checklists - boardCount;
 
   return (
     <HomeFrame>

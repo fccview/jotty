@@ -16,7 +16,13 @@ import {
   extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
-import { readNotesRecursively, type ListedNote, type NoteReadOptions } from "./readers";
+import {
+  patchNoteListing,
+  readNotesRecursively,
+  verifyNoteSummaries,
+  type ListedNote,
+  type NoteReadOptions,
+} from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { isDebugFlag } from "@/app/_utils/env-utils";
@@ -25,7 +31,7 @@ import {
   metaCacheKey,
   summaryCacheKey,
 } from "@/app/_server/actions/lib/metadata-cache";
-import { withNoteBody } from "@/app/_utils/note-display-utils";
+import { unlistedNote, withBody } from "./bodies";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
 import { pinsFirst } from "@/app/_utils/pin-utils";
 
@@ -146,18 +152,6 @@ export const getNoteById = async (
   };
 };
 
-const _bodied = async (note: ListedNote): Promise<ListedNote> => {
-  const raw = note.sourcePath ? await serverReadExisting(note.sourcePath) : null;
-  if (raw === null) return note;
-  return withNoteBody(note, extractYamlMetadata(raw).contentWithoutMetadata);
-};
-
-const _unlisted = (note: ListedNote): Note => {
-  const bare = { ...note };
-  delete bare.sourcePath;
-  return bare;
-};
-
 const _withBodies = async (
   notes: ListedNote[],
   bodiesFor?: (notes: Note[]) => string[],
@@ -165,9 +159,9 @@ const _withBodies = async (
 ): Promise<Note[]> => {
   const wanted = new Set(bodiesFor ? bodiesFor(notes) : []);
   const filled = await Promise.all(
-    notes.map((note) => (wanted.has(note.uuid) ? _bodied(note) : note)),
+    notes.map((note) => (wanted.has(note.uuid) ? withBody(note) : note)),
   );
-  return keepSources ? filled : filled.map(_unlisted);
+  return keepSources ? filled : filled.map(unlistedNote);
 };
 
 export const getUserNotes = async (options: GetNotesOptions = {}) => {
@@ -186,6 +180,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     summarize = false,
     bodiesFor,
     keepSources = false,
+    verify = false,
   } = options;
 
   try {
@@ -228,8 +223,21 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     };
     const readOwn = () => readNotesRecursively(resolvedDir, currentUser.username, readOptions);
 
+    const verified = new Set<string>();
+    const checked = async (key: string, dir: string) => {
+      if (!verify || !isSummary || verified.has(key)) return;
+      verified.add(key);
+      await verifyNoteSummaries(key, dir);
+    };
+
+    if (ownCacheKey) await checked(ownCacheKey, resolvedDir);
     const cached: ListedNote[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, resolvedDir, readOwn)
+      ? await getOrCompute(
+          ownCacheKey,
+          resolvedDir,
+          readOwn,
+          patchNoteListing(resolvedDir, currentUser.username, readOptions),
+        )
       : await readOwn();
 
     const notes: ListedNote[] = dropClashes(cached, resolvedDir);
@@ -261,8 +269,14 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
           : null;
 
         const readOwner = () => readNotesRecursively(ownerDir, mount.owner, readOptions);
+        if (ownerCacheKey) await checked(ownerCacheKey, ownerAbsDir);
         const ownerNotes = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerAbsDir, readOwner)
+          ? await getOrCompute(
+              ownerCacheKey,
+              ownerAbsDir,
+              readOwner,
+              patchNoteListing(ownerAbsDir, mount.owner, readOptions),
+            )
           : await readOwner();
 
         const shared = await mountedItems(

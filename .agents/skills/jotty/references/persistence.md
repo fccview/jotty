@@ -45,13 +45,18 @@ Paths: `path.join(process.cwd(), ...)`. Constants in `app/_consts/files.ts`. Nev
 
 ## Finding files
 
-Do not walk a user directory once per item. `grep-utils` exists because a naive recursive read fell over.
+Do not walk a user directory once per item, and do not spawn a process per file. One `sed` per note is what took a 10k note library down.
 
-- One item by uuid: `grepFindFileByUuid`
-- Metadata without the body: grep frontmatter helpers, then `getOrCompute` in `metadata-cache.ts`
-- List views: `readNotesRecursively` / `readListsRecursively` behind that cache
+- One item by uuid: `grepFindFileByUuid`. It asks the relations index first and checks the answer against the file on disk before trusting it.
+- Frontmatter without the body: `frontmatterOf` / `fillFrontmatters` in `lib/frontmatter-memo.ts`. In-process head reads, memoised on mtime and size, capped by `gated()`.
+- List views: `readNotesRecursively` / `readListsRecursively` behind `getOrCompute` in `metadata-cache.ts`. One file's entry: `readNoteEntry` / `readListEntry`.
+- Pages of a list: `browse/page.ts`. The REST notes list (`note/api-listing.ts`) filters summaries and reads bodies only for the page it returns. Bodies for a page: `note/bodies.ts`. Strip `sourcePath` before anything leaves the server.
 
-The cache watches `.md` and `.category-info.json`. If you add a new derived file, teach the watcher.
+The cache watches `.md` and `.category-info.json`. A changed `.md` marks that file dirty, and the next read patches the cached value through its refresh function (`listingPatcher` in `lib/listing-patch.ts` for listings) instead of rebuilding it. Anything else, or a refresh that returns null, rebuilds. A cache registered without a refresh rebuilds in full after every save, which on a big library is seconds. Give it one, and test that the patched result equals a fresh read. If you add a new derived file, teach the watcher.
+
+`fs.watch` stays silent on some network mounts and bind mounts. The REST API can't answer from a cache it can't trust, so `getUserNotes({ verify: true })` stats the folder against the memo first (`lib/listing-verify.ts`) and patches whatever changed behind the watcher's back. Use it for anything a script reads.
+
+Module-level caches and memos live on `globalThis`. Dev compiles a bundle per route, and a plain module variable becomes several caches that disagree.
 
 ## Locks and races
 
@@ -63,6 +68,7 @@ Read, change, write back without a lock loses data. It has happened.
 - Category info: `runQueued` in `lib/concurrency.ts` via `patchCatInfo`
 - Note history git: `proper-lockfile` under `data/.locks/`
 - In-process single-flight: `singleFlight`, `runQueued`
+- Capping open files or parallel reads: `gated(limit)`
 
 Take the lock around the whole sequence, starting at the read. A check that returns early and then writes outside the lock is the same bug.
 
@@ -70,7 +76,11 @@ Jotty is one Node process. Those in-process maps are enough until someone cluste
 
 ## Indexes
 
-`data/.relations.db` is the **relations** index, in `app/_server/actions/relations/`. It holds items, links between them, frontmatter aliases and plain note text for "Mentioned in". It is derived and disposable: a missing, corrupt or old-schema file is discarded and rebuilt from the markdown on start, with the UI showing "Indexing relationships...". Bump `RELATIONS_SCHEMA_VERSION` when its shape changes. No migration, it just rebuilds.
+`data/.relations.db` is the **relations** index, in `app/_server/actions/relations/`. It holds items, links between them, frontmatter aliases and plain note text for "Mentioned in". It is derived and disposable: a missing, corrupt or old-schema file is discarded and rebuilt from the markdown, with the UI showing "Indexing relationships...". Deleting or replacing it while the app runs is noticed by inode on the next read. Bump `RELATIONS_SCHEMA_VERSION` when its shape changes. No migration, it just rebuilds.
+
+- Bulk work (rebuild, reconcile, owner and moved-tree sweeps) runs in a worker thread through `relations/night-shift.ts`, so pages keep answering while it runs. `indexer.ts` holds per-item primitives, `sweep.ts` the bulk jobs. Call bulk work through `night-shift`. It runs inline in tests or when the worker can't start.
+- Only the main thread creates the db. A worker that finds it gone throws `RelationsGoneError` and the main thread rebuilds. Two threads creating it split the index across two files.
+- `texts` rows are keyed by the item's rowid. Deleting them by uuid made a rebuild quadratic.
 
 - Writes keep it current through the file helpers (`trackItemWrite` and friends in `relations/tracking.ts`). Use the helpers and you get it for free.
 - Changes made outside Jotty are caught by a recursive `fs.watch` on the notes and checklists roots, throttled to one pass a minute, which only stats the paths that changed. If the watcher can't start, reads fall back to a full mtime reconcile at most once a minute.

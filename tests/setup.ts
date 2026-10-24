@@ -53,7 +53,11 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
 }));
 
+const _missingFile = () =>
+  Promise.reject(Object.assign(new Error("ENOENT: no such file"), { code: "ENOENT" }));
+
 export const mockFs = {
+  open: vi.fn(_missingFile),
   readFile: vi.fn(),
   writeFile: vi.fn(),
   mkdir: vi.fn(),
@@ -224,6 +228,8 @@ export function resetAllMocks() {
   mockFs.rename.mockReset();
   mockFs.rm.mockReset();
   mockFs.unlink.mockReset();
+  mockFs.open.mockReset();
+  mockFs.open.mockImplementation(_missingFile);
   mockLock.mockReset();
   mockUnlock.mockReset();
 }

@@ -37,5 +37,6 @@ export const getChecklistsForDisplay = async (
     filter: filter || undefined,
     limit,
     offset: filter ? offset : undefined,
+    summarize: true,
   });
 };

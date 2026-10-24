@@ -61,3 +61,20 @@ export const mapPooled = async <T, R>(
   await Promise.all(Array.from({ length: Math.min(size, items.length) }, runner));
   return results;
 };
+
+export const gated = (limit: number) => {
+  let active = 0;
+  const waiting: (() => void)[] = [];
+
+  return async <T>(task: () => Promise<T>): Promise<T> => {
+    if (active >= limit) await new Promise<void>((resolve) => waiting.push(resolve));
+    else active++;
+    try {
+      return await task();
+    } finally {
+      const next = waiting.shift();
+      if (next) next();
+      else active--;
+    }
+  };
+};

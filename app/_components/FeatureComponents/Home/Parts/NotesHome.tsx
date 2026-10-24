@@ -31,7 +31,7 @@ import { NotePickUp } from "./NotePickUp";
 const PROMPTS = "browse.notePrompts";
 const NOTES_FRAME = "flex-1";
 
-const noteTagCount = (tag: TagInfo) => tag.noteUuids.length;
+const noteTagCount = (tag: TagInfo) => tag.noteCount;
 
 interface NotesHomeProps {
   notes: Note[];
@@ -44,7 +44,7 @@ export const NotesHome = ({ notes, user, onCreate, onSelectNote }: NotesHomeProp
   const t = useTranslations();
   const compact = useCompactNumber();
   const viewMode = useQuickValue(QuickSettingId.VIEW_MODE);
-  const { notes: allNotes } = useAppMode();
+  const { library } = useAppMode();
   const feed = useHomeFeed<Note>(getNotesForDisplay);
   const pins = usePins(notes, user?.pinnedNotes, ItemTypes.NOTE);
 
@@ -57,7 +57,7 @@ export const NotesHome = ({ notes, user, onCreate, onSelectNote }: NotesHomeProp
       .sort(newestFirst);
   }, [feed.filter, feed.items, notes, pins, lastEdited]);
 
-  if (!allNotes?.length) {
+  if (!library.notes) {
     return (
       <HomeFrame className={NOTES_FRAME} isBare>
         <ItemsEmpty
@@ -69,8 +69,6 @@ export const NotesHome = ({ notes, user, onCreate, onSelectNote }: NotesHomeProp
     );
   }
 
-  const encrypted = allNotes.filter((note) => note.encrypted).length;
-
   return (
     <HomeFrame className={NOTES_FRAME}>
       <HomeTop
@@ -80,10 +78,10 @@ export const NotesHome = ({ notes, user, onCreate, onSelectNote }: NotesHomeProp
         newLabel={t("notes.newNote")}
         createInKey="browse.newNoteIn"
         summary={t("browse.notesSummary", {
-          notesCount: allNotes.length,
-          notes: compact(allNotes.length),
+          notesCount: library.notes,
+          notes: compact(library.notes),
           pinned: compact(pins.pinned.length),
-          encrypted: compact(encrypted),
+          encrypted: compact(library.encryptedNotes),
         })}
         pickUp={
           lastEdited && <NotePickUp note={lastEdited} onOpen={() => onSelectNote(lastEdited)} />

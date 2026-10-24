@@ -1,3 +1,5 @@
+import path from "path";
+
 const MEMO_LIMIT = 20000;
 const UNKNOWN_STAMP = -1;
 const STAT_FIELDS = 4;
@@ -14,7 +16,7 @@ export interface StatLine extends FileStamp {
   birthtime: Date;
 }
 
-const stampKey = ({ mtime, size, ctime }: FileStamp): string =>
+export const stampKey = ({ mtime, size, ctime }: FileStamp): string =>
   [mtime.getTime(), size ?? UNKNOWN_STAMP, ctime?.getTime() ?? UNKNOWN_STAMP].join(":");
 
 const secondsToDate = (value: string): Date => new Date(parseFloat(value) * 1000);
@@ -40,7 +42,8 @@ export const parseStatLine = (line: string): [string, StatLine] | null => {
 export const summaryMemo = <T>(limit: number = MEMO_LIMIT) => {
   const memo = new Map<string, { stamp: string; value: T }>();
 
-  const recall = (filePath: string, stats: FileStamp): T | undefined => {
+  const recall = (given: string, stats: FileStamp): T | undefined => {
+    const filePath = path.resolve(given);
     const hit = memo.get(filePath);
     if (!hit) return undefined;
     memo.delete(filePath);
@@ -49,7 +52,8 @@ export const summaryMemo = <T>(limit: number = MEMO_LIMIT) => {
     return hit.value;
   };
 
-  const remember = (filePath: string, stats: FileStamp, value: T): T => {
+  const remember = (given: string, stats: FileStamp, value: T): T => {
+    const filePath = path.resolve(given);
     memo.delete(filePath);
     memo.set(filePath, { stamp: stampKey(stats), value });
     if (memo.size > limit) {
@@ -59,5 +63,12 @@ export const summaryMemo = <T>(limit: number = MEMO_LIMIT) => {
     return value;
   };
 
-  return { recall, remember };
+  const stampOf = (filePath: string): string | undefined => memo.get(path.resolve(filePath))?.stamp;
+
+  const pathsUnder = (dir: string): string[] => {
+    const prefix = path.resolve(dir) + path.sep;
+    return Array.from(memo.keys()).filter((filePath) => filePath.startsWith(prefix));
+  };
+
+  return { recall, remember, stampOf, pathsUnder };
 };

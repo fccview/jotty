@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { DatabaseSync } from "node:sqlite";
+import { isMainThread } from "node:worker_threads";
 import { DATA_DIR } from "@/app/_consts/files";
 import {
   RELATIONS_DB_NAME,
@@ -9,9 +10,22 @@ import {
 } from "@/app/_consts/relations";
 import { clusterNode } from "@/app/_utils/env-utils";
 
-declare global {
-  var __jottyRelations: { db: DatabaseSync; file: string; schema: number } | undefined;
+interface HeldDb {
+  db: DatabaseSync;
+  file: string;
+  schema: number;
+  inode: number | null;
+  seenAt: number;
 }
+
+declare global {
+  var __jottyRelations: HeldDb | undefined;
+  var __jottyRelationsGeneration: number | undefined;
+}
+
+const PRESENCE_CHECK_MS = 1_000;
+
+export class RelationsGoneError extends Error {}
 
 const SCHEMA = `
   CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -100,8 +114,17 @@ const _prepare = (db: DatabaseSync) => {
   db.exec(SCHEMA);
 };
 
+const _inodeOf = (file: string): number | null => {
+  try {
+    return fs.statSync(file).ino;
+  } catch {
+    return null;
+  }
+};
+
 const _fresh = (file: string): DatabaseSync => {
   fs.mkdirSync(path.dirname(file), { recursive: true });
+  _discard(file);
   const db = new DatabaseSync(file);
   _prepare(db);
   const setMeta = db.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)");
@@ -122,20 +145,50 @@ const _open = (file: string): DatabaseSync => {
     console.error("Relations db unreadable, rebuilding from notes:", error);
   }
 
-  _discard(file);
   return _fresh(file);
 };
+
+const _join = (file: string): DatabaseSync => {
+  if (!fs.existsSync(file)) throw new RelationsGoneError(`Relations db ${file} is gone, waiting for a rebuild`);
+  const db = new DatabaseSync(file);
+  _prepare(db);
+  if (_schemaVersion(db) === RELATIONS_SCHEMA_VERSION) return db;
+  db.close();
+  throw new RelationsGoneError(`Relations db ${file} has an older schema, waiting for a rebuild`);
+};
+
+const _stillThere = (held: HeldDb, file: string): boolean => {
+  if (!held.db.isOpen || held.file !== file || held.schema !== RELATIONS_SCHEMA_VERSION) return false;
+  if (Date.now() - held.seenAt < PRESENCE_CHECK_MS) return true;
+  if (_inodeOf(file) !== held.inode) {
+    console.warn(`Relations db ${file} was removed or replaced, reopening`);
+    return false;
+  }
+  held.seenAt = Date.now();
+  return true;
+};
+
+export const openRelationsDb = (): DatabaseSync | null =>
+  globalThis.__jottyRelations?.db.isOpen ? relationsDb() : null;
+
+export const relationsGeneration = (): number => globalThis.__jottyRelationsGeneration || 0;
 
 export const relationsDb = (): DatabaseSync => {
   const file = relationsFile();
   const held = globalThis.__jottyRelations;
-  if (held?.db.isOpen && held.file === file && held.schema === RELATIONS_SCHEMA_VERSION) {
-    return held.db;
-  }
+  if (held && _stillThere(held, file)) return held.db;
   if (held?.db.isOpen) held.db.close();
+  globalThis.__jottyRelations = undefined;
 
-  const db = _open(file);
-  globalThis.__jottyRelations = { db, file, schema: RELATIONS_SCHEMA_VERSION };
+  const db = isMainThread ? _open(file) : _join(file);
+  globalThis.__jottyRelations = {
+    db,
+    file,
+    schema: RELATIONS_SCHEMA_VERSION,
+    inode: _inodeOf(file),
+    seenAt: Date.now(),
+  };
+  globalThis.__jottyRelationsGeneration = relationsGeneration() + 1;
   return db;
 };
 

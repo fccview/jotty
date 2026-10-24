@@ -5,7 +5,6 @@ import { firstNotesPage } from "@/app/_utils/browse-utils";
 import { isNoteEncrypted } from "@/app/_utils/note-display-utils";
 import { bodyNeedOf, isBodyCookie } from "@/app/_utils/browse/body-cookie";
 import { QuickSettingId, accountValueOf } from "@/app/_consts/quick-settings";
-import { getUserNotes } from "./queries";
 
 const PAGE_SIZES: Record<BodyCookie, number> = {
   [BodyCookie.ON]: DEFAULT_ITEMS_PER_PAGE,
@@ -33,18 +32,9 @@ export const accountWantsBodies = (user: SanitisedUser | null): BodyCookie =>
     isDesktop: true,
   });
 
-const _wantedBodies = async (user: SanitisedUser | null): Promise<BodyCookie> => {
+export const wantedBodies = async (user: SanitisedUser | null): Promise<BodyCookie> => {
   const cookie = (await cookies()).get(NOTE_BODIES_COOKIE)?.value;
   return isBodyCookie(cookie) ? cookie : accountWantsBodies(user);
-};
-
-export const getBrowseNotes = async (user: SanitisedUser | null) => {
-  const wanted = await _wantedBodies(user);
-
-  return getUserNotes({
-    summarize: true,
-    bodiesFor: wanted === BodyCookie.OFF ? undefined : firstPageBodies(user, wanted),
-  });
 };
 
 export const everyBody = (notes: Note[]): string[] => notes.map((note) => note.uuid);

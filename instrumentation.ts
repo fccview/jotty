@@ -136,7 +136,7 @@ export async function register() {
 
     if (!(globalThis as any).__jottyRelationsStarted) {
       (globalThis as any).__jottyRelationsStarted = true;
-      import("./app/_server/actions/relations/indexer")
+      import("./app/_server/actions/relations/night-shift")
         .then(({ reconcileRelations }) => reconcileRelations())
         .then(() => import("./app/_server/actions/relations/watcher"))
         .then(({ watchRelations }) => watchRelations())
