@@ -79,9 +79,9 @@ export const DropdownMenu = ({
     const target = contextTarget?.current;
     if (!target) return;
     const handleContext = (event: MouseEvent) => {
+      if (disabled) return;
       event.preventDefault();
       event.stopPropagation();
-      if (disabled) return;
       setPoint({ x: event.clientX, y: event.clientY });
       setIsOpen(true);
     };

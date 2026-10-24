@@ -10,6 +10,8 @@ import { SortOutcome, Sorted, restoreListOrder, sortListItems } from "./sorter";
 
 const INVALID_INPUT = "errors.invalidInput";
 
+const UNAUTHORIZED = "errors.unauthorized";
+
 const SORT_FAILED = "checklists.sortFailed";
 
 const UNDO_FAILED = "checklists.undoSortFailed";
@@ -40,6 +42,11 @@ const _refused = async (key: string): Promise<Result<SortedList>> => {
   return { success: false, error: t(key) };
 };
 
+const _turnedAway = (reason: string): Promise<Result<SortedList>> => {
+  console.warn("Refused a sort without a session:", reason);
+  return _refused(UNAUTHORIZED);
+};
+
 const _settle = async (
   run: () => Promise<SortOutcome>,
   failure: string,
@@ -60,7 +67,7 @@ const _settle = async (
 
 export const sortItems = async (formData: FormData): Promise<Result<SortedList>> => {
   const actor = await sessionActor();
-  if ("error" in actor) return { success: false, error: actor.error };
+  if ("error" in actor) return _turnedAway(actor.error);
 
   const uuid = formData.get("uuid");
   const parsed = itemSortBody.safeParse({
@@ -79,7 +86,7 @@ export const sortItems = async (formData: FormData): Promise<Result<SortedList>>
 
 export const undoSort = async (formData: FormData): Promise<Result<SortedList>> => {
   const actor = await sessionActor();
-  if ("error" in actor) return { success: false, error: actor.error };
+  if ("error" in actor) return _turnedAway(actor.error);
 
   const uuid = formData.get("uuid");
   const before = _parseIds(formData.get("before"));

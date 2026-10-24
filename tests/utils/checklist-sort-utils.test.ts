@@ -1,11 +1,13 @@
 import { describe, it, expect } from "vitest"
 import {
+  numberTree,
   preorderIds,
   restoreTree,
   sameOrder,
   shuffle,
   sortLocale,
   sortTree,
+  treeShape,
 } from "@/app/_utils/checklist-sort-utils"
 import { ItemSort, SortDirection } from "@/app/_types/enums"
 import { Item } from "@/app/_types"
@@ -206,5 +208,29 @@ describe("restoreTree", () => {
 
     expect(restored.map((item) => item.id)).toEqual(["a", "b", "c", "d"])
     expect(restored[1].children?.map((item) => item.id)).toEqual(["b1", "b2"])
+  })
+})
+
+describe("treeShape", () => {
+  it("tells a nested item from one sitting next to its old parent", () => {
+    const flat = [row("a", "A"), row("b", "B"), row("c", "C")]
+    const nested = [row("a", "A", [row("b", "B")]), row("c", "C")]
+
+    expect(sameOrder(preorderIds(flat), preorderIds(nested))).toBe(true)
+    expect(sameOrder(treeShape(flat), treeShape(nested))).toBe(false)
+    expect(treeShape(nested)).toEqual(["0:a", "1:b", "0:c"])
+  })
+})
+
+describe("numberTree", () => {
+  it("copies the tree and numbers every level without moving anything", () => {
+    const start = groceries()
+    const numbered = numberTree(start)
+
+    expect(ids(numbered)).toEqual(ids(start))
+    expect(numbered.map((item) => item.order)).toEqual([0, 1, 2, 3])
+    expect(numbered[1].children?.map((item) => item.order)).toEqual([0, 1])
+    expect(numbered[1]).not.toBe(start[1])
+    expect(numbered[1].children).not.toBe(start[1].children)
   })
 })

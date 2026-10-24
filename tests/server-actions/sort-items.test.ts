@@ -37,6 +37,8 @@ const mallory = { username: "mallory", isAdmin: false } as SanitisedUser
 
 const START = ["c", "a", "a2", "a1", "b"]
 
+const START_SHAPE = ["0:c", "0:a", "1:a2", "1:a1", "0:b"]
+
 const list = (type = "simple") => ({
   uuid: "list-1",
   id: "groceries",
@@ -191,7 +193,7 @@ describe("sortItems", () => {
   it("refuses without a session", async () => {
     mocks.sessionActor.mockResolvedValue({ error: "Not authenticated" })
 
-    expect(await sortItems(form({ uuid: "list-1", sort: ItemSort.SHUFFLE }))).toEqual({ success: false, error: "Not authenticated" })
+    expect(await sortItems(form({ uuid: "list-1", sort: ItemSort.SHUFFLE }))).toEqual({ success: false, error: "errors.unauthorized" })
     expect(mocks.getListById).not.toHaveBeenCalled()
   })
 
@@ -231,7 +233,7 @@ describe("restoreListOrder", () => {
   beforeEach(ready)
 
   it("writes the order it is given, sub-items included, and broadcasts", async () => {
-    const outcome = await restoreListOrder(alice, "list-1", ["b", "a", "a1", "a2", "c"], START)
+    const outcome = await restoreListOrder(alice, "list-1", ["b", "a", "a1", "a2", "c"], START_SHAPE)
 
     expect(outcome.status).toBe(Sorted.SORTED)
     expect(written().map((item) => item.id)).toEqual(["b", "a", "c"])
@@ -240,28 +242,35 @@ describe("restoreListOrder", () => {
   })
 
   it("refuses when the list moved on since the sort it would undo", async () => {
-    expect(await restoreListOrder(alice, "list-1", ["b", "a", "a1", "a2", "c"], ["a", "a2", "a1", "b", "c"])).toEqual({
+    expect(await restoreListOrder(alice, "list-1", ["b", "a", "a1", "a2", "c"], ["0:a", "1:a2", "1:a1", "0:b", "0:c"])).toEqual({
+      status: Sorted.STALE,
+    })
+    expect(mocks.serverWriteFile).not.toHaveBeenCalled()
+  })
+
+  it("refuses when an item was nested or lifted out without changing the order", async () => {
+    expect(await restoreListOrder(alice, "list-1", ["b", "a", "a1", "a2", "c"], ["0:c", "0:a", "1:a2", "0:a1", "0:b"])).toEqual({
       status: Sorted.STALE,
     })
     expect(mocks.serverWriteFile).not.toHaveBeenCalled()
   })
 
   it("writes nothing for an order that names no item on the list", async () => {
-    expect((await restoreListOrder(alice, "list-1", ["ghost"], START)).status).toBe(Sorted.UNCHANGED)
+    expect((await restoreListOrder(alice, "list-1", ["ghost"], START_SHAPE)).status).toBe(Sorted.UNCHANGED)
     expect(mocks.serverWriteFile).not.toHaveBeenCalled()
   })
 
   it("writes nothing for a user without edit permission", async () => {
     mocks.canReach.mockResolvedValue(false)
 
-    expect(await restoreListOrder(mallory, "list-1", ["b"], START)).toEqual({ status: Sorted.FORBIDDEN })
+    expect(await restoreListOrder(mallory, "list-1", ["b"], START_SHAPE)).toEqual({ status: Sorted.FORBIDDEN })
     expect(mocks.serverWriteFile).not.toHaveBeenCalled()
   })
 
   it("refuses a kanban board", async () => {
     mocks.getListById.mockResolvedValue(list("kanban"))
 
-    expect(await restoreListOrder(alice, "list-1", ["b"], START)).toEqual({ status: Sorted.KANBAN })
+    expect(await restoreListOrder(alice, "list-1", ["b"], START_SHAPE)).toEqual({ status: Sorted.KANBAN })
     expect(mocks.serverWriteFile).not.toHaveBeenCalled()
   })
 })
@@ -269,7 +278,7 @@ describe("restoreListOrder", () => {
 describe("undoSort", () => {
   beforeEach(ready)
 
-  const undo = (before: unknown, expected: unknown = START) =>
+  const undo = (before: unknown, expected: unknown = START_SHAPE) =>
     undoSort(form({ uuid: "list-1", before: JSON.stringify(before), expected: JSON.stringify(expected) }))
 
   it("restores the order as the session user", async () => {
@@ -281,14 +290,14 @@ describe("undoSort", () => {
   })
 
   it("tells the user when the list changed since the sort", async () => {
-    expect(await undo(["b", "c", "a"], ["a", "b", "c"])).toEqual({ success: false, error: "checklists.sortStale" })
+    expect(await undo(["b", "c", "a"], ["0:a", "0:b", "0:c"])).toEqual({ success: false, error: "checklists.sortStale" })
     expect(mocks.serverWriteFile).not.toHaveBeenCalled()
   })
 
   it("refuses without a session", async () => {
     mocks.sessionActor.mockResolvedValue({ error: "Not authenticated" })
 
-    expect(await undo(["b"])).toEqual({ success: false, error: "Not authenticated" })
+    expect(await undo(["b"])).toEqual({ success: false, error: "errors.unauthorized" })
     expect(mocks.getListById).not.toHaveBeenCalled()
   })
 

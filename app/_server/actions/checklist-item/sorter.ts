@@ -5,6 +5,7 @@ import {
   sameOrder,
   sortLocale,
   sortTree,
+  treeShape,
 } from "@/app/_utils/checklist-sort-utils";
 import { Checklist, Item, SanitisedUser } from "@/app/_types";
 import { ItemSort, SortDirection, isKanbanType } from "@/app/_types/enums";
@@ -41,7 +42,7 @@ const _plan =
 
     const items = list.items || [];
     const before = preorderIds(items);
-    if (expected && !sameOrder(expected, before)) return { outcome: { status: Sorted.STALE } };
+    if (expected && !sameOrder(expected, treeShape(items))) return { outcome: { status: Sorted.STALE } };
 
     const arranged = arrange(items);
     if (sameOrder(before, preorderIds(arranged))) {
@@ -59,7 +60,7 @@ export const sortListItems = (
   actor: SanitisedUser,
   uuid: string,
   sort: ItemSort,
-  direction: SortDirection = SortDirection.ASC,
+  direction?: SortDirection,
 ): Promise<SortOutcome> => {
   const locale = sortLocale(actor.preferredLocale || process.env.DEFAULT_LOCALE);
   return _queued(actor.username, uuid, {

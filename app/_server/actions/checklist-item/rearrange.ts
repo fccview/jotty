@@ -7,6 +7,7 @@ import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
+import { numberTree } from "@/app/_utils/checklist-sort-utils";
 import { DropPosition, ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { Checklist, Item } from "@/app/_types";
 
@@ -44,15 +45,6 @@ const _isDescendant = (ancestorId: string, targetId: string, items: Item[]): boo
   return ancestor ? walk(ancestor.item) : false;
 };
 
-const _stampOrder = (items: Item[]) =>
-  items.forEach((item, i) => {
-    item.order = i;
-    if (item.children) _stampOrder(item.children);
-  });
-
-const _cloneTree = (items: Item[]): Item[] =>
-  items.map((item) => ({ ...item, children: item.children ? _cloneTree(item.children) : undefined }));
-
 const _move = (items: Item[], move: ItemMove): Rearranged => {
   if (move.activeItemId === move.overItemId) return Rearranged.UNCHANGED;
   if (_isDescendant(move.activeItemId, move.overItemId, items)) return Rearranged.UNCHANGED;
@@ -70,7 +62,6 @@ const _move = (items: Item[], move: ItemMove): Rearranged => {
     over.siblings.splice(move.position === DropPosition.AFTER ? landing + 1 : landing, 0, active.item);
   }
 
-  _stampOrder(items);
   return Rearranged.MOVED;
 };
 
@@ -132,7 +123,7 @@ const MOVE_REFUSALS: ListRefusals<Rearranged> = {
 
 export const rearrangeItems = (username: string, move: ItemMove): Promise<Rearranged> =>
   rewriteList(username, move.listUuid, MOVE_REFUSALS, (list) => {
-    const items = _cloneTree(list.items || []);
+    const items = numberTree(list.items || []);
     const outcome = _move(items, move);
-    return outcome === Rearranged.MOVED ? { outcome, write: withItems(list, items) } : { outcome };
+    return outcome === Rearranged.MOVED ? { outcome, write: withItems(list, numberTree(items)) } : { outcome };
   });

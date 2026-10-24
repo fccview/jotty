@@ -31,17 +31,78 @@ import { useRouter } from "next/navigation";
 import { getUsername } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { areAllItemsCompleted } from "../_utils/checklist-utils";
-import { SortedList, preorderIds, sameOrder } from "@/app/_utils/checklist-sort-utils";
+import {
+  SortedList,
+  preorderIds,
+  restoreTree,
+  sameOrder,
+  treeShape,
+} from "@/app/_utils/checklist-sort-utils";
 import { ItemSort, SortDirection } from "@/app/_types/enums";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { useToast } from "@/app/_providers/ToastProvider";
 
 const SORT_UNDO_LIMIT = 20;
 
+const TOGGLE_ATTEMPTS = 3;
+
 interface SortUndo {
   before: string[];
   after: string[];
 }
+
+const _setAll = (items: Item[], completed: boolean): Item[] =>
+  items.map((item) => ({
+    ...item,
+    completed,
+    children: item.children ? _setAll(item.children, completed) : undefined,
+  }));
+
+const _toggleTree = (
+  items: Item[],
+  itemId: string,
+  updates: Partial<Item>
+): Item[] =>
+  items.map((item) => {
+    if (item.id === itemId) {
+      const updated = { ...item, ...updates };
+      if (item.children?.length && updates.completed !== undefined) {
+        updated.children = _setAll(item.children, updates.completed);
+      }
+      return updated;
+    }
+
+    if (!item.children?.length) return item;
+
+    const children = _toggleTree(item.children, itemId, updates);
+    return { ...item, children, completed: areAllItemsCompleted(children) };
+  });
+
+const _findItem = (items: Item[], itemId: string): Item | undefined => {
+  for (const item of items) {
+    if (item.id === itemId) return item;
+    const found = item.children && _findItem(item.children, itemId);
+    if (found) return found;
+  }
+  return undefined;
+};
+
+const _withToggles = (
+  list: Checklist,
+  toggles: Map<string, boolean>
+): Checklist => {
+  const owed = Array.from(toggles).filter(([itemId, completed]) => {
+    const item = _findItem(list.items, itemId);
+    return item !== undefined && item.completed !== completed;
+  });
+  if (owed.length === 0) return list;
+
+  const items = owed.reduce(
+    (tree, [itemId, completed]) => _toggleTree(tree, itemId, { completed }),
+    list.items
+  );
+  return { ...list, items };
+};
 
 interface UseChecklistProps {
   list: Checklist;
@@ -72,6 +133,9 @@ export const useChecklist = ({
   );
   const [sendingToggles, setSendingToggles] = useState(0);
   const isInitialMount = useRef(true);
+  const pushedList = useRef<Checklist | null>(null);
+  const unsyncedToggles = useRef(new Map<string, boolean>());
+  const toggleFailures = useRef(new Map<string, number>());
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -91,7 +155,8 @@ export const useChecklist = ({
   );
 
   useEffect(() => {
-    setLocalList(list);
+    if (list === pushedList.current) return;
+    setLocalList(_withToggles(list, unsyncedToggles.current));
   }, [list]);
 
   useEffect(() => {
@@ -99,6 +164,7 @@ export const useChecklist = ({
       isInitialMount.current = false;
       return;
     }
+    pushedList.current = localList;
     onUpdate(localList);
   }, [localList, onUpdate]);
 
@@ -140,6 +206,13 @@ export const useChecklist = ({
       setSendingToggles((count) => count + togglesToProcess.size);
       setPendingToggles(new Map());
 
+      const settle = (itemId: string, completed: boolean) => {
+        toggleFailures.current.delete(itemId);
+        if (unsyncedToggles.current.get(itemId) === completed) {
+          unsyncedToggles.current.delete(itemId);
+        }
+      };
+
       const syncPromises = Array.from(togglesToProcess.entries()).map(
         async ([itemId, completed]) => {
           try {
@@ -156,22 +229,43 @@ export const useChecklist = ({
             if (!result.success) {
               throw new Error("Server action failed");
             }
+            settle(itemId, completed);
+            return true;
           } catch (error) {
             console.error(`Failed to sync toggle for ${itemId}:`, error);
-            setPendingToggles((prev) => new Map(prev).set(itemId, completed));
+            const failures = (toggleFailures.current.get(itemId) ?? 0) + 1;
+            if (failures >= TOGGLE_ATTEMPTS) {
+              settle(itemId, completed);
+              return false;
+            }
+            toggleFailures.current.set(itemId, failures);
+            setPendingToggles((prev) =>
+              prev.has(itemId) ? prev : new Map(prev).set(itemId, completed)
+            );
+            return true;
           } finally {
             setSendingToggles((count) => count - 1);
           }
         }
       );
 
-      await Promise.all(syncPromises);
+      const synced = await Promise.all(syncPromises);
+
+      if (synced.includes(false)) {
+        showToast({
+          type: "error",
+          title: t("common.error"),
+          message: t("checklists.toggleFailed"),
+        });
+        const fresh = await viewList(localList.uuid || "");
+        if (fresh) setLocalList(_withToggles(fresh, unsyncedToggles.current));
+      }
 
       router.refresh();
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [pendingToggles, localList, router]);
+  }, [pendingToggles, localList, router, showToast, t]);
 
   const handleDeleteItem = (itemId: string) => {
     setLocalList((currentList) => {
@@ -223,134 +317,23 @@ export const useChecklist = ({
     setShowDeleteModal(false);
   };
 
-  const findItemById = (items: any[], itemId: string): any | null => {
-    for (const item of items) {
-      if (item.id === itemId) {
-        return item;
-      }
-
-      if (item.children && item.children.length > 0) {
-        const found = findItemById(item.children, itemId);
-        if (found) {
-          return found;
-        }
-      }
-    }
-    return null;
-  };
-
-  const findParentAndSiblings = (
-    items: any[],
-    itemId: string,
-    parent: any = null,
-    siblings: any[] = []
-  ): { parent: any | null; siblings: any[] } | null => {
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-
-      if (item.id === itemId) {
-        return { parent, siblings: items };
-      }
-
-      if (item.children && item.children.length > 0) {
-        const result = findParentAndSiblings(
-          item.children,
-          itemId,
-          item,
-          item.children
-        );
-        if (result) {
-          return result;
-        }
-      }
-    }
-    return null;
-  };
-
-  const updateAllChildren = (items: any[], completed: boolean): any[] => {
-    return items.map((item) => ({
-      ...item,
-      completed,
-      children: item.children
-        ? updateAllChildren(item.children, completed)
-        : undefined,
-    }));
-  };
-
-  const updateParentBasedOnChildren = (parent: any): any => {
-    if (!parent || (parent.children || []).length < 1) {
-      return parent;
-    }
-
-    return {
-      ...parent,
-      completed: areAllItemsCompleted(parent.children),
-    };
-  };
-
   const handleToggleItem = async (itemId: string, completed: boolean) => {
     const now = new Date().toISOString();
     const username = (await getUsername()) || undefined;
 
-    setLocalList((currentList) => {
-      const findAndUpdateItem = (
-        items: any[],
-        itemId: string,
-        updates: any
-      ): any[] => {
-        return items.map((item) => {
-          if (item.id === itemId) {
-            let updatedItem = { ...item, ...updates };
-
-            if (
-              updates.completed &&
-              item.children &&
-              item.children.length > 0
-            ) {
-              updatedItem.children = updateAllChildren(item.children, true);
-            } else if (
-              updates.completed === false &&
-              item.children &&
-              item.children.length > 0
-            ) {
-              updatedItem.children = updateAllChildren(item.children, false);
-            }
-
-            return updatedItem;
-          }
-
-          if (item.children && item.children.length > 0) {
-            const updatedChildren = findAndUpdateItem(
-              item.children,
-              itemId,
-              updates
-            );
-            const updatedItem = updateParentBasedOnChildren({
-              ...item,
-              children: updatedChildren,
-            });
-            return updatedItem;
-          }
-
-          return item;
-        });
-      };
-
-      const updatedItems = findAndUpdateItem(currentList.items, itemId, {
+    setLocalList((currentList) => ({
+      ...currentList,
+      items: _toggleTree(currentList.items, itemId, {
         completed,
         ...(username && {
           lastModifiedBy: username,
           lastModifiedAt: now,
         }),
-      });
+      }),
+      updatedAt: now,
+    }));
 
-      return {
-        ...currentList,
-        items: updatedItems,
-        updatedAt: now,
-      };
-    });
-
+    unsyncedToggles.current.set(itemId, completed);
     setPendingToggles((prev) => new Map(prev).set(itemId, completed));
   };
 
@@ -675,13 +658,9 @@ export const useChecklist = ({
   const lastSort = sortUndos[sortUndos.length - 1];
 
   const canUndoSort = useMemo(
-    () => Boolean(lastSort) && sameOrder(lastSort.after, preorderIds(localList.items)),
+    () => Boolean(lastSort) && sameOrder(lastSort.after, treeShape(localList.items)),
     [lastSort, localList.items]
   );
-
-  useEffect(() => {
-    if (lastSort && !canUndoSort) setSortUndos([]);
-  }, [lastSort, canUndoSort]);
 
   const showSortError = (error?: string) =>
     showToast({
@@ -699,7 +678,11 @@ export const useChecklist = ({
       const result = await send();
       if (result.success && result.data) {
         onSorted(result.data);
-        setLocalList(result.data.list);
+        const order = preorderIds(result.data.list.items);
+        setLocalList((current) => ({
+          ...current,
+          items: restoreTree(current.items, order),
+        }));
         return;
       }
       console.error("Sort was refused:", result.error);
@@ -713,21 +696,18 @@ export const useChecklist = ({
     }
   };
 
-  const handleSort = async (
-    sort: ItemSort,
-    direction: SortDirection = SortDirection.ASC
-  ) => {
+  const handleSort = async (sort: ItemSort, direction?: SortDirection) => {
     if (isLoading || isSyncing) return;
     const formData = new FormData();
     formData.append("uuid", localList.uuid || "");
     formData.append("sort", sort);
-    formData.append("direction", direction);
+    if (direction) formData.append("direction", direction);
 
     await sendSort(
       () => sortItems(formData),
       ({ list: sorted, before, changed }) => {
         if (!changed) return;
-        const undo = { before, after: preorderIds(sorted.items) };
+        const undo = { before, after: treeShape(sorted.items) };
         setSortUndos((undos) => [...undos, undo].slice(-SORT_UNDO_LIMIT));
       }
     );

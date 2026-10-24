@@ -528,6 +528,7 @@
     "undoSortFailed": "Couldn't undo the sort",
     "sortKanban": "Only simple checklists can be sorted",
     "sortStale": "The list changed since that sort, so it can't be undone",
+    "toggleFailed": "Couldn't save a tick, so the list was reloaded",
     "checkAllConfirmTitle": "Check All Items?",
     "checkAllConfirmMessage": "Tick all {count} items and their subtasks?",
     "uncheckAllConfirmTitle": "Uncheck All Items?",

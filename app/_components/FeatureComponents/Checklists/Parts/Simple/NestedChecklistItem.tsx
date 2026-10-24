@@ -265,18 +265,13 @@ const NestedChecklistItemComponent = ({
     { id: "delete", name: t("common.delete"), icon: Delete03Icon },
   ];
 
+  const childrenDone = Boolean(
+    hasChildren && item.children?.every((child) => child.completed),
+  );
+
   useEffect(() => {
-    if (hasChildren && item.children) {
-      const allChildrenCompleted = item.children.every(
-        (child) => child.completed,
-      );
-      if (allChildrenCompleted) {
-        setIsExpanded(false);
-      } else {
-        setIsExpanded(true);
-      }
-    }
-  }, [item.children, hasChildren]);
+    if (hasChildren) setIsExpanded(!childrenDone);
+  }, [childrenDone, hasChildren]);
 
   const isBeingDragged = draggedItemId === item.id;
 
