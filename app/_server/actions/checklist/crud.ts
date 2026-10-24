@@ -18,6 +18,7 @@ import { claimedName } from "@/app/_server/actions/lib/actor";
 import { makeList } from "./creator";
 import { dropList, editList } from "./editor";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
+import { carryAttachments } from "@/app/_server/actions/attachments/lifecycle";
 
 export const createList = async (formData: FormData) => {
   const actor = await getCurrentUser();
@@ -118,7 +119,10 @@ export const cloneChecklist = async (formData: FormData) => {
       updatedAt: new Date().toISOString(),
     });
 
-    await serverWriteFile(filePath, content);
+    await serverWriteFile(
+      filePath,
+      await carryAttachments(checklist.uuid, cloneUuid, content),
+    );
 
     const clonedChecklist = await getListById(cloneUuid, currentUser.username);
 

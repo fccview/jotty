@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { itemTreeRoots } from "./paths";
+import { attachmentsTree } from "./attachments";
 import { refreshItemPaths } from "./night-shift";
 
 export const WATCH_FLUSH_MS = 60_000;
@@ -116,7 +117,7 @@ export const watchRelations = (): boolean => {
   };
   globalThis.__jottyRelationsWatch = state;
 
-  for (const root of itemTreeRoots()) {
+  for (const root of [...itemTreeRoots(), attachmentsTree()]) {
     try {
       fs.mkdirSync(root, { recursive: true });
       const watcher = fs.watch(root, { recursive: true, persistent: false }, (_event, filename) => {

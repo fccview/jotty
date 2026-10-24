@@ -7,6 +7,12 @@ import { getAllFileStats } from "@/app/_server/actions/file";
 import { forgetItemFile, forgetItemTree, indexItemFile, treePrefix } from "./indexer";
 import { itemFileInfo, itemTreeRoots } from "./paths";
 import {
+  attachmentFolderOf,
+  inAttachmentsTree,
+  syncAttachmentFolder,
+  syncAttachments,
+} from "./attachments";
+import {
   RelationsGoneError,
   relationsDb,
   relationsGeneration,
@@ -128,6 +134,8 @@ const _reconcile = async (force: boolean): Promise<ShiftResult> => {
     changed++;
   }
 
+  changed += await syncAttachments(force);
+
   if (relationsGeneration() !== generation) {
     throw new RelationsGoneError("Relations db was replaced mid-sweep, leaving it to the next rebuild");
   }
@@ -137,6 +145,9 @@ const _reconcile = async (force: boolean): Promise<ShiftResult> => {
 
 const _refreshPath = async (target: string): Promise<boolean> => {
   const absPath = path.resolve(target);
+  const attachmentFolder = attachmentFolderOf(absPath);
+  if (attachmentFolder) return syncAttachmentFolder(attachmentFolder);
+  if (inAttachmentsTree(absPath)) return false;
   const stats = await _statOf(absPath);
 
   if (!stats) {

@@ -15,6 +15,7 @@ import { targetDir, bouncer } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
 import { getNoteById } from "./queries";
+import { carryAttachments } from "@/app/_server/actions/attachments/lifecycle";
 
 export const copyNote = async (
   actor: SanitisedUser,
@@ -77,7 +78,10 @@ export const copyNote = async (
     false,
   );
 
-  await serverWriteFile(path.join(categoryDir, filename), updatedContent);
+  await serverWriteFile(
+    path.join(categoryDir, filename),
+    await carryAttachments(note.uuid!, copyUuid, updatedContent),
+  );
 
   const copied = await getNoteById(copyUuid, actor.username);
 

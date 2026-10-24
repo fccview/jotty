@@ -16,7 +16,7 @@ import {
   GravityIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { FileModal } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
+import { FileModal, type AttachTarget } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 import { ImageSizeModal } from "@/app/_components/GlobalComponents/Modals/ImageSizeModal";
 import { CodeBlockDropdown, CodeBlockMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/CodeBlocksDropdown";
 import { DiagramsDropdown, DiagramsMenu } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/DiagramsDropdown";
@@ -49,6 +49,7 @@ const modeShortcut = `${mod}+Shift+${alt}+M`;
 
 type ToolbarProps = {
   editor: Editor | null;
+  attachTarget?: AttachTarget;
   isMarkdownMode: boolean;
   toggleMode: () => void;
   showPreview?: boolean;
@@ -61,6 +62,7 @@ type ToolbarProps = {
 
 export const TiptapToolbar = ({
   editor,
+  attachTarget,
   isMarkdownMode,
   toggleMode,
   showPreview = false,
@@ -532,6 +534,7 @@ export const TiptapToolbar = ({
 
       <FileModal
         isOpen={showFileModal}
+        target={attachTarget}
         onClose={() => setShowFileModal(false)}
         onSelectFile={handleFileSelect}
       />

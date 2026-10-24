@@ -1,4 +1,4 @@
-import { FileItem } from "@/app/_server/actions/upload";
+import type { FileItem } from "@/app/_types";
 import { getFileIcon, formatFileSize } from "@/app/_utils/file-icon-utils";
 import Image from "next/image";
 import { Button } from "../Buttons/Button";
@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 interface FileCardProps {
   file: FileItem;
   onSelect: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
@@ -47,6 +47,14 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
         <p className="text-md lg:text-xs text-muted-foreground">
           {formatFileSize(file.size)}
         </p>
+        {file.itemTitle && (
+          <p
+            className="text-md lg:text-xs text-muted-foreground truncate mt-0.5"
+            title={file.itemTitle}
+          >
+            {file.itemTitle}
+          </p>
+        )}
       </div>
       <div className="absolute top-1 right-1 sm:top-2 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
         <Button
@@ -76,15 +84,17 @@ export const FileCard = ({ file, onSelect, onDelete }: FileCardProps) => {
         >
           <Download01Icon className="h-4 w-4" />
         </Button>
-        <Button
-          variant="destructive"
-          size="icon"
-          className="h-7 w-7 sm:h-8 sm:w-8 bg-destructive/80 backdrop-blur-sm hover:bg-destructive"
-          onClick={(e) => handleAction(e, onDelete)}
-          title={t("common.deleteFile")}
-        >
-          <Delete03Icon className="h-4 w-4" />
-        </Button>
+        {onDelete && (
+          <Button
+            variant="destructive"
+            size="icon"
+            className="h-7 w-7 sm:h-8 sm:w-8 bg-destructive/80 text-destructive-foreground backdrop-blur-sm hover:bg-destructive"
+            onClick={(e) => handleAction(e, onDelete)}
+            title={t("common.deleteFile")}
+          >
+            <Delete03Icon className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

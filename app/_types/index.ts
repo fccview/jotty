@@ -113,6 +113,7 @@ export type {
 } from "./audit";
 
 export type { ExportProgress, ExportResult, ExportType } from "./export";
+export type { AttachmentFolder, AttachmentMigrationReport, AttachmentPage, FileItem } from "./attachments";
 
 export type { AppMode, ContentFilter, AppModeContextType } from "./context";
 

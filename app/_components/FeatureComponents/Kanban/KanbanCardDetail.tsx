@@ -363,6 +363,7 @@ export const KanbanCardDetail = ({
         >
           <section className={cn("space-y-4", pane === KanbanCardPane.COMMENTS && DESKTOP_ONLY)}>
             <KanbanCardDescription
+              boardUuid={checklistUuid}
               markdown={descriptionMarkdown}
               canEdit={canEdit}
               isEditing={isEditing}

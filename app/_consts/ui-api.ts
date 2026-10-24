@@ -4,6 +4,7 @@ export enum UiAreas {
   SIDEBAR = "sidebar",
   CATALOG = "catalog",
   BROWSE = "browse",
+  ATTACHMENTS = "attachments",
 }
 
 export enum SidebarOps {
@@ -22,4 +23,10 @@ export enum CatalogOps {
 
 export enum BrowseOps {
   PAGE = "page",
+}
+
+export enum AttachmentOps {
+  FOLDERS = "folders",
+  FILES = "files",
+  SEARCH = "search",
 }

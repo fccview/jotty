@@ -250,6 +250,66 @@ export const grepFilesByText = async (
   }
 };
 
+const UUID_LINE =
+  "^uuid:[[:space:]]*[\"']?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+const UUID_VALUE = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+
+const _uuidLines = async (dir: string): Promise<string[]> => {
+  try {
+    const { stdout } = await execFileAsync(
+      "grep",
+      ["-rhoE", "--include=*.md", "--exclude-dir=.git", "-e", UUID_LINE, "--", dir],
+      { maxBuffer: 64 * 1024 * 1024 },
+    );
+    return stdout
+      .split("\n")
+      .map((line) => UUID_VALUE.exec(line)?.[0])
+      .filter((uuid): uuid is string => Boolean(uuid));
+  } catch (error) {
+    if (!_isNoMatch(error)) console.error("Error reading uuid lines:", error);
+    return [];
+  }
+};
+
+export const grepItemUuids = async (dir: string): Promise<string[]> =>
+  Array.from(new Set(await _uuidLines(dir)));
+
+export const grepUuidClaims = async (dirs: string[]): Promise<Map<string, number>> => {
+  const claims = new Map<string, number>();
+  for (const dir of dirs) {
+    (await _uuidLines(dir)).forEach((uuid) => claims.set(uuid, (claims.get(uuid) || 0) + 1));
+  }
+  return claims;
+};
+
+const MENTION_BATCH = 400;
+
+export const grepFilesMentioningAny = async (
+  dirs: string[],
+  needles: string[],
+): Promise<string[] | null> => {
+  const found = new Set<string>();
+  if (!dirs.length) return [];
+
+  for (let at = 0; at < needles.length; at += MENTION_BATCH) {
+    const batch = needles.slice(at, at + MENTION_BATCH).flatMap((needle) => ["-e", needle]);
+    try {
+      const { stdout } = await execFileAsync(
+        "grep",
+        ["-rliF", "--include=*.md", "--exclude-dir=.git", ...batch, "--", ...dirs],
+        { maxBuffer: 64 * 1024 * 1024 },
+      );
+      stdout.split("\n").filter(Boolean).forEach((filePath) => found.add(filePath));
+    } catch (error) {
+      if (_isNoMatch(error)) continue;
+      console.error("Error in grepFilesMentioningAny:", error);
+      return null;
+    }
+  }
+
+  return Array.from(found);
+};
+
 export const grepFilesMentioning = async (dir: string, text: string): Promise<string[] | null> => {
   try {
     const { stdout } = await execFileAsync("grep", ["-rliF", "--include=*.md", "--", text, dir], {

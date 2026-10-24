@@ -24,6 +24,8 @@ import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { catUuid } from "@/app/_server/actions/share/category-info";
 import { PermissionTypes } from "@/app/_types/enums";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
+import { grepItemUuids } from "@/app/_utils/grep-utils";
+import { sweepOrphans } from "@/app/_server/actions/attachments/lifecycle";
 
 const _mountTarget = async (mode: Modes, category: string) => {
   const username = await getUsername();
@@ -190,7 +192,9 @@ export const deleteCategory = async (formData: FormData) => {
     }
 
     const categoryDir = path.join(userDir, categoryPath);
+    const doomed = await grepItemUuids(categoryDir);
     await serverDeleteDir(categoryDir);
+    await sweepOrphans(doomed);
 
     await logAudit({
       level: "INFO",

@@ -12,6 +12,7 @@ import { cn } from "@/app/_utils/global-utils";
 import { TaskDescriptionEditor } from "./TaskDescriptionEditor";
 
 interface KanbanCardDescriptionProps {
+  boardUuid: string;
   markdown: string;
   canEdit: boolean;
   isEditing: boolean;
@@ -25,6 +26,7 @@ interface KanbanCardDescriptionProps {
 }
 
 export const KanbanCardDescription = ({
+  boardUuid,
   markdown,
   canEdit,
   isEditing,
@@ -94,7 +96,11 @@ export const KanbanCardDescription = ({
         <label className="block text-sm font-medium text-foreground mb-2">
           {t("common.description")}
         </label>
-        <TaskDescriptionEditor content={description} onContentChange={onDescriptionChange} />
+        <TaskDescriptionEditor
+          boardUuid={boardUuid}
+          content={description}
+          onContentChange={onDescriptionChange}
+        />
       </div>
       <div className="flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel}>

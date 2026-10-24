@@ -4,6 +4,7 @@ import { isDebugFlag } from "@/app/_utils/env-utils";
 import { User } from "@/app/_types";
 import fs from "fs/promises";
 import path from "path";
+import { randomUUID } from "crypto";
 import { mutateUsers } from "./records";
 
 const debugProxy = isDebugFlag("proxy");
@@ -13,6 +14,7 @@ const _ssoLog = (message: string, detail: unknown) => {
 };
 
 const _fresh = (username: string, isAdmin: boolean): User => ({
+  uuid: randomUUID(),
   username,
   passwordHash: "",
   isAdmin,
@@ -35,6 +37,8 @@ const _greet = (users: User[], username: string, isAdmin: boolean): true => {
     _ssoLog("Created new user:", { username, isAdmin });
     return true;
   }
+
+  existing.uuid ||= randomUUID();
 
   if (isAdmin && !existing.isAdmin) {
     existing.isAdmin = true;

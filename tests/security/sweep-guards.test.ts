@@ -66,7 +66,7 @@ describe("Security: sweep guards", () => {
     it("refuses without a session", async () => {
       mockGetCurrentUser.mockResolvedValue(null);
 
-      expect(await convert()).toEqual({ error: "Not authenticated" });
+      expect(await convert()).toEqual({ success: false, error: "Not authenticated" });
       expect(mockServerWriteFile).not.toHaveBeenCalled();
     });
 
@@ -74,7 +74,7 @@ describe("Security: sweep guards", () => {
       mockGetCurrentUser.mockResolvedValue({ username: "mallory" });
       mockReachableFile.mockResolvedValue(null);
 
-      expect(await convert()).toEqual({ error: "Permission denied" });
+      expect(await convert()).toEqual({ success: false, error: "Permission denied" });
       expect(mockReachableFile).toHaveBeenCalledWith("list-uuid", "checklist", "mallory", "canEdit");
       expect(mockServerWriteFile).not.toHaveBeenCalled();
     });

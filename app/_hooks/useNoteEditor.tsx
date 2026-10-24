@@ -18,6 +18,7 @@ import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
+import { withAdoptedAttachments } from "@/app/_utils/adopt-legacy";
 import { discardDraft, markSaved } from "@/app/_hooks/useLiveSession";
 import { SaveState } from "@/app/_utils/autosave-utils";
 import { useAutosave } from "@/app/_hooks/useAutosave";
@@ -233,7 +234,10 @@ export const useNoteEditor = ({
       if (isEditingEncrypted && passphrase && note.encryptionMethod) {
         try {
           const encryptFormData = new FormData();
-          encryptFormData.append("content", cleanContent);
+          encryptFormData.append(
+            "content",
+            await withAdoptedAttachments(note.uuid!, cleanContent),
+          );
           encryptFormData.append("skipAuditLog", "true");
 
           if (note.encryptionMethod === "pgp") {

@@ -29,8 +29,12 @@ import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
 import { ownTemplate } from "@/app/_server/actions/template/reader";
 import { carriedMeta, fillTemplate } from "@/app/_utils/template-utils";
 import { TEMPLATE_ID_FIELD, TemplateVariables } from "@/app/_consts/templates";
+import { carryAttachments } from "@/app/_server/actions/attachments/lifecycle";
+import { rehomeRefs } from "@/app/_server/actions/attachments/adopt";
 
-type StartingText = { content: string; meta?: Record<string, unknown> } | { error: string };
+type StartingText =
+  | { content: string; meta?: Record<string, unknown>; source?: string }
+  | { error: string };
 
 const _mergedMeta = (
   carried?: Record<string, unknown>,
@@ -69,6 +73,7 @@ const _fromTemplate = async (
       [TemplateVariables.USER]: actor.username,
     }),
     meta: carriedMeta(template.extraMetadata),
+    source: template.uuid,
   };
 };
 
@@ -144,11 +149,15 @@ export const makeNote = async (
 
     const noteTags = mergeTags(metadata?.tags, "", content);
 
+    const uuid = generateUuid();
+    const carried = starting.source
+      ? await carryAttachments(starting.source, uuid, content)
+      : content;
     const newDoc: Note = {
       id,
-      uuid: generateUuid(),
+      uuid,
       title,
-      content,
+      content: encrypted ? carried : await rehomeRefs(uuid, actor.username, carried),
       category: target.category,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

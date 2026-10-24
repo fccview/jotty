@@ -62,7 +62,9 @@ export const SESSIONS_FILE = path.join(USERS_DIR, "sessions.json");
 export const SESSION_DATA_FILE = path.join(USERS_DIR, "session-data.json");
 export const EXPORT_TEMP_DIR = path.join(DATA_DIR, "temp_exports");
 
-export const DATA_SCHEMA_VERSION = 2;
+export const SHARING_SCHEMA_VERSION = 2;
+export const ATTACHMENTS_SCHEMA_VERSION = 3;
+export const DATA_SCHEMA_VERSION = ATTACHMENTS_SCHEMA_VERSION;
 export const SCHEMA_VERSION_FILE = path.join(DATA_DIR, ".schema-version");
 export const MIGRATION_FORCE_PARAM = "force";
 export const MIGRATION_FORCE_VALUE = "1";

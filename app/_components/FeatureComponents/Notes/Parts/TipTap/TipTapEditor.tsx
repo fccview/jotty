@@ -40,6 +40,7 @@ import {
 } from "@/app/_hooks/useLiveSession";
 import { LiveStatusBar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/LiveStatusBar";
 import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
+import type { AttachTarget } from "@/app/_components/GlobalComponents/Modals/FilesModal/FileModal";
 
 
 type TiptapEditorProps = {
@@ -53,6 +54,7 @@ type TiptapEditorProps = {
   onModeChange?: (isMarkdownMode: boolean) => void;
   tableSyntax?: TableSyntax;
   collaborationUuid?: string;
+  attachTarget?: AttachTarget;
 };
 
 export const TiptapEditor = (
@@ -63,6 +65,7 @@ export const TiptapEditor = (
     onModeChange,
     tableSyntax,
     collaborationUuid,
+    attachTarget,
   }: TiptapEditorProps,
 ) => {
   const { user, appSettings, tagsIndex, usersPublicData } = useAppMode();
@@ -104,7 +107,7 @@ export const TiptapEditor = (
   markdownModeRef.current = isMarkdownMode;
   const isDirtyRef = useRef<boolean>(false);
 
-  const uploadHook = useFileUpload(appSettings?.maximumFileSize);
+  const uploadHook = useFileUpload(appSettings?.maximumFileSize, attachTarget?.uuid);
   const tableToolbar = useTableToolbar();
 
   const emit = useCallback(
@@ -344,6 +347,7 @@ export const TiptapEditor = (
       >
         <TiptapToolbar
           editor={editor}
+          attachTarget={attachTarget}
           isMarkdownMode={isMarkdownMode}
           toggleMode={toggleMode}
           showPreview={showPreview}

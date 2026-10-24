@@ -4,13 +4,16 @@ import { TiptapEditor } from "@/app/_components/FeatureComponents/Notes/Parts/Ti
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
+import { ItemTypes } from "@/app/_types/enums";
 
 interface TaskDescriptionEditorProps {
+  boardUuid: string;
   content: string;
   onContentChange: (markdownContent: string) => void;
 }
 
 export const TaskDescriptionEditor = ({
+  boardUuid,
   content,
   onContentChange,
 }: TaskDescriptionEditorProps) => {
@@ -36,6 +39,7 @@ export const TaskDescriptionEditor = ({
         content={content}
         onChange={(next) => onContentChange(next)}
         tableSyntax={user?.tableSyntax}
+        attachTarget={boardUuid ? { uuid: boardUuid, type: ItemTypes.CHECKLIST } : undefined}
       />
     </div>
   );

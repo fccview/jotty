@@ -32,7 +32,7 @@ const _convert = async (
       username,
       PermissionTypes.EDIT,
     );
-    if (!filePath) return { error: "Permission denied" };
+    if (!filePath) return { success: false, error: "Permission denied" };
 
     const list = await getListById(uuid, username);
 
@@ -119,20 +119,22 @@ const _convert = async (
     return { success: true, data: updatedList };
   } catch (error) {
     console.error("Error converting checklist type:", error);
-    return { error: "Failed to convert checklist type" };
+    return { success: false, error: "Failed to convert checklist type" };
   }
 };
 
-export const convertChecklistType = async (formData: FormData) => {
+export const convertChecklistType = async (
+  formData: FormData,
+): Promise<Result<Checklist>> => {
   const { newType: type, uuid } = getFormData(formData, ["newType", "uuid"]);
   const newType = type as ChecklistType;
 
   if (!uuid || !newType) {
-    return { error: "UUID and type are required" };
+    return { success: false, error: "UUID and type are required" };
   }
 
   const actor = await sessionActor();
-  if ("error" in actor) return { error: actor.error };
+  if ("error" in actor) return { success: false, error: actor.error };
 
   return runQueued(itemLane(Modes.CHECKLISTS, uuid), () =>
     _convert(actor.username, uuid, newType),
@@ -179,13 +181,13 @@ const _clearItems = async (
     );
 
     if (!filePath) {
-      return { error: "Permission denied" };
+      return { success: false, error: "Permission denied" };
     }
 
     const checklist = await getListById(uuid);
 
     if (!checklist) {
-      return { error: "Checklist not found" };
+      return { success: false, error: "Checklist not found" };
     }
 
     const filteredItems = checklist.items.filter((item) => {
@@ -224,18 +226,20 @@ const _clearItems = async (
     return { success: true, data: updatedChecklist };
   } catch (error) {
     console.error("Error clearing checklist items:", error);
-    return { error: "Failed to clear checklist items" };
+    return { success: false, error: "Failed to clear checklist items" };
   }
 };
 
-export const clearAllChecklistItems = async (formData: FormData) => {
+export const clearAllChecklistItems = async (
+  formData: FormData,
+): Promise<Result<Checklist>> => {
   const uuid = formData.get("uuid") as string;
   const type = formData.get("type") as "completed" | "incomplete";
 
   const actingUser = await getCurrentUser();
 
   if (!actingUser?.username) {
-    return { error: "Not authenticated" };
+    return { success: false, error: "Not authenticated" };
   }
 
   return runQueued(itemLane(Modes.CHECKLISTS, uuid), () =>

@@ -285,7 +285,8 @@
     "actionMove": "Moved",
     "actionDelete": "Deleted",
     "actionInit": "Initialized",
-    "actionUnknown": "Changed"
+    "actionUnknown": "Changed",
+    "actionAttachments": "Moved attachments"
   },
   "auth": {
     "loginTitle": "Login",
@@ -1744,7 +1745,89 @@
     "overrideConfirmHint": "The leftover files stay on disk, but the app will treat your data as migrated. Any sharing or ordering listed above will not be applied until you migrate again, which you can do at any time from /migration?force=1.",
     "continueAnyway": "Continue Anyway",
     "overriding": "Continuing...",
-    "overrideFailed": "Could not skip the migration"
+    "overrideFailed": "Could not skip the migration",
+    "attachments": {
+      "title": "Attachments update required",
+      "description": "Attachments move next to the item they belong to, so whoever can read a note or board can see its images and files, and nobody else.",
+      "doneBody": "Attachments now follow the sharing of the item they belong to.",
+      "adminOnly": "An admin needs to move attachments next to the items they belong to before Jotty can be used again.",
+      "whatsHappeningBody": "Every image, video and file a note or checklist embeds is linked into <code>data/attachments</code>, in a folder named after the item's uuid, and the item's URLs are rewritten to point there. Your original uploads stay where they are.",
+      "followsItemTitle": "Attachments follow the item",
+      "followsItemBody": "Anyone who can read an item can open its attachments. Public items have public attachments, so the SERVE_PUBLIC_* variables are no longer needed.",
+      "noCopiesTitle": "No duplicate files",
+      "noCopiesBody": "Files are hardlinked, so the same image in ten notes still takes the space of one. If the disk can't hardlink they're copied.",
+      "encryptedTitle": "Encrypted notes move on their next save",
+      "encryptedBody": "Jotty can't read them, so their attachments move the next time the owner opens and saves them. Until then only the owner and admins can see those images.",
+      "dryRunTitle": "What will happen",
+      "backupBody": "This migration rewrites URLs inside your notes and checklists. Back up your <code>data</code> folder before you continue. Every rewritten item is recorded in <code>data/.migrations/attachments-v3.jsonl</code>.",
+      "leftAlone": "{count, plural, one {# thing was left alone, see below.} other {# things were left alone, see below.}}",
+      "allMoved": "Every attachment was moved.",
+      "statItems": "Items rewritten",
+      "statUrls": "URLs updated",
+      "statLinked": "Files linked",
+      "statCopied": "Files copied",
+      "statReused": "Already in place",
+      "statAvatars": "Avatars moved",
+      "statUuids": "Users given a uuid",
+      "statPasses": "Passes",
+      "copyMode": "This disk can't hardlink, so {size} will be copied. {free} is free.",
+      "crossOwnerTitle": "Files adopted from another user",
+      "crossOwnerHint": "These files were uploaded by someone who can edit the item, so they were moved in with it.",
+      "residue": {
+        "encrypted": {
+          "title": "Encrypted items",
+          "hint": "Their bodies can't be read without the passphrase, so their URLs stay as they are. Each one moves its own attachments the next time its owner opens and saves it."
+        },
+        "locked": {
+          "title": "Items without a stored uuid",
+          "hint": "These need their frontmatter fixed before they can own attachments."
+        },
+        "readOnly": {
+          "title": "Read-only folders",
+          "hint": "Jotty can't write to these folders, so nothing in them was changed."
+        },
+        "clash": {
+          "title": "Duplicate uuids",
+          "hint": "Two files claim the same uuid. Repair the duplicate in Admin first, then run this again with ?force=1."
+        },
+        "unparsable": {
+          "title": "Items that couldn't be parsed",
+          "hint": "Left exactly as they were."
+        },
+        "missing": {
+          "title": "Missing files",
+          "hint": "The URL points at a file that isn't on disk any more. The URL was left alone."
+        },
+        "notFile": {
+          "title": "Not a regular file",
+          "hint": "The URL points at a folder or a symlink, which are never moved."
+        },
+        "crossOwner": {
+          "title": "Another user's files",
+          "hint": "The file belongs to a user who can't edit this item, so it wasn't adopted. Its owner and admins can still open it."
+        },
+        "foreign": {
+          "title": "URLs on another address",
+          "hint": "Absolute URLs whose address isn't this instance's APP_URL were left alone."
+        },
+        "loose": {
+          "title": "URLs in plain text",
+          "hint": "These sit in text rather than in a link or image, so they were left alone."
+        },
+        "changing": {
+          "title": "Items still changing",
+          "hint": "These kept being edited while the migration ran. Run it again with ?force=1 to pick them up."
+        },
+        "avatarMissing": {
+          "title": "Avatars that couldn't be found",
+          "hint": "The avatar URL points at a file that isn't there. It was left as it was."
+        },
+        "avatarForeign": {
+          "title": "Avatars pointing at another user",
+          "hint": "The avatar uses someone else's upload, so it was left as it was."
+        }
+      }
+    }
   },
   "toasts": {
     "categoryRenamedSuccessfully": "Category renamed",
@@ -2219,5 +2302,52 @@
     "created": "Template created",
     "createFailed": "Couldn't create the template",
     "loadFailed": "Couldn't load your templates"
+  },
+  "attachments": {
+    "title": "Attachments",
+    "subtitle": "Everything attached to the notes and boards you can see, one folder per item. Anyone who can read an item can open what's attached to it.",
+    "search": "Search attachments by name...",
+    "allFolders": "All attachments",
+    "folderEmpty": "Nothing attached here yet",
+    "noneFound": "No attachments match \"{query}\"",
+    "loadFailed": "Couldn't load attachments",
+    "loadMore": "Load more",
+    "deleted": "Attachment deleted",
+    "confirmDelete": "Delete \"{name}\"? Anywhere it's still embedded will show it as missing.",
+    "openItem": "Open item",
+    "folderStats": "{count, plural, one {# file} other {# files}}, {size}",
+    "thisNote": "This note",
+    "thisBoard": "This board",
+    "allAttachments": "All attachments",
+    "saveFirst": "Save this item first, then you can attach files to it.",
+    "attachFailed": "Couldn't attach that file",
+    "empty": {
+      "images": "No images attached yet",
+      "videos": "No videos attached yet",
+      "files": "No files attached yet",
+      "all": "No attachments yet. Anything you upload to a note or board shows up here."
+    },
+    "tabs": {
+      "images": "Images",
+      "videos": "Videos",
+      "files": "Files"
+    },
+    "choose": {
+      "images": "Choose image",
+      "videos": "Choose video",
+      "files": "Choose file"
+    },
+    "errors": {
+      "unauthenticated": "Sign in to manage attachments",
+      "noFile": "Pick a file first",
+      "tooLarge": "That file is bigger than this instance allows",
+      "notFound": "That attachment or item doesn't exist",
+      "denied": "You don't have permission to change this item's attachments",
+      "badName": "That isn't a valid attachment name",
+      "notImage": "Only images can be used as an avatar",
+      "failed": "Something went wrong with that attachment"
+    },
+    "kinds": "Attachment types",
+    "scopes": "Where to look"
   }
 }

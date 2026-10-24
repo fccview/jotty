@@ -16,6 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useReadingAnchor } from "@/app/_hooks/useReadingAnchor";
 import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
+import { ItemTypes } from "@/app/_types/enums";
 import { cn } from "@/app/_utils/global-utils";
 
 interface NoteEditorContentProps {
@@ -127,6 +128,7 @@ export const NoteEditorContent = ({
         <TiptapEditor
           key={noteId}
           collaborationUuid={!encrypted ? noteId : undefined}
+          attachTarget={noteId ? { uuid: noteId, type: ItemTypes.NOTE } : undefined}
           content={editorContent}
           onChange={onEditorContentChange}
           onRemoteChange={onRemoteContentChange}

@@ -45,6 +45,8 @@ import {
 import { isWritable } from "@/app/_server/actions/lib/read-only";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
+import { sweepOrphans } from "@/app/_server/actions/attachments/lifecycle";
+import { rehomeRefs } from "@/app/_server/actions/attachments/adopt";
 
 const _noteDirFor = (owner: string, category?: string): string =>
   path.join(process.cwd(), NOTES_DIR(owner), category || UNCATEGORIZED);
@@ -133,7 +135,10 @@ const _editNote = async (
     const body = contentWithoutMetadata.trim();
     const convertedContent = isEncrypted(body)
       ? body
-      : await tidyItemLinks(body, note.owner || actingUsername);
+      : await tidyItemLinks(
+          await rehomeRefs(note.uuid!, actingUsername, body),
+          note.owner || actingUsername,
+        );
 
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;
@@ -339,6 +344,7 @@ const _dropNote = async (
     const filePath = path.join(ownerDir, homeCategory, `${note.id}.md`);
 
     await serverDeleteFile(filePath);
+    await sweepOrphans([note.uuid!]);
 
     if (!note.encrypted) {
       const deleteRelativePath = path.join(homeCategory, `${note.id}.md`);

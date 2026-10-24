@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { randomUUID } from "crypto";
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import { User } from "@/app/_types";
@@ -98,3 +99,26 @@ export const patchUserFields = async (
     return updatedUser;
   });
 };
+
+export const ensureUserUuid = async (username: string): Promise<string | null> => {
+  if (!username) return null;
+
+  return mutateUsers((allUsers) => {
+    const user = allUsers.find((candidate: User) => candidate.username === username);
+    if (!user) return null;
+
+    user.uuid ||= randomUUID();
+    return user.uuid;
+  });
+};
+
+export const backfillUserUuids = async (): Promise<number | null> =>
+  mutateUsers((allUsers) => {
+    let stamped = 0;
+    allUsers.forEach((user: User) => {
+      if (user.uuid) return;
+      user.uuid = randomUUID();
+      stamped++;
+    });
+    return stamped;
+  });

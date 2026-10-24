@@ -48,6 +48,7 @@ export type NotesCompactMode = `${ToggleState}`;
 export type NotesDetailsPanel = `${ToggleState}`;
 
 export interface User extends Partial<Record<HomeWidgetKey, ToggleState>> {
+  uuid?: string;
   username: string;
   passwordHash: string;
   isAdmin: boolean;

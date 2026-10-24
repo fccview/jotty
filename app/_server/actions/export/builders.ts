@@ -11,6 +11,8 @@ import { User } from "@/app/_types";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { exportName, exportableUser } from "./naming";
+import { ATTACHMENTS_FOLDER } from "@/app/_consts/attachments";
+import { exists, folderOf } from "@/app/_server/actions/attachments/store";
 
 let exportProgress: ExportProgress = {
   progress: 0,
@@ -22,6 +24,14 @@ const updateProgress = (progress: number, message: string) => {
 };
 
 export const readExportProgress = (): ExportProgress => exportProgress;
+
+const _copyAttachments = async (tempDir: string, uuids: (string | undefined)[]) => {
+  for (const uuid of uuids) {
+    const folder = uuid ? folderOf(uuid) : null;
+    if (!folder || !(await exists(folder))) continue;
+    await fsp.cp(folder, path.join(tempDir, ATTACHMENTS_FOLDER, uuid!), { recursive: true });
+  }
+};
 
 const zipDirectory = async (
   sourceDir: string,
@@ -122,6 +132,11 @@ export const buildAllContent = async (): Promise<ExportResult> => {
       );
     }
 
+    await _copyAttachments(tempContentDir, [
+      ...allListsResult.data!.map((list) => list.uuid),
+      ...allNotesResult.data!.map((note) => note.uuid),
+    ]);
+
     updateProgress(50, "Compressing all checklists and notes...");
     await zipDirectory(tempContentDir, tempExportPath, updateProgress);
     await fsp.rm(tempContentDir, { recursive: true, force: true });
@@ -206,6 +221,11 @@ export const buildUserContent = async (
         "utf-8",
       );
     }
+
+    await _copyAttachments(tempUserContentDir, [
+      ...userLists.map((list) => list.uuid),
+      ...userNotes.map((note) => note.uuid),
+    ]);
 
     updateProgress(50, `Compressing ${username}'s checklists and notes...`);
     await zipDirectory(tempUserContentDir, tempExportPath, updateProgress);

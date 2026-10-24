@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import path from "path";
 import {
   createSession,
@@ -23,7 +23,8 @@ import { CHECKLISTS_DIR, NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { logAuthEvent } from "../log";
 import { getUsername } from "../users";
 import { ensureUser } from "../users/ensure-user";
-import { touchUsersFile } from "../users/records";
+import type { User as UserRecord } from "@/app/_types";
+import { mutateUsers, touchUsersFile } from "../users/records";
 import { withFileLock } from "../lib/file-lock";
 import {
   isSecureEnv,
@@ -164,23 +165,27 @@ export const register = async (formData: FormData) => {
     return { error: "Passwords do not match" };
   }
 
-  const users = (await readJsonFile(USERS_FILE)) || [];
-
-  if (users.length > 0) {
-    return { error: "Registration is closed. Contact an administrator to create an account." };
-  }
-
-  await ensureCorDirsAndFiles();
-
-  const newUser: User = {
+  const newUser: UserRecord = {
+    uuid: randomUUID(),
     username,
     passwordHash: hashPassword(password),
     isAdmin: true,
     isSuperAdmin: true,
+    preferredDateFormat: "system",
+    preferredTimeFormat: "system",
   };
 
-  users.push(newUser);
-  await writeJsonFile(users, USERS_FILE);
+  const opened = await mutateUsers((users) => {
+    if (users.length > 0) return null;
+    users.push(newUser);
+    return true;
+  });
+
+  if (!opened) {
+    return { error: "Registration is closed. Contact an administrator to create an account." };
+  }
+
+  await ensureCorDirsAndFiles();
 
   const sessionId = _generateSessionId();
 

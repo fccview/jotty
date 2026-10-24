@@ -52,6 +52,7 @@ import {
   Tick02Icon,
   AlertCircleIcon,
 } from "hugeicons-react";
+import { AttachmentKinds, mimeOf, urlKind } from "@/app/_consts/attachments";
 
 const TRAILING_NEWLINE = /\n$/;
 const NESTED_LISTS = new Set(["ul", "ol"]);
@@ -221,13 +222,10 @@ export const UnifiedMarkdownRenderer = ({
 
       if (isFileAttachment || isVideoAttachment) {
         const fileName = childText.substring(2);
-        const isImage = href.includes("/api/image/");
-        const isVideo = href.includes("/api/video/");
-        const mimeType = isImage
-          ? "image/jpeg"
-          : isVideo
-            ? "video/mp4"
-            : "application/octet-stream";
+        const kind = isVideoAttachment ? AttachmentKinds.VIDEO : urlKind(href);
+        const isImage = kind === AttachmentKinds.IMAGE;
+        const isVideo = kind === AttachmentKinds.VIDEO;
+        const mimeType = mimeOf(fileName);
 
         if (isImage) {
           return (

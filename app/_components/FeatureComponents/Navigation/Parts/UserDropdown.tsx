@@ -11,6 +11,7 @@ import {
   Archive02Icon,
   LicenseDraftIcon,
   AiBrain04Icon,
+  Attachment01Icon,
 } from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useRouter } from "next/navigation";
@@ -26,6 +27,7 @@ import { cn } from "@/app/_utils/global-utils";
 import { ARCHIVE_PATH } from "@/app/_consts/files";
 import { TEMPLATES_PATH } from "@/app/_consts/templates";
 import { BRAIN_PATH } from "@/app/_consts/relations";
+import { ATTACHMENTS_PATH } from "@/app/_consts/attachments";
 import {
   MENU_CLASS,
   MENU_DIVIDER_CLASS,
@@ -128,6 +130,11 @@ export const UserDropdown = ({
             onClick: () => checkNavigation(() => router.push(BRAIN_PATH)),
           },
         ]),
+    {
+      label: t("attachments.title"),
+      icon: <Attachment01Icon className="h-4 w-4" />,
+      onClick: () => checkNavigation(() => router.push(ATTACHMENTS_PATH)),
+    },
     {
       type: "divider" as const,
     },

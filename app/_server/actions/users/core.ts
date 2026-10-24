@@ -7,6 +7,9 @@ import { Result, SanitisedUser, User } from "@/app/_types";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { removeAllSessionsForUser } from "../session/store";
 import { mutateUsers } from "./records";
+import { grepItemUuids } from "@/app/_utils/grep-utils";
+import { sweepOrphans } from "@/app/_server/actions/attachments/lifecycle";
+import { removeAvatar } from "@/app/_server/actions/attachments/avatars";
 
 export type UserUpdatePayload = {
   username?: string;
@@ -68,13 +71,18 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
       return null;
     }
 
-    users.splice(index, 1);
-    return true;
+    const [gone] = users.splice(index, 1);
+    return gone;
   });
 
   if (!removed) return { success: false, error: refusal };
 
   await removeAllSessionsForUser(username);
+
+  const doomed = [
+    ...(await grepItemUuids(CHECKLISTS_DIR(username))),
+    ...(await grepItemUuids(NOTES_DIR(username))),
+  ];
 
   try {
     await serverDeleteDir(CHECKLISTS_DIR(username));
@@ -85,6 +93,9 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
       error
     );
   }
+
+  await sweepOrphans(doomed);
+  if (removed.uuid) await removeAvatar(removed.uuid);
 
   try {
     const { revokeGrants } = await import("@/app/_server/actions/share/rename");

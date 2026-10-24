@@ -3,8 +3,13 @@ import { MigrationHeader } from "./MigrationHeader";
 import { InfoCard } from "@/app/_components/GlobalComponents/Cards/InfoCard";
 import { InfoCardVariant } from "@/app/_components/GlobalComponents/Cards/InfoCard";
 import { useTranslations } from "next-intl";
+import { MigrationSteps } from "@/app/_consts/attachment-migration";
 
-export const AdminRequiredView = () => {
+interface AdminRequiredViewProps {
+  step: MigrationSteps;
+}
+
+export const AdminRequiredView = ({ step }: AdminRequiredViewProps) => {
   const t = useTranslations();
 
   return (
@@ -21,7 +26,9 @@ export const AdminRequiredView = () => {
           variant={InfoCardVariant.WARNING}
         >
           <p>
-            {t("migration.sharingDataMigrationDescription")}
+            {step === MigrationSteps.ATTACHMENTS
+              ? t("migration.attachments.adminOnly")
+              : t("migration.sharingDataMigrationDescription")}
           </p>
         </InfoCard>
       </div>

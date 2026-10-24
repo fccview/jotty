@@ -67,6 +67,19 @@ const SCHEMA = `
     mtime REAL NOT NULL DEFAULT 0
   );
   CREATE INDEX IF NOT EXISTS clashes_uuid ON clashes(uuid);
+  CREATE TABLE IF NOT EXISTS attachments (
+    item TEXT NOT NULL,
+    name TEXT NOT NULL,
+    name_key TEXT NOT NULL,
+    size INTEGER NOT NULL DEFAULT 0,
+    mtime REAL NOT NULL DEFAULT 0,
+    PRIMARY KEY (item, name)
+  );
+  CREATE INDEX IF NOT EXISTS attachments_mtime ON attachments(mtime);
+  CREATE TABLE IF NOT EXISTS attachment_folders (
+    item TEXT PRIMARY KEY,
+    mtime REAL NOT NULL DEFAULT 0
+  );
   CREATE VIRTUAL TABLE IF NOT EXISTS texts USING fts5(
     uuid UNINDEXED,
     title,

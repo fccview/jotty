@@ -32,6 +32,7 @@ import {
 import { isWritable } from "@/app/_server/actions/lib/read-only";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
+import { sweepOrphans } from "@/app/_server/actions/attachments/lifecycle";
 
 const _listDirFor = (owner: string, category?: string): string =>
   path.join(
@@ -281,6 +282,7 @@ const _dropList = async (
     );
 
     await serverDeleteFile(filePath);
+    await sweepOrphans([list.uuid!]);
 
     try {
       revalidatePath("/");

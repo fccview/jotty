@@ -38,6 +38,7 @@ import { agentRefusal, normalAgent } from "@/app/_consts/agents";
 import { boardColumns, unknownStatus } from "@/app/_consts/kanban";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
+import { rehomeRefs } from "@/app/_server/actions/attachments/adopt";
 
 const _editItem = async (
   actor: SanitisedUser,
@@ -49,7 +50,7 @@ const _editItem = async (
     const itemId = formData.get("itemId") as string;
     const completedRaw = formData.get("completed");
     const text = formData.get("text") as string;
-    const description = formData.get("description") as string;
+    const rawDescription = formData.get("description") as string;
 
     const currentUser = actor?.username;
 
@@ -67,6 +68,10 @@ const _editItem = async (
     if (!filePath) {
       throw new Error("Permission denied");
     }
+
+    const description = rawDescription
+      ? await rehomeRefs(checklist.uuid, currentUser, rawDescription)
+      : rawDescription;
 
     const stored = await getListById(checklist.uuid, currentUser);
 
@@ -217,7 +222,7 @@ const _addItem = async (
     const text = formData.get("text") as string;
     const status = formData.get("status") as string;
     const timeStr = formData.get("time") as string;
-    const description = formData.get("description") as string;
+    const rawDescription = formData.get("description") as string;
     const currentUser = actor?.username;
     const recurrenceStr = formData.get("recurrence") as string;
 
@@ -235,6 +240,10 @@ const _addItem = async (
     if (!filePath) {
       throw new Error("Permission denied");
     }
+
+    const description = rawDescription
+      ? await rehomeRefs(list.uuid, currentUser, rawDescription)
+      : rawDescription;
 
     const stored = await getListById(list.uuid, currentUser);
 
