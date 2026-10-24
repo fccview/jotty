@@ -99,7 +99,7 @@ export const AttachmentMigrationView = () => {
   const residueCount = done ? flatResidue(result).length : 0;
 
   return (
-    <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-3xl w-full space-y-6">
         <MigrationHeader
           icon={<Attachment01Icon className="h-12 w-12 text-primary" />}

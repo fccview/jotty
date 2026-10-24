@@ -13,7 +13,7 @@ export const AdminRequiredView = ({ step }: AdminRequiredViewProps) => {
   const t = useTranslations();
 
   return (
-    <div className="min-h-screen bg-background-secondary flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="max-w-2xl w-full space-y-6">
         <MigrationHeader
           icon={<ShieldUserIcon className="h-12 w-12 text-amber-600" />}

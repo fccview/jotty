@@ -28,6 +28,7 @@ import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/T
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { currentOrigins, parseItemHref } from "@/app/_utils/item-href-utils";
 import { remarkWikilinks, WIKILINK_TAG } from "@/app/_utils/wikilink-utils";
+import { remarkSoftBreaks } from "@/app/_utils/markdown/remark-soft-breaks";
 import { WikiLink } from "./WikiLink";
 import { matchCallout } from "@/app/_utils/callout-utils";
 import { CalloutType } from "@/app/_consts/callouts";
@@ -493,7 +494,7 @@ export const UnifiedMarkdownRenderer = ({
         onClick={copyInlineCode}
       >
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkWikilinks]}
+          remarkPlugins={[remarkGfm, remarkSoftBreaks, remarkWikilinks]}
           rehypePlugins={[rehypeSlug, rehypeRaw, rehypeDiagrams, rehypeTableWhitespace]}
           components={components}
           urlTransform={noteUrlTransform}
