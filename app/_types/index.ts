@@ -77,6 +77,7 @@ export type { AdjacentNotes, ItemShelf, LibraryStats, WikiAsk, WikiHit } from ".
 export type { BrowsePage, BrowseQuery } from "./browse";
 export type {
   FolderStats,
+  SidebarAnchor,
   SidebarEntry,
   SidebarPage,
   SidebarRow,

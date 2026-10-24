@@ -30,6 +30,12 @@ export interface SidebarSearch {
   truncated: boolean;
 }
 
+export interface SidebarAnchor {
+  key: string;
+  offset: number;
+  top: number;
+}
+
 export interface SidebarSpot {
   category: string;
   index: number;

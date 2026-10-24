@@ -27,7 +27,7 @@ Existing:
 
 - `ui-store` is `isDragging` only
 - `settings-store` holds theme and `viewMode` (card / list / grid), persisted
-- `sidebar-store` collapsed categories/tags and width, persisted. `scrollTop`, `mode` and `search` are not
+- `sidebar-store` collapsed categories/tags and width, persisted. `scrollTop`, `mode` and `search` are not. The notes and checklists sidebar keeps its scroll in `useSidebarAnchor` instead, a row key plus offset per mode, because a pixel offset drifts when rows above it change
 - `sidebar-rows-store` sidebar pages fetched per folder, keyed by stamp, not persisted
 - `notes-store` and `editor-activity-store` for editor UI flags
 - `modal-store`, `dnd/drag-store`

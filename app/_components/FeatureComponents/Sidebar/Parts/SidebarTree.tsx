@@ -2,7 +2,7 @@
 
 import { ReactNode, memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Range, defaultRangeExtractor, useVirtualizer } from "@tanstack/react-virtual";
-import type { SidebarRow } from "@/app/_types";
+import type { AppMode, SidebarRow } from "@/app/_types";
 import {
   SIDEBAR_FETCH_DEBOUNCE_MS,
   SIDEBAR_OVERSCAN,
@@ -11,6 +11,7 @@ import {
   SIDEBAR_VIRTUAL_THRESHOLD,
   SidebarRowKinds,
 } from "@/app/_consts/sidebar";
+import { contentTop, useSidebarAnchor } from "@/app/_hooks/useSidebarAnchor";
 
 const INDICATOR_HEIGHT = 2;
 const GAP_HEIGHT = 4;
@@ -60,6 +61,7 @@ const TreeRow = memo(function TreeRow({
 });
 
 interface SidebarTreeProps {
+  mode: AppMode | null;
   rows: SidebarRow[];
   scrollElement: HTMLElement | null;
   renderRow: RenderRow;
@@ -68,6 +70,7 @@ interface SidebarTreeProps {
 }
 
 export const SidebarTree = ({
+  mode,
   rows,
   scrollElement,
   renderRow,
@@ -81,12 +84,7 @@ export const SidebarTree = ({
   useLayoutEffect(() => {
     const list = listRef.current;
     if (!virtual || !scrollElement || !list) return;
-    const measure = () =>
-      setScrollMargin(
-        list.getBoundingClientRect().top -
-          scrollElement.getBoundingClientRect().top +
-          scrollElement.scrollTop,
-      );
+    const measure = () => setScrollMargin(contentTop(list, scrollElement));
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(scrollElement);
@@ -96,6 +94,7 @@ export const SidebarTree = ({
   const estimateSize = useCallback((index: number) => _estimate(rows[index]), [rows]);
   const getItemKey = useCallback((index: number) => rows[index].key, [rows]);
   const getScrollElement = useCallback(() => scrollElement, [scrollElement]);
+  const initialOffset = useCallback(() => scrollElement?.scrollTop ?? 0, [scrollElement]);
   const rangeExtractor = useCallback(
     (range: Range) => {
       const indexes = defaultRangeExtractor(range);
@@ -108,13 +107,24 @@ export const SidebarTree = ({
   );
 
   const virtualizer = useVirtualizer({
-    count: virtual ? rows.length : 0,
+    count: rows.length,
+    enabled: virtual,
     getScrollElement,
+    initialOffset,
     estimateSize,
     getItemKey,
     overscan: SIDEBAR_OVERSCAN,
     scrollMargin,
     rangeExtractor,
+  });
+
+  useSidebarAnchor({
+    mode,
+    rows,
+    scrollElement,
+    listRef,
+    virtualizer: virtual ? virtualizer : null,
+    layoutSize: virtual ? virtualizer.getTotalSize() + scrollMargin : 0,
   });
 
   const windowed = virtual ? virtualizer.getVirtualItems() : [];
@@ -130,7 +140,9 @@ export const SidebarTree = ({
     return (
       <div ref={listRef}>
         {rows.map((row, index) => (
-          <TreeRow key={row.key} row={row} index={index} renderRow={renderRow} />
+          <div key={row.key}>
+            <TreeRow row={row} index={index} renderRow={renderRow} />
+          </div>
         ))}
       </div>
     );

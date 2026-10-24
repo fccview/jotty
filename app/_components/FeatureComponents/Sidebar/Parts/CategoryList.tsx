@@ -45,6 +45,7 @@ interface CategoryListProps extends FolderActions {
   onEditItem?: (item: Checklist | Note) => void;
   isItemSelected: (item: Checklist | Note) => boolean;
   mode: AppMode;
+  modeSettled: boolean;
   user?: SanitisedUser;
   scrollElement: HTMLElement | null;
 }
@@ -325,6 +326,7 @@ export const CategoryList = (props: CategoryListProps) => {
       onDragCancel={handleDragCancel}
     >
       <SidebarTree
+        mode={props.modeSettled ? mode : null}
         rows={rows}
         scrollElement={scrollElement}
         onVisible={onVisible}

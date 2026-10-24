@@ -22,7 +22,7 @@ export const QuickCapture = ({ promptsKey, buttonLabel, onCapture }: QuickCaptur
 
   return (
     <form onSubmit={submit} className="flex flex-col sm:flex-row gap-2 max-w-2xl">
-      <label className="flex-1 min-w-0 flex items-center gap-3 h-12 px-4 rounded-jotty bg-primary-foreground/[0.15] focus-within:bg-primary-foreground/25 transition-colors cursor-text">
+      <label className="sm:flex-1 min-w-0 flex items-center gap-3 h-12 px-4 rounded-jotty bg-primary-foreground/[0.15] focus-within:bg-primary-foreground/25 transition-colors cursor-text">
         <QuillWrite01Icon className="h-5 w-5 shrink-0" />
         <input
           type="text"

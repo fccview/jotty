@@ -19,6 +19,7 @@ interface SidebarWrapperProps {
   navigation?: ReactNode;
   headerActions?: ReactNode;
   scrollRef?: Ref<HTMLDivElement>;
+  restoreScroll?: boolean;
 }
 
 export const SidebarWrapper = ({
@@ -30,6 +31,7 @@ export const SidebarWrapper = ({
   navigation,
   headerActions,
   scrollRef,
+  restoreScroll = true,
 }: SidebarWrapperProps) => {
   const { isDemoMode, isRwMarkable } = useAppMode();
   const { sidebarWidth, isResizing, startResizing } = useResizing();
@@ -39,6 +41,7 @@ export const SidebarWrapper = ({
   const pathname = usePathname();
 
   useLayoutEffect(() => {
+    if (!restoreScroll) return;
     const el = internalScrollRef.current;
     const scrollTop = useSidebarStore.getState().scrollTop;
     if (el && scrollTop > 0) {
@@ -48,7 +51,7 @@ export const SidebarWrapper = ({
         isRestoringScroll.current = false;
       });
     }
-  }, [pathname]);
+  }, [pathname, restoreScroll]);
 
   const attachScroll = useCallback(
     (element: HTMLDivElement | null) => {
@@ -60,12 +63,12 @@ export const SidebarWrapper = ({
   );
 
   const handleScroll = useCallback(() => {
-    if (isRestoringScroll.current) return;
+    if (!restoreScroll || isRestoringScroll.current) return;
     const el = internalScrollRef.current;
     if (el) {
       setScrollTop(el.scrollTop);
     }
-  }, [setScrollTop]);
+  }, [setScrollTop, restoreScroll]);
 
   return (
     <>

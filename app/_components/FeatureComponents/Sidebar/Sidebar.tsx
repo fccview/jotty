@@ -120,6 +120,7 @@ export const Sidebar = (props: SidebarProps) => {
         isOpen={isOpen}
         onClose={onClose}
         scrollRef={setScrollElement}
+        restoreScroll={sidebarMode === Modes.TAGS}
         title={
           sidebarMode !== Modes.TAGS ? (
             <button
@@ -241,6 +242,7 @@ export const Sidebar = (props: SidebarProps) => {
                 onEditItem={(item) => sidebar.openModal("editItem", item)}
                 isItemSelected={sidebar.isItemSelected}
                 mode={sidebar.mode}
+                modeSettled={sidebar.mode === sidebarMode}
                 user={user || undefined}
               />
             )}
