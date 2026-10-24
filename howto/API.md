@@ -32,6 +32,14 @@ Checklist and task items are addressed by their tree index inside the list: `0` 
 
 > **Deprecated: slug lookups.** A legacy filename slug still works as the item id, optionally with `?category=` (default "Uncategorized"). Every such request logs a warning, and this fallback **will be removed in a future release**. Switch any stored slugs to UUIDs now.
 
+## Sorting a checklist
+
+| Endpoint | What it does |
+|---|---|
+| `PUT /api/checklists/{listId}/items/sort` | Reorders the whole list and answers with the sorted checklist. Send `{ "sort": "alphabetical", "direction": "asc" }` for A to Z, `"desc"` for Z to A, `{ "sort": "created" }` or `{ "sort": "modified" }` with `"desc"` for newest first and `"asc"` (the default) for oldest first, or `{ "sort": "shuffle" }` for a new random order every call. Sub-items are sorted under their parent and never move to another one. Needs edit on the list, `403` otherwise, and `404` for a list you can't see. Kanban boards are refused with `400`, move their cards instead |
+
+The new order is saved to the file, so every device and every later request sees it. Item `itemIndex` values change with it, so read the list again before using one. Alphabetical order follows the language set on the account behind the API key, falling back to the instance default, so `ż` sorts after `z` for a Polish account. `created` uses when each item was added and `modified` when it was last changed, falling back to its creation time. Items with no timestamp, usually ones written by hand or by an older version, keep their relative order at the end. A list that is already in the requested order is answered as it is and left untouched on disk.
+
 ## Note files
 
 Every note is a markdown file in your data folder, with some YAML frontmatter at the top. If a script writes notes straight to disk, this is the shape Jotty expects:

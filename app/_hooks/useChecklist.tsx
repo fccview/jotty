@@ -10,7 +10,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Checklist, ChecklistType, Item, RecurrenceRule } from "@/app/_types";
+import { Checklist, ChecklistType, Item, RecurrenceRule, Result } from "@/app/_types";
 import {
   convertChecklistType,
   viewList,
@@ -24,13 +24,24 @@ import {
   bulkToggleItems,
   bulkDeleteItems,
   createSubItem,
+  sortItems,
+  undoSort,
 } from "@/app/_server/actions/checklist-item";
 import { useRouter } from "next/navigation";
 import { getUsername } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { areAllItemsCompleted } from "../_utils/checklist-utils";
+import { SortedList, preorderIds, sameOrder } from "@/app/_utils/checklist-sort-utils";
+import { ItemSort, SortDirection } from "@/app/_types/enums";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { useToast } from "@/app/_providers/ToastProvider";
+
+const SORT_UNDO_LIMIT = 20;
+
+interface SortUndo {
+  before: string[];
+  after: string[];
+}
 
 interface UseChecklistProps {
   list: Checklist;
@@ -55,9 +66,11 @@ export const useChecklist = ({
   const [focusKey, setFocusKey] = useState(0);
   const [copied, setCopied] = useState(false);
   const [itemsToDelete, setItemsToDelete] = useState<string[]>([]);
+  const [sortUndos, setSortUndos] = useState<SortUndo[]>([]);
   const [pendingToggles, setPendingToggles] = useState<Map<string, boolean>>(
     new Map()
   );
+  const [sendingToggles, setSendingToggles] = useState(0);
   const isInitialMount = useRef(true);
 
   const sensors = useSensors(
@@ -124,6 +137,7 @@ export const useChecklist = ({
 
     const timer = setTimeout(async () => {
       const togglesToProcess = new Map(pendingToggles);
+      setSendingToggles((count) => count + togglesToProcess.size);
       setPendingToggles(new Map());
 
       const syncPromises = Array.from(togglesToProcess.entries()).map(
@@ -145,6 +159,8 @@ export const useChecklist = ({
           } catch (error) {
             console.error(`Failed to sync toggle for ${itemId}:`, error);
             setPendingToggles((prev) => new Map(prev).set(itemId, completed));
+          } finally {
+            setSendingToggles((count) => count - 1);
           }
         }
       );
@@ -652,6 +668,84 @@ export const useChecklist = ({
     }
   };
 
+  const pendingTogglesCount = pendingToggles.size + sendingToggles;
+
+  const isSyncing = itemsToDelete.length > 0 || pendingTogglesCount > 0;
+
+  const lastSort = sortUndos[sortUndos.length - 1];
+
+  const canUndoSort = useMemo(
+    () => Boolean(lastSort) && sameOrder(lastSort.after, preorderIds(localList.items)),
+    [lastSort, localList.items]
+  );
+
+  useEffect(() => {
+    if (lastSort && !canUndoSort) setSortUndos([]);
+  }, [lastSort, canUndoSort]);
+
+  const showSortError = (error?: string) =>
+    showToast({
+      type: "error",
+      title: t("common.error"),
+      message: error || t("checklists.sortFailed"),
+    });
+
+  const sendSort = async (
+    send: () => Promise<Result<SortedList>>,
+    onSorted: (sorted: SortedList) => void
+  ) => {
+    setIsLoading(true);
+    try {
+      const result = await send();
+      if (result.success && result.data) {
+        onSorted(result.data);
+        setLocalList(result.data.list);
+        return;
+      }
+      console.error("Sort was refused:", result.error);
+      showSortError(result.error);
+    } catch (error) {
+      console.error("Failed to sort items:", error);
+      showSortError();
+    } finally {
+      setIsLoading(false);
+      router.refresh();
+    }
+  };
+
+  const handleSort = async (
+    sort: ItemSort,
+    direction: SortDirection = SortDirection.ASC
+  ) => {
+    if (isLoading || isSyncing) return;
+    const formData = new FormData();
+    formData.append("uuid", localList.uuid || "");
+    formData.append("sort", sort);
+    formData.append("direction", direction);
+
+    await sendSort(
+      () => sortItems(formData),
+      ({ list: sorted, before, changed }) => {
+        if (!changed) return;
+        const undo = { before, after: preorderIds(sorted.items) };
+        setSortUndos((undos) => [...undos, undo].slice(-SORT_UNDO_LIMIT));
+      }
+    );
+  };
+
+  const handleUndoSort = async () => {
+    if (!canUndoSort || isLoading || isSyncing) return;
+    const formData = new FormData();
+    formData.append("uuid", localList.uuid || "");
+    formData.append("before", JSON.stringify(lastSort.before));
+    formData.append("expected", JSON.stringify(lastSort.after));
+
+    await sendSort(
+      () => undoSort(formData),
+      () => setSortUndos((undos) => undos.slice(0, -1))
+    );
+  };
+
   const handleCreateItem = async (
     text: string,
     recurrence?: RecurrenceRule
@@ -795,6 +889,10 @@ export const useChecklist = ({
     handleConfirmConversion,
     handleBulkToggle,
     handleClearAll,
+    handleSort,
+    handleUndoSort,
+    canUndoSort,
+    isSyncing,
     handleCreateItem,
     handleAddSubItem,
     handleCopyId,
@@ -802,7 +900,7 @@ export const useChecklist = ({
     completedItems,
     totalCount: localList.items.length,
     deletingItemsCount: itemsToDelete.length,
-    pendingTogglesCount: pendingToggles.size,
+    pendingTogglesCount,
     sensors,
     deleteModal: (
       <ConfirmModal

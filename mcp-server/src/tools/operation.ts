@@ -36,6 +36,7 @@ export const annotationsOf = (op: Operation): Tool["annotations"] => ({
   destructiveHint: op.method === Verb.Delete,
   idempotentHint: op.method === Verb.Get || op.method === Verb.Put || op.method === Verb.Delete,
   openWorldHint: false,
+  ...catalogEntry(op.operationId)?.annotations,
 });
 
 const _withDefaults = (schema: JsonSchema, defaults: Record<string, unknown> = {}): JsonSchema => ({

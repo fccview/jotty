@@ -79,6 +79,28 @@ describe("runOperation", () => {
     expect(text(result)).toContain("get_checklist");
   });
 
+  it("sorts a checklist with the flat arguments as the body", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("sortChecklistItems"), { listId: "l-1", sort: "shuffle" }, { curated: true });
+    expect(result.isError).toBeUndefined();
+    expect(jotty.hits.at(-1)).toMatchObject({ method: "PUT", path: "/api/checklists/l-1/items/sort", body: { sort: "shuffle" } });
+    expect(structured(result)).toMatchObject({ success: true, data: { id: "l-1" } });
+  });
+
+  it("doesn't call a sort safe to repeat, a second shuffle moves everything again", () => {
+    expect(operationTool(spec, op("sortChecklistItems"), 12_000).annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+    });
+  });
+
+  it("explains the sort values when a sort is refused", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("sortChecklistItems"), { listId: "l-1", sort: "sideways" }, { curated: true });
+    expect(structured(result).error).toMatchObject({ kind: "input", status: 400 });
+    expect(text(result)).toContain("alphabetical, created, modified or shuffle");
+    expect(text(result)).not.toContain("input schema");
+  });
+
   it("uses the catalog's own hint for a refused mention link", async () => {
     const result = await runOperation(makeCtx(jotty.url), spec, op("connectItems"), { source: "n-1", target: "n-2", style: "mention" }, { curated: true });
     expect(text(result)).toContain("Mention not found");
@@ -159,7 +181,7 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
     const data = structured(result);
     expect(data.version).toBe("9.9.9");
-    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "update_board_item", "assign_agent", "set_board_spec", "get_task_context", "list_agent_tasks", "connect_items", "list_duplicate_uuids"]);
+    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "sort_checklist_items", "update_board_item", "assign_agent", "set_board_spec", "get_task_context", "list_agent_tasks", "connect_items", "list_duplicate_uuids"]);
     expect(data.unavailableTools).toContain("list_boards");
   });
 

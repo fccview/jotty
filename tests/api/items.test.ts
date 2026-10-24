@@ -10,6 +10,8 @@ import {
   mockServerWriteFile,
   mockCanReach,
   mockRemoveItem,
+  mockSortListItems,
+  mockResolveApiId,
   resetApiMocks,
   createMockRequest,
   getResponseJson,
@@ -20,6 +22,8 @@ import { PUT as CHECK } from "@/app/api/checklists/[listId]/items/[itemIndex]/ch
 import { PUT as UNCHECK } from "@/app/api/checklists/[listId]/items/[itemIndex]/uncheck/route"
 import { DELETE, PATCH } from "@/app/api/checklists/[listId]/items/[itemIndex]/route"
 import { PUT as REORDER } from "@/app/api/checklists/[listId]/items/reorder/route"
+import { PUT as SORT } from "@/app/api/checklists/[listId]/items/sort/route"
+import { KANBAN_UNSORTABLE, Sorted } from "@/app/_server/actions/checklist-item/sorter"
 
 describe("Checklist Items API", () => {
   const mockList = {
@@ -558,6 +562,98 @@ describe("Checklist Items API", () => {
 
       expect(response.status).toBe(404)
       expect((await getResponseJson(response)).error).toBe("Item not found")
+    })
+  })
+  describe("PUT /api/checklists/:id/items/sort", () => {
+    const sort = (body: unknown) =>
+      SORT(createMockRequest("PUT", "http://localhost:3000/api/checklists/uuid-1/items/sort", body), {
+        params: Promise.resolve({ listId: "uuid-1" }),
+      })
+
+    const sorted = (list: typeof mockList) => ({ status: Sorted.SORTED, list, before: ["item-1", "item-2"] })
+
+    it.each([
+      [{}, "'sort' must be one of: alphabetical, shuffle, created, modified"],
+      [{ sort: "sideways" }, "'sort' must be one of: alphabetical, shuffle, created, modified"],
+      [{ sort: "alphabetical", direction: "up" }, "'direction' must be 'asc' or 'desc'"],
+    ])("refuses %j with %s", async (body, message) => {
+      const response = await sort(body)
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe(message)
+      expect(mockSortListItems).not.toHaveBeenCalled()
+    })
+
+    it("returns 404 when the list id doesn't resolve", async () => {
+      mockResolveApiId.mockResolvedValue(null)
+
+      const response = await sort({ sort: "shuffle" })
+
+      expect(response.status).toBe(404)
+      expect(mockSortListItems).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      [Sorted.NO_LIST, 404, "List not found"],
+      [Sorted.FORBIDDEN, 403, "Forbidden"],
+      [Sorted.KANBAN, 400, KANBAN_UNSORTABLE],
+    ])("answers a %s refusal from inside the write lane with %i", async (status, code, message) => {
+      mockSortListItems.mockResolvedValue({ status })
+
+      const response = await sort({ sort: "shuffle" })
+
+      expect(response.status).toBe(code)
+      expect((await getResponseJson(response)).error).toBe(message)
+    })
+
+    it("sorts A to Z by default and answers with the sorted checklist", async () => {
+      mockSortListItems.mockResolvedValue(sorted({ ...mockList, items: [...mockList.items].reverse() }))
+
+      const response = await sort({ sort: "alphabetical" })
+      const json = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(mockSortListItems).toHaveBeenCalledWith(expect.objectContaining({ username: "testuser" }), "uuid-1", "alphabetical", "asc")
+      expect(json.success).toBe(true)
+      expect(json.data.id).toBe("uuid-1")
+      expect(json.data.items.map((item: { id: string; itemIndex: string }) => [item.id, item.itemIndex])).toEqual([
+        ["item-2", "0"],
+        ["item-1", "1"],
+      ])
+    })
+
+    it("answers with the list when it was already in that order", async () => {
+      mockSortListItems.mockResolvedValue({ ...sorted(mockList), status: Sorted.UNCHANGED })
+
+      const response = await sort({ sort: "alphabetical" })
+
+      expect(response.status).toBe(200)
+      expect((await getResponseJson(response)).data.id).toBe("uuid-1")
+    })
+
+    it("passes the direction through", async () => {
+      mockSortListItems.mockResolvedValue(sorted(mockList))
+
+      await sort({ sort: "alphabetical", direction: "desc" })
+
+      expect(mockSortListItems).toHaveBeenCalledWith(expect.anything(), "uuid-1", "alphabetical", "desc")
+    })
+
+    it.each(["created", "modified"])("accepts a %s sort, oldest first by default", async (by) => {
+      mockSortListItems.mockResolvedValue(sorted(mockList))
+
+      const response = await sort({ sort: by })
+
+      expect(response.status).toBe(200)
+      expect(mockSortListItems).toHaveBeenCalledWith(expect.anything(), "uuid-1", by, "asc")
+    })
+
+    it("returns 500 when the write throws", async () => {
+      mockSortListItems.mockRejectedValue(new Error("disk full"))
+
+      const response = await sort({ sort: "shuffle" })
+
+      expect(response.status).toBe(500)
     })
   })
 })

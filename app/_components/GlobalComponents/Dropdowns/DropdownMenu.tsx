@@ -52,6 +52,7 @@ interface DropdownMenuProps {
   items: DropdownItem[];
   align?: "left" | "right";
   contextTarget?: React.RefObject<HTMLElement | null>;
+  disabled?: boolean;
 }
 
 export const DropdownMenu = ({
@@ -59,6 +60,7 @@ export const DropdownMenu = ({
   items,
   align = "left",
   contextTarget,
+  disabled = false,
 }: DropdownMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [point, setPoint] = useState<{ x: number; y: number } | null>(null);
@@ -79,12 +81,17 @@ export const DropdownMenu = ({
     const handleContext = (event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
+      if (disabled) return;
       setPoint({ x: event.clientX, y: event.clientY });
       setIsOpen(true);
     };
     target.addEventListener("contextmenu", handleContext);
     return () => target.removeEventListener("contextmenu", handleContext);
-  }, [contextTarget]);
+  }, [contextTarget, disabled]);
+
+  useEffect(() => {
+    if (disabled) setIsOpen(false);
+  }, [disabled]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -119,11 +126,13 @@ export const DropdownMenu = ({
   }, [isOpen, point]);
 
   const handleItemClick = (itemOnClick: () => void) => {
+    if (disabled) return;
     itemOnClick();
     setIsOpen(false);
   };
 
   const handleToggle = () => {
+    if (disabled) return;
     setPoint(null);
     setIsOpen(point ? true : !isOpen);
   };
