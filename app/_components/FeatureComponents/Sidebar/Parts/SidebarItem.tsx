@@ -23,6 +23,8 @@ import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
 import { leaveItem } from "@/app/_server/actions/share/operations";
+import { DETACH_LOSSY } from "@/app/_consts/sharing";
+import { useToast } from "@/app/_providers/ToastProvider";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { usePinToggle } from "@/app/_hooks/usePinToggle";
@@ -57,6 +59,7 @@ export const SidebarItem = ({
 }: SidebarItemProps) => {
   const t = useTranslations();
   const router = useRouter();
+  const { showToast } = useToast();
   const { checkNavigation, checkWouldBlock } = useNavigationGuard();
   const returnPath = useReturnPath(`/?mode=${mode}`);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -104,6 +107,13 @@ export const SidebarItem = ({
       router.refresh();
     } else {
       console.error("Failed to leave share:", result.error);
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: t(
+          result.error === DETACH_LOSSY ? "sharing.cantLeave" : "sharing.leaveFailed",
+        ),
+      });
     }
 
     setShowLeaveModal(false);

@@ -22,6 +22,7 @@ enum RpcMessage {
 
 interface Session {
   server: Server;
+  owner: string;
   transport: WebStandardStreamableHTTPServerTransport;
   touchedAt: number;
 }
@@ -40,7 +41,8 @@ const rpcFail = (status: number, code: RpcCode, message: RpcMessage): Response =
 const readBody = async (request: Request): Promise<unknown> => {
   try {
     return await request.json();
-  } catch {
+  } catch (error) {
+    logger.debug(LOG_NS, "request body was not JSON", error);
     return PARSE_FAILED;
   }
 };
@@ -56,6 +58,7 @@ export interface HostPolicy {
 export const createSessionPool = (
   forge: (request: Request) => Server,
   policy: HostPolicy = { allowedHosts: [], allowedOrigins: [] },
+  ownerOf: (request: Request) => string = () => "",
 ): SessionPool => {
   const sessions = new Map<string, Session>();
 
@@ -74,6 +77,7 @@ export const createSessionPool = (
     const server = forge(request);
     const session: Session = {
       server,
+      owner: ownerOf(request),
       touchedAt: Date.now(),
       transport: new WebStandardStreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
@@ -101,6 +105,10 @@ export const createSessionPool = (
     if (id) {
       const session = sessions.get(id);
       if (!session) return rpcFail(404, RpcCode.NotFound, RpcMessage.NoSession);
+      if (session.owner !== ownerOf(request)) {
+        logger.warn(LOG_NS, `session ${id.slice(0, 8)} used with a different API key`);
+        return rpcFail(404, RpcCode.NotFound, RpcMessage.NoSession);
+      }
       session.touchedAt = Date.now();
       return session.transport.handleRequest(request);
     }

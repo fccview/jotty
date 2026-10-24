@@ -15,7 +15,7 @@ const PEOPLE_LIMIT = 4;
 export const NotePickUp = ({ note, onOpen }: { note: Note; onOpen: () => void }) => {
   const t = useTranslations();
   const { people } = useItemSharing(note.uuid, Modes.NOTES);
-  const excerpt = useMemo(() => noteExcerptOf(note), [note]);
+  const excerpt = useMemo(() => (isNoteEncrypted(note) ? "" : noteExcerptOf(note)), [note]);
 
   return (
     <PickUpCard

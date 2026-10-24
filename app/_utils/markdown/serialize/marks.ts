@@ -43,10 +43,13 @@ export const delimiters = (mark: MarkJson): Delimiters | null => {
       return tag("mark", attrs.style ? ` style="${escapeHtmlAttr(styleOf(attrs.style))}"` : "");
     case MarkName.Highlight:
       return attrs.color
-        ? tag("mark", ` style="background-color: ${attrs.color}; color: ${getContrastColor(attrs.color)}"`)
+        ? tag(
+            "mark",
+            ` style="${escapeHtmlAttr(`background-color: ${attrs.color}; color: ${getContrastColor(attrs.color)}`)}"`,
+          )
         : tag("mark");
     case MarkName.TextStyle:
-      return attrs.color ? tag("span", ` style="color: ${attrs.color}"`) : null;
+      return attrs.color ? tag("span", ` style="${escapeHtmlAttr(`color: ${attrs.color}`)}"`) : null;
     case MarkName.FontFamily: {
       const font = styleOf(attrs.style).replace(/^font-family:\s*/i, "").replace(/;$/, "").replace(/"/g, "'");
       return font ? tag("span", ` style="font-family: ${font}"`) : null;

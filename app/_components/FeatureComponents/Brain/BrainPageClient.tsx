@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -86,6 +86,8 @@ export const BrainPageClient = ({
     setFlyTo({ id, at: Date.now() });
   }, []);
 
+  const creating = useRef(false);
+
   const open = useCallback(
     async (node: BrainNode) => {
       if (node.kind === BrainNodeKinds.NOTE)
@@ -94,22 +96,29 @@ export const BrainPageClient = ({
         return router.push(itemHref(ItemTypes.CHECKLIST, node.id));
       if (node.kind === BrainNodeKinds.TAG)
         return router.push(tagHref(node.title.replace(/^#/, "")));
-      if (!isOwnBrain) return;
+      if (!isOwnBrain || creating.current) return;
 
-      const formData = new FormData();
-      formData.append("title", node.title);
-      formData.append("category", UNCATEGORIZED);
-      formData.append("rawContent", "");
-      const result = await createNote(formData);
-      if (result.success && result.data?.uuid) {
-        router.push(itemHref(ItemTypes.NOTE, result.data.uuid));
-        return;
+      creating.current = true;
+      try {
+        const formData = new FormData();
+        formData.append("title", node.title);
+        formData.append("category", UNCATEGORIZED);
+        formData.append("rawContent", "");
+        const result = await createNote(formData);
+        if (result.success && result.data?.uuid) {
+          router.push(itemHref(ItemTypes.NOTE, result.data.uuid));
+          return;
+        }
+        showToast({
+          type: "error",
+          title: t("common.error"),
+          message: t("brain.createFailed"),
+        });
+      } catch (error) {
+        console.error("Could not create a note from the brain:", error);
+      } finally {
+        creating.current = false;
       }
-      showToast({
-        type: "error",
-        title: t("common.error"),
-        message: t("brain.createFailed"),
-      });
     },
     [router, isOwnBrain, showToast, t],
   );

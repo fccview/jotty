@@ -56,6 +56,11 @@ export const useSharingTools = ({
   }>({ isLoading: false, error: null, success: null });
   const [searchQuery, setSearchQuery] = useState("");
 
+  const refusalText = (error?: string): string =>
+    error === DETACH_LOSSY
+      ? t("sharing.cantDetach")
+      : error || t("errors.anUnknownErrorOccurred");
+
   const resetMessages = () =>
     setStatus((prev) => ({ ...prev, error: null, success: null }));
 
@@ -74,7 +79,7 @@ export const useSharingTools = ({
             { ...permissions, canRead: true }
           );
           if (!result.success) {
-            throw new Error(result.error || "An unknown error occurred.");
+            throw new Error(refusalText(result.error));
           }
         }
 
@@ -102,7 +107,7 @@ export const useSharingTools = ({
         for (const targetUser of targetUsersList) {
           const result = await unshareItem(modeFor(itemType), itemUuid, targetUser || "");
           if (!result.success) {
-            throw new Error(result.error || "An unknown error occurred.");
+            throw new Error(refusalText(result.error));
           }
         }
 
@@ -198,7 +203,7 @@ export const useSharingTools = ({
     if (result.success) {
       setUserPermissions((prev) => ({ ...prev, [user]: next }));
     } else {
-      setStatus((prev) => ({ ...prev, error: result.error || null }));
+      setStatus((prev) => ({ ...prev, error: refusalText(result.error) }));
     }
   };
 
@@ -209,7 +214,12 @@ export const useSharingTools = ({
     setStatus({ isLoading: true, error: null, success: null });
 
     try {
-      await setItemPublic(modeFor(itemType), itemUuid, !isPubliclyShared);
+      const toggled = await setItemPublic(
+        modeFor(itemType),
+        itemUuid,
+        !isPubliclyShared
+      );
+      if (!toggled.success) throw new Error(refusalText(toggled.error));
 
       const shares = await itemShares(itemUuid, itemType);
       const isPublic = shares.isPublic;
@@ -252,11 +262,7 @@ export const useSharingTools = ({
         : await inheritItem(mode, itemUuid);
 
       if (!result.success) {
-        throw new Error(
-          result.error === DETACH_LOSSY
-            ? t("sharing.cantDetach")
-            : result.error || "Failed to update sharing"
-        );
+        throw new Error(refusalText(result.error));
       }
 
       await loadInitialState();
@@ -281,11 +287,13 @@ export const useSharingTools = ({
       const mode = modeFor(itemType);
 
       for (const username of currentSharing) {
-        await unshareItem(mode, itemUuid, username);
+        const result = await unshareItem(mode, itemUuid, username);
+        if (!result.success) throw new Error(refusalText(result.error));
       }
 
       if (isPubliclyShared) {
-        await setItemPublic(mode, itemUuid, false);
+        const result = await setItemPublic(mode, itemUuid, false);
+        if (!result.success) throw new Error(refusalText(result.error));
       }
 
       const shares = await itemShares(itemUuid, itemType);

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { Editor } from "@tiptap/react";
+import type { OverlayPosition } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 
 interface ImageAttrs {
   src?: string;
@@ -13,7 +14,7 @@ export const useImageResize = (editor: Editor | null) => {
   const [imageAttrs, setImageAttrs] = useState<ImageAttrs>({});
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
 
-  const handleImageClick = useCallback((positionData: any) => {
+  const handleImageClick = useCallback((positionData: OverlayPosition) => {
     setPosition({ x: positionData.x, y: positionData.y });
     const style = positionData.element.getAttribute("style") || "";
     const widthMatch = style.match(/width:\s*(\d+)px/);

@@ -46,7 +46,6 @@ interface Room {
   doc: Y.Doc;
   awareness: Awareness;
   markdown: string;
-  filePath: string;
   clients: Map<WebSocket, Client>;
   initializer?: WebSocket;
   replica: Replica | null;
@@ -90,6 +89,14 @@ const readyMessage = (room: Room, initialize: boolean): LiveMessage => ({
   markdown: room.markdown,
 });
 
+const NOTES_ROOT = path.join(process.cwd(), DATA_DIR, Modes.NOTES);
+
+const whereIs = async (uuid: string): Promise<string> => {
+  const found = await grepFindFileByUuid(NOTES_ROOT, uuid);
+  if (!found) throw new LiveRefusal("Note not found");
+  return found.filePath;
+};
+
 const readPlain = async (filePath: string) => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(
     await fs.readFile(filePath, "utf8"),
@@ -100,13 +107,15 @@ const readPlain = async (filePath: string) => {
   return contentWithoutMetadata;
 };
 
-const assertCanEdit = async (uuid: string, filePath: string, actor: string, sessionId: string) => {
+const assertCanEdit = async (uuid: string, actor: string, sessionId: string): Promise<string> => {
   if ((await readSessions())[sessionId] !== actor) throw new LiveRefusal("Session ended");
+  const filePath = await whereIs(uuid);
   if (isPathUuid(uuid) && (await lockOf(filePath))) throw new LiveRefusal("Item is locked");
   if (!(await canReachFile(Modes.NOTES, filePath, actor, PermissionTypes.EDIT))) {
     throw new LiveRefusal("Edit permission revoked");
   }
   await readPlain(filePath);
+  return filePath;
 };
 
 const closeSocket = (socket: WebSocket, error: unknown) =>
@@ -124,7 +133,6 @@ const openRoom = async (uuid: string, filePath: string): Promise<Room> => {
     doc,
     awareness,
     markdown: contentWithoutMetadata,
-    filePath,
     clients: new Map(),
     replica: null,
   };
@@ -190,7 +198,7 @@ const attach = (socket: WebSocket, room: Room, uuid: string, actor: string, sess
     void runQueued(`live-message:${uuid}`, async () => {
       if (!room.clients.has(socket)) return;
       if (Date.now() - client.checked > RECHECK_MS) {
-        await assertCanEdit(uuid, room.filePath, actor, client.sessionId);
+        await assertCanEdit(uuid, actor, client.sessionId);
         client.checked = Date.now();
       }
       const message = JSON.parse(bytes.toString()) as LiveMessage;
@@ -256,12 +264,8 @@ export const liveUpgrade = (
     return;
   }
   void runQueued(`live-open:${uuid}`, async () => {
-    const filePath =
-      rooms.get(uuid)?.filePath ??
-      (await grepFindFileByUuid(path.join(process.cwd(), DATA_DIR, Modes.NOTES), uuid))?.filePath;
     try {
-      if (!filePath) throw new LiveRefusal("Note not found");
-      await assertCanEdit(uuid, filePath, actor, sessionId);
+      const filePath = await assertCanEdit(uuid, actor, sessionId);
       const room = await openRoom(uuid, filePath);
       wss.handleUpgrade(req, socket, head, (ready) => attach(ready, room, uuid, actor, sessionId));
     } catch (error) {
@@ -279,7 +283,7 @@ export const liveRecheck = () =>
     Array.from(rooms.entries()).flatMap(([uuid, room]) =>
       Array.from(room.clients.entries()).map(async ([socket, client]) => {
         try {
-          await assertCanEdit(uuid, room.filePath, client.actor, client.sessionId);
+          await assertCanEdit(uuid, client.actor, client.sessionId);
           client.checked = Date.now();
         } catch (error) {
           console.error("[live] evicting client:", error);

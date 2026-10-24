@@ -32,7 +32,13 @@ vi.mock("@/app/_server/actions/users", async (importOriginal) => ({
   getCurrentUser: async () => ({ username: actor.username }),
 }));
 
-import { detachItem, inheritItem } from "@/app/_server/actions/share/operations";
+import {
+  detachItem,
+  inheritItem,
+  leaveItem,
+  shareItem,
+  unshareItem,
+} from "@/app/_server/actions/share/operations";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemShares } from "@/app/_server/actions/share/queries";
 import { canReachFile } from "@/app/_server/actions/share/access";
@@ -140,6 +146,32 @@ describe("Following a folder's sharing", () => {
     const result = await detachItem(Modes.NOTES, NOTE);
 
     expect(result).toMatchObject({ success: false, error: DETACH_LOSSY });
+    expect(readFileSync(notePath(), "utf-8")).toBe(file);
+  });
+
+  it.each([
+    ["sharing it with somebody new", () => shareItem(Modes.NOTES, NOTE, "carol", READ)],
+    ["unsharing one person", () => unshareItem(Modes.NOTES, NOTE, "carol")],
+  ])("refuses %s when a folder grant can delete without editing", async (_, act) => {
+    writeNote();
+    shareFolder({ bob: DELETE_ONLY, carol: READ });
+    const file = readFileSync(notePath(), "utf-8");
+
+    expect(await act()).toMatchObject({ success: false, error: DETACH_LOSSY });
+    expect(readFileSync(notePath(), "utf-8")).toBe(file);
+    expect((await accessMap()).bob).toEqual([true, false, true]);
+  });
+
+  it("won't let a recipient leaving raise somebody else's access", async () => {
+    writeNote();
+    shareFolder({ bob: DELETE_ONLY, carol: READ });
+    const file = readFileSync(notePath(), "utf-8");
+    actor.username = "carol";
+
+    expect(await leaveItem(Modes.NOTES, NOTE)).toMatchObject({
+      success: false,
+      error: DETACH_LOSSY,
+    });
     expect(readFileSync(notePath(), "utf-8")).toBe(file);
   });
 

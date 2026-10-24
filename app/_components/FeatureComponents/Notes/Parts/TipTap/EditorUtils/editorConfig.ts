@@ -26,7 +26,7 @@ import { FileAttachmentExtension } from "@/app/_components/FeatureComponents/Not
 import { CodeBlockNodeView } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockNodeView";
 import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
 import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/KeyboardShortcuts";
-import { OverlayExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
+import { OverlayExtension, type OverlayPosition } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
 import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
 import { TagLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagLink";
@@ -44,7 +44,7 @@ import { getContrastColor } from "@/app/_utils/color-utils";
 import { SOFT_BREAK_ATTR } from "@/app/_utils/markdown/consts";
 
 interface OverlayCallbacks {
-  onImageClick: (position: any) => void;
+  onImageClick: (position: OverlayPosition) => void;
   onTableSelect: (position: any) => void;
   onLinkRequest?: (hasSelection: boolean) => void;
 }

@@ -3,6 +3,7 @@ import {
   mockUser,
   mockAuthenticateApiKey,
   mockGetUserNotes,
+  mockGetNoteById,
   mockCreateNote,
   mockMakeNote,
   mockEditNote,
@@ -194,7 +195,7 @@ describe("Notes API", () => {
         category: "Work",
       }
 
-      mockGetUserNotes.mockResolvedValue({ success: true, data: [existingNote] })
+      mockGetNoteById.mockResolvedValue(existingNote)
       mockEditNote.mockResolvedValue({ success: true, data: updatedNote })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/uuid-1", {
@@ -224,7 +225,7 @@ describe("Notes API", () => {
         content: "Updated content only",
       }
 
-      mockGetUserNotes.mockResolvedValue({ success: true, data: [existingNote] })
+      mockGetNoteById.mockResolvedValue(existingNote)
       mockEditNote.mockResolvedValue({ success: true, data: updatedNote })
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/uuid-1", {
@@ -238,7 +239,7 @@ describe("Notes API", () => {
     })
 
     it("should return 404 for non-existent note", async () => {
-      mockGetUserNotes.mockResolvedValue({ success: true, data: [] })
+      mockGetNoteById.mockResolvedValue(undefined)
 
       const request = createMockRequest("PUT", "http://localhost:3000/api/notes/nonexistent", {
         title: "Updated Title",
@@ -275,7 +276,7 @@ describe("Notes API", () => {
         owner: "testuser",
       }
 
-      mockGetUserNotes.mockResolvedValue({ success: true, data: [existingNote] })
+      mockGetNoteById.mockResolvedValue(existingNote)
       mockDropNote.mockResolvedValue({ success: true })
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/notes/uuid-1")
@@ -287,7 +288,7 @@ describe("Notes API", () => {
     })
 
     it("should return 404 for non-existent note", async () => {
-      mockGetUserNotes.mockResolvedValue({ success: true, data: [] })
+      mockGetNoteById.mockResolvedValue(undefined)
 
       const request = createMockRequest("DELETE", "http://localhost:3000/api/notes/nonexistent")
       const response = await DELETE(request, { params: Promise.resolve({ noteId: "nonexistent" }) })

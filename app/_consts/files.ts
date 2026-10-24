@@ -19,11 +19,6 @@ export const skippedDirs = (allowArchived = false): string[] => [
   ...hiddenDirs(allowArchived),
 ];
 
-export const hiddenFindFilter = (allowArchived = false): string =>
-  hiddenDirs(allowArchived)
-    .map((name) => `-not -path "$1/${name}/*"`)
-    .join(" ");
-
 export const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export const IMAGE_MIME_BY_EXT: Record<string, string> = {

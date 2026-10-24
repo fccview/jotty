@@ -1,4 +1,5 @@
 import { Editor, useEditor } from "@tiptap/react";
+import type { OverlayPosition } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { TiptapToolbar } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/Toolbar/TipTapToolbar";
 import { UploadOverlay } from "@/app/_components/GlobalComponents/FormElements/UploadOverlay";
 import { CompactImageResizeOverlay } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/CompactImageResizeOverlay";
@@ -115,7 +116,7 @@ export const TiptapEditor = (
     [onChange, collaborationUuid],
   );
 
-  const imageClickRef = useRef<((pos: any) => void) | null>(null);
+  const imageClickRef = useRef<((pos: OverlayPosition) => void) | null>(null);
 
   const handleRichEditorLinkRequest = useCallback((hasSelection: boolean) => {
     setLinkRequestHasSelection(hasSelection);

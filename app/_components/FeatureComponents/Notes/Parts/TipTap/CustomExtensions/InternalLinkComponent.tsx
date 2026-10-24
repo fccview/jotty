@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { NodeViewWrapper } from "@tiptap/react";
 import { File02Icon, CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
@@ -70,8 +70,11 @@ export const InternalLinkComponent = ({ node, showCategory = true }: InternalLin
       : ItemTypes.NOTE
     : target?.type;
 
+  const attempted = useRef<string | null>(null);
+
   const loadItem = useCallback(async () => {
-    if (loadedItem || isLoading || !uuid) return;
+    if (loadedItem || !uuid || attempted.current === uuid) return;
+    attempted.current = uuid;
     setIsLoading(true);
     try {
       setLoadedItem(await _fetchItem(uuid, type));
@@ -80,10 +83,11 @@ export const InternalLinkComponent = ({ node, showCategory = true }: InternalLin
     } finally {
       setIsLoading(false);
     }
-  }, [loadedItem, isLoading, uuid, type]);
+  }, [loadedItem, uuid, type]);
 
   useEffect(() => {
     if (showPopup) loadItem();
+    else attempted.current = null;
   }, [showPopup, loadItem]);
 
   const handleClick = async (event: React.MouseEvent) => {

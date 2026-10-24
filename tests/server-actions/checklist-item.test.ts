@@ -401,7 +401,6 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const writtenList = mockListToMarkdown.mock.calls.at(-1)?.[0];
       expect(writtenList.items[0].id).toBe(result.data?.id);
       expect(writtenList.items[0].order).toBe(0);
-      // existing items shifted down by one
       expect(writtenList.items[1].order).toBe(1);
     });
 
@@ -420,14 +419,11 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const result = await createItem(mockChecklist, formData);
 
       expect(result.success).toBe(true);
-      // existing max order is 2 (item-3), so new order is 3
       expect(result.data?.order).toBe(3);
 
       const writtenList = mockListToMarkdown.mock.calls.at(-1)?.[0];
-      // new item is the last element
       expect(writtenList.items.at(-1).id).toBe(result.data?.id);
       expect(writtenList.items.at(-1).order).toBe(3);
-      // existing items keep their original order (not shifted)
       expect(writtenList.items[0].order).toBe(0);
       expect(writtenList.items[1].order).toBe(1);
       expect(writtenList.items[2].order).toBe(2);

@@ -204,60 +204,82 @@ export const register = async (formData: FormData) => {
   redirect("/");
 };
 
-const _judgeLogin = async (
+const _readUsers = async (): Promise<User[]> => (await readJsonFile(USERS_FILE)) || [];
+
+const _findUser = (users: User[], username: string): User | undefined =>
+  users.find((u: User) => u.username.toLowerCase() === username.toLowerCase());
+
+const _usersLocked = async <T>(task: () => Promise<T>): Promise<T> =>
+  withFileLock(await touchUsersFile(), task);
+
+const _rateLimited = async (
+  user: User | undefined,
+  username: string,
+  bruteforceProtectionDisabled: boolean,
+): Promise<LoginRefusal | null> => {
+  if (bruteforceProtectionDisabled || !user) return null;
+
+  const now = Date.now();
+  const nextAllowedTime = user.nextAllowedLoginAttempt
+    ? new Date(user.nextAllowedLoginAttempt).getTime()
+    : 0;
+
+  if (nextAllowedTime <= now) return null;
+
+  const waitSeconds = Math.ceil((nextAllowedTime - now) / 1000);
+  await logAuthEvent(
+    "login",
+    username,
+    false,
+    `Rate limited - attempt ${(user.failedLoginAttempts || 0) + 1}`,
+  );
+  return {
+    error: "Too many failed attempts",
+    lockedUntil: user.nextAllowedLoginAttempt,
+    attemptsRemaining: 0,
+    waitSeconds,
+  };
+};
+
+const _judgeLdap = async (
+  username: string,
+  password: string,
+  bruteforceProtectionDisabled: boolean,
+): Promise<LoginRefusal | LdapPass> => {
+  const user = _findUser(await _readUsers(), username);
+  const limited = await _rateLimited(user, username, bruteforceProtectionDisabled);
+  if (limited) return limited;
+
+  const ldapResult = await ldapLogin(username, password);
+
+  if (!ldapResult.ok) {
+    if (ldapResult.kind === "connection_error") {
+      await logAuthEvent("login", username, false, "LDAP connection error");
+      return { error: "Authentication service unavailable" };
+    }
+
+    if (ldapResult.kind === "unauthorized") {
+      redirect("/auth/login?error=unauthorized");
+    }
+
+    return _usersLocked(async () =>
+      _handleFailedLogin(await _readUsers(), username, bruteforceProtectionDisabled),
+    );
+  }
+
+  return { username: ldapResult.username, isAdmin: ldapResult.isAdmin };
+};
+
+const _judgeLocal = async (
   username: string,
   password: string,
   rememberMe: boolean,
-): Promise<LoginRefusal | LdapPass | undefined> => {
-  const users = (await readJsonFile(USERS_FILE)) || [];
-  const user = users.find(
-    (u: User) => u.username.toLowerCase() === username.toLowerCase(),
-  );
-
-  const bruteforceProtectionDisabled =
-    process.env.DISABLE_BRUTEFORCE_PROTECTION === "true";
-
-  if (!bruteforceProtectionDisabled && user) {
-    const now = Date.now();
-    const nextAllowedTime = user.nextAllowedLoginAttempt
-      ? new Date(user.nextAllowedLoginAttempt).getTime()
-      : 0;
-
-    if (nextAllowedTime > now) {
-      const waitSeconds = Math.ceil((nextAllowedTime - now) / 1000);
-      await logAuthEvent(
-        "login",
-        username,
-        false,
-        `Rate limited - attempt ${(user.failedLoginAttempts || 0) + 1}`,
-      );
-      return {
-        error: "Too many failed attempts",
-        lockedUntil: user.nextAllowedLoginAttempt,
-        attemptsRemaining: 0,
-        waitSeconds,
-      };
-    }
-  }
-
-  if (getAuthMode() === "ldap") {
-    const ldapResult = await ldapLogin(username, password);
-
-    if (!ldapResult.ok) {
-      if (ldapResult.kind === "connection_error") {
-        await logAuthEvent("login", username, false, "LDAP connection error");
-        return { error: "Authentication service unavailable" };
-      }
-
-      if (ldapResult.kind === "unauthorized") {
-        redirect("/auth/login?error=unauthorized");
-      }
-
-      return await _handleFailedLogin(users, username, bruteforceProtectionDisabled);
-    }
-
-    return { username: ldapResult.username, isAdmin: ldapResult.isAdmin };
-  }
+  bruteforceProtectionDisabled: boolean,
+): Promise<LoginRefusal | undefined> => {
+  const users = await _readUsers();
+  const user = _findUser(users, username);
+  const limited = await _rateLimited(user, username, bruteforceProtectionDisabled);
+  if (limited) return limited;
 
   if (!user || user.passwordHash !== hashPassword(password)) {
     return await _handleFailedLogin(users, username, bruteforceProtectionDisabled);
@@ -271,15 +293,10 @@ const _judgeLogin = async (
     redirect("/auth/verify-mfa");
   }
 
-  const userIndex = users.findIndex(
-    (u: User) => u.username.toLowerCase() === username.toLowerCase(),
-  );
-  if (userIndex !== -1) {
-    users[userIndex].lastLogin = new Date().toISOString();
-    users[userIndex].failedLoginAttempts = 0;
-    users[userIndex].nextAllowedLoginAttempt = undefined;
-    await writeJsonFile(users, USERS_FILE);
-  }
+  user.lastLogin = new Date().toISOString();
+  user.failedLoginAttempts = 0;
+  user.nextAllowedLoginAttempt = undefined;
+  await writeJsonFile(users, USERS_FILE);
 
   const sessionId = _generateSessionId();
   const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
@@ -302,11 +319,17 @@ export const login = async (
     return { error: "Username and password are required" };
   }
 
-  const usersFile = await touchUsersFile();
-  const ldapUser = await withFileLock(usersFile, () =>
-    _judgeLogin(username, password, rememberMe),
-  );
-  if (!ldapUser || "error" in ldapUser) return ldapUser;
+  const bruteforceProtectionDisabled =
+    process.env.DISABLE_BRUTEFORCE_PROTECTION === "true";
+
+  if (getAuthMode() !== "ldap") {
+    return _usersLocked(() =>
+      _judgeLocal(username, password, rememberMe, bruteforceProtectionDisabled),
+    );
+  }
+
+  const ldapUser = await _judgeLdap(username, password, bruteforceProtectionDisabled);
+  if ("error" in ldapUser) return ldapUser;
 
   await ensureUser(ldapUser.username, ldapUser.isAdmin);
 

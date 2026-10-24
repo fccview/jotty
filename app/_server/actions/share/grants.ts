@@ -4,13 +4,13 @@ import { getTranslations } from "next-intl/server";
 import { Modes, ItemTypes, NotificationTargets } from "@/app/_types/enums";
 import { Result, SharingPermissions } from "@/app/_types/core";
 import type { SanitisedUser } from "@/app/_types";
-import { PUBLIC_USER, SHARED_WITH_KEY } from "@/app/_consts/sharing";
+import { DETACH_LOSSY, PUBLIC_USER, SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { NOTES_DIR, CHECKLISTS_DIR } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
 import { updateYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
-import { toSharedWith } from "@/app/_utils/sharing-utils";
+import { storableOnItem, toSharedWith } from "@/app/_utils/sharing-utils";
 import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import {
@@ -32,6 +32,7 @@ export const NOT_OWNER = "You shall not pass";
 export const NO_SUCH_USER = "Nobody by that username lives here";
 export const OWN_ITEM = "You already own this item";
 export const PUBLIC_READ_ONLY = "Public links are read only";
+export const UNSTORABLE_PERMS = "Delete access needs edit access on an item";
 export const SHARE_FAILED = "Failed to share item";
 export const UNSHARE_FAILED = "Failed to unshare item";
 
@@ -167,11 +168,15 @@ export const writeShares = async (
   }
 };
 
-const _unwelcome = async (
+export const lossyOnItem = (users: Grants): boolean =>
+  !Object.values(users).every(storableOnItem);
+
+export const unwelcome = async (
   owner: string,
   receiver: string,
   permissions: SharingPermissions,
 ): Promise<string | null> => {
+  if (!receiver) return NO_SUCH_USER;
   if (receiver === owner) return OWN_ITEM;
   if (receiver === PUBLIC_USER) {
     return permissions.canEdit || permissions.canDelete ? PUBLIC_READ_ONLY : null;
@@ -195,8 +200,12 @@ export const grantItem = async (
     const refusal = await gandalf(owner, sharer);
     if (refusal) return { success: false, error: refusal };
 
-    const unwelcome = await _unwelcome(owner, receiver, permissions);
-    if (unwelcome) return { success: false, error: unwelcome };
+    if (!storableOnItem(permissions)) {
+      return { success: false, error: UNSTORABLE_PERMS };
+    }
+
+    const turnedAway = await unwelcome(owner, receiver, permissions);
+    if (turnedAway) return { success: false, error: turnedAway };
 
     const result = await runQueued(
       itemLane(mode, uuid),
@@ -206,6 +215,9 @@ export const grantItem = async (
 
         const access = await resolveAccess(mode, filePath);
         const next = { ...access?.users, [receiver]: permissions };
+        if (access?.inherited && lossyOnItem(next)) {
+          return { success: false, error: DETACH_LOSSY };
+        }
 
         return (await writeShares(filePath, next))
           ? { success: true, data: next }
@@ -277,6 +289,9 @@ export const revokeItem = async (
 
         const next = { ...access.users };
         delete next[receiver];
+        if (access.inherited && lossyOnItem(next)) {
+          return _unchanged({ success: false, error: DETACH_LOSSY });
+        }
 
         const written = await writeShares(filePath, next);
         return {

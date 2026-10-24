@@ -14,6 +14,10 @@ const USERNAME =
   process.argv.find((arg) => arg.startsWith(USER_FLAG))?.slice(USER_FLAG.length) ||
   process.env.BRAIN_SEED_USER ||
   DEFAULT_USER;
+const SAFE_USERNAME = /^[A-Za-z0-9_-][A-Za-z0-9_.-]*$/;
+if (!SAFE_USERNAME.test(USERNAME)) {
+  throw new Error(`Refusing to seed "${USERNAME}": a username here becomes a folder under data/`);
+}
 const PASSWORD = process.env.BRAIN_SEED_PASSWORD || "braintest-local-only";
 const SEED_CATEGORY = "Brain Seed";
 const DATA_DIR = path.join(process.cwd(), "data");

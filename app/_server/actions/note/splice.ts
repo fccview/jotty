@@ -127,16 +127,15 @@ export const spliceNote = async (
   uuid: string,
   edit: (body: string) => SpliceEdit,
   options: SpliceOptions = {},
-): Promise<Result<Spliced>> => {
-  const filePath = await reachableFile(uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
-  if (!filePath) return { success: false, error: SPLICE_DENIED };
-
-  return runQueued(itemLane(Modes.NOTES, uuid), async () => {
+): Promise<Result<Spliced>> =>
+  runQueued(itemLane(Modes.NOTES, uuid), async (): Promise<Result<Spliced>> => {
     try {
+      const filePath = await reachableFile(uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
+      if (!filePath) return { success: false, error: SPLICE_DENIED };
+
       return await _splice(actor, uuid, filePath, edit, options);
     } catch (error) {
       console.error(`spliceNote failed for ${uuid}:`, error);
       return { success: false, error: "Failed to update note" };
     }
   });
-};

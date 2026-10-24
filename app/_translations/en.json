@@ -1508,6 +1508,8 @@
     "followingHint": "Same people and permissions as {category}. Turn this off to change them for this one only.",
     "customHint": "This one has its own list. Turning this on replaces it with the people on {category}.",
     "cantDetach": "Someone on this folder can delete but not edit, and a single item can't store that. Change their access on the folder first.",
+    "cantLeave": "Someone else on this folder can delete but not edit, and a single item can't store that. Leave the whole folder instead, or ask the owner to change their access.",
+    "leaveFailed": "Couldn't leave this share.",
     "publicFolderWarning": "Anyone with the link can read everything in this folder, including anything you add later.",
     "readTip": "Read only: {users}",
     "writeTip": "Can edit: {users}",

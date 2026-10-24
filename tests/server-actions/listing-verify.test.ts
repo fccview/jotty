@@ -40,6 +40,7 @@ describe("verifyListing", () => {
     invalidateCached.mockReset();
     const real = await vi.importActual<typeof import("fs/promises")>("fs/promises");
     mockFs.readdir.mockImplementation(real.readdir as never);
+    mockFs.stat.mockImplementation(real.stat as never);
     dir = nodeFs.realpathSync(nodeFs.mkdtempSync(path.join(os.tmpdir(), "jotty-verify-")));
   });
 

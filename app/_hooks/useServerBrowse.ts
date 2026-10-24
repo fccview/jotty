@@ -50,6 +50,7 @@ export const useServerBrowse = <T, F extends string>({
   const wanted = JSON.stringify(query);
   useEffect(() => {
     if (_sameQuery(query, initial.query)) {
+      ++asked.current;
       setData(initial);
       return;
     }

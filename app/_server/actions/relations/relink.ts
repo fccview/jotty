@@ -7,7 +7,7 @@ import type { Root, Text } from "mdast";
 import { CHECKLIST_PIPE, WIKILINK_REGEX } from "@/app/_consts/relations";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
-import { splitFrontmatter } from "@/app/_utils/yaml-metadata-utils";
+import { extractYamlMetadata, splitFrontmatter } from "@/app/_utils/yaml-metadata-utils";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { isWritable } from "@/app/_server/actions/lib/read-only";
@@ -87,7 +87,7 @@ const _rewrite = async (relinks: Relink[]): Promise<boolean> => {
 
   const raw = await fs.readFile(filePath, "utf-8");
   const { prefix, body } = splitFrontmatter(raw);
-  if (isEncrypted(body)) return false;
+  if (extractYamlMetadata(raw).metadata.encrypted === true || isEncrypted(body)) return false;
 
   const renames = new Map(relinks.map((relink) => [relink.from, relink.to]));
   const next =

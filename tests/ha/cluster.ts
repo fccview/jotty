@@ -1,5 +1,6 @@
 import { fork, type ChildProcess } from "node:child_process";
 import fs from "node:fs/promises";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -89,19 +90,28 @@ export const makeFixture = async (uuid: string): Promise<Fixture> => {
   };
 };
 
-let nextPort = 4100;
+const _freePort = (): Promise<number> =>
+  new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", () => {
+      const { port } = probe.address() as net.AddressInfo;
+      probe.close(() => resolve(port));
+    });
+  });
 
 export const startNode = async (
   fixture: Fixture,
   name: string,
   { cluster = true }: { cluster?: boolean } = {},
 ): Promise<NodeHandle> => {
-  const port = nextPort++;
+  const port = await _freePort();
+  const { JOTTY_RELATIONS_DB: _runnerDb, ...inherited } = process.env;
   const child = fork(ENTRY, [], {
     cwd: REPO,
     execArgv: ["--import", "tsx", "--no-warnings"],
     env: {
-      ...process.env,
+      ...inherited,
       JOTTY_DATA_ROOT: fixture.root,
       JOTTY_PORT: String(port),
       JOTTY_NODE: cluster ? name : "",

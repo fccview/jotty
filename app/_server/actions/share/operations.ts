@@ -9,7 +9,6 @@ import {
   PUBLIC_USER,
   SHARED_WITH_KEY,
 } from "@/app/_consts/sharing";
-import { storableOnItem } from "@/app/_utils/sharing-utils";
 import { logAudit } from "@/app/_server/actions/log";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
 import {
@@ -32,8 +31,10 @@ import {
   itemTypeOf,
   itemPathOf,
   lockRefusal,
+  lossyOnItem,
   ownerOf,
   revokeItem,
+  unwelcome,
   userDirOf,
   writeShares,
 } from "./grants";
@@ -126,7 +127,7 @@ const _detach = async (
       return { success: true, data: access.users };
     }
 
-    if (!Object.values(access.users).every(storableOnItem)) {
+    if (lossyOnItem(access.users)) {
       return { success: false, error: DETACH_LOSSY };
     }
 
@@ -234,6 +235,9 @@ export const shareFolder = async (
 
     const dir = await _catDir(mode, owner, categoryUuid);
     if (!dir) return { success: false, error: "Category not found" };
+
+    const turnedAway = await unwelcome(owner, receiver, permissions);
+    if (turnedAway) return { success: false, error: turnedAway };
 
     const written = await mutateCatInfo(dir, (info) => ({
       ...info,
@@ -412,6 +416,9 @@ const _leave = async (
 
     const next = { ...access.users };
     delete next[caller];
+    if (access.inherited && lossyOnItem(next)) {
+      return { success: false, error: DETACH_LOSSY };
+    }
 
     const written = await writeShares(filePath, next);
     if (!written) return { success: false, error: "Failed to leave share" };
@@ -457,15 +464,19 @@ export const leaveFolder = async (
 
     if (!dir) return { success: false, error: "Category not found" };
 
-    const access = await catAccess(mode, dir);
-    if (!access?.users[caller]) {
-      return { success: false, error: "Not shared with you" };
-    }
+    let isInherited = false;
+    let sharedWithCaller = true;
 
-    const fromAbove = await catAccess(mode, path.dirname(dir));
-    const isInherited = Boolean(fromAbove?.users[caller]);
+    const written = await mutateCatInfo(dir, async (info) => {
+      const access = await catAccess(mode, dir);
+      if (!access?.users[caller]) {
+        sharedWithCaller = false;
+        return null;
+      }
 
-    const written = await mutateCatInfo(dir, (info) => {
+      const fromAbove = await catAccess(mode, path.dirname(dir));
+      isInherited = Boolean(fromAbove?.users[caller]);
+
       const users = isInherited
         ? { ...access.users }
         : { ...(info.sharing?.users || {}) };
@@ -480,6 +491,9 @@ export const leaveFolder = async (
       };
     });
 
+    if (!sharedWithCaller) {
+      return { success: false, error: "Not shared with you" };
+    }
     if (!written) return { success: false, error: "Failed to leave share" };
 
     await logAudit({

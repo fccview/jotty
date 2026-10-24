@@ -1,18 +1,11 @@
 import {
   CHECKLISTS_DIR,
   NOTES_DIR,
-  USERS_FILE,
 } from "@/app/_consts/files";
-import {
-  readJsonFile,
-  serverDeleteDir,
-  serverRenamePath,
-  writeJsonFile,
-} from "../file";
+import { serverDeleteDir, serverRenamePath } from "../file";
 import { Result, SanitisedUser, User } from "@/app/_types";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
 import { removeAllSessionsForUser } from "../session/store";
-import { getUserIndex } from "./helpers";
 import { mutateUsers } from "./records";
 
 export type UserUpdatePayload = {
@@ -22,26 +15,64 @@ export type UserUpdatePayload = {
   avatarUrl?: string;
 };
 
+const USER_MISSING = "User not found";
+
+const _deletionRefusal = (users: User[], target: User): string | null => {
+  if (target.isSuperAdmin) {
+    return "Cannot delete the super admin (system owner)";
+  }
+
+  const adminCount = users.filter((user) => user.isAdmin).length;
+  if (target.isAdmin && adminCount === 1) {
+    return "Cannot delete the last admin user";
+  }
+
+  return null;
+};
+
+const _moveUserDirs = async (from: string, to: string): Promise<void> => {
+  try {
+    await serverRenamePath(CHECKLISTS_DIR(from), CHECKLISTS_DIR(to));
+  } catch (error) {
+    console.warn(`Could not rename checklists directory for ${from}:`, error);
+  }
+
+  try {
+    await serverRenamePath(NOTES_DIR(from), NOTES_DIR(to));
+  } catch (error) {
+    console.warn(`Could not rename notes directory for ${from}:`, error);
+  }
+
+  try {
+    const { renameGrants } = await import("@/app/_server/actions/share/rename");
+
+    await renameGrants(from, to);
+  } catch (error) {
+    console.warn(
+      `Could not update sharing data for username change ${from} -> ${to}:`,
+      error
+    );
+  }
+};
+
 export async function _deleteUserCore(username: string): Promise<Result<null>> {
-  const allUsers = await readJsonFile(USERS_FILE);
-  const userIndex = await getUserIndex(username);
+  let refusal = USER_MISSING;
 
-  if (userIndex === -1) {
-    return { success: false, error: "User not found" };
-  }
+  const removed = await mutateUsers((users) => {
+    const index = users.findIndex((user: User) => user.username === username);
+    if (index === -1) return null;
 
-  const userToDelete = allUsers[userIndex];
-
-  if (userToDelete.isSuperAdmin) {
-    return { success: false, error: "Cannot delete the super admin (system owner)" };
-  }
-
-  if (userToDelete.isAdmin) {
-    const adminCount = allUsers.filter((user: User) => user.isAdmin).length;
-    if (adminCount === 1) {
-      return { success: false, error: "Cannot delete the last admin user" };
+    const blocked = _deletionRefusal(users, users[index]);
+    if (blocked) {
+      refusal = blocked;
+      return null;
     }
-  }
+
+    users.splice(index, 1);
+    return true;
+  });
+
+  if (!removed) return { success: false, error: refusal };
 
   await removeAllSessionsForUser(username);
 
@@ -63,16 +94,6 @@ export async function _deleteUserCore(username: string): Promise<Result<null>> {
     console.error(`Could not revoke shares granted to ${username}:`, error);
   }
 
-  const removed = await mutateUsers((users) => {
-    const index = users.findIndex((user: User) => user.username === username);
-    if (index === -1) return null;
-
-    users.splice(index, 1);
-    return true;
-  });
-
-  if (!removed) return { success: false, error: "Failed to delete user" };
-
   return { success: true, data: null };
 }
 
@@ -84,60 +105,30 @@ export async function _updateUserCore(
     return { success: false, error: "No updates provided." };
   }
 
-  const allUsers = await readJsonFile(USERS_FILE);
-  const userIndex = await getUserIndex(targetUsername);
+  let refusal = USER_MISSING;
 
-  if (updates.username && updates.username !== targetUsername) {
-    const usernameExists = allUsers.some(
-      (user: User) => user.username === updates.username
+  const updatedUser = await mutateUsers(async (users) => {
+    const userIndex = users.findIndex(
+      (user: User) => user.username === targetUsername
     );
-    if (usernameExists) {
-      return { success: false, error: "Username already exists" };
+    if (userIndex === -1) return null;
+
+    const renaming = updates.username && updates.username !== targetUsername;
+
+    if (renaming && users.some((user) => user.username === updates.username)) {
+      refusal = "Username already exists";
+      return null;
     }
 
-    try {
-      const oldChecklistsPath = CHECKLISTS_DIR(targetUsername);
-      const newChecklistsPath = CHECKLISTS_DIR(updates.username);
-      await serverRenamePath(oldChecklistsPath, newChecklistsPath);
-    } catch (error) {
-      console.warn(
-        `Could not rename checklists directory for ${targetUsername}:`,
-        error
-      );
-    }
+    if (renaming) await _moveUserDirs(targetUsername, updates.username!);
 
-    try {
-      const oldNotesPath = NOTES_DIR(targetUsername);
-      const newNotesPath = NOTES_DIR(updates.username);
-      await serverRenamePath(oldNotesPath, newNotesPath);
-    } catch (error) {
-      console.warn(
-        `Could not rename notes directory for ${targetUsername}:`,
-        error
-      );
-    }
+    const next: User = { ...users[userIndex], ...updates };
+    users[userIndex] = next;
 
-    try {
-      const { renameGrants } = await import(
-        "@/app/_server/actions/share/rename"
-      );
+    return next;
+  });
 
-      await renameGrants(targetUsername, updates.username);
-    } catch (error) {
-      console.warn(
-        `Could not update sharing data for username change ${targetUsername} -> ${updates.username}:`,
-        error
-      );
-    }
-  }
-
-  const updatedUser: User = {
-    ...allUsers[userIndex],
-    ...updates,
-  };
-
-  allUsers[userIndex] = updatedUser;
-  await writeJsonFile(allUsers, USERS_FILE);
+  if (!updatedUser) return { success: false, error: refusal };
 
   return { success: true, data: sanitizeUserForClient(updatedUser)! };
 }

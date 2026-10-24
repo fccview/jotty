@@ -109,6 +109,12 @@ const _findUnstamped = async (
 const _claimsUuid = async (uuid: string, file: GrepFileResult): Promise<boolean> =>
   (await _storedUuid(file.filePath))?.toLowerCase() === uuid.toLowerCase();
 
+const _answersTo = async (uuid: string, file: GrepFileResult): Promise<boolean> => {
+  const stored = await _storedUuid(file.filePath);
+  if (stored) return stored.toLowerCase() === uuid.toLowerCase();
+  return isPathUuid(uuid) && pathUuid(file.filePath) === uuid.toLowerCase();
+};
+
 const _keeperOf = async (uuid: string, found: GrepFileResult[]): Promise<GrepFileResult | null> => {
   if (found.length < 2) return found[0] || null;
   const verdicts = await Promise.all(found.map((file) => _claimsUuid(uuid, file)));
@@ -171,7 +177,7 @@ const _fromListing = async (dir: string, uuid: string): Promise<GrepFileResult |
   const listed = await _listedPaths(root, uuid);
   if (listed.length !== 1 || !isPathSafe(root, listed[0])) return null;
   const found = _resultFor(root, listed[0]);
-  return (await _claimsUuid(uuid, found)) ? found : null;
+  return (await _answersTo(uuid, found)) ? found : null;
 };
 
 const _fromIndex = async (dir: string, uuid: string): Promise<GrepFileResult | null> => {
@@ -182,7 +188,7 @@ const _fromIndex = async (dir: string, uuid: string): Promise<GrepFileResult | n
     () => true,
     () => false,
   );
-  return present && (await _claimsUuid(uuid, found)) ? found : null;
+  return present && (await _answersTo(uuid, found)) ? found : null;
 };
 
 export const grepFindFileByUuid = async (

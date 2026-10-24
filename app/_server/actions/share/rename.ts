@@ -6,7 +6,8 @@ import { SharingPermissions } from "@/app/_types/core";
 import { DATA_DIR } from "@/app/_consts/files";
 import { CATEGORY_INFO_FILE, SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { parseSharedWith, toSharedWith } from "@/app/_utils/sharing-utils";
-import { grepFilesByText } from "@/app/_utils/grep-utils";
+import { grepExtractFrontmatter, grepFilesByText } from "@/app/_utils/grep-utils";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import {
   extractYamlMetadata,
   updateYamlMetadata,
@@ -51,6 +52,32 @@ const _dropKey =
     return next;
   };
 
+const _reshapeFile = async (
+  filePath: string,
+  reshape: Reshape,
+): Promise<boolean> => {
+  const content = await serverReadFile(filePath);
+  if (!content) return false;
+
+  const { metadata } = extractYamlMetadata(content);
+  const parsed = parseSharedWith(metadata[SHARED_WITH_KEY]);
+  if (!parsed || parsed.optedOut) return false;
+
+  const reshaped = reshape(parsed.users);
+  if (!reshaped) return false;
+
+  await serverWriteFile(
+    filePath,
+    updateYamlMetadata(content, { [SHARED_WITH_KEY]: toSharedWith(reshaped) }),
+  );
+  return true;
+};
+
+const _laneOf = async (mode: Modes, filePath: string): Promise<string> => {
+  const uuid = (await grepExtractFrontmatter(filePath))?.uuid;
+  return typeof uuid === "string" ? itemLane(mode, uuid) : `${mode}:${filePath}`;
+};
+
 const _reshapeFiles = async (
   mode: Modes,
   username: string,
@@ -62,22 +89,8 @@ const _reshapeFiles = async (
 
   for (const filePath of candidates) {
     try {
-      const content = await serverReadFile(filePath);
-      if (!content) continue;
-
-      const { metadata } = extractYamlMetadata(content);
-      const parsed = parseSharedWith(metadata[SHARED_WITH_KEY]);
-      if (!parsed || parsed.optedOut) continue;
-
-      const reshaped = reshape(parsed.users);
-      if (!reshaped) continue;
-
-      const updated = updateYamlMetadata(content, {
-        [SHARED_WITH_KEY]: toSharedWith(reshaped),
-      });
-
-      await serverWriteFile(filePath, updated);
-      touched += 1;
+      const lane = await _laneOf(mode, filePath);
+      if (await runQueued(lane, () => _reshapeFile(filePath, reshape))) touched += 1;
     } catch (error) {
       console.error(`Failed reshaping share in ${filePath}:`, error);
     }

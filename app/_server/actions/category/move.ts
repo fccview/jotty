@@ -34,6 +34,7 @@ import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { SharedMount } from "@/app/_types/sharing";
 import { PermissionTypes } from "@/app/_types/enums";
 import { orderByUuids } from "@/app/_utils/order-utils";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const _seededOrder = async (
   dirPath: string,
@@ -390,10 +391,13 @@ export const moveNode = async (formData: FormData) => {
       const oldPath = path.join(oldParentDir, fileName);
       const newPath = path.join(newParentDir, landingName);
 
-      await serverRenamePath(oldPath, newPath);
-
       if (activeType === "item") {
-        await _restamp(newPath, destLoc.owner, destLoc.category);
+        await runQueued(itemLane(mode, activeKey), async () => {
+          await serverRenamePath(oldPath, newPath);
+          await _restamp(newPath, destLoc.owner, destLoc.category);
+        });
+      } else {
+        await serverRenamePath(oldPath, newPath);
       }
 
       const oldOrder = await _seededOrder(oldParentDir, rootUuids);

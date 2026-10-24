@@ -1,4 +1,4 @@
-import { Extension } from "@tiptap/core";
+import { Extension, type Editor, type Range } from "@tiptap/core";
 import { DEFAULT_MERMAID_DIAGRAM } from "@/app/_consts/diagrams";
 import Suggestion from "@tiptap/suggestion";
 import {
@@ -22,7 +22,7 @@ import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Par
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
 import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import { ItemType } from "@/app/_types";
-import { PluginKey } from "@tiptap/pm/state";
+import { PluginKey, type EditorState } from "@tiptap/pm/state";
 import { suggestionPopup } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/suggestionPopup";
 import { itemHref } from "@/app/_utils/global-utils";
 import { findMentionables } from "@/app/_utils/mention-lookup";
@@ -351,7 +351,7 @@ export const SlashCommands = Extension.create({
           ...this.options.atSuggestion,
           char: WIKILINK_OPEN,
           allowSpaces: true,
-          allow: ({ editor, state, range }: { editor: any; state: any; range: { from: number; to: number } }) =>
+          allow: ({ editor, state, range }: { editor: Editor; state: EditorState; range: Range }) =>
             !editor.isActive("codeBlock") &&
             !state.doc.textBetween(range.from, range.to).includes(WIKILINK_CLOSE_CHAR),
           pluginKey: new PluginKey("wikiSuggestion"),

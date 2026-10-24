@@ -25,7 +25,7 @@ vi.mock("@/app/_server/actions/share/category-info", () => ({
   readCatInfo: (...args: unknown[]) => mockReadCatInfo(...args),
   writeCatInfo: (...args: unknown[]) => mockWriteCatInfo(...args),
   mutateCatInfo: async (dir: string, mutate: (info: unknown) => unknown) => {
-    const next = mutate(await mockReadCatInfo(dir));
+    const next = await mutate(await mockReadCatInfo(dir));
     return next ? mockWriteCatInfo(dir, next) : false;
   },
   catDirByUuid: (...args: unknown[]) => mockCatDirByUuid(...args),
