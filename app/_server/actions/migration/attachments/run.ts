@@ -36,13 +36,25 @@ const dataRoot = (): string => path.join(process.cwd(), DATA_DIR);
 const _code = (error: unknown): string | undefined =>
   (error as NodeJS.ErrnoException | null)?.code;
 
-const _roots = (): string[] =>
-  [Modes.NOTES, Modes.CHECKLISTS].map((mode) => path.join(dataRoot(), mode));
+const _isDir = async (dir: string): Promise<boolean> => {
+  try {
+    return (await fs.stat(dir)).isDirectory();
+  } catch (error) {
+    if (_code(error) === "ENOENT") return false;
+    throw error;
+  }
+};
 
-const _candidates = async (): Promise<string[]> => {
+const _roots = async (): Promise<string[]> => {
+  const roots = [Modes.NOTES, Modes.CHECKLISTS].map((mode) => path.join(dataRoot(), mode));
+  const present = await Promise.all(roots.map(_isDir));
+  return roots.filter((_, index) => present[index]);
+};
+
+const _candidates = async (roots: string[]): Promise<string[]> => {
   const found: string[] = [];
 
-  for (const root of _roots()) {
+  for (const root of roots) {
     try {
       const { stdout } = await execFileAsync(
         "grep",
@@ -108,10 +120,11 @@ const _lockPath = async (): Promise<string> => {
 const _pass = async (dryRun: boolean): Promise<Ledger> => {
   const ledger = newLedger();
   const origins = appOrigins();
-  const candidates = await _candidates();
+  const roots = await _roots();
+  const candidates = await _candidates(roots);
   if (!candidates.length) return ledger;
 
-  const claims = await grepUuidClaims(_roots());
+  const claims = await grepUuidClaims(roots);
   for (const filePath of candidates) {
     await settleItem(filePath, origins, dryRun, ledger, journalPath(), claims);
   }
@@ -171,7 +184,7 @@ const _work = async (dryRun: boolean): Promise<AttachmentMigrationReport> => {
 
   const linkMode = await _linkMode();
   const freeBytes = await _freeBytes();
-  const items = (await _candidates()).length;
+  const items = (await _candidates(await _roots())).length;
   const totals = newLedger();
   let last = newLedger();
   let passes = 0;
