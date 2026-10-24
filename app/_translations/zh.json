@@ -159,6 +159,7 @@
     "page": "页",
     "pageOfPages": "第 {currentPage} 页，共 {totalPages} 页",
     "searchPlaceholder": "搜索笔记和清单... (⌘K)",
+    "searchSidebarPlaceholder": "查找笔记、清单或文件夹...",
     "system": "系统",
     "errors": "错误",
     "statistics": "统计",
@@ -432,7 +433,10 @@
     "noTagsFound": "未找到标签",
     "searchTags": "搜索标签...",
     "createNoteFailed": "无法创建笔记",
-    "createCategoryFailed": "无法创建分类，笔记也未创建"
+    "createCategoryFailed": "无法创建分类，笔记也未创建",
+    "autosaveSaved": "已保存",
+    "autosaveFailed": "未保存",
+    "autosaveFailedHint": "无法连接服务器。你继续输入、切换标签页或关闭编辑器时，Jotty 会再试一次。"
   },
   "checklists": {
     "sharedPubliclyBy": "此清单由 {owner} 公开共享",
@@ -510,6 +514,21 @@
     "checkAll": "全选",
     "uncheckAll": "取消全选",
     "clearAll": "全部清除",
+    "sort": "排序",
+    "sortAscending": "A 到 Z",
+    "sortDescending": "Z 到 A",
+    "sortShuffle": "随机",
+    "sortName": "名称",
+    "sortCreated": "创建时间",
+    "sortModified": "修改时间",
+    "sortNewest": "最新优先",
+    "sortOldest": "最早优先",
+    "undoSort": "撤销排序",
+    "sortFailed": "无法排序清单",
+    "undoSortFailed": "无法撤销排序",
+    "sortKanban": "只有简单清单可以排序",
+    "sortStale": "排序后清单已有变动，因此无法撤销",
+    "toggleFailed": "勾选未能保存，已重新加载清单",
     "checkAllConfirmTitle": "勾选所有项目？",
     "checkAllConfirmMessage": "确定要勾选所有 {count} 个项目及其子项吗？这将把它们标记为已完成。",
     "uncheckAllConfirmTitle": "取消勾选所有项目？",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "共享此看板？",
     "assigneeShareMessage": "{user} 目前还看不到此看板。分配后会以编辑权限共享给对方。",
     "assigneeShareConfirm": "共享并分配",
-    "assignFailed": "无法更改负责人"
+    "assignFailed": "无法更改负责人",
+    "cardPanes": "任务分区",
+    "paneTask": "任务",
+    "paneDetails": "详情"
   },
   "profile": {
     "userProfile": "用户",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "在卡片上显示每篇笔记开头的格式化内容。",
     "notesCompactModeDescription": "阅读和编辑笔记时使用更窄的布局。",
     "kanbanColumnWidthDescription": "为看板状态列设置自定义宽度。默认情况下，列会自动适应可用空间。",
+    "enabled": "已启用",
     "notesDetailsPanelDescription": "在宽屏上，于笔记旁的面板中显示目录、标签和链接。"
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "只读",
     "byOwner": "由 {user} 共享",
     "mountStaysTop": "共享文件夹保持在顶层",
-    "inheritedVia": "由 {user} 通过 {category} 共享",
     "shareFolder": "共享此文件夹",
     "folderShareHint": "此文件夹中的所有内容，无论现在还是以后，都会与你选择的人共享。",
-    "optOut": "将此项保持私密",
-    "optOutHint": "仅针对此项覆盖文件夹共享设置。",
-    "useInherited": "跟随文件夹",
+    "followFolder": "使用文件夹的共享设置",
+    "followingHint": "人员和权限与 {category} 相同。关闭后可仅为此项单独修改。",
+    "customHint": "此项有自己的共享列表。开启后将替换为 {category} 中的人员。",
+    "cantDetach": "此文件夹中有人可以删除但不能编辑，单个项目无法保存这种设置。请先在文件夹上修改其权限。",
     "publicFolderWarning": "放入此文件夹的任何内容都会立即对任何拥有链接的人可读。",
     "readTip": "只读: {users}",
     "writeTip": "可编辑: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "要移除你对\"{itemTitle}\"的访问权限吗？它会从侧边栏消失，需要所有者重新共享。",
     "confirmLeaveFolder": "要移除你对 {owner} 共享的\"{categoryName}\"的访问权限吗？它会从侧边栏消失，需要 {owner} 重新共享。",
     "canCreate": "可创建",
-    "createHint": "允许向该文件夹添加和移动项目。",
+    "createHint": "允许向该文件夹添加新项目和移动项目。新项目遵循该文件夹的编辑和删除设置，因此没有编辑权限时，他们可以添加项目，但不能修改。",
     "panelHint": "选择谁可以打开它，以及他们能做什么。",
     "addPeople": "添加成员",
     "noOneYet": "你还没有与任何人共享。",
@@ -1507,7 +1530,6 @@
     "loadFailed": "无法加载共享信息。",
     "sharedOk": "已共享。",
     "unsharedOk": "已移除访问权限。",
-    "noPermissionsLeft": "你关闭了所有权限，对方已无法访问。",
     "nowPublic": "现在任何拥有链接的人都可以打开。",
     "nowPrivate": "公开链接已失效。",
     "allRemoved": "现在其他人都无法打开，公开链接也已关闭。"
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "翻译",
     "mcp": "MCP",
-    "templates": "模板"
+    "templates": "模板",
+    "sharing": "共享"
   },
   "notFound": {
     "title": "页面未找到",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} 与你共享了{type}文件夹",
     "sharingFolderMessage": "打开以查看 \"{folder}\"",
     "mentionTitle": "{user} 在评论中提到了你",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "共享、提及、分配和提醒都会显示在这里。",
+    "unreadCount": "{count} 条未读",
+    "allCaughtUp": "全部已读",
+    "newGroup": "新的",
+    "earlierGroup": "更早",
+    "markRead": "标为已读",
+    "emptyHint": "有人与你共享、提及你或给你分配内容时，会显示在这里。"
   },
   "relations": {
     "indexing": "正在索引关联...",

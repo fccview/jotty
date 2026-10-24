@@ -20,6 +20,7 @@ interface PeopleSectionProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   isLoading: boolean;
+  isLocked?: boolean;
 }
 
 export const PeopleSection = ({
@@ -33,6 +34,7 @@ export const PeopleSection = ({
   searchQuery,
   setSearchQuery,
   isLoading,
+  isLocked,
 }: PeopleSectionProps) => {
   const t = useTranslations();
 
@@ -50,24 +52,26 @@ export const PeopleSection = ({
               username={username}
               avatarUrl={avatarUrl}
               action={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onUnshare(username)}
-                  disabled={isLoading}
-                  aria-label={t("sharing.removeAccess")}
-                  title={t("sharing.removeAccess")}
-                  className="h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <UserMinus02Icon className="h-4 w-4" />
-                </Button>
+                !isLocked && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onUnshare(username)}
+                    disabled={isLoading}
+                    aria-label={t("sharing.removeAccess")}
+                    title={t("sharing.removeAccess")}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <UserMinus02Icon className="h-4 w-4" />
+                  </Button>
+                )
               }
               controls={
                 <PermissionChips
                   chips={chips}
                   permissions={permissionsOf(username)}
                   onChange={(key, value) => onPermission(username, key, value)}
-                  disabled={isLoading}
+                  disabled={isLoading || isLocked}
                 />
               }
             />
@@ -79,47 +83,49 @@ export const PeopleSection = ({
         )}
       </ShareSection>
 
-      <ShareSection id="share-section-add" title={t("sharing.addPeople")}>
-        <div className="px-6 pb-2">
-          <div className="relative">
-            <Search01Icon className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="searchUsers"
-              name="searchUsers"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t("sharing.searchUsers")}
-              className="pl-10"
-            />
+      {!isLocked && (
+        <ShareSection id="share-section-add" title={t("sharing.addPeople")}>
+          <div className="px-6 pb-2">
+            <div className="relative">
+              <Search01Icon className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="searchUsers"
+                name="searchUsers"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("sharing.searchUsers")}
+                className="pl-10"
+              />
+            </div>
           </div>
-        </div>
-        {candidates.length > 0 ? (
-          candidates.map(({ username, avatarUrl }) => (
-            <ShareeRow
-              key={username}
-              username={username}
-              avatarUrl={avatarUrl}
-              action={
-                <Button
-                  variant="soft"
-                  size="xs"
-                  onClick={() => onShare(username)}
-                  disabled={isLoading}
-                  className="gap-1.5 px-2.5"
-                >
-                  <UserAdd01Icon className="h-3.5 w-3.5" />
-                  {t("sharing.share")}
-                </Button>
-              }
-            />
-          ))
-        ) : (
-          <p className="px-6 py-2 text-md lg:text-sm text-muted-foreground">
-            {t("common.noUsersFound")}
-          </p>
-        )}
-      </ShareSection>
+          {candidates.length > 0 ? (
+            candidates.map(({ username, avatarUrl }) => (
+              <ShareeRow
+                key={username}
+                username={username}
+                avatarUrl={avatarUrl}
+                action={
+                  <Button
+                    variant="soft"
+                    size="xs"
+                    onClick={() => onShare(username)}
+                    disabled={isLoading}
+                    className="gap-1.5 px-2.5"
+                  >
+                    <UserAdd01Icon className="h-3.5 w-3.5" />
+                    {t("sharing.share")}
+                  </Button>
+                }
+              />
+            ))
+          ) : (
+            <p className="px-6 py-2 text-md lg:text-sm text-muted-foreground">
+              {t("common.noUsersFound")}
+            </p>
+          )}
+        </ShareSection>
+      )}
     </>
   );
 };

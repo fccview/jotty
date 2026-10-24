@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseStatLine, summaryMemo } from "@/app/_server/actions/lib/summary-memo";
+import { summaryMemo } from "@/app/_server/actions/lib/summary-memo";
 
 const FILE = "/data/notes/alice/Work/plan.md";
 const stamp = (mtime: number, size: number, ctime: number) => ({
@@ -54,26 +54,5 @@ describe("summaryMemo", () => {
 
     expect(memo.recall("/a.md", stamp(1, 1, 1))).toBeUndefined();
     expect(memo.recall("/b.md", stamp(1, 1, 1))).toBe("b");
-  });
-});
-
-describe("parseStatLine", () => {
-  it("reads path, birth, mtime, size and ctime from find output", () => {
-    const parsed = parseStatLine("/data/a.md|1.5|2.25|120|3");
-
-    expect(parsed?.[0]).toBe("/data/a.md");
-    expect(parsed?.[1].birthtime.getTime()).toBe(1500);
-    expect(parsed?.[1].mtime.getTime()).toBe(2250);
-    expect(parsed?.[1].size).toBe(120);
-    expect(parsed?.[1].ctime?.getTime()).toBe(3000);
-  });
-
-  it("keeps a pipe that is part of the file name", () => {
-    expect(parseStatLine("/data/odd|name.md|1|2|3|4")?.[0]).toBe("/data/odd|name.md");
-  });
-
-  it("ignores blank and short lines", () => {
-    expect(parseStatLine("")).toBeNull();
-    expect(parseStatLine("/data/a.md|1|2")).toBeNull();
   });
 });

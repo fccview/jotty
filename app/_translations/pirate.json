@@ -159,6 +159,7 @@
     "page": "Page",
     "pageOfPages": "{currentPage} o' {totalPages}",
     "searchPlaceholder": "Scour the logs... (⌘K)",
+    "searchSidebarPlaceholder": "Hunt fer a note, list or hold...",
     "system": "The Ship",
     "errors": "Breaches",
     "statistics": "The Tally",
@@ -432,7 +433,10 @@
     "noTagsFound": "No flags hoist",
     "searchTags": "Spy for flags...",
     "createNoteFailed": "Couldn't scribe the log",
-    "createCategoryFailed": "Couldn't raise the heading, so the log weren't scribed neither"
+    "createCategoryFailed": "Couldn't raise the heading, so the log weren't scribed neither",
+    "autosaveSaved": "Stowed",
+    "autosaveFailed": "Not stowed",
+    "autosaveFailedHint": "Couldn't raise the server. Jotty tries again when ye keep scribblin', switch tabs or close the editor."
   },
   "checklists": {
     "sharedPubliclyBy": "This manifest be open to all, shared by {owner}",
@@ -510,6 +514,21 @@
     "checkAll": "Mark All",
     "uncheckAll": "Unmark All",
     "clearAll": "Swab All",
+    "sort": "Sort",
+    "sortAscending": "A to Z",
+    "sortDescending": "Z to A",
+    "sortShuffle": "Shuffle the deck",
+    "sortName": "Name",
+    "sortCreated": "Forged",
+    "sortModified": "Refitted",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "undoSort": "Undo sort",
+    "sortFailed": "Couldn't put the list in order",
+    "undoSortFailed": "Couldn't undo the sort",
+    "sortKanban": "Only plain lists can be sorted, matey",
+    "sortStale": "The list changed since that sort, so there be no goin' back",
+    "toggleFailed": "Couldn't stow a tick, so the list was hauled in again",
     "checkAllConfirmTitle": "Mark the lot?",
     "checkAllConfirmMessage": "Ye sure ye want to mark {count} items as done?",
     "uncheckAllConfirmTitle": "Unmark the lot?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "Share this board?",
     "assigneeShareMessage": "{user} can't see this board yet. Puttin' 'em on the job will share it with edit rights.",
     "assigneeShareConfirm": "Share an' assign",
-    "assignFailed": "Couldn't change who be on the job"
+    "assignFailed": "Couldn't change who be on the job",
+    "cardPanes": "Job sections",
+    "paneTask": "Job",
+    "paneDetails": "Particulars"
   },
   "profile": {
     "userProfile": "Deckhand",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Show the fancy start o' each note on its card.",
     "notesCompactModeDescription": "Use a narrower deck when readin' an' editin' notes.",
     "kanbanColumnWidthDescription": "Set yer own width fer the kanban columns. By default they stretch to fill the deck.",
+    "enabled": "Enabled",
     "notesDetailsPanelDescription": "Show the contents, flags an' ropes in a panel beside the note on wide screens."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Read only, matey",
     "byOwner": "shared by {user}, arr",
     "mountStaysTop": "Shared holds stay lashed to the top deck",
-    "inheritedVia": "Shared through {category}, by {user}",
     "shareFolder": "Share this here hold",
     "folderShareHint": "Every treasure in this hold, now an' forever after, be shared with the crew ye pick.",
-    "optOut": "Keep this one under lock an' key",
-    "optOutHint": "Overrides the hold's sharin' for this booty alone.",
-    "useInherited": "Follow the hold",
+    "followFolder": "Follow the hold's sharin'",
+    "followingHint": "Same crew an' rights as {category}. Turn this off to change 'em fer this one alone.",
+    "customHint": "This one has its own crew list. Turnin' this on swaps it fer the crew on {category}.",
+    "cantDetach": "Someone in this hold can scuttle but not scribble, an' a lone item can't keep that. Change their rights on the hold first.",
     "publicFolderWarning": "Anythin' ye stow in this hold be readable by any scallywag with the link, quick as a cannon shot.",
     "readTip": "Lookin' only: {users}",
     "writeTip": "Can scribble: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "Strike yer own colours from \"{itemTitle}\"? She vanishes from yer sidebar, an' the cap'n must share her anew to hand her back.",
     "confirmLeaveFolder": "Strike yer own colours from \"{categoryName}\", shared by {owner}? She vanishes from yer sidebar, an' {owner} must share her anew.",
     "canCreate": "Can Forge",
-    "createHint": "Lets 'em stow new booty an' haul items into this chest.",
+    "createHint": "Lets 'em stow new booty an' haul items into this chest. New booty follows this chest's scribble an' scuttle rules, so without scribble rights they can stow items but not change 'em.",
     "panelHint": "Pick which hands may open it an' what they be allowed to do.",
     "addPeople": "Press-gang crew",
     "noOneYet": "Ye haven't shared this with a soul.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "Couldn't fetch the crew list fer this.",
     "sharedOk": "Shared.",
     "unsharedOk": "Cast off.",
-    "noPermissionsLeft": "Ye struck every permission, so they be locked out.",
     "nowPublic": "Any scallywag with the link can open it now.",
     "nowPrivate": "The public link be sunk.",
     "allRemoved": "No other soul can open this now, an' the public link be sunk."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Lingos",
     "mcp": "MCP",
-    "templates": "Blueprints"
+    "templates": "Blueprints",
+    "sharing": "Divvyin'"
   },
   "notFound": {
     "title": "Chart Leads Nowhere",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} shared a {type} chest with ye",
     "sharingFolderMessage": "Open to eyeball \"{folder}\"",
     "mentionTitle": "{user} hollered yer name in a scribble",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "Shares, mentions, jobs an' reminders wash up here.",
+    "unreadCount": "{count} unread",
+    "allCaughtUp": "All hands accounted fer",
+    "newGroup": "Fresh",
+    "earlierGroup": "Earlier",
+    "markRead": "Mark as read",
+    "emptyHint": "When a matey shares, mentions or hands ye somethin', it washes up here."
   },
   "relations": {
     "indexing": "Chartin' the connections...",

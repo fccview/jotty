@@ -100,6 +100,7 @@ export interface ItemShares {
   isPublic: boolean;
   inherited: boolean;
   viaCategory?: string;
+  sharedParent?: string;
 }
 
 export interface FolderShares {

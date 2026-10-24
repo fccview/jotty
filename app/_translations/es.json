@@ -159,6 +159,7 @@
     "page": "Página",
     "pageOfPages": "{currentPage} de {totalPages}",
     "searchPlaceholder": "Buscar notas y Listas... (⌘K)",
+    "searchSidebarPlaceholder": "Buscar una nota, lista o carpeta...",
     "system": "Sistema",
     "errors": "Errores",
     "statistics": "Estadísticas",
@@ -432,7 +433,10 @@
     "noTagsFound": "No se encontraron etiquetas",
     "searchTags": "Buscar etiquetas...",
     "createNoteFailed": "No se pudo crear la nota",
-    "createCategoryFailed": "No se pudo crear la categoría, la nota no se creó"
+    "createCategoryFailed": "No se pudo crear la categoría, la nota no se creó",
+    "autosaveSaved": "Guardado",
+    "autosaveFailed": "No guardado",
+    "autosaveFailedHint": "No se pudo conectar con el servidor. Jotty lo vuelve a intentar cuando sigues escribiendo, cambias de pestaña o cierras el editor."
   },
   "checklists": {
     "sharedPubliclyBy": "{owner} comparte esta lista públicamente",
@@ -510,6 +514,21 @@
     "checkAll": "Marcar todos",
     "uncheckAll": "Desmarcar todos",
     "clearAll": "Eliminar todos",
+    "sort": "Ordenar",
+    "sortAscending": "De la A a la Z",
+    "sortDescending": "De la Z a la A",
+    "sortShuffle": "Mezclar",
+    "sortName": "Nombre",
+    "sortCreated": "Creación",
+    "sortModified": "Modificación",
+    "sortNewest": "Más recientes primero",
+    "sortOldest": "Más antiguos primero",
+    "undoSort": "Deshacer orden",
+    "sortFailed": "No se pudo ordenar la lista",
+    "undoSortFailed": "No se pudo deshacer el orden",
+    "sortKanban": "Solo se pueden ordenar las listas simples",
+    "sortStale": "La lista cambió desde que se ordenó, así que no se puede deshacer",
+    "toggleFailed": "No se pudo guardar una marca, así que se recargó la lista",
     "checkAllConfirmTitle": "¿Marcar todos los elementos?",
     "checkAllConfirmMessage": "¿Está seguro de que desea comprobar todos los {count} elementos y sus elementos secundarios? \nEsto los marcará como completados.",
     "uncheckAllConfirmTitle": "¿Desmarcar todos los elementos?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "¿Compartir este tablero?",
     "assigneeShareMessage": "{user} todavía no puede ver este tablero. Al asignarlo se compartirá con permiso de edición.",
     "assigneeShareConfirm": "Compartir y asignar",
-    "assignFailed": "No se pudo cambiar la persona asignada"
+    "assignFailed": "No se pudo cambiar la persona asignada",
+    "cardPanes": "Secciones de la tarea",
+    "paneTask": "Tarea",
+    "paneDetails": "Detalles"
   },
   "profile": {
     "userProfile": "Usuario",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Muestra el inicio formateado de cada nota en su tarjeta.",
     "notesCompactModeDescription": "Usa un diseño más estrecho al leer y editar notas.",
     "kanbanColumnWidthDescription": "Define un ancho personalizado para las columnas de estado del kanban. Por defecto, las columnas se ajustan al espacio disponible.",
+    "enabled": "Habilitado",
     "notesDetailsPanelDescription": "Muestra el índice, las etiquetas y los enlaces en un panel junto a la nota en pantallas anchas."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Solo lectura",
     "byOwner": "compartido por {user}",
     "mountStaysTop": "Las carpetas compartidas permanecen en el nivel superior",
-    "inheritedVia": "Compartido a través de {category}, por {user}",
     "shareFolder": "Compartir esta carpeta",
     "folderShareHint": "Todo lo que haya en esta carpeta, ahora y en el futuro, se comparte con las personas que elijas.",
-    "optOut": "Mantener este elemento privado",
-    "optOutHint": "Anula la compartición de la carpeta solo para este elemento.",
-    "useInherited": "Seguir la carpeta",
+    "followFolder": "Usar lo compartido de la carpeta",
+    "followingHint": "Las mismas personas y permisos que {category}. Desactívalo para cambiarlos solo en este.",
+    "customHint": "Este tiene su propia lista. Si lo activas, se reemplaza por las personas de {category}.",
+    "cantDetach": "Alguien en esta carpeta puede eliminar pero no editar, y un elemento suelto no puede guardar eso. Cambia primero su acceso en la carpeta.",
     "publicFolderWarning": "Cualquier cosa colocada en esta carpeta será legible de inmediato por cualquiera que tenga el enlace.",
     "readTip": "Solo lectura: {users}",
     "writeTip": "Puede editar: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "¿Quieres quitar tu propio acceso a \"{itemTitle}\"? Desaparecerá de tu barra lateral y el propietario tendrá que compartirlo de nuevo.",
     "confirmLeaveFolder": "¿Quieres quitar tu propio acceso a \"{categoryName}\", compartida por {owner}? Desaparecerá de tu barra lateral y {owner} tendrá que compartirla de nuevo.",
     "canCreate": "Puede crear",
-    "createHint": "Permite añadir y mover elementos a esta carpeta.",
+    "createHint": "Permite añadir elementos nuevos y mover elementos a esta carpeta. Los elementos nuevos siguen la configuración de edición y eliminación de la carpeta, así que sin edición pueden añadir elementos pero no cambiarlos.",
     "panelHint": "Elige quién puede abrirlo y qué puede hacer con él.",
     "addPeople": "Añadir personas",
     "noOneYet": "Todavía no lo has compartido con nadie.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "No se pudo cargar con quién está compartido.",
     "sharedOk": "Compartido.",
     "unsharedOk": "Acceso eliminado.",
-    "noPermissionsLeft": "Desactivaste todos los permisos, así que ya no tiene acceso.",
     "nowPublic": "Cualquiera con el enlace puede abrirlo ahora.",
     "nowPrivate": "El enlace público ya no funciona.",
     "allRemoved": "Nadie más puede abrirlo ahora y el enlace público está desactivado."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Traducciones",
     "mcp": "MCP",
-    "templates": "Plantillas"
+    "templates": "Plantillas",
+    "sharing": "Compartir"
   },
   "notFound": {
     "title": "Página no encontrada",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} compartió una carpeta de {type} contigo",
     "sharingFolderMessage": "Abre para ver \"{folder}\"",
     "mentionTitle": "{user} te mencionó en un comentario",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "Aquí llegan lo compartido, las menciones, las asignaciones y los recordatorios.",
+    "unreadCount": "{count} sin leer",
+    "allCaughtUp": "Todo al día",
+    "newGroup": "Nuevas",
+    "earlierGroup": "Anteriores",
+    "markRead": "Marcar como leída",
+    "emptyHint": "Cuando alguien comparta algo contigo, te mencione o te asigne algo, aparecerá aquí."
   },
   "relations": {
     "indexing": "Indexando relaciones...",

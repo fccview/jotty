@@ -17,6 +17,7 @@ import { ShareToggleRow } from "./ShareToggleRow";
 
 interface PublicLinkSectionProps {
   isLoading: boolean;
+  isLocked?: boolean;
   isPubliclyShared: boolean;
   publicUrl: string;
   handlePublicToggle: () => void;
@@ -53,6 +54,7 @@ const useCopied = () => {
 
 export const PublicLinkSection = ({
   isLoading,
+  isLocked,
   isPubliclyShared,
   publicUrl,
   handlePublicToggle,
@@ -112,7 +114,7 @@ export const PublicLinkSection = ({
           hint={t("sharing.makeItemAccessible", { itemType })}
           checked={isPubliclyShared}
           onChange={handlePublicToggle}
-          disabled={isLoading}
+          disabled={isLoading || isLocked}
         />
 
         {isPubliclyShared && publicUrl && (

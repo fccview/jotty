@@ -44,6 +44,29 @@ export const codeFromPerms = (perms: SharingPermissions): SharePerms => {
   return SharePerms.READ;
 };
 
+export const storableOnItem = (perms: SharingPermissions): boolean => {
+  const stored = CODE_TO_PERMS[codeFromPerms(perms)];
+
+  return (
+    stored.canRead === (perms.canRead === true) &&
+    stored.canEdit === (perms.canEdit === true) &&
+    stored.canDelete === (perms.canDelete === true)
+  );
+};
+
+export const nextItemPerms = (
+  current: SharingPermissions,
+  key: keyof SharingPermissions,
+  value: boolean,
+): SharingPermissions => {
+  const next = { ...current, [key]: value, canRead: true };
+
+  if (key === "canDelete" && value) next.canEdit = true;
+  if (key === "canEdit" && !value) next.canDelete = false;
+
+  return next;
+};
+
 export interface ParsedSharedWith {
   optedOut: boolean;
   users: Record<string, SharingPermissions>;

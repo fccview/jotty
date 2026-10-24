@@ -159,6 +159,7 @@
     "page": "nav",
     "pageOfPages": "{currentPage} / {totalPages}",
     "searchPlaceholder": "ghItlhmey 'ej tetlhmey yInej... (⌘K)",
+    "searchSidebarPlaceholder": "ghItlh, tetlh qach ghap yInej...",
     "system": "pat",
     "errors": "Qaghmey",
     "statistics": "De' nger",
@@ -432,7 +433,10 @@
     "noTagsFound": "meqmey tu'be'lu'",
     "searchTags": "meqmey yInej...",
     "createNoteFailed": "ghItlh chenmoH Qapla'be'",
-    "createCategoryFailed": "Segh chenmoH Qapla'be', ghItlh chenmoHbe'lu'"
+    "createCategoryFailed": "Segh chenmoH Qapla'be', ghItlh chenmoHbe'lu'",
+    "autosaveSaved": "Pollu'ta'",
+    "autosaveFailed": "Pollu'be'",
+    "autosaveFailedHint": "jabwI' lI'laHbe'. bIghItlhtaHvIS, tab DachoHDI', ghap ghItlhwI' DaSoQmoHDI' Jotty nIDqa'."
   },
   "checklists": {
     "sharedPubliclyBy": "{owner} HochvaD tetlhvam ngeH",
@@ -510,6 +514,21 @@
     "checkAll": "Hoch yIta'",
     "uncheckAll": "Hoch yIta'Ha'",
     "clearAll": "Hoch yIHmv",
+    "sort": "mI' yIlan",
+    "sortAscending": "A vo' Z",
+    "sortDescending": "Z vo' A",
+    "sortShuffle": "yISuj",
+    "sortName": "pong",
+    "sortCreated": "chenmoHlu'",
+    "sortModified": "choHlu'",
+    "sortNewest": "chu'qu' wa'DIch",
+    "sortOldest": "ngo'qu' wa'DIch",
+    "undoSort": "mI' lan yIlanHa'",
+    "sortFailed": "tetlh mI' lanlaHbe'",
+    "undoSortFailed": "mI' lan lanHa'laHbe'",
+    "sortKanban": "tetlh nap neH mI' lanlaH",
+    "sortStale": "mI' lanpu'DI' tetlh choHta', vaj lanHa'laHbe'",
+    "toggleFailed": "rIn Pollu'laHbe', vaj tetlh Suqqa'lu'ta'",
     "checkAllConfirmTitle": "Hoch yIta'?",
     "checkAllConfirmMessage": "Hoch {count} Dochmey Da'ta' DaneH'a'? ghu' rIn ghaj.",
     "uncheckAllConfirmTitle": "Hoch yIta'Ha'?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "ghItlhvam 'aghmoH'a'?",
     "assigneeShareMessage": "{user} ghItlhvam leghlaHbe' DaH. Danobchugh, choHmeH 'aghmoH.",
     "assigneeShareConfirm": "'aghmoH 'ej nob",
-    "assignFailed": "nobwI' choHlaHbe'"
+    "assignFailed": "nobwI' choHlaHbe'",
+    "cardPanes": "Qu' 'ay'mey",
+    "paneTask": "Qu'",
+    "paneDetails": "De'mey"
   },
   "profile": {
     "userProfile": "lo'wI'",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "ghItlh tagh 'ay' ngoq Daq 'agh.",
     "notesCompactModeDescription": "ghItlh DalaDtaHvIS yIQaw' HeH.",
     "kanbanColumnWidthDescription": "kanban tetlh juch DaneHbogh yIwIv. Hoch tetlh Daqvo' Hoch Daq tIn.",
+    "enabled": "chu'lu'ta'",
     "notesDetailsPanelDescription": "HaSta jenDaq ghItlh retlh tetlh, meqmey, lI'mey je 'agh."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "laD neH",
     "byOwner": "{user} lo'taHvIS",
     "mountStaysTop": "ngevwI' qach yotlh 'oH tlhIngan Hol yotlh",
-    "inheritedVia": "{category} lo'taHvIS {user} ngeH",
     "shareFolder": "qachvam ngeH",
     "folderShareHint": "qachvamDaq Hoch, DaH je leSpoH, nuvpu' DawIvbogh ngeH.",
-    "optOut": "wa'vam pegh",
-    "optOutHint": "qach ngeH lujmoH wa'vam neH.",
-    "useInherited": "qach tlha'",
+    "followFolder": "qach ghom yIlo'",
+    "followingHint": "{category} nuvpu' 'ej chaw' rap. wa'vam neH DachoHmeH, yIchu'Ha'.",
+    "customHint": "wa'vam tetlh ghaj. Dachu'chugh, {category} nuvpu' lutamlu'.",
+    "cantDetach": "qachvamDaq vay' Qaw'laH 'ach choHlaHbe', 'ej Doch wa' neH Pollaw'be' 'oH. qachDaq chaw'Daj yIchoH wa'DIch.",
     "publicFolderWarning": "qachvamDaq Hoch lanlu'bogh SibI' Hoch laDlaH.",
     "readTip": "laD neH: {users}",
     "writeTip": "choH laH: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "\"{itemTitle}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej ghaj ghaHvaD boQta' chu' 'oH.",
     "confirmLeaveFolder": "{owner} boQta' \"{categoryName}\" DaSammeH DaneHbe'? sidebar-lIjvo' ngab, 'ej {owner} boQta' chu' 'oH.",
     "canCreate": "chenmoHlaH",
-    "createHint": "ngaSwI'vaD De' chel 'ej vIH.",
+    "createHint": "ngaSwI'vaD Doch chu' chel 'ej Doch vIH. Doch chu' qachvam choH 'ej Qaw' SeH lutlha', vaj choH chaw' ghajbe'chugh Doch chellaH 'ach choHlaHbe'.",
     "panelHint": "ghItlh poSmoHlaHbogh ghot yIwIv, chay' lo'laH 'e' yIwIv.",
     "addPeople": "ghotpu' yIchel",
     "noOneYet": "not vay' DaDIb.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "DIbmeH De' laHbe'.",
     "sharedOk": "DIbta'.",
     "unsharedOk": "'el laH teqta'.",
-    "noPermissionsLeft": "Hoch chaw' Dachu'Ha'ta', 'el laHbe'chu'.",
     "nowPublic": "rar ghajbogh Hoch poSmoHlaH DaH.",
     "nowPrivate": "rar Hoch Qapbe'choH.",
     "allRemoved": "DaH poSmoHlaHbe' latlh, rar Hoch chu'Ha'lu'."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Hol",
     "mcp": "MCP",
-    "templates": "nabmey"
+    "templates": "nabmey",
+    "sharing": "ghom"
   },
   "notFound": {
     "title": "tu'be'lu'",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} {type} ngaSwI' Dajach",
     "sharingFolderMessage": "\"{folder}\" yIleghmeH yI'el",
     "mentionTitle": "{user} QIch DIj SoH tuq",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "ghom, pong, Qu' nob 'ej qeq naDev pawlu'.",
+    "unreadCount": "{count} laDlu'be'",
+    "allCaughtUp": "Hoch laDlu'ta'",
+    "newGroup": "chu'",
+    "earlierGroup": "ngo'",
+    "markRead": "laDlu'ta' yIghItlh",
+    "emptyHint": "vay' ghomDI', ponglIj pongDI', ghap Qu' SoHvaD nobDI', naDev 'oH."
   },
   "relations": {
     "indexing": "rarmey tetlh chenmoHlI'...",

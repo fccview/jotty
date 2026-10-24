@@ -4,7 +4,6 @@ import {
   Delete03Icon,
   FolderAddIcon,
   PencilEdit02Icon,
-  ViewIcon,
 } from "hugeicons-react";
 import { SharingPermissions } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
@@ -19,7 +18,6 @@ export interface ChipSpec {
   isDanger?: boolean;
 }
 
-const READ_CHIP: ChipSpec = { key: "canRead", icon: ViewIcon, labelKey: "common.read" };
 const EDIT_CHIP: ChipSpec = { key: "canEdit", icon: PencilEdit02Icon, labelKey: "common.edit" };
 const DELETE_CHIP: ChipSpec = {
   key: "canDelete",
@@ -34,7 +32,7 @@ const CREATE_CHIP: ChipSpec = {
   hintKey: "sharing.createHint",
 };
 
-export const ITEM_CHIPS = [READ_CHIP, EDIT_CHIP, DELETE_CHIP];
+export const ITEM_CHIPS = [EDIT_CHIP, DELETE_CHIP];
 export const FOLDER_CHIPS = [CREATE_CHIP, EDIT_CHIP, DELETE_CHIP];
 
 interface PermissionChipsProps {

@@ -34,7 +34,7 @@ import { shareFactsKey } from "./mounts";
 import { modeFor } from "@/app/_utils/sharing-utils";
 import { isPathUuid } from "@/app/_server/actions/lib/read-only";
 import { isLockedItem } from "@/app/_server/actions/lib/unstamped";
-import { canReachFile, resolveAccess, sharersOf } from "./access";
+import { canReachFile, catAccess, resolveAccess, sharersOf } from "./access";
 import { readCatInfo } from "./category-info";
 import { targetDir } from "./target";
 
@@ -175,11 +175,16 @@ export const itemShares = async (
       Object.entries(access.users).filter(([name]) => name !== PUBLIC_USER),
     );
 
+    const parent = access.inherited
+      ? access
+      : await catAccess(mode, path.resolve(path.dirname(filePath)));
+
     return {
       users,
       isPublic: access.isPublic,
       inherited: access.inherited,
       viaCategory: access.viaCategory,
+      sharedParent: parent?.viaCategory,
     };
   } catch (error) {
     console.error("Error in itemShares:", error);

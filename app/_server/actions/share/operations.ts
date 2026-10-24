@@ -3,7 +3,13 @@
 import path from "path";
 import { Modes, NotificationTargets } from "@/app/_types/enums";
 import { Result, SharingPermissions } from "@/app/_types/core";
-import { PUBLIC_USER, SHARED_WITH_KEY } from "@/app/_consts/sharing";
+import {
+  DETACH_LOSSY,
+  NO_SHARED_PARENT,
+  PUBLIC_USER,
+  SHARED_WITH_KEY,
+} from "@/app/_consts/sharing";
+import { storableOnItem } from "@/app/_utils/sharing-utils";
 import { logAudit } from "@/app/_server/actions/log";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
 import {
@@ -97,10 +103,10 @@ export const unshareItem = async (
 ): Promise<Result<Grants>> =>
   revokeItem(await getCurrentUser(), mode, uuid, receiver);
 
-const _optOut = async (
+const _detach = async (
   mode: Modes,
   uuid: string,
-): Promise<Result<null>> => {
+): Promise<Result<Grants>> => {
   try {
     const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
@@ -115,35 +121,42 @@ const _optOut = async (
     if (!filePath) return { success: false, error: "Item not found" };
 
     const access = await resolveAccess(mode, filePath);
-    const affected = access ? Object.keys(access.users) : [];
+    if (!access) return { success: false, error: "Item not found" };
+    if (!access.inherited || !access.viaCategory) {
+      return { success: true, data: access.users };
+    }
 
-    const written = await writeShares(filePath, {});
+    if (!Object.values(access.users).every(storableOnItem)) {
+      return { success: false, error: DETACH_LOSSY };
+    }
+
+    const written = await writeShares(filePath, access.users);
     if (!written) return { success: false, error: "Failed to update sharing" };
 
     await logAudit({
       level: "INFO",
-      action: "item_unshared",
+      action: "item_shared",
       category: "sharing",
       success: true,
       resourceType: itemTypeOf(mode),
       resourceId: uuid,
-      metadata: { optedOut: true },
+      metadata: { detachedFrom: access.viaCategory },
     });
 
-    await announceShare(mode, uuid, [owner, ...affected]);
+    await announceShare(mode, uuid, [owner]);
 
-    return { success: true, data: null };
+    return { success: true, data: access.users };
   } catch (error) {
-    console.error("Error in optOutItem:", error);
+    console.error("Error in detachItem:", error);
     return { success: false, error: "Failed to update sharing" };
   }
 };
 
-export const optOutItem = async (
+export const detachItem = async (
   mode: Modes,
   uuid: string,
-): Promise<Result<null>> =>
-  runQueued(itemLane(mode, uuid), () => _optOut(mode, uuid));
+): Promise<Result<Grants>> =>
+  runQueued(itemLane(mode, uuid), () => _detach(mode, uuid));
 
 const _inherit = async (
   mode: Modes,
@@ -162,6 +175,11 @@ const _inherit = async (
     const filePath = await itemPathOf(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
 
+    const parent = await catAccess(mode, path.resolve(path.dirname(filePath)));
+    if (!parent?.viaCategory) return { success: false, error: NO_SHARED_PARENT };
+
+    const before = await resolveAccess(mode, filePath);
+
     const content = await serverReadFile(filePath);
     if (!content) return { success: false, error: "Item not found" };
 
@@ -173,7 +191,22 @@ const _inherit = async (
       updateYamlMetadata(contentWithoutMetadata, metadata, false),
     );
 
-    await announceShare(mode, uuid, [owner]);
+    await logAudit({
+      level: "INFO",
+      action: "item_shared",
+      category: "sharing",
+      success: true,
+      resourceType: itemTypeOf(mode),
+      resourceId: uuid,
+      metadata: { inheritedFrom: parent.viaCategory },
+    });
+
+    const affected = [
+      ...Object.keys(before?.users || {}),
+      ...Object.keys(parent.users),
+    ].filter((username) => username !== PUBLIC_USER);
+
+    await announceShare(mode, uuid, Array.from(new Set([owner, ...affected])));
 
     return { success: true, data: null };
   } catch (error) {

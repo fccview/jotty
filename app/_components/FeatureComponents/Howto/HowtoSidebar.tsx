@@ -24,6 +24,7 @@ import {
   UserMultipleIcon,
   RoboticIcon,
   LicenseDraftIcon,
+  Share08Icon,
 } from "hugeicons-react";
 
 interface HowtoSidebarProps {
@@ -49,6 +50,7 @@ const iconMap: Record<string, any> = {
   users: UserMultipleIcon,
   robot: RoboticIcon,
   template: LicenseDraftIcon,
+  share: Share08Icon,
 };
 
 export const HowtoSidebar = ({ isOpen, onClose }: HowtoSidebarProps) => {

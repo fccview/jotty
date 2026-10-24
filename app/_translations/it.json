@@ -159,6 +159,7 @@
     "page": "Pagina",
     "pageOfPages": "{currentPage} di {totalPages}",
     "searchPlaceholder": "Cerca note e checklist... (⌘K)",
+    "searchSidebarPlaceholder": "Trova una nota, una lista o una cartella...",
     "system": "Sistema",
     "errors": "Errori",
     "statistics": "Statistiche",
@@ -432,7 +433,10 @@
     "noTagsFound": "Nessun tag trovato",
     "searchTags": "Cerca tag...",
     "createNoteFailed": "Impossibile creare la nota",
-    "createCategoryFailed": "Impossibile creare la categoria, la nota non è stata creata"
+    "createCategoryFailed": "Impossibile creare la categoria, la nota non è stata creata",
+    "autosaveSaved": "Salvato",
+    "autosaveFailed": "Non salvato",
+    "autosaveFailedHint": "Impossibile raggiungere il server. Jotty riprova quando continui a scrivere, cambi scheda o chiudi l'editor."
   },
   "checklists": {
     "sharedPubliclyBy": "Questa checklist è condivisa pubblicamente da {owner}",
@@ -510,6 +514,21 @@
     "checkAll": "Seleziona tutto",
     "uncheckAll": "Deseleziona tutto",
     "clearAll": "Cancella tutto",
+    "sort": "Ordina",
+    "sortAscending": "Dalla A alla Z",
+    "sortDescending": "Dalla Z alla A",
+    "sortShuffle": "Mescola",
+    "sortName": "Nome",
+    "sortCreated": "Creazione",
+    "sortModified": "Modifica",
+    "sortNewest": "Più recenti prima",
+    "sortOldest": "Meno recenti prima",
+    "undoSort": "Annulla ordinamento",
+    "sortFailed": "Impossibile ordinare la lista",
+    "undoSortFailed": "Impossibile annullare l'ordinamento",
+    "sortKanban": "Si possono ordinare solo le checklist semplici",
+    "sortStale": "La lista è cambiata da quell'ordinamento, quindi non si può annullare",
+    "toggleFailed": "Impossibile salvare una spunta, quindi la lista è stata ricaricata",
     "checkAllConfirmTitle": "Selezionare tutti gli elementi?",
     "checkAllConfirmMessage": "Sei sicuro di voler controllare tutti i {count} elementi e i relativi elementi secondari? \nQuesto li contrassegnerà come completati.",
     "uncheckAllConfirmTitle": "Deselezionare tutti gli elementi?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "Condividere questa bacheca?",
     "assigneeShareMessage": "{user} non può ancora vedere questa bacheca. Assegnandolo la condividerai con accesso in modifica.",
     "assigneeShareConfirm": "Condividi e assegna",
-    "assignFailed": "Impossibile cambiare l'assegnatario"
+    "assignFailed": "Impossibile cambiare l'assegnatario",
+    "cardPanes": "Sezioni dell'attività",
+    "paneTask": "Attività",
+    "paneDetails": "Dettagli"
   },
   "profile": {
     "userProfile": "Utente",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Mostra l'inizio formattato di ogni nota sulla sua scheda.",
     "notesCompactModeDescription": "Usa un layout più stretto per leggere e modificare le note.",
     "kanbanColumnWidthDescription": "Imposta una larghezza personalizzata per le colonne di stato del kanban. Di default le colonne si adattano allo spazio disponibile.",
+    "enabled": "Abilitato",
     "notesDetailsPanelDescription": "Mostra indice, tag e collegamenti in un pannello accanto alla nota sugli schermi larghi."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Sola lettura",
     "byOwner": "condiviso da {user}",
     "mountStaysTop": "Le cartelle condivise restano al livello principale",
-    "inheritedVia": "Condiviso tramite {category}, da {user}",
     "shareFolder": "Condividi questa cartella",
     "folderShareHint": "Tutto ciò che si trova in questa cartella, ora e in futuro, viene condiviso con le persone che scegli.",
-    "optOut": "Mantieni privato questo elemento",
-    "optOutHint": "Sostituisce la condivisione della cartella solo per questo elemento.",
-    "useInherited": "Segui la cartella",
+    "followFolder": "Usa la condivisione della cartella",
+    "followingHint": "Stesse persone e permessi di {category}. Disattivalo per cambiarli solo per questo elemento.",
+    "customHint": "Questo elemento ha una sua lista. Attivandolo viene sostituita dalle persone di {category}.",
+    "cantDetach": "Qualcuno in questa cartella può eliminare ma non modificare, e un singolo elemento non può salvarlo. Cambia prima il suo accesso alla cartella.",
     "publicFolderWarning": "Qualsiasi cosa inserita in questa cartella diventa immediatamente leggibile da chiunque abbia il link.",
     "readTip": "Sola lettura: {users}",
     "writeTip": "Può modificare: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "Vuoi rimuovere il tuo accesso a \"{itemTitle}\"? Sparirà dalla barra laterale e il proprietario dovrà condividerlo di nuovo per ridartelo.",
     "confirmLeaveFolder": "Vuoi rimuovere il tuo accesso a \"{categoryName}\", condivisa da {owner}? Sparirà dalla barra laterale e {owner} dovrà condividerla di nuovo per ridartela.",
     "canCreate": "Può Creare",
-    "createHint": "Permette di aggiungere e spostare elementi in questa cartella.",
+    "createHint": "Permette di aggiungere nuovi elementi e spostare elementi in questa cartella. I nuovi elementi seguono le impostazioni di modifica ed eliminazione della cartella, quindi senza modifica possono aggiungere elementi ma non cambiarli.",
     "panelHint": "Scegli chi può aprirlo e cosa può farci.",
     "addPeople": "Aggiungi persone",
     "noOneYet": "Non l’hai ancora condiviso con nessuno.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "Impossibile caricare le condivisioni.",
     "sharedOk": "Condiviso.",
     "unsharedOk": "Accesso rimosso.",
-    "noPermissionsLeft": "Hai disattivato tutti i permessi, quindi non ha più accesso.",
     "nowPublic": "Chiunque abbia il link ora può aprirlo.",
     "nowPrivate": "Il link pubblico non funziona più.",
     "allRemoved": "Nessun altro può aprirlo ora e il link pubblico è disattivato."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Traduzioni",
     "mcp": "MCP",
-    "templates": "Modelli"
+    "templates": "Modelli",
+    "sharing": "Condivisione"
   },
   "notFound": {
     "title": "Pagina non trovata",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} ha condiviso una cartella {type} con te",
     "sharingFolderMessage": "Apri per vedere \"{folder}\"",
     "mentionTitle": "{user} ti ha menzionato in un commento",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "Qui arrivano condivisioni, menzioni, assegnazioni e promemoria.",
+    "unreadCount": "{count} non letti",
+    "allCaughtUp": "Sei in pari",
+    "newGroup": "Nuove",
+    "earlierGroup": "Precedenti",
+    "markRead": "Segna come letto",
+    "emptyHint": "Quando qualcuno condivide qualcosa con te, ti menziona o ti assegna qualcosa, compare qui."
   },
   "relations": {
     "indexing": "Indicizzazione dei collegamenti...",

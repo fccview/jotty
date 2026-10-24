@@ -10,11 +10,12 @@ import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHe
 import { IndexingRelations } from "@/app/_components/GlobalComponents/Layout/IndexingRelations";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { connectItems } from "@/app/_server/actions/relations";
 import { createNote } from "@/app/_server/actions/note";
 import { BrainNodeKinds, RelationsStatus } from "@/app/_consts/relations";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { ItemTypes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
 import { tagHref } from "@/app/_utils/tag-utils";
 import type { Category, SanitisedUser } from "@/app/_types";
@@ -37,24 +38,30 @@ interface BrainPageClientProps {
   graph: BrainGraph;
   focus: string | null;
   isOwnBrain: boolean;
-  categories: Category[];
+  notesCategories: Category[];
+  listsCategories: Category[];
   user: SanitisedUser | null;
 }
-
 
 export const BrainPageClient = ({
   graph,
   focus,
   isOwnBrain,
-  categories,
+  notesCategories,
+  listsCategories,
   user,
 }: BrainPageClientProps) => {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const { showToast } = useToast();
-  const { openSettings, openCreateNoteModal, openCreateCategoryModal } =
-    useShortcut();
+  const {
+    openSettings,
+    openCreateNoteModal,
+    openCreateChecklistModal,
+    openCreateCategoryModal,
+  } = useShortcut();
+  const { mode } = useAppMode();
   const palette = useBrainPalette();
   const focusId =
     focus && graph.nodes.some((node) => node.id === focus) ? focus : null;
@@ -136,11 +143,20 @@ export const BrainPageClient = ({
   const building = graph.status === RelationsStatus.BUILDING;
   const empty = !building && graph.nodes.length === 0;
 
+  const categories =
+    mode === Modes.TAGS
+      ? []
+      : mode === Modes.NOTES
+        ? notesCategories
+        : listsCategories;
+  const openCreate =
+    mode === Modes.NOTES ? openCreateNoteModal : openCreateChecklistModal;
+
   return (
     <Layout
       categories={categories}
       onOpenSettings={openSettings}
-      onOpenCreateModal={openCreateNoteModal}
+      onOpenCreateModal={openCreate}
       onOpenCategoryModal={openCreateCategoryModal}
       user={user}
     >

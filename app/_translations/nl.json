@@ -159,6 +159,7 @@
     "page": "Pagina",
     "pageOfPages": "{currentPage} van {totalPages}",
     "searchPlaceholder": "Zoek notities en checklists... (⌘K)",
+    "searchSidebarPlaceholder": "Zoek een notitie, lijst of map...",
     "system": "Systeem",
     "errors": "Fouten",
     "statistics": "Statistieken",
@@ -432,7 +433,10 @@
     "noTagsFound": "Geen tags gevonden",
     "searchTags": "Tags zoeken...",
     "createNoteFailed": "Kon de notitie niet aanmaken",
-    "createCategoryFailed": "Kon de categorie niet aanmaken, de notitie is niet aangemaakt"
+    "createCategoryFailed": "Kon de categorie niet aanmaken, de notitie is niet aangemaakt",
+    "autosaveSaved": "Opgeslagen",
+    "autosaveFailed": "Niet opgeslagen",
+    "autosaveFailedHint": "Kon de server niet bereiken. Jotty probeert het opnieuw als je verder typt, van tabblad wisselt of de editor sluit."
   },
   "checklists": {
     "sharedPubliclyBy": "Deze checklist wordt openbaar gedeeld door {owner}",
@@ -510,6 +514,21 @@
     "checkAll": "Alles aanvinken",
     "uncheckAll": "Alles uitvinken",
     "clearAll": "Alles wissen",
+    "sort": "Sorteren",
+    "sortAscending": "A tot Z",
+    "sortDescending": "Z tot A",
+    "sortShuffle": "Schudden",
+    "sortName": "Naam",
+    "sortCreated": "Aangemaakt",
+    "sortModified": "Gewijzigd",
+    "sortNewest": "Nieuwste eerst",
+    "sortOldest": "Oudste eerst",
+    "undoSort": "Sortering ongedaan maken",
+    "sortFailed": "Kon de lijst niet sorteren",
+    "undoSortFailed": "Kon de sortering niet ongedaan maken",
+    "sortKanban": "Alleen eenvoudige checklists kunnen gesorteerd worden",
+    "sortStale": "De lijst is sinds die sortering veranderd, dus die kan niet ongedaan gemaakt worden",
+    "toggleFailed": "Kon een vinkje niet opslaan, dus de lijst is opnieuw geladen",
     "checkAllConfirmTitle": "Alle items aanvinken?",
     "checkAllConfirmMessage": "Weet u zeker dat u alle {count} items en hun kinderen wilt aanvinken? Dit markeert ze als voltooid.",
     "uncheckAllConfirmTitle": "Alle items uitvinken?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "Dit bord delen?",
     "assigneeShareMessage": "{user} kan dit bord nog niet zien. Toewijzen deelt het met bewerkrechten.",
     "assigneeShareConfirm": "Delen en toewijzen",
-    "assignFailed": "Kon de toegewezen persoon niet wijzigen"
+    "assignFailed": "Kon de toegewezen persoon niet wijzigen",
+    "cardPanes": "Taakonderdelen",
+    "paneTask": "Taak",
+    "paneDetails": "Details"
   },
   "profile": {
     "userProfile": "Gebruiker",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Toont het opgemaakte begin van elke notitie op de kaart.",
     "notesCompactModeDescription": "Gebruik een smallere opmaak bij het lezen en bewerken van notities.",
     "kanbanColumnWidthDescription": "Stel een eigen breedte in voor de kanban-statuskolommen. Standaard passen de kolommen zich aan de beschikbare ruimte aan.",
+    "enabled": "Ingeschakeld",
     "notesDetailsPanelDescription": "Toont inhoudsopgave, tags en links in een paneel naast de notitie op brede schermen."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Alleen lezen",
     "byOwner": "gedeeld door {user}",
     "mountStaysTop": "Gedeelde mappen blijven op het hoogste niveau",
-    "inheritedVia": "Gedeeld via {category}, door {user}",
     "shareFolder": "Deel deze map",
     "folderShareHint": "Alles in deze map, nu en later, wordt gedeeld met de mensen die je kiest.",
-    "optOut": "Dit item privé houden",
-    "optOutHint": "Overschrijft het delen van de map alleen voor dit item.",
-    "useInherited": "Volg de map",
+    "followFolder": "Delen van de map gebruiken",
+    "followingHint": "Dezelfde mensen en rechten als {category}. Zet dit uit om ze alleen hier te wijzigen.",
+    "customHint": "Dit item heeft een eigen lijst. Als je dit aanzet, wordt die vervangen door de mensen van {category}.",
+    "cantDetach": "Iemand in deze map kan verwijderen maar niet bewerken, en een los item kan dat niet opslaan. Pas eerst diens toegang tot de map aan.",
     "publicFolderWarning": "Alles wat in deze map wordt geplaatst, is direct leesbaar voor iedereen met de link.",
     "readTip": "Alleen lezen: {users}",
     "writeTip": "Kan bewerken: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "Je eigen toegang tot \"{itemTitle}\" verwijderen? Het verdwijnt uit je zijbalk en de eigenaar moet het opnieuw delen.",
     "confirmLeaveFolder": "Je eigen toegang tot \"{categoryName}\", gedeeld door {owner}, verwijderen? De map verdwijnt uit je zijbalk en {owner} moet hem opnieuw delen.",
     "canCreate": "Kan aanmaken",
-    "createHint": "Laat toe items toe te voegen en te verplaatsen naar deze map.",
+    "createHint": "Laat toe nieuwe items toe te voegen en items naar deze map te verplaatsen. Nieuwe items volgen de bewerk- en verwijderinstellingen van deze map, dus zonder bewerken kunnen ze items toevoegen maar niet wijzigen.",
     "panelHint": "Kies wie het kan openen en wat diegene ermee mag doen.",
     "addPeople": "Mensen toevoegen",
     "noOneYet": "Je hebt dit nog met niemand gedeeld.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "Kon niet laden met wie dit gedeeld is.",
     "sharedOk": "Gedeeld.",
     "unsharedOk": "Toegang verwijderd.",
-    "noPermissionsLeft": "Je hebt alle rechten uitgezet, dus diegene heeft geen toegang meer.",
     "nowPublic": "Iedereen met de link kan het nu openen.",
     "nowPrivate": "De openbare link werkt niet meer.",
     "allRemoved": "Niemand anders kan dit nu openen en de openbare link staat uit."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Vertalingen",
     "mcp": "MCP",
-    "templates": "Sjablonen"
+    "templates": "Sjablonen",
+    "sharing": "Delen"
   },
   "notFound": {
     "title": "Pagina niet gevonden",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} heeft een {type}-map met je gedeeld",
     "sharingFolderMessage": "Open om \"{folder}\" te bekijken",
     "mentionTitle": "{user} noemde je in een reactie",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "Gedeelde items, vermeldingen, toewijzingen en herinneringen komen hier terecht.",
+    "unreadCount": "{count} ongelezen",
+    "allCaughtUp": "Helemaal bij",
+    "newGroup": "Nieuw",
+    "earlierGroup": "Eerder",
+    "markRead": "Markeer als gelezen",
+    "emptyHint": "Als iemand iets met je deelt, je vermeldt of je iets toewijst, verschijnt het hier."
   },
   "relations": {
     "indexing": "Relaties indexeren...",

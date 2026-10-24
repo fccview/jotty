@@ -2,9 +2,6 @@ import path from "path";
 
 const MEMO_LIMIT = 20000;
 const UNKNOWN_STAMP = -1;
-const STAT_FIELDS = 4;
-
-export const STAT_PRINTF = "%p|%W@|%T@|%s|%C@\\n";
 
 export interface FileStamp {
   mtime: Date;
@@ -12,32 +9,8 @@ export interface FileStamp {
   ctime?: Date;
 }
 
-export interface StatLine extends FileStamp {
-  birthtime: Date;
-}
-
 export const stampKey = ({ mtime, size, ctime }: FileStamp): string =>
   [mtime.getTime(), size ?? UNKNOWN_STAMP, ctime?.getTime() ?? UNKNOWN_STAMP].join(":");
-
-const secondsToDate = (value: string): Date => new Date(parseFloat(value) * 1000);
-
-export const parseStatLine = (line: string): [string, StatLine] | null => {
-  const parts = line.split("|");
-  if (parts.length < STAT_FIELDS + 1) return null;
-  const [birth, modified, size, changed] = parts.slice(-STAT_FIELDS);
-  const filePath = parts.slice(0, -STAT_FIELDS).join("|");
-  const sizeNum = Number(size);
-  if (!filePath || !birth || !modified || !changed || !Number.isFinite(sizeNum)) return null;
-  return [
-    filePath,
-    {
-      birthtime: secondsToDate(birth),
-      mtime: secondsToDate(modified),
-      size: sizeNum,
-      ctime: secondsToDate(changed),
-    },
-  ];
-};
 
 export const summaryMemo = <T>(limit: number = MEMO_LIMIT) => {
   const memo = new Map<string, { stamp: string; value: T }>();

@@ -2,19 +2,19 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { ItemType, PublicUserInfo } from "@/app/_types";
+import { ItemType, PublicUserInfo, SharingPermissions } from "@/app/_types";
 import { getUsers } from "@/app/_server/actions/users";
 import { publicHref } from "@/app/_utils/global-utils";
 import {
   shareItem,
   unshareItem,
   setItemPublic,
-  optOutItem,
+  detachItem,
   inheritItem,
 } from "../_server/actions/share/operations";
 import { itemShares } from "../_server/actions/share/lookups";
-import { modeFor } from "@/app/_utils/sharing-utils";
-import { SharingPermissions } from "@/app/_types";
+import { modeFor, nextItemPerms } from "@/app/_utils/sharing-utils";
+import { DETACH_LOSSY } from "@/app/_consts/sharing";
 import { getUsername } from "../_server/actions/users";
 
 interface ShareModalProps {
@@ -27,6 +27,12 @@ interface ShareModalProps {
   enabled: boolean;
 }
 
+const READ_ONLY: SharingPermissions = {
+  canRead: true,
+  canEdit: false,
+  canDelete: false,
+};
+
 export const useSharingTools = ({
   isOpen,
   itemType,
@@ -35,14 +41,13 @@ export const useSharingTools = ({
 }: ShareModalProps) => {
   const t = useTranslations();
   const [users, setUsers] = useState<PublicUserInfo[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [currentSharing, setCurrentSharing] = useState<string[]>([]);
   const [userPermissions, setUserPermissions] = useState<
     Record<string, SharingPermissions>
   >({});
   const [isPubliclyShared, setIsPubliclyShared] = useState(false);
-  const [inheritedFrom, setInheritedFrom] = useState<string | null>(null);
-  const [isOptedOut, setIsOptedOut] = useState(false);
+  const [sharedParent, setSharedParent] = useState<string | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [publicUrl, setPublicUrl] = useState("");
   const [status, setStatus] = useState<{
     isLoading: boolean;
@@ -61,17 +66,12 @@ export const useSharingTools = ({
         const targetUsersList = targetUsers?.split(",") || [targetUsers || ""];
 
         for (const targetUser of targetUsersList) {
-          const permissions = userPermissions[targetUser] || {
-            canRead: true,
-            canEdit: false,
-            canDelete: false,
-          };
-          const finalPermissions = { ...permissions, canRead: true };
+          const permissions = userPermissions[targetUser] || READ_ONLY;
           const result = await shareItem(
             modeFor(itemType),
             itemUuid,
             targetUser || "",
-            finalPermissions
+            { ...permissions, canRead: true }
           );
           if (!result.success) {
             throw new Error(result.error || "An unknown error occurred.");
@@ -100,7 +100,10 @@ export const useSharingTools = ({
         const targetUsersList = targetUsers?.split(",") || [targetUsers || ""];
 
         for (const targetUser of targetUsersList) {
-          await unshareItem(modeFor(itemType), itemUuid, targetUser || "");
+          const result = await unshareItem(modeFor(itemType), itemUuid, targetUser || "");
+          if (!result.success) {
+            throw new Error(result.error || "An unknown error occurred.");
+          }
         }
 
         return { success: true, data: null };
@@ -118,7 +121,7 @@ export const useSharingTools = ({
         setStatus((prev) => ({ ...prev, isLoading: false }));
       }
     },
-    [itemUuid, itemType, itemOwner]
+    [itemUuid, itemType]
   );
 
   const loadInitialState = useCallback(async () => {
@@ -134,14 +137,9 @@ export const useSharingTools = ({
       const sharedUsers = Object.keys(shares.users);
 
       setCurrentSharing(sharedUsers);
-      setSelectedUsers(sharedUsers);
       setUserPermissions(shares.users);
-      setInheritedFrom(shares.inherited ? shares.viaCategory || null : null);
-      setIsOptedOut(
-        !shares.inherited &&
-        sharedUsers.length === 0 &&
-        !shares.isPublic
-      );
+      setSharedParent(shares.sharedParent || null);
+      setIsFollowing(shares.inherited && Boolean(shares.sharedParent));
 
       const isPublic = shares.isPublic;
       setIsPubliclyShared(isPublic);
@@ -152,6 +150,7 @@ export const useSharingTools = ({
         );
       }
     } catch (error) {
+      console.error("Couldn't load item shares:", error);
       setStatus({
         isLoading: false,
         success: null,
@@ -160,32 +159,11 @@ export const useSharingTools = ({
     } finally {
       setStatus((prev) => ({ ...prev, isLoading: false }));
     }
-  }, [isOpen, itemUuid, itemType, itemOwner, t]);
+  }, [isOpen, itemUuid, itemType, t]);
 
   useEffect(() => {
     loadInitialState();
   }, [isOpen]);
-
-  const handleUserToggle = (username: string) => {
-    resetMessages();
-    setSelectedUsers((prev) => {
-      const isCurrentlySelected = prev.includes(username);
-      if (isCurrentlySelected) {
-        setUserPermissions((current) => {
-          const newPermissions = { ...current };
-          delete newPermissions[username];
-          return newPermissions;
-        });
-        return prev.filter((u) => u !== username);
-      } else {
-        setUserPermissions((current) => ({
-          ...current,
-          [username]: { canRead: true, canEdit: false, canDelete: false },
-        }));
-        return [...prev, username];
-      }
-    });
-  };
 
   const handleShare = async (action: "share" | "unshare", user: string) => {
     const result =
@@ -208,78 +186,19 @@ export const useSharingTools = ({
     permission: keyof SharingPermissions,
     value: boolean
   ) => {
-    const currentPermissions = userPermissions[user] || {
-      canRead: true,
-      canEdit: false,
-      canDelete: false,
-    };
-    const newPermissions = { ...currentPermissions, [permission]: value };
+    const next = nextItemPerms(userPermissions[user] || READ_ONLY, permission, value);
 
-    const hasNoPermissions =
-      !newPermissions.canRead &&
-      !newPermissions.canEdit &&
-      !newPermissions.canDelete;
-
-    if (hasNoPermissions && currentSharing.includes(user)) {
-      const result = await _executeUnshare(user);
-      if (result?.success) {
-        await loadInitialState();
-        setStatus((prev) => ({
-          ...prev,
-          success: t("sharing.noPermissionsLeft"),
-        }));
-      }
-    } else {
-      if (currentSharing.includes(user)) {
-        const result = await shareItem(
-          modeFor(itemType),
-          itemUuid,
-          user,
-          newPermissions
-        );
-
-        if (result.success) {
-          setUserPermissions((prev) => ({ ...prev, [user]: newPermissions }));
-        }
-      } else {
-        setUserPermissions((prev) => ({ ...prev, [user]: newPermissions }));
-      }
+    if (!currentSharing.includes(user)) {
+      setUserPermissions((prev) => ({ ...prev, [user]: next }));
+      return;
     }
-  };
 
-  const handleAllPermissionsChange = async (user: string, value: boolean) => {
-    const newPermissions: SharingPermissions = {
-      canRead: value,
-      canEdit: value,
-      canDelete: value,
-    };
+    const result = await shareItem(modeFor(itemType), itemUuid, user, next);
 
-    const hasNoPermissions = !value;
-
-    if (hasNoPermissions && currentSharing.includes(user)) {
-      const result = await _executeUnshare(user);
-      if (result?.success) {
-        await loadInitialState();
-        setStatus((prev) => ({
-          ...prev,
-          success: t("sharing.noPermissionsLeft"),
-        }));
-      }
+    if (result.success) {
+      setUserPermissions((prev) => ({ ...prev, [user]: next }));
     } else {
-      if (currentSharing.includes(user)) {
-        const result = await shareItem(
-          modeFor(itemType),
-          itemUuid,
-          user,
-          newPermissions
-        );
-
-        if (result.success) {
-          setUserPermissions((prev) => ({ ...prev, [user]: newPermissions }));
-        }
-      } else {
-        setUserPermissions((prev) => ({ ...prev, [user]: newPermissions }));
-      }
+      setStatus((prev) => ({ ...prev, error: result.error || null }));
     }
   };
 
@@ -323,17 +242,21 @@ export const useSharingTools = ({
     }
   };
 
-  const handleOptOut = async () => {
+  const handleFollow = async () => {
     setStatus({ isLoading: true, error: null, success: null });
 
     try {
       const mode = modeFor(itemType);
-      const result = isOptedOut
-        ? await inheritItem(mode, itemUuid)
-        : await optOutItem(mode, itemUuid);
+      const result = isFollowing
+        ? await detachItem(mode, itemUuid)
+        : await inheritItem(mode, itemUuid);
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to update sharing");
+        throw new Error(
+          result.error === DETACH_LOSSY
+            ? t("sharing.cantDetach")
+            : result.error || "Failed to update sharing"
+        );
       }
 
       await loadInitialState();
@@ -370,7 +293,6 @@ export const useSharingTools = ({
       const isPublic = shares.isPublic;
 
       setCurrentSharing(sharedUsers);
-      setSelectedUsers(sharedUsers);
       setIsPubliclyShared(isPublic);
       if (!isPublic) {
         setPublicUrl("");
@@ -407,20 +329,17 @@ export const useSharingTools = ({
   return {
     ...status,
     users,
-    selectedUsers,
     currentSharing,
     userPermissions,
     searchQuery,
     setSearchQuery,
-    handleUserToggle,
     handleShare,
     handlePermissionChange,
-    handleAllPermissionsChange,
     handlePublicToggle,
     isPubliclyShared,
-    inheritedFrom,
-    isOptedOut,
-    handleOptOut,
+    sharedParent,
+    isFollowing,
+    handleFollow,
     publicUrl,
     handleRemoveAllSharing,
     filteredUsers,

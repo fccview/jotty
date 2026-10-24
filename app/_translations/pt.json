@@ -159,6 +159,7 @@
     "page": "Página",
     "pageOfPages": "{currentPage} de {totalPages}",
     "searchPlaceholder": "Pesquisar notas e listas de verificação... (⌘K)",
+    "searchSidebarPlaceholder": "Encontrar uma nota, lista ou pasta...",
     "system": "Sistema",
     "errors": "Erros",
     "statistics": "Estatísticas",
@@ -432,7 +433,10 @@
     "noTagsFound": "Nenhuma etiqueta encontrada",
     "searchTags": "Pesquisar etiquetas...",
     "createNoteFailed": "Não foi possível criar a nota",
-    "createCategoryFailed": "Não foi possível criar a categoria, a nota não foi criada"
+    "createCategoryFailed": "Não foi possível criar a categoria, a nota não foi criada",
+    "autosaveSaved": "Guardado",
+    "autosaveFailed": "Não guardado",
+    "autosaveFailedHint": "Não foi possível contactar o servidor. O Jotty tenta novamente quando continua a escrever, muda de separador ou fecha o editor."
   },
   "checklists": {
     "sharedPubliclyBy": "Esta lista de verificação é partilhada publicamente por {owner}",
@@ -510,6 +514,21 @@
     "checkAll": "Marcar tudo",
     "uncheckAll": "Desmarcar tudo",
     "clearAll": "Limpar tudo",
+    "sort": "Ordenar",
+    "sortAscending": "De A a Z",
+    "sortDescending": "De Z a A",
+    "sortShuffle": "Baralhar",
+    "sortName": "Nome",
+    "sortCreated": "Criação",
+    "sortModified": "Modificação",
+    "sortNewest": "Mais recentes primeiro",
+    "sortOldest": "Mais antigos primeiro",
+    "undoSort": "Anular ordenação",
+    "sortFailed": "Não foi possível ordenar a lista",
+    "undoSortFailed": "Não foi possível anular a ordenação",
+    "sortKanban": "Só é possível ordenar listas simples",
+    "sortStale": "A lista mudou desde essa ordenação, por isso não pode ser anulada",
+    "toggleFailed": "Não foi possível guardar uma marca, por isso a lista foi recarregada",
     "checkAllConfirmTitle": "Marcar todos os itens?",
     "checkAllConfirmMessage": "Tem a certeza de que pretende marcar todos os {count} itens e os seus filhos? Isto marcá-los-á como concluídos.",
     "uncheckAllConfirmTitle": "Desmarcar todos os itens?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "Partilhar este quadro?",
     "assigneeShareMessage": "{user} ainda não consegue ver este quadro. Ao atribuir, o quadro é partilhado com permissão de edição.",
     "assigneeShareConfirm": "Partilhar e atribuir",
-    "assignFailed": "Não foi possível alterar o responsável"
+    "assignFailed": "Não foi possível alterar o responsável",
+    "cardPanes": "Secções da tarefa",
+    "paneTask": "Tarefa",
+    "paneDetails": "Detalhes"
   },
   "profile": {
     "userProfile": "Utilizador",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Mostra o início formatado de cada nota no seu cartão.",
     "notesCompactModeDescription": "Usa um esquema mais estreito ao ler e editar notas.",
     "kanbanColumnWidthDescription": "Define uma largura personalizada para as colunas de estado do kanban. Por predefinição, as colunas ajustam-se ao espaço disponível.",
+    "enabled": "Ativado",
     "notesDetailsPanelDescription": "Mostra o índice, as etiquetas e as ligações num painel ao lado da nota em ecrãs largos."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Somente leitura",
     "byOwner": "partilhado por {user}",
     "mountStaysTop": "As pastas partilhadas permanecem no nível superior",
-    "inheritedVia": "Partilhado através de {category}, por {user}",
     "shareFolder": "Partilhar esta pasta",
     "folderShareHint": "Tudo o que estiver nesta pasta, agora e no futuro, é partilhado com as pessoas que escolher.",
-    "optOut": "Manter este item privado",
-    "optOutHint": "Substitui a partilha da pasta apenas para este item.",
-    "useInherited": "Seguir a pasta",
+    "followFolder": "Usar a partilha da pasta",
+    "followingHint": "As mesmas pessoas e permissões que {category}. Desative para as alterar só neste item.",
+    "customHint": "Este item tem a sua própria lista. Ao ativar, é substituída pelas pessoas de {category}.",
+    "cantDetach": "Alguém nesta pasta pode eliminar mas não editar, e um item isolado não consegue guardar isso. Altere primeiro o acesso dessa pessoa na pasta.",
     "publicFolderWarning": "Qualquer coisa colocada nesta pasta torna-se imediatamente legível por qualquer pessoa com a ligação.",
     "readTip": "Somente leitura: {users}",
     "writeTip": "Pode editar: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "Remover o seu próprio acesso a \"{itemTitle}\"? Desaparece da barra lateral e o proprietário terá de partilhar novamente.",
     "confirmLeaveFolder": "Remover o seu próprio acesso a \"{categoryName}\", partilhada por {owner}? Desaparece da barra lateral e {owner} terá de partilhar novamente.",
     "canCreate": "Pode criar",
-    "createHint": "Permite adicionar e mover itens para esta pasta.",
+    "createHint": "Permite adicionar novos itens e mover itens para esta pasta. Os novos itens seguem as definições de edição e eliminação desta pasta, por isso sem edição podem adicionar itens mas não alterá-los.",
     "panelHint": "Escolha quem pode abrir e o que pode fazer com isto.",
     "addPeople": "Adicionar pessoas",
     "noOneYet": "Ainda não partilhou isto com ninguém.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "Não foi possível carregar as partilhas.",
     "sharedOk": "Partilhado.",
     "unsharedOk": "Acesso removido.",
-    "noPermissionsLeft": "Desativou todas as permissões, por isso essa pessoa já não tem acesso.",
     "nowPublic": "Qualquer pessoa com o link pode abrir agora.",
     "nowPrivate": "O link público já não funciona.",
     "allRemoved": "Mais ninguém pode abrir isto agora e o link público está desativado."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Traduções",
     "mcp": "MCP",
-    "templates": "Modelos"
+    "templates": "Modelos",
+    "sharing": "Partilha"
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} partilhou uma pasta de {type} consigo",
     "sharingFolderMessage": "Abrir para ver \"{folder}\"",
     "mentionTitle": "{user} mencionou você em um comentário",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "Partilhas, menções, atribuições e lembretes aparecem aqui.",
+    "unreadCount": "{count} não lidas",
+    "allCaughtUp": "Tudo em dia",
+    "newGroup": "Novas",
+    "earlierGroup": "Anteriores",
+    "markRead": "Marcar como lida",
+    "emptyHint": "Quando alguém partilhar algo consigo, o mencionar ou lhe atribuir algo, aparece aqui."
   },
   "relations": {
     "indexing": "A indexar ligações...",

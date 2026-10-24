@@ -159,6 +159,7 @@
     "page": "Page",
     "pageOfPages": "{currentPage} sur {totalPages}",
     "searchPlaceholder": "Rechercher des notes et des listes... (⌘K)",
+    "searchSidebarPlaceholder": "Trouver une note, une liste ou un dossier...",
     "system": "Système",
     "errors": "Erreurs",
     "statistics": "Statistiques",
@@ -432,7 +433,10 @@
     "noTagsFound": "Aucun tag trouvé",
     "searchTags": "Rechercher des tags...",
     "createNoteFailed": "Impossible de créer la note",
-    "createCategoryFailed": "Impossible de créer la catégorie, la note n’a pas été créée"
+    "createCategoryFailed": "Impossible de créer la catégorie, la note n’a pas été créée",
+    "autosaveSaved": "Enregistré",
+    "autosaveFailed": "Non enregistré",
+    "autosaveFailedHint": "Impossible de joindre le serveur. Jotty réessaie quand vous continuez à écrire, changez d’onglet ou fermez l’éditeur."
   },
   "checklists": {
     "sharedPubliclyBy": "Cette liste est partagée publiquement par {owner}",
@@ -510,6 +514,21 @@
     "checkAll": "Tout cocher",
     "uncheckAll": "Tout décocher",
     "clearAll": "Tout effacer",
+    "sort": "Trier",
+    "sortAscending": "De A à Z",
+    "sortDescending": "De Z à A",
+    "sortShuffle": "Mélanger",
+    "sortName": "Nom",
+    "sortCreated": "Création",
+    "sortModified": "Modification",
+    "sortNewest": "Plus récents d’abord",
+    "sortOldest": "Plus anciens d’abord",
+    "undoSort": "Annuler le tri",
+    "sortFailed": "Impossible de trier la liste",
+    "undoSortFailed": "Impossible d’annuler le tri",
+    "sortKanban": "Seules les listes simples peuvent être triées",
+    "sortStale": "La liste a changé depuis ce tri, il ne peut donc pas être annulé",
+    "toggleFailed": "Impossible d’enregistrer une coche, la liste a donc été rechargée",
     "checkAllConfirmTitle": "Tout cocher ?",
     "checkAllConfirmMessage": "Voulez-vous vraiment vérifier tous les {count} éléments et leurs enfants ? \nCela les marquera comme terminés.",
     "uncheckAllConfirmTitle": "Tout décocher ?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "Partager ce tableau ?",
     "assigneeShareMessage": "{user} ne peut pas encore voir ce tableau. L'assigner le partagera avec un accès en modification.",
     "assigneeShareConfirm": "Partager et assigner",
-    "assignFailed": "Impossible de changer la personne assignée"
+    "assignFailed": "Impossible de changer la personne assignée",
+    "cardPanes": "Sections de la tâche",
+    "paneTask": "Tâche",
+    "paneDetails": "Détails"
   },
   "profile": {
     "userProfile": "Utilisateur",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Affiche le début mis en forme de chaque note sur sa carte.",
     "notesCompactModeDescription": "Utilise une mise en page plus étroite pour lire et modifier les notes.",
     "kanbanColumnWidthDescription": "Définis une largeur personnalisée pour les colonnes de statut kanban. Par défaut, les colonnes s'adaptent à l'espace disponible.",
+    "enabled": "Activé",
     "notesDetailsPanelDescription": "Affiche la table des matières, les tags et les liens dans un panneau à côté de la note sur les grands écrans."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Lecture seule",
     "byOwner": "partagé par {user}",
     "mountStaysTop": "Les dossiers partagés restent au niveau supérieur",
-    "inheritedVia": "Partagé via {category}, par {user}",
     "shareFolder": "Partager ce dossier",
     "folderShareHint": "Tout ce qui se trouve dans ce dossier, maintenant et plus tard, est partagé avec les personnes que vous choisissez.",
-    "optOut": "Garder cet élément privé",
-    "optOutHint": "Remplace le partage du dossier pour cet élément uniquement.",
-    "useInherited": "Suivre le dossier",
+    "followFolder": "Utiliser le partage du dossier",
+    "followingHint": "Mêmes personnes et permissions que {category}. Désactivez pour les changer pour cet élément uniquement.",
+    "customHint": "Cet élément a sa propre liste. En activant cette option, elle est remplacée par les personnes de {category}.",
+    "cantDetach": "Quelqu’un dans ce dossier peut supprimer sans pouvoir modifier, et un élément seul ne peut pas enregistrer ça. Modifiez d’abord son accès sur le dossier.",
     "publicFolderWarning": "Tout ce qui est placé dans ce dossier devient immédiatement lisible par quiconque possède le lien.",
     "readTip": "Lecture seule : {users}",
     "writeTip": "Peut modifier : {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "Retirer votre propre accès à \"{itemTitle}\" ? L'élément disparaît de votre barre latérale et le propriétaire devra le repartager.",
     "confirmLeaveFolder": "Retirer votre propre accès à \"{categoryName}\", partagé par {owner} ? Le dossier disparaît de votre barre latérale et {owner} devra le repartager.",
     "canCreate": "Peut créer",
-    "createHint": "Permet d’ajouter et de déplacer des éléments dans ce dossier.",
+    "createHint": "Permet d’ajouter de nouveaux éléments et de déplacer des éléments dans ce dossier. Les nouveaux éléments suivent les réglages de modification et de suppression du dossier, donc sans modification ils peuvent ajouter des éléments mais pas les changer.",
     "panelHint": "Choisissez qui peut l’ouvrir et ce qu’il peut en faire.",
     "addPeople": "Ajouter des personnes",
     "noOneYet": "Vous ne l’avez encore partagé avec personne.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "Impossible de charger les partages.",
     "sharedOk": "Partagé.",
     "unsharedOk": "Accès retiré.",
-    "noPermissionsLeft": "Vous avez désactivé toutes les permissions, cette personne n’a donc plus accès.",
     "nowPublic": "Toute personne disposant du lien peut l’ouvrir maintenant.",
     "nowPrivate": "Le lien public ne fonctionne plus.",
     "allRemoved": "Plus personne d’autre ne peut l’ouvrir et le lien public est désactivé."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Traductions",
     "mcp": "MCP",
-    "templates": "Modèles"
+    "templates": "Modèles",
+    "sharing": "Partage"
   },
   "notFound": {
     "title": "Page non trouvée",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} a partagé un dossier {type} avec vous",
     "sharingFolderMessage": "Ouvrez pour voir « {folder} »",
     "mentionTitle": "{user} vous a mentionné dans un commentaire",
-    "mentionMessage": "« {board} »"
+    "mentionMessage": "« {board} »",
+    "subtitle": "Partages, mentions, attributions et rappels arrivent ici.",
+    "unreadCount": "{count} non lu(s)",
+    "allCaughtUp": "Vous êtes à jour",
+    "newGroup": "Nouveau",
+    "earlierGroup": "Plus tôt",
+    "markRead": "Marquer comme lu",
+    "emptyHint": "Quand quelqu’un partage quelque chose avec vous, vous mentionne ou vous attribue quelque chose, ça apparaît ici."
   },
   "relations": {
     "indexing": "Indexation des relations...",

@@ -159,6 +159,7 @@
     "page": "Strona",
     "pageOfPages": "{currentPage} z {totalPages}",
     "searchPlaceholder": "Szukaj notatek i list kontrolnych… (⌘K)",
+    "searchSidebarPlaceholder": "Znajdź notatkę, listę lub folder...",
     "system": "System",
     "errors": "Błędy",
     "statistics": "Statystyki",
@@ -432,7 +433,10 @@
     "noTagsFound": "Nie znaleziono tagów",
     "searchTags": "Szukaj tagów...",
     "createNoteFailed": "Nie udało się utworzyć notatki",
-    "createCategoryFailed": "Nie udało się utworzyć kategorii, więc notatka nie powstała"
+    "createCategoryFailed": "Nie udało się utworzyć kategorii, więc notatka nie powstała",
+    "autosaveSaved": "Zapisano",
+    "autosaveFailed": "Nie zapisano",
+    "autosaveFailedHint": "Nie udało się połączyć z serwerem. Jotty spróbuje ponownie, gdy będziesz dalej pisać, przełączysz kartę lub zamkniesz edytor."
   },
   "checklists": {
     "sharedPubliclyBy": "Tę listę publicznie udostępnia {owner}",
@@ -510,6 +514,21 @@
     "checkAll": "Zaznacz wszystkie",
     "uncheckAll": "Odznacz wszystkie",
     "clearAll": "Wyczyść wszystkie",
+    "sort": "Sortuj",
+    "sortAscending": "Od A do Z",
+    "sortDescending": "Od Z do A",
+    "sortShuffle": "Losowo",
+    "sortName": "Nazwa",
+    "sortCreated": "Data utworzenia",
+    "sortModified": "Data modyfikacji",
+    "sortNewest": "Najnowsze najpierw",
+    "sortOldest": "Najstarsze najpierw",
+    "undoSort": "Cofnij sortowanie",
+    "sortFailed": "Nie udało się posortować listy",
+    "undoSortFailed": "Nie udało się cofnąć sortowania",
+    "sortKanban": "Sortować można tylko proste listy kontrolne",
+    "sortStale": "Lista zmieniła się od tego sortowania, więc nie da się go cofnąć",
+    "toggleFailed": "Nie udało się zapisać zaznaczenia, więc lista została przeładowana",
     "checkAllConfirmTitle": "Zaznaczyć wszystkie elementy?",
     "checkAllConfirmMessage": "Czy na pewno chcesz sprawdzić wszystkie elementy ({count}) i ich elementy podrzędne? \nSpowoduje to oznaczenie ich jako ukończonych.",
     "uncheckAllConfirmTitle": "Odznaczyć wszystkie elementy?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "Udostępnić tę tablicę?",
     "assigneeShareMessage": "{user} jeszcze nie widzi tej tablicy. Przypisanie udostępni ją z prawem edycji.",
     "assigneeShareConfirm": "Udostępnij i przypisz",
-    "assignFailed": "Nie udało się zmienić osoby przypisanej"
+    "assignFailed": "Nie udało się zmienić osoby przypisanej",
+    "cardPanes": "Sekcje zadania",
+    "paneTask": "Zadanie",
+    "paneDetails": "Szczegóły"
   },
   "profile": {
     "userProfile": "Użytkownik",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Pokazuje sformatowany początek każdej notatki na jej karcie.",
     "notesCompactModeDescription": "Używa węższego układu podczas czytania i edycji notatek.",
     "kanbanColumnWidthDescription": "Ustaw własną szerokość kolumn statusów kanban. Domyślnie kolumny dopasowują się do dostępnego miejsca.",
+    "enabled": "Włączone",
     "notesDetailsPanelDescription": "Pokazuje spis treści, tagi i linki w panelu obok notatki na szerokich ekranach."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Tylko do odczytu",
     "byOwner": "udostępnione przez {user}",
     "mountStaysTop": "Udostępnione foldery pozostają na najwyższym poziomie",
-    "inheritedVia": "Udostępnione przez {category}, przez {user}",
     "shareFolder": "Udostępnij ten folder",
     "folderShareHint": "Wszystko w tym folderze, teraz i w przyszłości, jest udostępniane wybranym osobom.",
-    "optOut": "Zachowaj ten element jako prywatny",
-    "optOutHint": "Zastępuje udostępnianie folderu tylko dla tego elementu.",
-    "useInherited": "Podążaj za folderem",
+    "followFolder": "Użyj udostępniania folderu",
+    "followingHint": "Te same osoby i uprawnienia co w {category}. Wyłącz, aby zmienić je tylko tutaj.",
+    "customHint": "Ten element ma własną listę. Po włączeniu zostanie zastąpiona osobami z {category}.",
+    "cantDetach": "Ktoś w tym folderze może usuwać, ale nie edytować, a pojedynczy element nie może tego zapisać. Najpierw zmień jego dostęp do folderu.",
     "publicFolderWarning": "Wszystko umieszczone w tym folderze staje się natychmiast czytelne dla każdego, kto ma link.",
     "readTip": "Tylko odczyt: {users}",
     "writeTip": "Może edytować: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "Usunąć własny dostęp do \"{itemTitle}\"? Zniknie z paska bocznego, a właściciel będzie musiał udostępnić to ponownie.",
     "confirmLeaveFolder": "Usunąć własny dostęp do \"{categoryName}\" udostępnionego przez {owner}? Folder zniknie z paska bocznego, a {owner} będzie musiał udostępnić go ponownie.",
     "canCreate": "Może tworzyć",
-    "createHint": "Pozwala dodawać i przenosić elementy do tego folderu.",
+    "createHint": "Pozwala dodawać nowe elementy i przenosić elementy do tego folderu. Nowe elementy przejmują ustawienia edycji i usuwania tego folderu, więc bez edycji można dodawać elementy, ale nie można ich zmieniać.",
     "panelHint": "Wybierz, kto może to otworzyć i co może z tym zrobić.",
     "addPeople": "Dodaj osoby",
     "noOneYet": "Jeszcze nikomu tego nie udostępniłeś.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "Nie udało się wczytać udostępnień.",
     "sharedOk": "Udostępniono.",
     "unsharedOk": "Usunięto dostęp.",
-    "noPermissionsLeft": "Wyłączyłeś wszystkie uprawnienia, więc ta osoba nie ma już dostępu.",
     "nowPublic": "Każdy z linkiem może to teraz otworzyć.",
     "nowPrivate": "Publiczny link już nie działa.",
     "allRemoved": "Nikt inny nie może tego teraz otworzyć, a publiczny link jest wyłączony."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Tłumaczenia",
     "mcp": "MCP",
-    "templates": "Szablony"
+    "templates": "Szablony",
+    "sharing": "Udostępnianie"
   },
   "notFound": {
     "title": "Strona nie znaleziona",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} udostępnił(a) ci folder {type}",
     "sharingFolderMessage": "Otwórz, aby zobaczyć „{folder}”",
     "mentionTitle": "{user} wspomniał o Tobie w komentarzu",
-    "mentionMessage": "„{board}”"
+    "mentionMessage": "„{board}”",
+    "subtitle": "Tu trafiają udostępnienia, wzmianki, przypisania i przypomnienia.",
+    "unreadCount": "Nieprzeczytane: {count}",
+    "allCaughtUp": "Wszystko przeczytane",
+    "newGroup": "Nowe",
+    "earlierGroup": "Wcześniejsze",
+    "markRead": "Oznacz jako przeczytane",
+    "emptyHint": "Gdy ktoś coś Ci udostępni, wspomni o Tobie lub coś Ci przypisze, pojawi się to tutaj."
   },
   "relations": {
     "indexing": "Indeksowanie powiązań...",

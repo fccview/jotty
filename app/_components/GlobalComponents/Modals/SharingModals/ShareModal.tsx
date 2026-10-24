@@ -8,7 +8,7 @@ import { useSharingTools } from "@/app/_hooks/useSharingTools";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
-import { InheritedNotice } from "./Parts/InheritedNotice";
+import { FollowFolder } from "./Parts/FollowFolder";
 import { PeopleSection } from "./Parts/PeopleSection";
 import { ITEM_CHIPS } from "./Parts/PermissionChips";
 import { PublicLinkSection } from "./Parts/PublicLinkSection";
@@ -36,7 +36,8 @@ export const ShareModal = ({
     itemOwner: metadata.owner || "",
     itemUuid: metadata.uuid || "",
   });
-  const hasAnyShare = sharing.currentSharing.length > 0 || sharing.isPubliclyShared;
+  const hasAnyShare =
+    !sharing.isFollowing && (sharing.currentSharing.length > 0 || sharing.isPubliclyShared);
 
   if (!isOpen) return null;
 
@@ -74,12 +75,11 @@ export const ShareModal = ({
           <FeedbackMessage error={sharing.error} success={sharing.success} />
         </div>
       )}
-      <InheritedNotice
-        inheritedFrom={sharing.inheritedFrom}
-        itemOwner={metadata.owner || ""}
-        isOptedOut={sharing.isOptedOut}
+      <FollowFolder
+        folder={sharing.sharedParent}
+        isFollowing={sharing.isFollowing}
         isLoading={sharing.isLoading}
-        onToggle={sharing.handleOptOut}
+        onToggle={sharing.handleFollow}
       />
       <PeopleSection
         sharees={sharing.users.filter(({ username }) => sharing.currentSharing.includes(username))}
@@ -94,9 +94,11 @@ export const ShareModal = ({
         searchQuery={sharing.searchQuery}
         setSearchQuery={sharing.setSearchQuery}
         isLoading={sharing.isLoading}
+        isLocked={sharing.isFollowing}
       />
       <PublicLinkSection
         {...sharing}
+        isLocked={sharing.isFollowing}
         itemTitle={metadata.title}
         itemType={itemType}
       />

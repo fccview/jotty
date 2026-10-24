@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import { hiddenFindFilter, skippedDirs } from "@/app/_consts/files";
+import { skippedDirs } from "@/app/_consts/files";
 import {
   serverReadDir,
   serverReadFile,
@@ -17,13 +17,13 @@ import { dirUuids } from "@/app/_server/actions/share/category-info";
 import { orderByUuids } from "@/app/_utils/order-utils";
 import { parseMarkdownNote } from "./parsers";
 import { Note } from "@/app/_types";
-import { boxedShell } from "@/app/_utils/shell-utils";
 import { claimOf, claimUuid, lacksUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
 import { fillFrontmatters, frontmatterOf } from "@/app/_server/actions/lib/frontmatter-memo";
 import { summarizeNote } from "@/app/_utils/note-display-utils";
-import { STAT_PRINTF, parseStatLine, summaryMemo } from "@/app/_server/actions/lib/summary-memo";
+import { summaryMemo } from "@/app/_server/actions/lib/summary-memo";
+import { listingStats } from "@/app/_server/actions/lib/listing-stats";
 import { listingPatcher } from "@/app/_server/actions/lib/listing-patch";
 import { verifyListing } from "@/app/_server/actions/lib/listing-verify";
 
@@ -208,16 +208,8 @@ export const readNotesRecursively = async (
     metadataCache = metadataCache || new Map();
 
     try {
-      const excludeStr = hiddenFindFilter(allowArchived);
-      const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "${STAT_PRINTF}"`;
-      const statsOut = await boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
-        () => "",
-      );
-
-      statsOut.split("\n").forEach((line) => {
-        const parsed = parseStatLine(line);
-        if (parsed) statsCache!.set(parsed[0], parsed[1]);
-      });
+      const found = await listingStats(dir, allowArchived);
+      found.forEach((stat, filePath) => statsCache!.set(filePath, stat));
 
       await fillFrontmatters(statsCache!, metadataCache!);
     } catch (e) {

@@ -1502,12 +1502,12 @@
     "readOnly": "Read only",
     "byOwner": "shared by {user}",
     "mountStaysTop": "Shared folders stay at the top level",
-    "inheritedVia": "Shared via {category}, by {user}",
     "shareFolder": "Share this folder",
     "folderShareHint": "Everything in this folder, now and later, is shared with the people you pick.",
-    "optOut": "Keep this one private",
-    "optOutHint": "The folder stays shared, this item doesn't.",
-    "useInherited": "Follow the folder",
+    "followFolder": "Use the folder's sharing",
+    "followingHint": "Same people and permissions as {category}. Turn this off to change them for this one only.",
+    "customHint": "This one has its own list. Turning this on replaces it with the people on {category}.",
+    "cantDetach": "Someone on this folder can delete but not edit, and a single item can't store that. Change their access on the folder first.",
     "publicFolderWarning": "Anyone with the link can read everything in this folder, including anything you add later.",
     "readTip": "Read only: {users}",
     "writeTip": "Can edit: {users}",
@@ -1520,7 +1520,7 @@
     "confirmLeaveItem": "Remove your own access to \"{itemTitle}\"? It disappears from your sidebar and the owner has to share it again to give it back.",
     "confirmLeaveFolder": "Remove your own access to \"{categoryName}\", shared by {owner}? It disappears from your sidebar and {owner} has to share it again to give it back.",
     "canCreate": "Can Create",
-    "createHint": "Lets them add new items and move items into this folder.",
+    "createHint": "Lets them add new items and move items into this folder. New items follow this folder's edit and delete settings, so without edit they can add items but not change them.",
     "panelHint": "Pick who can open it and what they can do with it.",
     "addPeople": "Add people",
     "noOneYet": "You haven't shared this with anyone.",
@@ -1530,7 +1530,6 @@
     "loadFailed": "Couldn't load who this is shared with.",
     "sharedOk": "Shared.",
     "unsharedOk": "Access removed.",
-    "noPermissionsLeft": "You turned off every permission, so they no longer have access.",
     "nowPublic": "Anyone with the link can open it now.",
     "nowPrivate": "The public link no longer works.",
     "allRemoved": "Nobody else can open this now, and the public link is off."
@@ -1868,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Translations",
     "mcp": "MCP",
-    "templates": "Templates"
+    "templates": "Templates",
+    "sharing": "Sharing"
   },
   "notFound": {
     "title": "Page Not Found",

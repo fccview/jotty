@@ -159,6 +159,7 @@
     "page": "Seite",
     "pageOfPages": "{currentPage} von {totalPages}",
     "searchPlaceholder": "Notizen und Checklisten durchsuchen... (⌘K)",
+    "searchSidebarPlaceholder": "Notiz, Liste oder Ordner finden...",
     "system": "System",
     "errors": "Fehler",
     "statistics": "Statistiken",
@@ -432,7 +433,10 @@
     "noTagsFound": "Keine Tags gefunden",
     "searchTags": "Tags suchen...",
     "createNoteFailed": "Die Notiz konnte nicht erstellt werden",
-    "createCategoryFailed": "Die Kategorie konnte nicht erstellt werden, die Notiz wurde nicht angelegt"
+    "createCategoryFailed": "Die Kategorie konnte nicht erstellt werden, die Notiz wurde nicht angelegt",
+    "autosaveSaved": "Gespeichert",
+    "autosaveFailed": "Nicht gespeichert",
+    "autosaveFailedHint": "Server nicht erreichbar. Jotty versucht es erneut, wenn du weitertippst, den Tab wechselst oder den Editor schließt."
   },
   "checklists": {
     "sharedPubliclyBy": "Diese Aufgabenliste wird von {owner} öffentlich geteilt",
@@ -510,6 +514,21 @@
     "checkAll": "Alle abhaken",
     "uncheckAll": "Alle Haken entfernen",
     "clearAll": "Alle löschen",
+    "sort": "Sortieren",
+    "sortAscending": "A bis Z",
+    "sortDescending": "Z bis A",
+    "sortShuffle": "Mischen",
+    "sortName": "Name",
+    "sortCreated": "Erstellt",
+    "sortModified": "Geändert",
+    "sortNewest": "Neueste zuerst",
+    "sortOldest": "Älteste zuerst",
+    "undoSort": "Sortierung rückgängig",
+    "sortFailed": "Liste konnte nicht sortiert werden",
+    "undoSortFailed": "Sortierung konnte nicht rückgängig gemacht werden",
+    "sortKanban": "Nur einfache Checklisten können sortiert werden",
+    "sortStale": "Die Liste hat sich seit dem Sortieren geändert, daher geht das nicht mehr rückgängig",
+    "toggleFailed": "Ein Haken konnte nicht gespeichert werden, daher wurde die Liste neu geladen",
     "checkAllConfirmTitle": "Alle Einträge abhaken?",
     "checkAllConfirmMessage": "Möchtest du wirklich alle {count} Einträge und Untereinträge abhaken? Sie werden als erledigt markiert.",
     "uncheckAllConfirmTitle": "Alle Haken entfernen?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "Dieses Board teilen?",
     "assigneeShareMessage": "{user} kann dieses Board noch nicht sehen. Wenn du zuweist, wird es mit Bearbeitungsrechten geteilt.",
     "assigneeShareConfirm": "Teilen und zuweisen",
-    "assignFailed": "Zuweisung konnte nicht geändert werden"
+    "assignFailed": "Zuweisung konnte nicht geändert werden",
+    "cardPanes": "Aufgabenbereiche",
+    "paneTask": "Aufgabe",
+    "paneDetails": "Details"
   },
   "profile": {
     "userProfile": "Benutzer",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "Zeigt den formatierten Anfang jeder Notiz auf ihrer Karte.",
     "notesCompactModeDescription": "Nutzt beim Lesen und Bearbeiten von Notizen ein schmaleres Layout.",
     "kanbanColumnWidthDescription": "Lege eine eigene Breite für die Kanban-Statusspalten fest. Standardmäßig passen sich die Spalten dem verfügbaren Platz an.",
+    "enabled": "Aktiviert",
     "notesDetailsPanelDescription": "Zeigt Inhaltsverzeichnis, Tags und Links auf breiten Bildschirmen in einem Bereich neben der Notiz."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "Nur lesen",
     "byOwner": "geteilt von {user}",
     "mountStaysTop": "Geteilte Ordner bleiben auf der obersten Ebene",
-    "inheritedVia": "Geteilt über {category}, von {user}",
     "shareFolder": "Diesen Ordner teilen",
     "folderShareHint": "Alles in diesem Ordner, jetzt und später, wird mit den von dir gewählten Personen geteilt.",
-    "optOut": "Dieses Element privat halten",
-    "optOutHint": "Überschreibt die Ordnerfreigabe nur für dieses Element.",
-    "useInherited": "Dem Ordner folgen",
+    "followFolder": "Freigabe des Ordners verwenden",
+    "followingHint": "Dieselben Personen und Berechtigungen wie {category}. Schalte das aus, um sie nur hier zu ändern.",
+    "customHint": "Dieses Element hat eine eigene Liste. Wenn du das einschaltest, wird sie durch die Personen von {category} ersetzt.",
+    "cantDetach": "Jemand in diesem Ordner darf löschen, aber nicht bearbeiten, und ein einzelnes Element kann das nicht speichern. Ändere zuerst den Zugriff dieser Person auf den Ordner.",
     "publicFolderWarning": "Alles, was in diesen Ordner gelegt wird, ist sofort für jeden mit dem Link lesbar.",
     "readTip": "Nur lesen: {users}",
     "writeTip": "Kann bearbeiten: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "Deinen eigenen Zugriff auf \"{itemTitle}\" entfernen? Es verschwindet aus deiner Seitenleiste und der Eigentümer muss es erneut teilen.",
     "confirmLeaveFolder": "Deinen eigenen Zugriff auf \"{categoryName}\" von {owner} entfernen? Der Ordner verschwindet aus deiner Seitenleiste und {owner} muss ihn erneut teilen.",
     "canCreate": "Kann erstellen",
-    "createHint": "Erlaubt das Hinzufügen und Verschieben von Einträgen in diesen Ordner.",
+    "createHint": "Erlaubt das Hinzufügen und Verschieben von Einträgen in diesen Ordner. Neue Einträge übernehmen die Bearbeiten- und Löschen-Einstellungen des Ordners, ohne Bearbeiten können sie also Einträge hinzufügen, aber nicht ändern.",
     "panelHint": "Lege fest, wer es öffnen darf und was diese Person damit tun kann.",
     "addPeople": "Personen hinzufügen",
     "noOneYet": "Du hast das noch mit niemandem geteilt.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "Freigaben konnten nicht geladen werden.",
     "sharedOk": "Geteilt.",
     "unsharedOk": "Zugriff entfernt.",
-    "noPermissionsLeft": "Du hast alle Berechtigungen ausgeschaltet, also gibt es keinen Zugriff mehr.",
     "nowPublic": "Jeder mit dem Link kann es jetzt öffnen.",
     "nowPrivate": "Der öffentliche Link funktioniert nicht mehr.",
     "allRemoved": "Niemand sonst kann das jetzt öffnen, und der öffentliche Link ist aus."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "Übersetzungen",
     "mcp": "MCP",
-    "templates": "Vorlagen"
+    "templates": "Vorlagen",
+    "sharing": "Teilen"
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} hat einen {type}-Ordner mit dir geteilt",
     "sharingFolderMessage": "Öffnen, um „{folder}“ anzuzeigen",
     "mentionTitle": "{user} hat dich in einem Kommentar erwähnt",
-    "mentionMessage": "„{board}“"
+    "mentionMessage": "„{board}“",
+    "subtitle": "Freigaben, Erwähnungen, Zuweisungen und Erinnerungen landen hier.",
+    "unreadCount": "{count} ungelesen",
+    "allCaughtUp": "Alles erledigt",
+    "newGroup": "Neu",
+    "earlierGroup": "Früher",
+    "markRead": "Als gelesen markieren",
+    "emptyHint": "Wenn jemand etwas mit dir teilt, dich erwähnt oder dir etwas zuweist, erscheint es hier."
   },
   "relations": {
     "indexing": "Verknüpfungen werden indiziert...",

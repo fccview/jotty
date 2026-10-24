@@ -159,6 +159,7 @@
     "page": "페이지",
     "pageOfPages": "{currentPage} / {totalPages}",
     "searchPlaceholder": "노트 및 체크리스트 검색... (⌘K)",
+    "searchSidebarPlaceholder": "노트, 목록 또는 폴더 찾기...",
     "system": "시스템",
     "errors": "오료",
     "statistics": "통계",
@@ -432,7 +433,10 @@
     "noTagsFound": "태그가 없습니다",
     "searchTags": "태그 검색...",
     "createNoteFailed": "노트를 만들지 못했습니다",
-    "createCategoryFailed": "카테고리를 만들지 못해 노트도 만들어지지 않았습니다"
+    "createCategoryFailed": "카테고리를 만들지 못해 노트도 만들어지지 않았습니다",
+    "autosaveSaved": "저장됨",
+    "autosaveFailed": "저장 안 됨",
+    "autosaveFailedHint": "서버에 연결할 수 없습니다. 계속 입력하거나 탭을 바꾸거나 편집기를 닫으면 Jotty가 다시 시도합니다."
   },
   "checklists": {
     "sharedPubliclyBy": "{owner} 님이 공개로 공유한 체크리스트입니다",
@@ -510,6 +514,21 @@
     "checkAll": "모두 체크",
     "uncheckAll": "모두 체크 해제",
     "clearAll": "모두 지우기",
+    "sort": "정렬",
+    "sortAscending": "오름차순",
+    "sortDescending": "내림차순",
+    "sortShuffle": "섞기",
+    "sortName": "이름",
+    "sortCreated": "생성일",
+    "sortModified": "수정일",
+    "sortNewest": "최신순",
+    "sortOldest": "오래된순",
+    "undoSort": "정렬 취소",
+    "sortFailed": "목록을 정렬할 수 없습니다",
+    "undoSortFailed": "정렬을 취소할 수 없습니다",
+    "sortKanban": "단순 체크리스트만 정렬할 수 있습니다",
+    "sortStale": "정렬 이후 목록이 바뀌어서 취소할 수 없습니다",
+    "toggleFailed": "체크를 저장하지 못해 목록을 다시 불러왔습니다",
     "checkAllConfirmTitle": "모든 항목을 체크할까요?",
     "checkAllConfirmMessage": "{count}개의 모든 항목과 하위 항목을 체크하시겠습니까? 모두 완료로 표시됩니다.",
     "uncheckAllConfirmTitle": "모든 항목을 체크 해제할까요?",
@@ -695,7 +714,10 @@
     "assigneeShareTitle": "이 보드를 공유할까요?",
     "assigneeShareMessage": "{user}님은 아직 이 보드를 볼 수 없습니다. 할당하면 편집 권한으로 공유됩니다.",
     "assigneeShareConfirm": "공유하고 할당",
-    "assignFailed": "담당자를 변경할 수 없습니다"
+    "assignFailed": "담당자를 변경할 수 없습니다",
+    "cardPanes": "작업 섹션",
+    "paneTask": "작업",
+    "paneDetails": "세부 정보"
   },
   "profile": {
     "userProfile": "사용자",
@@ -1000,6 +1022,7 @@
     "notesCardPreviewDescription": "각 노트의 서식이 적용된 앞부분을 카드에 표시합니다.",
     "notesCompactModeDescription": "노트를 읽고 편집할 때 더 좁은 레이아웃을 사용합니다.",
     "kanbanColumnWidthDescription": "칸반 상태 열의 너비를 직접 지정합니다. 기본값은 사용 가능한 공간에 맞춰 열을 자동 조정합니다.",
+    "enabled": "활성화됨",
     "notesDetailsPanelDescription": "넓은 화면에서 노트 옆 패널에 목차, 태그, 링크를 표시합니다."
   },
   "admin": {
@@ -1479,12 +1502,12 @@
     "readOnly": "읽기 전용",
     "byOwner": "{user} 님이 공유함",
     "mountStaysTop": "공유 폴더는 최상위 수준에 유지됩니다",
-    "inheritedVia": "{user} 님이 {category} 를 통해 공유함",
     "shareFolder": "이 폴더 공유",
     "folderShareHint": "이 폴더에 있는 모든 항목은 지금도 앞으로도 선택한 사람들과 공유됩니다.",
-    "optOut": "이 항목은 비공개로 유지",
-    "optOutHint": "이 항목에만 폴더 공유 설정을 덮어씁니다.",
-    "useInherited": "폴더 설정 따르기",
+    "followFolder": "폴더 공유 설정 사용",
+    "followingHint": "{category}와 같은 사람과 권한입니다. 이 항목만 바꾸려면 끄세요.",
+    "customHint": "이 항목에는 자체 목록이 있습니다. 켜면 {category}의 사람들로 바뀝니다.",
+    "cantDetach": "이 폴더에 편집은 못 하고 삭제만 할 수 있는 사람이 있는데, 개별 항목에는 그 설정을 저장할 수 없습니다. 먼저 폴더에서 그 사람의 권한을 바꾸세요.",
     "publicFolderWarning": "이 폴더에 넣은 모든 항목은 링크가 있는 누구나 즉시 읽을 수 있습니다.",
     "readTip": "읽기 전용: {users}",
     "writeTip": "편집 가능: {users}",
@@ -1497,7 +1520,7 @@
     "confirmLeaveItem": "\"{itemTitle}\"에 대한 내 접근 권한을 제거할까요? 사이드바에서 사라지며 소유자가 다시 공유해야 합니다.",
     "confirmLeaveFolder": "{owner}님이 공유한 \"{categoryName}\"에 대한 내 접근 권한을 제거할까요? 사이드바에서 사라지며 {owner}님이 다시 공유해야 합니다.",
     "canCreate": "생성 가능",
-    "createHint": "이 폴더에 항목을 추가하거나 옮길 수 있습니다.",
+    "createHint": "이 폴더에 새 항목을 추가하거나 항목을 옮길 수 있습니다. 새 항목은 이 폴더의 편집 및 삭제 설정을 따르므로, 편집 권한이 없으면 항목을 추가할 수는 있지만 변경할 수는 없습니다.",
     "panelHint": "누가 열 수 있고 무엇을 할 수 있는지 고르세요.",
     "addPeople": "사람 추가",
     "noOneYet": "아직 아무와도 공유하지 않았어요.",
@@ -1507,7 +1530,6 @@
     "loadFailed": "공유 정보를 불러오지 못했어요.",
     "sharedOk": "공유됨.",
     "unsharedOk": "접근 권한을 제거했어요.",
-    "noPermissionsLeft": "모든 권한을 껐기 때문에 더 이상 접근할 수 없어요.",
     "nowPublic": "이제 링크가 있는 누구나 열 수 있어요.",
     "nowPrivate": "공개 링크가 더 이상 작동하지 않아요.",
     "allRemoved": "이제 다른 사람은 열 수 없고 공개 링크도 꺼졌어요."
@@ -1845,7 +1867,8 @@
     "ldap": "LDAP",
     "translations": "번역",
     "mcp": "MCP",
-    "templates": "템플릿"
+    "templates": "템플릿",
+    "sharing": "공유"
   },
   "notFound": {
     "title": "페이지를 찾을 수 없습니다",
@@ -1869,7 +1892,14 @@
     "sharingFolderTitle": "{user} 님이 {type} 폴더를 공유했습니다",
     "sharingFolderMessage": "\"{folder}\" 보려면 열기",
     "mentionTitle": "{user}님이 댓글에서 회원님을 언급했습니다",
-    "mentionMessage": "\"{board}\""
+    "mentionMessage": "\"{board}\"",
+    "subtitle": "공유, 멘션, 할당, 리마인더가 여기에 표시됩니다.",
+    "unreadCount": "{count}개 읽지 않음",
+    "allCaughtUp": "모두 확인했습니다",
+    "newGroup": "새 알림",
+    "earlierGroup": "이전",
+    "markRead": "읽음으로 표시",
+    "emptyHint": "누군가 공유하거나, 멘션하거나, 무언가를 할당하면 여기에 표시됩니다."
   },
   "relations": {
     "indexing": "연결 관계 인덱싱 중...",
