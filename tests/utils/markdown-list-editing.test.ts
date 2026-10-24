@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   handleListEnter,
   indentListItem,
+  mapPosition,
 } from "@/app/_utils/markdown-editor-utils";
 
 const CURSOR = "|";
@@ -93,5 +94,17 @@ describe("markdown list editing", () => {
       ta.setSelectionRange(0, 7);
       expect(indentListItem(ta)).toBeNull();
     });
+  });
+});
+
+describe("mapPosition", () => {
+  it.each([
+    ["abcdef", "abXcdef", 1, 1],
+    ["abcdef", "abXcdef", 4, 5],
+    ["abcdef", "abef", 5, 3],
+    ["abcdef", "abef", 3, 2],
+    ["line one\nline two", "line one\nline two!", 4, 4],
+  ])("should map a caret through %s -> %s", (prev, next, position, expected) => {
+    expect(mapPosition(prev, next, position)).toBe(expected);
   });
 });

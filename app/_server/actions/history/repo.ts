@@ -111,6 +111,7 @@ const gatekeeper = async <T>(
     const release = await lock(lockPath, {
       stale: LOCK_STALE_MS,
       retries: LOCK_RETRIES,
+      onCompromised: (error) => console.error("Lost the history lock while holding it:", error),
     });
 
     try {

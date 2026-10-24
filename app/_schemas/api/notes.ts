@@ -63,7 +63,20 @@ export const noteCreateBody = z.object({
   title: required("Title"),
   content: z.string().default(""),
   category: categoryField,
+  templateId: z
+    .string()
+    .optional()
+    .describe("Uuid of one of your templates to start from, see listTemplates. Leave content empty when you pass it. {{title}} and {{user}} in the template are filled in"),
 });
+
+export const templateSchema = z
+  .object({
+    id: z.string().describe("Template uuid, pass it as templateId when creating a note"),
+    title: z.string(),
+    encrypted: z.boolean().optional().describe("Encrypted templates can't be used to create notes"),
+    updatedAt: timestamp.optional(),
+  })
+  .register(apiNames, { id: "Template" });
 
 export const noteUpdateBody = z.object({
   title: z.string().optional(),

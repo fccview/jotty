@@ -121,13 +121,17 @@ const allFonts = (t: any): { name: string; value: string }[] => [
   { name: "Zapfino", value: "Zapfino, cursive" },
 ];
 
-export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
+const getCurrentFont = (editor: Editor) =>
+  editor
+    .getAttributes("fontFamily")
+    .style?.match(/font-family:\s*([^;]+)/)?.[1]
+    ?.trim() || "";
+
+export const FontFamilyMenu = ({ editor }: FontFamilyDropdownProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const t = useTranslations();
 
-  const currentStyle = editor.getAttributes("fontFamily").style;
-  const currentFont =
-    currentStyle?.match(/font-family:\s*([^;]+)/)?.[1]?.trim() || "";
+  const currentFont = getCurrentFont(editor);
 
   const filteredFonts = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -153,19 +157,8 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
     setSearchTerm("");
   };
 
-  const trigger = (
-    <Button
-      variant={currentFont ? "secondary" : "ghost"}
-      size="sm"
-      className="flex items-center gap-1"
-    >
-      <TextIcon className="h-4 w-4" />
-      <ArrowDown01Icon className="h-3 w-3" />
-    </Button>
-  );
-
   return (
-    <ToolbarDropdown trigger={trigger}>
+    <>
       <div className="p-2 border-b border-border">
         <div className="relative">
           <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -199,6 +192,30 @@ export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
           </div>
         )}
       </div>
+    </>
+  );
+};
+
+export const FontFamilyDropdown = ({ editor }: FontFamilyDropdownProps) => {
+  const t = useTranslations();
+  const currentFont = getCurrentFont(editor);
+
+  const trigger = (
+    <Button
+      variant={currentFont ? "secondary" : "ghost"}
+      size="sm"
+      onMouseDown={(e) => e.preventDefault()}
+      className="flex items-center gap-1"
+      title={t("editor.fontFamily")}
+    >
+      <TextIcon className="h-4 w-4" />
+      <ArrowDown01Icon className="h-3 w-3" />
+    </Button>
+  );
+
+  return (
+    <ToolbarDropdown trigger={trigger}>
+      <FontFamilyMenu editor={editor} />
     </ToolbarDropdown>
   );
 };

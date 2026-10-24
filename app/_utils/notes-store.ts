@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { NotePanelTabs } from "@/app/_consts/notes";
 
 interface NotesState {
-  showTOC: boolean;
-  setShowTOC: (show: boolean) => void;
+  panelTab: NotePanelTabs;
+  setPanelTab: (tab: NotePanelTabs) => void;
 
   showLineNumbers: boolean;
   setShowLineNumbers: (show: boolean) => void;
@@ -22,8 +23,8 @@ interface NotesState {
 export const useNotesStore = create<NotesState>()(
   persist(
     (set) => ({
-      showTOC: false,
-      setShowTOC: (show) => set({ showTOC: show }),
+      panelTab: NotePanelTabs.CONTENTS,
+      setPanelTab: (tab) => set({ panelTab: tab }),
 
       showLineNumbers: true,
       setShowLineNumbers: (show) => set({ showLineNumbers: show }),

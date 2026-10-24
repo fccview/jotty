@@ -34,7 +34,8 @@ import { updateAllChildren, findItem } from "@/app/_utils/item-tree-utils";
 import { isKanbanType } from "@/app/_types/enums";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { assigneeRefusal } from "@/app/_server/actions/kanban/assignee";
-import { UNKNOWN_STATUS, boardColumns } from "@/app/_consts/kanban";
+import { agentRefusal, normalAgent } from "@/app/_consts/agents";
+import { boardColumns, unknownStatus } from "@/app/_consts/kanban";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
@@ -79,6 +80,11 @@ const _editItem = async (
       const refusal = await assigneeRefusal(assignee, stored.uuid!);
       if (refusal) return { success: false, error: refusal };
     }
+
+    const agentRaw = formData.get("agent") as string | null;
+    const agent = agentRaw === null ? null : normalAgent(agentRaw);
+    const agentRefused = agentRefusal(agent ?? "");
+    if (agentRefused) return { success: false, error: agentRefused };
 
     const _updateParentBasedOnChildren = (parent: Item): Item => {
       if ((parent.children || []).length < 1) return parent;
@@ -132,6 +138,7 @@ const _editItem = async (
         ...(priority !== null && { priority: (priority || undefined) as KanbanPriority | undefined }),
         ...(score !== null && { score: score ? parseInt(score) : undefined }),
         ...(assignee !== null && { assignee: assignee || undefined }),
+        ...(agent !== null && { agent: agent || undefined }),
         ...(reminder !== null && {
           reminder: reminder ? JSON.parse(reminder) : undefined,
         }),
@@ -240,7 +247,7 @@ const _addItem = async (
       isKanbanType(stored.type) &&
       !boardColumns(stored.statuses).some((column) => column.id === status)
     ) {
-      return { success: false, error: UNKNOWN_STATUS };
+      return { success: false, error: unknownStatus(stored.statuses) };
     }
 
     let timeEntries: any[] = [];

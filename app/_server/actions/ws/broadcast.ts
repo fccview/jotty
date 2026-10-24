@@ -5,5 +5,9 @@ export async function broadcast(event: Omit<WsEvent, "connectionId">): Promise<v
     console.warn("[ws] broadcast called but __jottyBroadcast not set");
     return;
   }
-  globalThis.__jottyBroadcast(event);
+  try {
+    globalThis.__jottyBroadcast(event);
+  } catch (error) {
+    console.error("[ws] broadcast failed:", error);
+  }
 }

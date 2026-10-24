@@ -23,11 +23,15 @@ import {
   forgetItemFile,
   forgetItemTree,
   indexItemFile,
+  relinksSettled,
+} from "@/app/_server/actions/relations/indexer";
+import {
+  rebuildRelations,
   reconcileRelations,
   refreshItemPaths,
   refreshItems,
-} from "@/app/_server/actions/relations/indexer";
-import { throttledBatch } from "@/app/_server/actions/relations/watcher";
+} from "@/app/_server/actions/relations/night-shift";
+import { stopWatchingRelations, throttledBatch, watchRelations } from "@/app/_server/actions/relations/watcher";
 import { backlinksFor, graphFor, VisibleItem } from "@/app/_server/actions/relations/queries";
 import {
   closeRelationsDb,
@@ -35,7 +39,11 @@ import {
   setRelationsStatus,
 } from "@/app/_server/actions/relations/store";
 import { stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
-import { refreshWikilinks, wrapMention } from "@/app/_server/actions/relations/tidy";
+import { wrapMention } from "@/app/_server/actions/relations/tidy";
+import { pathUuid } from "@/app/_server/actions/lib/read-only";
+import { isLockedItem, lockOf } from "@/app/_server/actions/lib/unstamped";
+import { StampRefusals } from "@/app/_consts/identity";
+import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 
 const A = "aaaaaaaa-1111-4222-8333-944455556666";
 const B = "bbbbbbbb-1111-4222-8333-944455556666";
@@ -289,9 +297,10 @@ describe("relations", () => {
     });
   });
 
-  describe("wikilink bindings", () => {
+  describe("wikilink resolution", () => {
     const aPath = () => itemPath("notes", "alice", "a.md");
     const bPath = () => itemPath("notes", "alice", "b.md");
+    const cPath = () => itemPath("notes", "alice", "c.md");
     const all = () =>
       visibleOf([
         { uuid: A, title: "Alpha" },
@@ -299,37 +308,29 @@ describe("relations", () => {
         { uuid: C, title: "Plan" },
       ]);
 
-    it("keeps a wikilink on its target after the target is renamed", () => {
-      write(bPath(), note(B, "Plan", "target"));
-      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
-      write(bPath(), note(B, "Q3 plan", "renamed"));
-      write(aPath(), note(A, "Alpha", "see [[Plan]] again"));
-
-      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Q3 plan" }]);
-      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
-      expect(backlinksFor(A, visible).wikis).toEqual({ plan: B });
-    });
-
-    it("does not let a newer item with the same title steal the link", () => {
-      write(bPath(), note(B, "Plan", "old", OLD));
-      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
-      write(itemPath("notes", "alice", "c.md"), note(C, "Plan", "new", NEW));
-
-      expect(backlinksFor(B, all()).backlinks.map((item) => item.uuid)).toEqual([A]);
-      expect(backlinksFor(C, all()).backlinks).toEqual([]);
-    });
-
-    it("picks the oldest item when a title is ambiguous from the start", () => {
-      write(itemPath("notes", "alice", "c.md"), note(C, "Plan", "new", NEW));
-      write(bPath(), note(B, "Plan", "old", OLD));
+    it("settles an ambiguous title on the item whose path sorts first", () => {
+      write(cPath(), note(C, "Plan", "new", OLD));
+      write(bPath(), note(B, "Plan", "old", NEW));
       write(aPath(), note(A, "Alpha", "see [[Plan]]"));
 
       expect(backlinksFor(A, all()).wikis).toEqual({ plan: B });
     });
 
-    it("moves to the next match when the bound target is deleted", () => {
-      write(bPath(), note(B, "Plan", "old", OLD));
-      write(itemPath("notes", "alice", "c.md"), note(C, "Plan", "new", NEW));
+    it("hands a link to a same-titled item whose path sorts first, as a rebuild would", async () => {
+      write(cPath(), note(C, "Plan", "c"));
+      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
+      expect(backlinksFor(A, all()).wikis).toEqual({ plan: C });
+
+      write(bPath(), note(B, "Plan", "b"));
+      expect(backlinksFor(A, all()).wikis).toEqual({ plan: B });
+
+      await rebuildRelations();
+      expect(backlinksFor(A, all()).wikis).toEqual({ plan: B });
+    });
+
+    it("moves to the next match when the target is deleted", () => {
+      write(bPath(), note(B, "Plan", "b"));
+      write(cPath(), note(C, "Plan", "c"));
       write(aPath(), note(A, "Alpha", "see [[Plan]]"));
 
       forgetItemFile(bPath());
@@ -347,7 +348,7 @@ describe("relations", () => {
 
     it("retargets a link when its text is edited", () => {
       write(bPath(), note(B, "Plan", "b"));
-      write(itemPath("notes", "alice", "c.md"), note(C, "Trip", "c"));
+      write(cPath(), note(C, "Trip", "c"));
       write(aPath(), note(A, "Alpha", "see [[Plan]]"));
       write(aPath(), note(A, "Alpha", "see [[Trip]]"));
 
@@ -360,56 +361,118 @@ describe("relations", () => {
       expect(backlinksFor(C, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
     });
 
-    it("keeps bindings through a full rebuild", async () => {
-      write(bPath(), note(B, "Plan", "b"));
-      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
-      write(bPath(), note(B, "Renamed", "b"));
+    it("finds Obsidian targets by filename, path, extension and alias, and skips embeds", async () => {
+      const bare = (uuid: string, body: string, extra = "") => `---\nuuid: ${uuid}\n${extra}---\n\n${body}`;
+      write(itemPath("notes", "alice", "Projects/My Note.md"), bare(B, "# A different heading\nbody"));
+      write(itemPath("notes", "alice", "Archive/my-list.md"), bare(C, "body", "aliases:\n  - Shopping\n"));
+      write(
+        aPath(),
+        note(
+          A,
+          "Alpha",
+          "[[My Note]] [[projects/my note]] [[My Note.md]] [[my-list]] [[shopping|food]] ![[img.png]]",
+        ),
+      );
 
-      const { rebuildRelations } = await import("@/app/_server/actions/relations/indexer");
+      const wikis = backlinksFor(A, all()).wikis;
+      expect(wikis).toEqual({
+        "my note": B,
+        "projects/my note": B,
+        "my note.md": B,
+        "my-list": C,
+        shopping: C,
+      });
+
       await rebuildRelations();
+      expect(backlinksFor(A, all()).wikis).toEqual(wikis);
+    });
 
-      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Renamed" }]);
-      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
+    it("prefers a title over a filename", () => {
+      write(itemPath("notes", "alice", "plan.md"), note(B, "Budget", "b"));
+      write(cPath(), note(C, "Plan", "c"));
+      write(aPath(), note(A, "Alpha", "see [[plan]]"));
+
+      expect(backlinksFor(A, all()).wikis).toEqual({ plan: C });
     });
   });
 
-  describe("refreshWikilinks", () => {
-    it("rewrites renamed targets on save, keeping headings and aliases", () => {
-      write(bPath(), note(B, "Plan", "b"));
-      const body = "see [[Plan]], [[plan#Budget|the money]] and `[[Plan]]` in code";
-      write(aPath(), note(A, "Alpha", body));
-      write(bPath(), note(B, "Q3 plan", "b"));
-
-      const saved = refreshWikilinks(body, A);
-      expect(saved).toBe("see [[Q3 plan]], [[Q3 plan#Budget|the money]] and `[[Plan]]` in code");
-
-      write(aPath(), note(A, "Alpha", saved));
-      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Q3 plan" }]);
-      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
-      expect(backlinksFor(A, visible).wikis).toEqual({ "q3 plan": B });
-    });
-
-    it("survives a stale save that still carries the old text", () => {
-      write(bPath(), note(B, "Plan", "b"));
-      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
-      write(bPath(), note(B, "Q3 plan", "b"));
-      write(aPath(), note(A, "Alpha", refreshWikilinks("see [[Plan]]", A)));
-      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
-
-      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Q3 plan" }]);
-      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
-    });
-
-    it("leaves notes alone when nothing was renamed", () => {
-      write(bPath(), note(B, "Plan", "b"));
-      write(aPath(), note(A, "Alpha", "see [[plan]]"));
-      expect(refreshWikilinks("see [[plan]]", A)).toBe("see [[plan]]");
-    });
-
+  describe("renaming a wikilink target", () => {
     const aPath = () => itemPath("notes", "alice", "a.md");
     const bPath = () => itemPath("notes", "alice", "b.md");
-  });
+    const twoNotes = () => visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Q3 plan" }]);
 
+    it("rewrites the notes that link to it, keeping headings, aliases and code", async () => {
+      write(bPath(), note(B, "Plan", "b"));
+      write(aPath(), note(A, "Alpha", "see [[Plan]], [[plan#Budget|the money]] and `[[Plan]]` in code"));
+      write(bPath(), note(B, "Q3 plan", "b"));
+      await relinksSettled();
+
+      expect(nodeFs.readFileSync(aPath(), "utf-8")).toContain(
+        "see [[Q3 plan]], [[Q3 plan#Budget|the money]] and `[[Plan]]` in code",
+      );
+      expect(backlinksFor(B, twoNotes()).backlinks.map((item) => item.uuid)).toEqual([A]);
+      expect(backlinksFor(A, twoNotes()).wikis).toEqual({ "q3 plan": B });
+      expect(mockBroadcast).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "note", action: "updated", entityId: A }),
+      );
+    });
+
+    it("rewrites checklist items and their descriptions", async () => {
+      const listPath = itemPath("checklists", "alice", "list.md");
+      write(bPath(), note(B, "Plan", "b"));
+      write(
+        listPath,
+        `---\nuuid: ${C}\ntitle: List\n---\n- [ ] call about [[Plan]] | description:see [[Plan∣the plan]]\n- [x] unrelated | time:0`,
+      );
+      write(bPath(), note(B, "Q3 plan", "b"));
+      await relinksSettled();
+
+      const saved = nodeFs.readFileSync(listPath, "utf-8");
+      expect(saved).toContain("- [ ] call about [[Q3 plan]] | description:see [[Q3 plan∣the plan]]");
+      expect(saved).toContain("- [x] unrelated | time:0");
+    });
+
+    it("writes a filename when the new title already belongs to an earlier item", async () => {
+      write(bPath(), note(B, "Plan", "b"));
+      write(itemPath("notes", "alice", "a-first.md"), note(C, "Q3 plan", "c"));
+      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
+      write(bPath(), note(B, "Q3 plan", "b"));
+      await relinksSettled();
+
+      expect(nodeFs.readFileSync(aPath(), "utf-8")).toContain("see [[b]]");
+      expect(backlinksFor(A, all3()).wikis).toEqual({ b: B });
+    });
+
+    it("follows a rename written before the old file is removed", async () => {
+      const oldPath = itemPath("notes", "alice", "plan.md");
+      write(oldPath, note(B, "Plan", "b"));
+      write(aPath(), note(A, "Alpha", "see [[Plan]]"));
+      write(itemPath("notes", "alice", "q3-plan.md"), note(B, "Q3 plan", "b"));
+      nodeFs.rmSync(oldPath);
+      forgetItemFile(oldPath);
+      await relinksSettled();
+
+      expect(nodeFs.readFileSync(aPath(), "utf-8")).toContain("see [[Q3 plan]]");
+    });
+
+    it("leaves files alone when only rebuilding", async () => {
+      const body = note(A, "Alpha", "see [[Plan]]");
+      nodeFs.mkdirSync(path.dirname(aPath()), { recursive: true });
+      nodeFs.writeFileSync(aPath(), body);
+      nodeFs.writeFileSync(bPath(), note(B, "Q3 plan", "b"));
+
+      await rebuildRelations();
+      await relinksSettled();
+      expect(nodeFs.readFileSync(aPath(), "utf-8")).toBe(body);
+    });
+
+    const all3 = () =>
+      visibleOf([
+        { uuid: A, title: "Alpha" },
+        { uuid: B, title: "Q3 plan" },
+        { uuid: C, title: "Q3 plan" },
+      ]);
+  });
   describe("unlinked mentions", () => {
     it("lists notes that name the item in plain text but do not link it", () => {
       write(itemPath("notes", "alice", "b.md"), note(B, "Milk Run", "target"));
@@ -475,6 +538,15 @@ describe("relations", () => {
         batch.stop();
       } finally {
         vi.useRealTimers();
+      }
+    });
+
+    it("watches a fresh instance whose item folders don't exist yet", () => {
+      try {
+        expect(watchRelations()).toBe(true);
+        expect(nodeFs.existsSync(path.join(root, "data", "notes"))).toBe(true);
+      } finally {
+        stopWatchingRelations();
       }
     });
 
@@ -589,24 +661,155 @@ describe("relations", () => {
     });
   });
 
-  describe("stampUuid", () => {
-    it("refuses to stamp an empty read instead of writing a stub", async () => {
-      const filePath = itemPath("notes", "alice", "empty.md");
-      nodeFs.mkdirSync(path.dirname(filePath), { recursive: true });
-      nodeFs.writeFileSync(filePath, "");
+  describe("finding a file by uuid", () => {
+    const notesDir = () => path.join(root, "data", "notes", "alice");
 
-      await expect(stampUuid(filePath)).resolves.toBeUndefined();
-      expect(nodeFs.readFileSync(filePath, "utf-8")).toBe("");
+    it("answers from the index when the file still claims the uuid", async () => {
+      const aPath = itemPath("notes", "alice", "Work/a.md");
+      write(aPath, note(A, "Alpha", "hi"));
+
+      expect(await grepFindFileByUuid(notesDir(), A)).toEqual({
+        filePath: aPath,
+        id: "a",
+        category: "Work",
+      });
     });
 
-    it("refuses to stamp frontmatter it could not parse", async () => {
-      const filePath = itemPath("notes", "alice", "broken.md");
-      const broken = "---\ntitle: [unclosed\nfoo: bar\n---\n\nprecious body";
-      nodeFs.mkdirSync(path.dirname(filePath), { recursive: true });
-      nodeFs.writeFileSync(filePath, broken);
+    it("ignores an index entry whose file now claims a different uuid", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      write(aPath, note(A, "Alpha", "hi"));
+      nodeFs.writeFileSync(aPath, note(B, "Alpha", "hi"));
 
-      await expect(stampUuid(filePath)).resolves.toBeUndefined();
-      expect(nodeFs.readFileSync(filePath, "utf-8")).toBe(broken);
+      expect((await grepFindFileByUuid(notesDir(), A))?.filePath).not.toBe(aPath);
+      expect((await grepFindFileByUuid(notesDir(), B))?.filePath).toBe(aPath);
+    });
+
+    it("falls back to scanning when the indexed file is gone", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      const moved = itemPath("notes", "alice", "Elsewhere/a.md");
+      write(aPath, note(A, "Alpha", "hi"));
+      nodeFs.mkdirSync(path.dirname(moved), { recursive: true });
+      nodeFs.renameSync(aPath, moved);
+
+      expect((await grepFindFileByUuid(notesDir(), A))?.filePath).toBe(moved);
+    });
+  });
+
+  describe("losing the index", () => {
+    const dbFile = () => process.env.JOTTY_RELATIONS_DB as string;
+    const later = () => vi.spyOn(Date, "now").mockReturnValue(Date.now() + 5_000);
+
+    it("recreates a deleted index on the next read and rebuilds it from the files", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      const bPath = itemPath("notes", "alice", "b.md");
+      write(aPath, note(A, "Alpha", `[Beta](/note/${B})`));
+      write(bPath, note(B, "Beta", "hi"));
+      const before = [aPath, bPath].map((file) => nodeFs.readFileSync(file, "utf-8"));
+
+      nodeFs.rmSync(dbFile());
+      later();
+
+      expect(relationsStatus()).toBe(RelationsStatus.BUILDING);
+      await reconcileRelations();
+      expect(relationsStatus()).toBe(RelationsStatus.READY);
+
+      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Beta" }]);
+      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
+      expect([aPath, bPath].map((file) => nodeFs.readFileSync(file, "utf-8"))).toEqual(before);
+    });
+
+    it("recreates and rebuilds a deleted index when the watcher reports a change first", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      const bPath = itemPath("notes", "alice", "b.md");
+      write(aPath, note(A, "Alpha", `[Beta](/note/${B})`));
+      write(bPath, note(B, "Beta", "hi"));
+
+      nodeFs.rmSync(dbFile());
+      later();
+      nodeFs.writeFileSync(bPath, note(B, "Beta", "edited outside jotty"));
+
+      await refreshItemPaths([bPath]);
+      await reconcileRelations();
+
+      expect(relationsStatus()).toBe(RelationsStatus.READY);
+      const visible = visibleOf([{ uuid: A, title: "Alpha" }, { uuid: B, title: "Beta" }]);
+      expect(backlinksFor(B, visible).backlinks.map((item) => item.uuid)).toEqual([A]);
+    });
+
+    it("opens a fresh index over wal files left behind by the old one", () => {
+      closeRelationsDb();
+      nodeFs.rmSync(dbFile(), { force: true });
+      nodeFs.writeFileSync(`${dbFile()}-wal`, "left over from a crash");
+      nodeFs.writeFileSync(`${dbFile()}-shm`, "left over from a crash");
+
+      expect(relationsStatus()).toBe(RelationsStatus.BUILDING);
+    });
+
+    it("keeps building when the index is swapped out halfway through a sweep", async () => {
+      const aPath = itemPath("notes", "alice", "a.md");
+      nodeFs.mkdirSync(path.dirname(aPath), { recursive: true });
+      nodeFs.writeFileSync(aPath, note(A, "Alpha", "hi"));
+      setRelationsStatus(RelationsStatus.BUILDING);
+
+      const real = mockFs.readFile.getMockImplementation()!;
+      mockFs.readFile.mockImplementationOnce(async (...args: unknown[]) => {
+        nodeFs.rmSync(dbFile());
+        later();
+        return (real as (...rest: unknown[]) => unknown)(...args);
+      });
+
+      await reconcileRelations();
+      expect(relationsStatus()).toBe(RelationsStatus.BUILDING);
+    });
+  });
+
+  describe("stampUuid", () => {
+    const untouched = async (name: string, content: string) => {
+      const filePath = itemPath("notes", "alice", name);
+      nodeFs.mkdirSync(path.dirname(filePath), { recursive: true });
+      nodeFs.writeFileSync(filePath, content);
+
+      await expect(stampUuid(filePath)).resolves.toBe(pathUuid(filePath));
+      expect(nodeFs.readFileSync(filePath, "utf-8")).toBe(content);
+    };
+
+    it("gives an empty read an id from its path instead of writing a stub", () =>
+      untouched("empty.md", ""));
+
+    it("gives frontmatter it could not parse an id from its path", () =>
+      untouched("broken.md", "---\ntitle: [unclosed\nfoo: bar\n---\n\nprecious body"));
+
+    it("leaves Obsidian frontmatter js-yaml rejects alone", async () => {
+      await untouched("colon.md", "---\ntitle: Meeting: weekly sync\n---\n\nbody");
+      await untouched("tabs.md", "---\ntags:\n\t- a\n\t- b\n---\n\nbody");
+    });
+
+    it("never overwrites a uuid field that is not a uuid", () =>
+      untouched("zettel.md", "---\nuuid: 202305121200\ntags: [x]\n---\n\nbody"));
+
+    it("locks an item it could not stamp until it has a real uuid", async () => {
+      const filePath = itemPath("notes", "alice", "locked.md");
+      nodeFs.mkdirSync(path.dirname(filePath), { recursive: true });
+      nodeFs.writeFileSync(filePath, "---\ntitle: Meeting: weekly sync\n---\n\nbody");
+
+      await expect(lockOf(filePath)).resolves.toBe(StampRefusals.UNPARSABLE);
+      await expect(isLockedItem(pathUuid(filePath), filePath)).resolves.toBe(true);
+
+      nodeFs.writeFileSync(filePath, `---\nuuid: ${pathUuid(filePath)}\ntitle: "Meeting: weekly sync"\n---\n\nbody`);
+      await expect(isLockedItem(pathUuid(filePath), filePath)).resolves.toBe(false);
+    });
+
+    it("fills an empty uuid field instead of adding a second one", async () => {
+      const filePath = itemPath("notes", "alice", "blank.md");
+      nodeFs.mkdirSync(path.dirname(filePath), { recursive: true });
+      nodeFs.writeFileSync(filePath, "---\nuuid:\naliases: []\n---\n\nbody");
+
+      const uuid = await stampUuid(filePath);
+      const written = nodeFs.readFileSync(filePath, "utf-8");
+
+      expect(uuid).not.toBe(pathUuid(filePath));
+      expect(written.match(/^uuid:/gm)).toHaveLength(1);
+      expect(written).toContain(`uuid: ${uuid}\naliases: []\n`);
     });
 
     it("stamps a uuid without touching the rest of the file", async () => {

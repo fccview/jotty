@@ -6,7 +6,9 @@ import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { USERS_FILE } from "@/app/_consts/files";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
+import { getUserModeDir, ensureDir, serverReadExisting } from "@/app/_server/actions/file";
+import { uuidOf } from "@/app/_server/actions/lib/read-only";
+import { lockOf } from "@/app/_server/actions/lib/unstamped";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
 import {
@@ -15,13 +17,25 @@ import {
   extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
-import { readListsRecursively, type ChecklistReadResult } from "./readers";
+import {
+  patchListListing,
+  readListsRecursively,
+  type ChecklistReadResult,
+  type ListReadOptions,
+} from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { checkAndRefreshRecurringItems } from "./parsers";
+import { countItems } from "@/app/_utils/checklist-count-utils";
+import { summarizeList } from "@/app/_utils/browse/list-summary-utils";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import {
+  getOrCompute,
+  metaCacheKey,
+  summaryCacheKey,
+} from "@/app/_server/actions/lib/metadata-cache";
 import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
+import { pinsFirst } from "@/app/_utils/pin-utils";
 
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
@@ -35,6 +49,8 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     offset,
     pinnedPaths,
     preserveOrder = false,
+    countOpenItems = false,
+    summarize = false,
   } = options;
 
   try {
@@ -56,37 +72,32 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     const layoutTiming = metadataOnly;
     const t1 = layoutTiming ? performance.now() : 0;
 
-    const canCache = metadataOnly && !allowArchived && !isRaw;
+    const isSummary = summarize && !metadataOnly && !isRaw;
+    const canCache = (metadataOnly || isSummary) && !allowArchived && !isRaw;
+    const cacheKeyOf = isSummary ? summaryCacheKey : metaCacheKey;
     const absUserDir = path.isAbsolute(userDir)
       ? userDir
       : path.join(process.cwd(), userDir);
     const ownCacheKey = canCache
-      ? metaCacheKey(Modes.CHECKLISTS, absUserDir)
+      ? cacheKeyOf(Modes.CHECKLISTS, absUserDir)
       : null;
 
+    const readOptions: ListReadOptions = {
+      allowArchived,
+      isRaw,
+      metadataOnly,
+      summarize: isSummary,
+    };
+    const readOwn = () => readListsRecursively(userDir, currentUser.username, readOptions);
+
     const cached: ChecklistReadResult[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, absUserDir, () =>
-        readListsRecursively(
-          userDir,
-          "",
-          currentUser.username,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-          undefined,
-          undefined,
-        ),
-      )
-      : await readListsRecursively(
-        userDir,
-        "",
-        currentUser.username,
-        allowArchived,
-        isRaw,
-        metadataOnly,
-        undefined,
-        undefined,
-      );
+      ? await getOrCompute(
+          ownCacheKey,
+          absUserDir,
+          readOwn,
+          patchListListing(absUserDir, currentUser.username, readOptions),
+        )
+      : await readOwn();
 
     let lists: ChecklistReadResult[] = dropClashes(cached, absUserDir);
 
@@ -115,28 +126,18 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         await ensureDir(ownerDir);
 
         const ownerCacheKey = canCache
-          ? metaCacheKey(Modes.CHECKLISTS, ownerDir)
+          ? cacheKeyOf(Modes.CHECKLISTS, ownerDir)
           : null;
 
+        const readOwner = () => readListsRecursively(ownerDir, mount.owner, readOptions);
         const ownerLists = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerDir, () =>
-            readListsRecursively(
+          ? await getOrCompute(
+              ownerCacheKey,
               ownerDir,
-              "",
-              mount.owner,
-              allowArchived,
-              isRaw,
-              metadataOnly,
-            ),
-          )
-          : await readListsRecursively(
-            ownerDir,
-            "",
-            mount.owner,
-            allowArchived,
-            isRaw,
-            metadataOnly,
-          );
+              readOwner,
+              patchListListing(ownerDir, mount.owner, readOptions),
+            )
+          : await readOwner();
 
         const shared = await mountedItems(
           Modes.CHECKLISTS,
@@ -182,6 +183,14 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       );
     }
 
+    const openItems = countOpenItems
+      ? lists.reduce((open, list) => {
+          const { total, completed } =
+            list.summary || countItems(list.items || [], list.type);
+          return open + total - completed;
+        }, 0)
+      : undefined;
+
     const limitNum = typeof limit === "number" && limit > 0 ? limit : undefined;
     const offsetNum = typeof offset === "number" && offset >= 0 ? offset : 0;
 
@@ -191,19 +200,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
       pinnedPaths.length > 0 &&
       limitNum !== undefined
     ) {
-      const pathMatches = (list: ChecklistReadResult, p: string) => {
-        const u = (list as { uuid?: string }).uuid;
-        return p === u || p.split("/").pop() === u;
-      };
-      const pinned: ChecklistReadResult[] = [];
-      for (const p of pinnedPaths) {
-        const found = lists.find((l) => pathMatches(l, p));
-        if (found) pinned.push(found);
-      }
-      const rest = lists.filter(
-        (l) => !pinnedPaths.some((p) => pathMatches(l, p)),
-      );
-      lists = [...pinned, ...rest].slice(0, limitNum);
+      lists = pinsFirst(lists, pinnedPaths, limitNum);
     } else if (limitNum !== undefined) {
       lists = lists.slice(offsetNum, offsetNum + limitNum);
     } else if (offsetNum > 0) {
@@ -233,7 +230,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
           const { checklist } = await checkAndRefreshRecurringItems(
             list as Checklist,
           );
-          return checklist;
+          return isSummary && !checklist.summary
+            ? { ...checklist, items: [], summary: summarizeList(checklist) }
+            : checklist;
         }),
       );
     }
@@ -245,7 +244,11 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         : undefined,
     }));
 
-    return { success: true, data: serializedLists as Checklist[] };
+    return {
+      success: true,
+      data: serializedLists as Checklist[],
+      ...(openItems !== undefined && { openItems }),
+    };
   } catch (error) {
     console.error("Error in getUserChecklists:", error);
     return { success: false, error: "Failed to fetch lists" };
@@ -257,7 +260,6 @@ export const getListById = async (
   username?: string,
 ): Promise<Checklist | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
-  const { serverReadFile } = await import("@/app/_server/actions/file");
 
   if (!username) {
     const { getUserByChecklistUuid } =
@@ -325,8 +327,9 @@ export const getListById = async (
     return undefined;
   }
 
-  const rawContent = await serverReadFile(filePath);
-  if (!rawContent) return undefined;
+  const rawContent = await serverReadExisting(filePath);
+  if (rawContent === null) return undefined;
+  const lockReason = await lockOf(filePath).catch(() => null);
 
   const stats = await fs.stat(filePath);
   const parsedData = parseChecklistContent(rawContent, listId);
@@ -334,7 +337,8 @@ export const getListById = async (
 
   return {
     id: listId,
-    uuid: parsedData.uuid || uuid,
+    uuid: uuidOf(parsedData.uuid) || uuid,
+    ...(lockReason && { lockReason }),
     title: parsedData.title,
     type: checklistType as Checklist["type"],
     items: parsedData.items,
@@ -348,6 +352,7 @@ export const getListById = async (
     ...(parsedData.sharedWith !== undefined && {
       sharedWith: parsedData.sharedWith,
     }),
+    ...(parsedData.specNote && { specNote: parsedData.specNote }),
     ...(parsedData.extraMetadata && {
       extraMetadata: parsedData.extraMetadata,
     }),
@@ -372,13 +377,10 @@ export const getAllLists = async (
       );
 
       try {
-        const userLists = await readListsRecursively(
-          userDir,
-          "",
-          user.username,
+        const userLists = await readListsRecursively(userDir, user.username, {
           allowArchived,
           isRaw,
-        );
+        });
         allLists.push(...(userLists as Checklist[]));
       } catch (error) {
         continue;

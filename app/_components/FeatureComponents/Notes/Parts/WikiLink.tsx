@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FileAddIcon } from "hugeicons-react";
@@ -11,6 +11,8 @@ import { createNote } from "@/app/_server/actions/note";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { useWikiHit } from "@/app/_hooks/useCatalog";
+import { wikiKey } from "@/app/_utils/wiki-match-utils";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 
 interface WikiLinkProps {
@@ -19,43 +21,9 @@ interface WikiLinkProps {
   showCategory?: boolean;
 }
 
-interface Candidate {
-  type: ItemTypes;
-  uuid?: string;
-  title?: string;
-  owner?: string;
-  createdAt?: string;
-}
-
-const titleKey = (title = "") => title.trim().replace(/\s+/g, " ").toLowerCase();
-
-const byAge = (a: Candidate, b: Candidate) =>
-  (a.createdAt || "").localeCompare(b.createdAt || "") ||
-  (a.uuid || "").localeCompare(b.uuid || "");
-
-export const useWikiMatch = (target: string): Candidate | null => {
-  const { notes, checklists, user } = useAppMode();
+export const useWikiMatch = (target: string) => {
   const { wikis } = useRelations();
-
-  return useMemo(() => {
-    const key = titleKey(target);
-    const candidates: Candidate[] = [
-      ...notes.map((item) => ({ ...item, type: ItemTypes.NOTE })),
-      ...checklists.map((item) => ({ ...item, type: ItemTypes.CHECKLIST })),
-    ].filter((item) => item.uuid);
-
-    const bound = wikis[key]?.toLowerCase();
-    if (bound) {
-      const pinned = candidates.find((item) => item.uuid!.toLowerCase() === bound);
-      if (pinned) return pinned;
-    }
-
-    return (
-      candidates
-        .filter((item) => (!item.owner || item.owner === user?.username) && titleKey(item.title) === key)
-        .sort(byAge)[0] || null
-    );
-  }, [notes, checklists, target, wikis, user?.username]);
+  return useWikiHit(target, wikis[wikiKey(target)]?.toLowerCase());
 };
 
 export const WikiLink = ({ target = "", label, showCategory = true }: WikiLinkProps) => {
@@ -67,7 +35,7 @@ export const WikiLink = ({ target = "", label, showCategory = true }: WikiLinkPr
 
   const match = useWikiMatch(target);
 
-  if (!user) return <span>{label || target}</span>;
+  if (!user || match === undefined) return <span>{label || target}</span>;
 
   if (match) {
     return (

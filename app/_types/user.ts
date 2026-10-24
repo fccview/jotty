@@ -1,10 +1,13 @@
-import { Modes } from "./enums";
+import { ToggleState, Modes } from "./enums";
 import { EncryptionSettings } from "./encryption";
 import type { SearchModes } from "@/app/_consts/search";
+import type { CHECKLIST_FILTERS, NOTE_FILTERS } from "@/app/_consts/browse";
+import type { HomeWidgetKey } from "@/app/_consts/home";
+import type { ViewMode } from "@/app/_consts/view-modes";
 
-export type EnableRecurrence = "enable" | "disable";
-export type ShowCompletedSuggestions = "enable" | "disable";
-export type ShowChecklistEmojis = "enable" | "disable";
+export type EnableRecurrence = `${ToggleState}`;
+export type ShowCompletedSuggestions = `${ToggleState}`;
+export type ShowChecklistEmojis = `${ToggleState}`;
 export type ImageSyntax = "html" | "markdown";
 export type TableSyntax = "html" | "markdown";
 export type NotesDefaultEditor = "wysiwyg" | "markdown";
@@ -29,25 +32,22 @@ export type PreferredDateFormat =
 export type PreferredTimeFormat = "12-hours" | "24-hours" | "system";
 export type FirstDayOfWeek = "sunday" | "monday" | "saturday";
 export type Handedness = "right-handed" | "left-handed";
-export type DisableRichEditor = "enable" | "disable";
-export type DefaultChecklistFilter =
-  | "all"
-  | "completed"
-  | "incomplete"
-  | "pinned"
-  | "task"
-  | "simple";
-export type DefaultNoteFilter = "all" | "recent" | "pinned";
-export type QuickCreateNotes = "enable" | "disable";
-export type HideConnectionIndicator = "enable" | "disable";
-export type HideStatusOnCards = "enable" | "disable";
-export type HideMobileStatusDropdown = "enable" | "disable";
-export type HideTimeTrackingOnCards = "enable" | "disable";
+export type DisableRichEditor = `${ToggleState}`;
+export type DefaultChecklistFilter = (typeof CHECKLIST_FILTERS)[number];
+export type DefaultNoteFilter = (typeof NOTE_FILTERS)[number];
+export type QuickCreateNotes = `${ToggleState}`;
+export type HideConnectionIndicator = `${ToggleState}`;
+export type HideStatusOnCards = `${ToggleState}`;
+export type HideMobileStatusDropdown = `${ToggleState}`;
+export type HideTimeTrackingOnCards = `${ToggleState}`;
 export type CodeBlockStyle = "default" | "themed";
 export type ChecklistItemClickAction = "toggle" | "edit";
 export type NewItemInsertion = "top" | "bottom";
+export type NotesCardPreview = `${ToggleState}`;
+export type NotesCompactMode = `${ToggleState}`;
+export type NotesDetailsPanel = `${ToggleState}`;
 
-export interface User {
+export interface User extends Partial<Record<HomeWidgetKey, ToggleState>> {
   username: string;
   passwordHash: string;
   isAdmin: boolean;
@@ -63,6 +63,13 @@ export interface User {
   notesAutoSaveInterval?: NotesAutoSaveInterval;
   notesDefaultEditor?: NotesDefaultEditor;
   notesDefaultMode?: NotesDefaultMode;
+  notesFontSize?: number;
+  notesCardPreview?: NotesCardPreview;
+  notesCompactMode?: NotesCompactMode;
+  notesDetailsPanel?: NotesDetailsPanel;
+  preferredBorderRadius?: number;
+  kanbanColumnWidth?: number;
+  browseViewMode?: ViewMode;
   pinnedLists?: string[];
   pinnedNotes?: string[];
   enableRecurrence?: EnableRecurrence;
@@ -105,6 +112,8 @@ export interface Session {
   isCurrent: boolean;
   loginType?: "local" | "sso" | "pending-mfa" | "ldap";
 }
+
+export type UserSettingsPatch = { [K in keyof User]?: User[K] | null };
 
 export type SanitisedUser = Omit<
   User,

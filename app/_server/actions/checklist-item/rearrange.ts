@@ -7,6 +7,7 @@ import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
+import { numberTree } from "@/app/_utils/checklist-sort-utils";
 import { DropPosition, ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { Checklist, Item } from "@/app/_types";
 
@@ -44,15 +45,6 @@ const _isDescendant = (ancestorId: string, targetId: string, items: Item[]): boo
   return ancestor ? walk(ancestor.item) : false;
 };
 
-const _stampOrder = (items: Item[]) =>
-  items.forEach((item, i) => {
-    item.order = i;
-    if (item.children) _stampOrder(item.children);
-  });
-
-const _cloneTree = (items: Item[]): Item[] =>
-  items.map((item) => ({ ...item, children: item.children ? _cloneTree(item.children) : undefined }));
-
 const _move = (items: Item[], move: ItemMove): Rearranged => {
   if (move.activeItemId === move.overItemId) return Rearranged.UNCHANGED;
   if (_isDescendant(move.activeItemId, move.overItemId, items)) return Rearranged.UNCHANGED;
@@ -70,11 +62,10 @@ const _move = (items: Item[], move: ItemMove): Rearranged => {
     over.siblings.splice(move.position === DropPosition.AFTER ? landing + 1 : landing, 0, active.item);
   }
 
-  _stampOrder(items);
   return Rearranged.MOVED;
 };
 
-const _announce = async (list: Checklist, username: string) => {
+export const announceList = async (list: Checklist, username: string) => {
   try {
     revalidatePath("/");
     revalidatePath(`/checklist/${list.uuid}`);
@@ -84,23 +75,55 @@ const _announce = async (list: Checklist, username: string) => {
   await broadcast({ type: "checklist", action: "updated", entityId: list.uuid, username });
 };
 
-export const rearrangeItems = (username: string, move: ItemMove): Promise<Rearranged> =>
-  runQueued(itemLane(Modes.CHECKLISTS, move.listUuid), async () => {
-    const list = await getListById(move.listUuid, username);
-    if (!list) return Rearranged.NO_LIST;
+export interface ListPlan<T> {
+  outcome: T;
+  write?: Checklist;
+}
+
+export interface ListRefusals<T> {
+  missing: T;
+  forbidden: T;
+}
+
+export const withItems = (list: Checklist, items: Item[]): Checklist => ({
+  ...list,
+  items,
+  updatedAt: new Date().toISOString(),
+});
+
+export const rewriteList = <T>(
+  username: string,
+  uuid: string,
+  refusals: ListRefusals<T>,
+  plan: (list: Checklist) => ListPlan<T>,
+): Promise<T> =>
+  runQueued(itemLane(Modes.CHECKLISTS, uuid), async () => {
+    const list = await getListById(uuid, username);
+    if (!list) return refusals.missing;
 
     if (!(await canReach(list.uuid, ItemTypes.CHECKLIST, username, PermissionTypes.EDIT))) {
-      return Rearranged.FORBIDDEN;
+      return refusals.forbidden;
     }
 
-    const items = _cloneTree(list.items || []);
-    const outcome = _move(items, move);
-    if (outcome !== Rearranged.MOVED) return outcome;
+    const { outcome, write } = plan(list);
+    if (!write) return outcome;
 
     const filePath = await diskPath(Modes.CHECKLISTS, username, list);
     await ensureDir(path.dirname(filePath));
-    await serverWriteFile(filePath, listToMarkdown({ ...list, items, updatedAt: new Date().toISOString() }));
-    await _announce(list, username);
+    await serverWriteFile(filePath, listToMarkdown(write));
+    await announceList(list, username);
 
-    return Rearranged.MOVED;
+    return outcome;
+  });
+
+const MOVE_REFUSALS: ListRefusals<Rearranged> = {
+  missing: Rearranged.NO_LIST,
+  forbidden: Rearranged.FORBIDDEN,
+};
+
+export const rearrangeItems = (username: string, move: ItemMove): Promise<Rearranged> =>
+  rewriteList(username, move.listUuid, MOVE_REFUSALS, (list) => {
+    const items = numberTree(list.items || []);
+    const outcome = _move(items, move);
+    return outcome === Rearranged.MOVED ? { outcome, write: withItems(list, numberTree(items)) } : { outcome };
   });

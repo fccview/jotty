@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
-import { ChecklistsTypes, DropPosition, KanbanPriorityLevel } from "@/app/_types/enums";
+import { ChecklistsTypes, DropPosition, ItemSort, KanbanPriorityLevel, SortDirection } from "@/app/_types/enums";
 import { ListView, categoryField, pageFields, required, searchQuery, timestamp, uuidParam } from "./common";
 import { apiItemSchema, checklistTypeSchema, itemIndexParam, timeEntrySchema } from "./items";
 
@@ -8,6 +8,8 @@ const TYPE_REFUSAL = "Type must be 'simple' or 'kanban'";
 const PRIORITY_REFUSAL = `'priority' must be one of: ${Object.values(KanbanPriorityLevel).join(", ")}`;
 const REORDER_REFUSAL = "'activeItemId' and 'overItemId' are required";
 const POSITION_REFUSAL = "'position' must be 'before' or 'after'";
+const SORT_REFUSAL = `'sort' must be one of: ${Object.values(ItemSort).join(", ")}`;
+const DIRECTION_REFUSAL = "'direction' must be 'asc' or 'desc'";
 const EMPTY_PATCH = "Provide at least one field to update";
 
 const mustBeString = (field: string) =>
@@ -96,6 +98,14 @@ export const itemReorderBody = z.object({
     .default(DropPosition.BEFORE)
     .describe("Side of overItemId to land on, ignored when isDropInto is true"),
   isDropInto: z.boolean().default(false).describe("Make it the last child of overItemId"),
+});
+
+export const itemSortBody = z.object({
+  sort: z.enum(ItemSort, { error: SORT_REFUSAL }).describe("alphabetical orders by text, created and modified by the item's timestamps, shuffle gives a new random order"),
+  direction: z
+    .enum(SortDirection, { error: DIRECTION_REFUSAL })
+    .default(SortDirection.ASC)
+    .describe("asc is A to Z or oldest first, desc is Z to A or newest first. Ignored by shuffle"),
 });
 
 export const itemCreatedSchema = z.object({

@@ -48,6 +48,7 @@ Next.js 16 App Router, React 19, TypeScript, Tailwind 3, Zustand 5, Tiptap 3, `@
 ```
 app/
   api/                         REST. Auth via withApiAuth. Path ids are uuids.
+  api/ui/                      browser-only reads (sidebar, catalog, browse). Session auth. Not the REST contract.
   (loggedInRoutes)/            notes, checklists, kanban, tasks, settings, howto
     note/[uuid]/               canonical note page
     checklist/[uuid]/          canonical checklist page
@@ -94,7 +95,9 @@ Server Components fetch. Client Components mutate. Protected pages set `"force-d
 
 Server Actions return `Result<T>` (`{ success, data?, error? }`). Do not throw as control flow.
 
-`AppModeProvider` holds hydrated notes, checklists, user, settings, sharing. Zustand is local UI state only.
+`AppModeProvider` holds user, settings, sharing, library counts, the tag index and the first page of the sidebar. It does not hold every note or checklist, and nothing should put them back. The browser asks for what it shows: `askUi`, `ui-lookups` and `useCatalog` for lookups, `useServerBrowse` for paged lists. Zustand is local UI state only.
+
+Read-only lookups from the browser go through an `/api/ui` route handler, not a Server Action. Next runs one client's actions one at a time, so a search queued behind an autosave just sits there.
 
 After a write that another session should see: wait for the server, `broadcast()`, then `WebSocketProvider` runs `router.refresh()`. No optimistic updates.
 

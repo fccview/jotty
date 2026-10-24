@@ -19,7 +19,9 @@ import {
   shownAs,
   movePlan,
   refusalMessage,
+  reservedRefusal,
 } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { getListById } from "./queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
@@ -81,6 +83,10 @@ const _editList = async (actingUser: SanitisedUser, formData: FormData) => {
       currentList,
       shownCategory
     );
+
+    if (isMoving && isReservedCategory(destination.category)) {
+      return { error: await reservedRefusal(destination.category) };
+    }
 
     if (isMoving) {
       const verdict = await bouncer(

@@ -1,12 +1,9 @@
 "use client";
 
 import { plainItemText } from "@/app/_utils/item-href-utils";
-import { useState, useEffect, useMemo, useRef } from "react";
-import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
-import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Item, Checklist, KanbanPriority } from "@/app/_types";
+import { useState, useEffect, useMemo } from "react";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Item, Checklist, KanbanPriority, Result } from "@/app/_types";
 import {
   createSubItem,
   updateItem,
@@ -14,24 +11,30 @@ import {
   bulkToggleItems,
   updateItemStatus,
 } from "@/app/_server/actions/checklist-item";
-import { usersWithAccess } from "@/app/_server/actions/share/lookups";
-import { getUsers } from "@/app/_server/actions/users";
-import { FloppyDiskIcon, MultiplicationSignIcon, ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
-import { KanbanPriorityLevel } from "@/app/_types/enums";
+import { KanbanCardPane, KanbanPriorityLevel } from "@/app/_types/enums";
 import { KanbanCardDetailProperties } from "./KanbanCardDetailProperties";
+import { KanbanAssigneePicker } from "./KanbanAssigneePicker";
+import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { KanbanCardDetailSubtasks } from "./KanbanCardDetailSubtasks";
 import { KanbanCardDetailComments } from "./KanbanCardDetailComments";
+import { KanbanCardDescription } from "./KanbanCardDescription";
+import { KanbanCardHistory } from "./KanbanCardHistory";
+import { PanelTabs } from "@/app/_components/GlobalComponents/Tabs/PanelTabs";
+import { Comment02Icon, SlidersHorizontalIcon, TaskDaily01Icon } from "@hugeicons/core-free-icons";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { TimeEntriesModal } from "./TimeEntriesModal";
-import { TaskDescriptionEditor } from "./TaskDescriptionEditor";
-import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
+import { useBoardPeople } from "@/app/_hooks/kanban/useBoardPeople";
+import { useAssignee } from "@/app/_hooks/kanban/useAssignee";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { formatTimerTime } from "@/app/_utils/kanban/index";
+import { toDateKey } from "@/app/_utils/kanban/calendar-utils";
+import { findItem } from "@/app/_utils/item-tree-utils";
+import { cn } from "@/app/_utils/global-utils";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 
 interface KanbanCardDetailProps {
@@ -45,35 +48,16 @@ interface KanbanCardDetailProps {
 const _sanitizeDescription = (text: string): string => text.replace(/\n/g, "\\n");
 const _unsanitizeDescription = (text: string): string => text.replace(/\\n/g, "\n");
 
-const _toLocalDateTimeValue = (isoStr: string): string => {
-  if (!isoStr) return "";
-  const d = new Date(isoStr);
-  if (isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
+const _allChildrenComplete = (children: Item[]): boolean =>
+  children.every((child) =>
+    child.completed && (!child.children?.length || _allChildrenComplete(child.children))
+  );
 
-const _toLocalDateValue = (isoStr: string): string => {
-  if (!isoStr) return "";
-  if (!isoStr.includes("T")) return isoStr;
-  const d = new Date(isoStr);
-  if (isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-};
+const DESKTOP_ONLY = "hidden lg:block";
 
-const _findItemInChecklist = (checklist: Checklist, itemId: string): Item | null => {
-  const search = (items: Item[]): Item | null => {
-    for (const item of items) {
-      if (item.id === itemId) return item;
-      if (item.children) {
-        const found = search(item.children);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-  return search(checklist.items);
+const _commentsClass = (pane: KanbanCardPane, isEditing: boolean) => {
+  if (pane === KanbanCardPane.COMMENTS) return isEditing ? "lg:hidden" : "";
+  return isEditing ? "hidden" : DESKTOP_ONLY;
 };
 
 export const KanbanCardDetail = ({
@@ -86,6 +70,7 @@ export const KanbanCardDetail = ({
   const checklistUuid = checklist.uuid || "";
   const t = useTranslations();
   const { permissions } = usePermissions();
+  const canEdit = !!permissions?.canEdit;
   const { user, usersPublicData } = useAppMode();
   const { formatDateTimeString, formatDateString, formatTimeString } =
     usePreferredDateTime();
@@ -93,12 +78,11 @@ export const KanbanCardDetail = ({
   const defaultStatusId =
     [...statuses].sort((a, b) => a.order - b.order)[0]?.id || "";
 
-  const [showHistory, setShowHistory] = useState(false);
+  const [pane, setPane] = useState(KanbanCardPane.TASK);
+  const [commentCount, setCommentCount] = useState(0);
   const [item, setItem] = useState(initialItem);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(initialItem.text);
-  const titleInputRef = useRef<HTMLInputElement>(null);
-  const titleLinks = useItemLinkSuggestions(editText, setEditText, titleInputRef);
   const [editDescription, setEditDescription] = useState(_unsanitizeDescription(initialItem.description || ""));
   const [scoreInput, setScoreInput] = useState(initialItem.score?.toString() || "");
   const [reminderInput, setReminderInput] = useState(initialItem.reminder?.datetime || "");
@@ -106,10 +90,7 @@ export const KanbanCardDetail = ({
   const [startDateInput, setStartDateInput] = useState(initialItem.startDate || "");
   const [priorityInput, setPriorityInput] = useState<KanbanPriority>(initialItem.priority || KanbanPriorityLevel.NONE);
   const [statusInput, setStatusInput] = useState(initialItem.status || defaultStatusId);
-  const [assigneeInput, setAssigneeInput] = useState(initialItem.assignee || "");
   const [estimatedTimeInput, setEstimatedTimeInput] = useState(initialItem.estimatedTime?.toString() || "");
-  const [availableUsers, setAvailableUsers] = useState<{ username: string; avatarUrl?: string }[]>([]);
-  const [boardIsShared, setBoardIsShared] = useState(false);
   const [showTimeEntriesModal, setShowTimeEntriesModal] = useState(false);
 
   const kanbanItemHook = useKanbanItem({
@@ -128,169 +109,105 @@ export const KanbanCardDetail = ({
     setStartDateInput(initialItem.startDate || "");
     setPriorityInput(initialItem.priority || KanbanPriorityLevel.NONE);
     setStatusInput(initialItem.status || defaultStatusId);
-    setAssigneeInput(initialItem.assignee || "");
     setEstimatedTimeInput(initialItem.estimatedTime?.toString() || "");
   }, [initialItem, defaultStatusId]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    if (!permissions?.canEdit) return;
-    const _loadUsers = async () => {
-      const sharedWithUsers = await usersWithAccess(checklistUuid);
-      const allUsers = await getUsers();
-
-      if (sharedWithUsers.length === 0) {
-        setBoardIsShared(false);
-        setAvailableUsers(
-          allUsers.map((u: { username: string; avatarUrl?: string }) => ({
-            username: u.username,
-            avatarUrl: u.avatarUrl,
-          })),
-        );
-        return;
-      }
-      setBoardIsShared(true);
-      const allowedUsernames = new Set(sharedWithUsers);
-      if (checklist.owner) allowedUsernames.add(checklist.owner);
-      const userMap = new Map<string, { username: string; avatarUrl?: string }>();
-      allUsers
-        .filter((u: { username: string }) => allowedUsernames.has(u.username))
-        .forEach((u: { username: string; avatarUrl?: string }) => {
-          userMap.set(u.username, { username: u.username, avatarUrl: u.avatarUrl });
-        });
-      allowedUsernames.forEach((username) => {
-        if (!userMap.has(username)) userMap.set(username, { username });
-      });
-      setAvailableUsers(Array.from(userMap.values()));
-    };
-    _loadUsers();
-  }, [isOpen, permissions?.canEdit, checklistUuid, checklist.owner]);
+  const { people, mentionable, reload: reloadPeople } = useBoardPeople({
+    uuid: checklistUuid,
+    owner: checklist.owner,
+    isOpen,
+    canEdit,
+  });
 
   const descriptionMarkdown = useMemo(() => {
     if (!item.description) return "";
     return _unsanitizeDescription(item.description);
   }, [item.description]);
 
-  const _saveField = async (fields: Record<string, string>) => {
+  const _autoCompleteStatus = useMemo(
+    () => (checklist.statuses || []).find((s) => s.autoComplete),
+    [checklist.statuses],
+  );
+
+  const _formFor = (fields: Record<string, string>) => {
     const formData = new FormData();
     formData.append("uuid", checklistUuid);
-    formData.append("itemId", item.id);
     Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
-    const result = await updateItem(checklist, formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) setItem(updatedItem);
-    }
+    return formData;
+  };
+
+  const _adopt = (result: Result<Checklist>): Item | null => {
+    if (!result.success || !result.data) return null;
+    onUpdate(result.data);
+    const updatedItem = findItem(result.data.items, item.id);
+    if (updatedItem) setItem(updatedItem);
+    return updatedItem;
+  };
+
+  const _saveField = async (fields: Record<string, string>) => {
+    const result = await updateItem(checklist, _formFor({ itemId: item.id, ...fields }));
+    _adopt(result);
+    return result;
+  };
+
+  const assignee = useAssignee({
+    uuid: checklistUuid,
+    people,
+    save: _saveField,
+    onShared: reloadPeople,
+  });
+
+  const _resetEdit = () => {
+    setEditText(item.text);
+    setEditDescription(_unsanitizeDescription(item.description || ""));
+    setIsEditing(false);
   };
 
   const handleSave = async () => {
-    const sanitizedDescription = _sanitizeDescription(editDescription.trim());
     const currentUnsanitized = _unsanitizeDescription(item.description || "");
     if (editText.trim() !== item.text || editDescription.trim() !== currentUnsanitized) {
-      const formData = new FormData();
-      formData.append("uuid", checklistUuid);
-      formData.append("itemId", item.id);
-      formData.append("text", editText.trim());
-      formData.append("description", sanitizedDescription);
-        const result = await updateItem(checklist, formData);
-      if (result.success && result.data) {
-        onUpdate(result.data);
-        const updatedItem = _findItemInChecklist(result.data, item.id);
-        if (updatedItem) {
-          setItem(updatedItem);
-          setEditText(updatedItem.text);
-          setEditDescription(_unsanitizeDescription(updatedItem.description || ""));
-        }
+      const updatedItem = _adopt(
+        await updateItem(
+          checklist,
+          _formFor({
+            itemId: item.id,
+            text: editText.trim(),
+            description: _sanitizeDescription(editDescription.trim()),
+          }),
+        ),
+      );
+      if (updatedItem) {
+        setEditText(updatedItem.text);
+        setEditDescription(_unsanitizeDescription(updatedItem.description || ""));
       }
     }
     setIsEditing(false);
   };
 
-  const handleAddSubtask = async (text: string) => {
-    const formData = new FormData();
-    formData.append("uuid", checklistUuid);
-    formData.append("parentId", item.id);
-    formData.append("text", text);
-    const result = await createSubItem(formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) setItem(updatedItem);
-    }
-  };
-
   const handleAddNestedSubtask = async (parentId: string, text: string) => {
-    const formData = new FormData();
-    formData.append("uuid", checklistUuid);
-    formData.append("parentId", parentId);
-    formData.append("text", text);
-    const result = await createSubItem(formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) setItem(updatedItem);
-    }
+    _adopt(await createSubItem(_formFor({ parentId, text })));
   };
 
-  const _allChildrenComplete = (children: Item[]): boolean =>
-    children.every((child) =>
-      child.completed && (!child.children?.length || _allChildrenComplete(child.children))
-    );
-
-  const _autoCompleteStatus = useMemo(() => {
-    const statuses = checklist.statuses || [];
-    return statuses.find((s) => s.autoComplete);
-  }, [checklist.statuses]);
+  const handleAddSubtask = (text: string) => handleAddNestedSubtask(item.id, text);
 
   const handleToggleSubtask = async (subtaskId: string, completed: boolean) => {
-    const formData = new FormData();
-    formData.append("uuid", checklistUuid);
-    formData.append("itemId", subtaskId);
-    formData.append("completed", completed.toString());
-    const result = await updateItem(checklist, formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-        if (_autoCompleteStatus && updatedItem.children?.length && _allChildrenComplete(updatedItem.children)) {
-          const statusFormData = new FormData();
-          statusFormData.append("uuid", checklistUuid);
-          statusFormData.append("itemId", item.id);
-          statusFormData.append("status", _autoCompleteStatus.id);
-          const statusResult = await updateItemStatus(statusFormData);
-          if (statusResult.success && statusResult.data) {
-            onUpdate(statusResult.data as import("@/app/_types").Checklist);
-          }
-        }
-      }
-    }
+    const updatedItem = _adopt(
+      await updateItem(checklist, _formFor({ itemId: subtaskId, completed: completed.toString() })),
+    );
+    if (!updatedItem || !_autoCompleteStatus) return;
+    if (!updatedItem.children?.length || !_allChildrenComplete(updatedItem.children)) return;
+    const statusItem = _adopt(
+      await updateItemStatus(_formFor({ itemId: item.id, status: _autoCompleteStatus.id })),
+    );
+    if (statusItem) setStatusInput(statusItem.status || _autoCompleteStatus.id);
   };
 
   const handleEditSubtask = async (subtaskId: string, text: string) => {
-    const formData = new FormData();
-    formData.append("uuid", checklistUuid);
-    formData.append("itemId", subtaskId);
-    formData.append("text", text);
-    const result = await updateItem(checklist, formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) setItem(updatedItem);
-    }
+    _adopt(await updateItem(checklist, _formFor({ itemId: subtaskId, text })));
   };
 
   const handleDeleteSubtask = async (subtaskId: string) => {
-    const formData = new FormData();
-    formData.append("uuid", checklistUuid);
-    formData.append("itemId", subtaskId);
-    const result = await deleteItem(formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) setItem(updatedItem);
-    }
+    _adopt(await deleteItem(_formFor({ itemId: subtaskId })));
   };
 
   const handleToggleAll = async (completed: boolean) => {
@@ -306,16 +223,14 @@ export const KanbanCardDetail = ({
     };
     const targetItems = _findTargetItems(item.children);
     if (!targetItems.length) return;
-    const formData = new FormData();
-    formData.append("uuid", checklistUuid);
-    formData.append("completed", String(completed));
-    formData.append("itemIds", JSON.stringify(targetItems.map((t) => t.id)));
-    const result = await bulkToggleItems(formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) setItem(updatedItem);
-    }
+    _adopt(
+      await bulkToggleItems(
+        _formFor({
+          completed: String(completed),
+          itemIds: JSON.stringify(targetItems.map((target) => target.id)),
+        }),
+      ),
+    );
   };
 
   const handlePriorityChange = async (priority: KanbanPriority) => {
@@ -325,19 +240,8 @@ export const KanbanCardDetail = ({
 
   const handleStatusChange = async (status: string) => {
     setStatusInput(status);
-    const formData = new FormData();
-    formData.append("uuid", checklistUuid);
-    formData.append("itemId", item.id);
-    formData.append("status", status);
-    const result = await updateItemStatus(formData);
-    if (result.success && result.data) {
-      onUpdate(result.data);
-      const updatedItem = _findItemInChecklist(result.data, item.id);
-      if (updatedItem) {
-        setItem(updatedItem);
-        setStatusInput(updatedItem.status || status);
-      }
-    }
+    const updatedItem = _adopt(await updateItemStatus(_formFor({ itemId: item.id, status })));
+    if (updatedItem) setStatusInput(updatedItem.status || status);
   };
 
   const handleScoreSave = async () => {
@@ -346,18 +250,17 @@ export const KanbanCardDetail = ({
     await _saveField({ score: score.toString() });
   };
 
-  const handleReminderSave = async () => {
+  const handleReminderChange = async (value: string) => {
+    setReminderInput(value);
     await _saveField({
-      reminder: reminderInput ? JSON.stringify({ datetime: new Date(reminderInput).toISOString() }) : "",
+      reminder: value ? JSON.stringify({ datetime: new Date(value).toISOString() }) : "",
     });
   };
 
-  const _dateKey = (value: string): string => _toLocalDateValue(value);
-
   const handleStartDateChange = async (value: string) => {
-    const key = _dateKey(value);
+    const key = toDateKey(value);
     setStartDateInput(key);
-    const targetKey = _dateKey(targetDateInput);
+    const targetKey = toDateKey(targetDateInput);
     if (key && targetKey && key > targetKey) {
       setTargetDateInput(key);
       await _saveField({ startDate: key, targetDate: key });
@@ -367,13 +270,13 @@ export const KanbanCardDetail = ({
   };
 
   const handleTargetDateChange = async (value: string) => {
-    const key = _dateKey(value);
+    const key = toDateKey(value);
     setTargetDateInput(key);
     if (!key) {
       await _saveField({ targetDate: "" });
       return;
     }
-    const startKey = _dateKey(startDateInput);
+    const startKey = toDateKey(startDateInput);
     if (startKey && startKey > key) {
       setStartDateInput(key);
       await _saveField({ targetDate: key, startDate: key });
@@ -387,6 +290,12 @@ export const KanbanCardDetail = ({
     if (isNaN(hours)) return;
     await _saveField({ estimatedTime: hours.toString() });
   };
+
+  const paneTabs = [
+    { id: KanbanCardPane.TASK, icon: TaskDaily01Icon, label: t("kanban.paneTask") },
+    { id: KanbanCardPane.DETAILS, icon: SlidersHorizontalIcon, label: t("kanban.paneDetails") },
+    { id: KanbanCardPane.COMMENTS, icon: Comment02Icon, label: t("comments.title"), count: commentCount },
+  ];
 
   const timeTrackingContent = (
     <div className="space-y-2">
@@ -429,166 +338,106 @@ export const KanbanCardDetail = ({
         isOpen={isOpen}
         onClose={onClose}
         title={plainItemText(item.text) || t("checklists.untitledTask")}
-        size="fullscreen"
+        variant={ModalVariant.WORKSPACE}
+        flush
         allowEnlarge
         defaultEnlarged
         storageKey="kanban-card-detail"
-        className="lg:!max-w-[80vw] lg:!w-full lg:!h-[80vh] lg:!max-h-[80vh] max-h-[min(90dvh,100dvh)]"
+        width={ModalWidth.XWIDE}
       >
-      <div className="kanban-card-detail-body flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:overflow-hidden">
-        <div className="min-w-0 space-y-4 p-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-          {isEditing ? (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  {t("kanban.itemTitle")}
-                </label>
-                <input
-                  ref={titleInputRef}
-                  type="text"
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all text-base"
-                  placeholder={t("checklists.enterTaskTitle")}
-                  onKeyDown={(e) => {
-                    if (titleLinks.handleKeyDown(e)) return;
-                    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSave(); }
-                    else if (e.key === "Escape") { e.preventDefault(); setEditText(item.text); setEditDescription(_unsanitizeDescription(item.description || "")); setIsEditing(false); }
-                  }}
-                />
-                <ItemLinkPopup suggestions={titleLinks} />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  {t("common.description")}
-                </label>
-                <TaskDescriptionEditor
-                  content={editDescription}
-                  onContentChange={setEditDescription}
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="ghost" onClick={() => { setEditText(item.text); setEditDescription(_unsanitizeDescription(item.description || "")); setIsEditing(false); }}>
-                  <MultiplicationSignIcon className="h-4 w-4 mr-2" />
-                  {t("common.cancel")}
-                </Button>
-                <Button onClick={handleSave}>
-                  <FloppyDiskIcon className="h-4 w-4 mr-2" />
-                  {t("admin.saveChanges")}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div
-              className={`bg-card border border-border rounded-jotty p-4 shadow-sm ${permissions?.canEdit ? "cursor-pointer" : ""}`}
-              onClick={() => permissions?.canEdit && setIsEditing(true)}
-            >
-              {descriptionMarkdown ? (
-                <UnifiedMarkdownRenderer
-                  content={descriptionMarkdown}
-                  className="text-card-foreground prose-sm max-w-none leading-relaxed"
-                  showStats={false}
-                />
-              ) : (
-                <p className="text-muted-foreground text-sm opacity-50">
-                  {t("checklists.noDescription")}
-                </p>
-              )}
-            </div>
-          )}
+      <div className="kanban-card-detail-body jotty-scrollable-content min-h-0 flex-1 overflow-y-auto overscroll-contain lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
+        <PanelTabs
+          tabs={paneTabs}
+          active={pane}
+          onSelect={setPane}
+          label={t("kanban.cardPanes")}
+          className="sticky top-0 z-10 bg-card lg:hidden"
+        />
 
-          {!isEditing && item.history && item.history.length > 0 && (
-            <div className="border-t border-border pt-4">
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors w-full"
-              >
-                {showHistory ? (
-                  <ArrowDown01Icon className="h-4 w-4" />
-                ) : (
-                  <ArrowRight01Icon className="h-4 w-4" />
-                )}
-                {t("common.statusChanges", { count: item.history.length })}
-              </button>
-              {showHistory && (
-                <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto">
-                  {item.history.map((change, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-jotty px-3 py-2"
-                    >
-                      <span className="font-medium text-foreground">{change.status}</span>
-                      <span className="text-muted-foreground/50">&bull;</span>
-                      <span>{change.user}</span>
-                      <span className="text-muted-foreground/50">&bull;</span>
-                      <span>{formatDateTimeString(change.timestamp)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        <div
+          role="tabpanel"
+          className={cn(
+            "min-w-0 px-6 py-4 lg:col-start-1 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto",
+            pane === KanbanCardPane.DETAILS && DESKTOP_ONLY,
           )}
+        >
+          <section className={cn("space-y-4", pane === KanbanCardPane.COMMENTS && DESKTOP_ONLY)}>
+            <KanbanCardDescription
+              markdown={descriptionMarkdown}
+              canEdit={canEdit}
+              isEditing={isEditing}
+              title={editText}
+              description={editDescription}
+              onTitleChange={setEditText}
+              onDescriptionChange={setEditDescription}
+              onEdit={() => setIsEditing(true)}
+              onSave={handleSave}
+              onCancel={_resetEdit}
+            />
 
-          {!isEditing && (
-            <div className="border-t border-border pt-4">
-              <KanbanCardDetailSubtasks
-                item={item}
-                checklist={checklist}
-                canEdit={!!permissions?.canEdit}
-                onToggle={handleToggleSubtask}
-                onEdit={handleEditSubtask}
-                onDelete={handleDeleteSubtask}
-                onAddSubtask={handleAddSubtask}
-                onAddNestedSubtask={handleAddNestedSubtask}
-                onToggleAll={handleToggleAll}
+            {!isEditing && !!item.history?.length && (
+              <KanbanCardHistory
+                history={item.history}
+                formatDateTimeString={formatDateTimeString}
               />
-            </div>
-          )}
+            )}
 
-          {!isEditing && (
-            <div className="border-t border-border pt-4">
-              <KanbanCardDetailComments
-                uuid={checklistUuid}
-                itemId={item.id}
-                canEdit={!!permissions?.canEdit}
-                currentUsername={user?.username || ""}
-                availableUsers={availableUsers}
-              />
-            </div>
-          )}
+            {!isEditing && (
+              <div className="border-t border-border pt-4">
+                <KanbanCardDetailSubtasks
+                  item={item}
+                  checklist={checklist}
+                  canEdit={canEdit}
+                  onToggle={handleToggleSubtask}
+                  onEdit={handleEditSubtask}
+                  onDelete={handleDeleteSubtask}
+                  onAddSubtask={handleAddSubtask}
+                  onAddNestedSubtask={handleAddNestedSubtask}
+                  onToggleAll={handleToggleAll}
+                />
+              </div>
+            )}
+          </section>
+
+          <section
+            className={cn(
+              "lg:mt-4 lg:border-t lg:border-border lg:pt-4",
+              _commentsClass(pane, isEditing),
+            )}
+          >
+            <KanbanCardDetailComments
+              uuid={checklistUuid}
+              itemId={item.id}
+              canEdit={canEdit}
+              currentUsername={user?.username || ""}
+              availableUsers={mentionable}
+              onCountChange={setCommentCount}
+            />
+          </section>
         </div>
 
-        <div className="overflow-y-auto p-4 lg:min-h-0 lg:w-80 lg:flex-shrink-0 lg:border-l lg:border-border lg:pl-6">
+        <aside
+          className={cn(
+            "px-6 py-4 lg:col-start-2 lg:row-start-1 lg:min-h-0 lg:overflow-y-auto lg:border-l lg:border-border",
+            pane !== KanbanCardPane.DETAILS && DESKTOP_ONLY,
+          )}
+        >
           <KanbanCardDetailProperties
             item={item}
             statuses={statuses}
             statusInput={statusInput}
             priorityInput={priorityInput}
             scoreInput={scoreInput}
-            assigneeInput={assigneeInput}
             reminderInput={reminderInput}
             targetDateInput={targetDateInput}
             startDateInput={startDateInput}
             estimatedTimeInput={estimatedTimeInput}
-            availableUsers={availableUsers}
-            canEdit={!!permissions?.canEdit}
-            isShared={boardIsShared}
-            toLocalDateTimeValue={_toLocalDateTimeValue}
-            toLocalDateValue={_toLocalDateValue}
+            canEdit={canEdit}
+            trackedSeconds={kanbanItemHook.totalTime + kanbanItemHook.currentTime}
             onPriorityChange={handlePriorityChange}
             onScoreChange={setScoreInput}
             onScoreSave={handleScoreSave}
-            onAssigneeChange={async (v) => {
-              setAssigneeInput(v);
-              await _saveField({ assignee: v });
-            }}
-            onReminderChange={async (v) => {
-              setReminderInput(v);
-              await _saveField({
-                reminder: v ? JSON.stringify({ datetime: new Date(v).toISOString() }) : "",
-              });
-            }}
-            onReminderSave={handleReminderSave}
+            onReminderChange={handleReminderChange}
             onTargetDateChange={handleTargetDateChange}
             onStartDateChange={handleStartDateChange}
             onEstimatedTimeChange={setEstimatedTimeInput}
@@ -596,10 +445,28 @@ export const KanbanCardDetail = ({
             formatDateTimeString={formatDateTimeString}
             onStatusChange={handleStatusChange}
             timeTracking={timeTrackingContent}
+            assigneePicker={
+              <KanbanAssigneePicker
+                checklist={checklist}
+                item={item}
+                people={people}
+                canShare={user?.username === checklist.owner || !!user?.isAdmin}
+                disabled={assignee.isSaving}
+                onPick={assignee.pick}
+              />
+            }
           />
-        </div>
+        </aside>
       </div>
       </Modal>
+      <ConfirmModal
+        isOpen={!!assignee.pendingShare}
+        onClose={assignee.cancelShare}
+        onConfirm={assignee.confirmShare}
+        title={t("kanban.assigneeShareTitle")}
+        message={t("kanban.assigneeShareMessage", { user: assignee.pendingShare || "" })}
+        confirmText={t("kanban.assigneeShareConfirm")}
+      />
     </>
   );
 };

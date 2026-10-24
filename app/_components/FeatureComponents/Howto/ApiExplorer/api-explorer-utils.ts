@@ -41,6 +41,7 @@ export const operationsOf = (spec: ExplorerSpec): Operation[] =>
 
 const REF_PREFIX = "#/components/schemas/";
 const MAX_DEPTH = 4;
+const MAX_VARIANT_HOPS = 16;
 
 
 
@@ -59,13 +60,18 @@ export const resolve = (spec: ExplorerSpec, schema?: JsonSchema): JsonSchema =>
 const _firstType = (schema: JsonSchema) =>
   Array.isArray(schema.type) ? schema.type[0] : schema.type;
 
-export const sampleOf = (spec: ExplorerSpec, raw?: JsonSchema, depth = 0): unknown => {
+export const sampleOf = (
+  spec: ExplorerSpec,
+  raw?: JsonSchema,
+  depth = 0,
+  hops = 0,
+): unknown => {
   const schema = resolve(spec, raw);
   if (schema.default !== undefined) return schema.default;
   if (schema.const !== undefined) return schema.const;
   if (schema.enum?.length) return schema.enum[0];
   const variant = schema.anyOf?.[0] ?? schema.oneOf?.[0];
-  if (variant) return sampleOf(spec, variant, depth);
+  if (variant && hops < MAX_VARIANT_HOPS) return sampleOf(spec, variant, depth, hops + 1);
   if (depth > MAX_DEPTH) return null;
 
   switch (_firstType(schema)) {

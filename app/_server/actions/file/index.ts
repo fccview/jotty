@@ -19,6 +19,12 @@ export interface OrderData {
   items?: string[];
 }
 
+const CORE_FILE_SEEDS: Record<string, string> = {
+  [USERS_FILE]: "[]",
+  [SESSIONS_FILE]: "{}",
+  [SESSION_DATA_FILE]: "{}",
+};
+
 export const getEnvOrFile = async (
   envVar: string,
   fileVar: string,
@@ -39,17 +45,10 @@ export const ensureCorDirsAndFiles = async (): Promise<{
   success: boolean;
   error?: string;
 }> => {
-  const coreDirAndFiles = {
-    dirs: [USERS_DIR],
-    files: [USERS_FILE, SESSIONS_FILE, SESSION_DATA_FILE],
-  };
-
   try {
-    for (const dir of coreDirAndFiles.dirs) {
-      await ensureDir(path.join(process.cwd(), dir));
-    }
-    for (const file of coreDirAndFiles.files) {
-      await ensureFile(path.join(process.cwd(), file));
+    await ensureDir(path.join(process.cwd(), USERS_DIR));
+    for (const [file, initial] of Object.entries(CORE_FILE_SEEDS)) {
+      await ensureFile(path.join(process.cwd(), file), initial);
     }
     return { success: true };
   } catch (error) {
@@ -66,11 +65,11 @@ export const ensureDir = async (dir: string) => {
   }
 };
 
-export const ensureFile = async (filePath: string) => {
+export const ensureFile = async (filePath: string, initial = "") => {
   try {
     await fs.access(filePath);
   } catch {
-    await fs.writeFile(filePath, "", "utf-8");
+    await fs.writeFile(filePath, initial, "utf-8");
   }
 };
 
@@ -144,6 +143,17 @@ export const serverReadFile = async (
     return (await fs.readFile(filePath, "utf-8")) || "";
   } catch (error) {
     return customReturn || "";
+  }
+};
+
+export const serverReadExisting = async (filePath: string): Promise<string | null> => {
+  try {
+    return await fs.readFile(filePath, "utf-8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") {
+      console.error("Could not read item file:", filePath, error);
+    }
+    return null;
   }
 };
 
@@ -255,6 +265,8 @@ const STAT_BATCH_SIZE = 4000;
 export interface FileStatsEntry {
   birthtime: Date;
   mtime: Date;
+  size?: number;
+  ctime?: Date;
 }
 
 export const getAllFileStats = async (
@@ -297,7 +309,7 @@ export const getAllFileStats = async (
                 s.birthtime.getTime() === 0 ? s.mtime : s.birthtime;
               return {
                 filePath,
-                entry: { birthtime, mtime: s.mtime },
+                entry: { birthtime, mtime: s.mtime, size: s.size, ctime: s.ctime },
               };
             } catch {
               return null;

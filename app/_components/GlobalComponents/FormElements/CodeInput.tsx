@@ -67,7 +67,7 @@ export const CodeInput = ({
     return (
         <div className="flex gap-2 justify-center" onPaste={handlePaste}>
             {values.map((value, index) => (
-                <div key={index} className="w-12">
+                <div key={index} className="w-12 min-w-0">
                     <Input
                         id={`code-${index}`}
                         type="text"

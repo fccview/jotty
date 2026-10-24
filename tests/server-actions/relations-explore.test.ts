@@ -27,6 +27,7 @@ vi.mock("@/app/_server/actions/checklist/queries", () => ({
 vi.mock("@/app/_server/actions/config", () => ({ getSettings: () => mockSettings() }));
 vi.mock("@/app/_server/actions/share/queries", () => ({
   canReach: (...args: unknown[]) => mockCanReach(...args),
+  isLockedUuid: async () => false,
 }));
 vi.mock("@/app/_server/actions/note/splice", () => ({
   spliceNote: (...args: unknown[]) => mockRewrite(...args),

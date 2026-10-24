@@ -1,3 +1,4 @@
+import { StampRefusals } from "@/app/_consts/identity";
 import { ItemTypes } from "./enums";
 import { SharingPermissions } from "./core";
 
@@ -75,7 +76,47 @@ export interface Item {
   priority?: KanbanPriority;
   score?: number;
   assignee?: string;
+  agent?: string;
   reminder?: KanbanReminder;
+}
+
+export interface ItemStub {
+  id: string;
+  text: string;
+  priority?: KanbanPriority;
+}
+
+export interface TickCell {
+  key: string;
+  label: string;
+  done: number;
+  size: number;
+}
+
+export interface ListTicks {
+  bucket: number;
+  cells: TickCell[];
+}
+
+export interface MiniColumn {
+  status: KanbanStatus;
+  count: number;
+  top: ItemStub[];
+}
+
+export interface ListSummary {
+  total: number;
+  completed: number;
+  isFinished: boolean;
+  hasTodo: boolean;
+  hasInProgress: boolean;
+  cards: number;
+  inProgress: number;
+  ticks: ListTicks;
+  open: ItemStub[];
+  columns: MiniColumn[];
+  assignees: string[];
+  seconds: number;
 }
 
 export interface List {
@@ -106,5 +147,8 @@ export interface Checklist {
   rawContent?: string;
   statuses?: KanbanStatus[];
   tags?: string[];
+  specNote?: string;
   extraMetadata?: Record<string, unknown>;
+  lockReason?: StampRefusals;
+  summary?: ListSummary;
 }

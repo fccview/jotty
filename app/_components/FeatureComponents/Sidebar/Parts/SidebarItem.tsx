@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import {
-  File02Icon,
-  CheckmarkSquare04Icon,
-  TaskDaily01Icon,
   PencilEdit02Icon,
-  PinIcon,
-  PinOffIcon,
   MoreHorizontalIcon,
   Archive02Icon,
   Delete03Icon,
@@ -18,10 +13,9 @@ import {
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn, itemHref as itemUrl, isPinnedEntry } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import { AppMode, Checklist, Note } from "@/app/_types";
-import { isKanbanType, ItemTypes, Modes } from "@/app/_types/enums";
-import { togglePin } from "@/app/_server/actions/dashboard";
-import { useState } from "react";
+import { AppMode, Checklist, Note, SanitisedUser } from "@/app/_types";
+import { ItemTypes, Modes } from "@/app/_types/enums";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
@@ -29,16 +23,20 @@ import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { deleteList } from "@/app/_server/actions/checklist";
 import { deleteNote } from "@/app/_server/actions/note";
 import { leaveItem } from "@/app/_server/actions/share/operations";
+import { DETACH_LOSSY } from "@/app/_consts/sharing";
+import { useToast } from "@/app/_providers/ToastProvider";
 import { capitalize } from "lodash";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
-import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
-import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
+import { usePinToggle } from "@/app/_hooks/usePinToggle";
+import { ItemShareMark } from "@/app/_components/GlobalComponents/Cards/Parts/ItemShareMark";
+import { ItemIcon } from "@/app/_components/GlobalComponents/Cards/Parts/ItemGlyph";
+import { PinStateIcon } from "@/app/_components/GlobalComponents/Cards/Parts/PinToggle";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/ShareModal";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
+import { useReturnPath } from "@/app/_hooks/useReturnPath";
 
 interface SidebarItemProps {
   item: Checklist | Note;
@@ -47,7 +45,7 @@ interface SidebarItemProps {
   onClose?: () => void;
   onEditItem?: (item: Checklist | Note) => void;
   style?: React.CSSProperties;
-  user?: any;
+  user?: SanitisedUser;
 }
 
 export const SidebarItem = ({
@@ -61,29 +59,24 @@ export const SidebarItem = ({
 }: SidebarItemProps) => {
   const t = useTranslations();
   const router = useRouter();
+  const { showToast } = useToast();
   const { checkNavigation, checkWouldBlock } = useNavigationGuard();
+  const returnPath = useReturnPath(`/?mode=${mode}`);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const { globalSharing, appSettings } = useAppMode();
-  const itemDetails = sharingInfo(globalSharing, item.uuid || "");
-
-  const isPubliclyShared = itemDetails.isPublic;
+  const itemRef = useRef<HTMLAnchorElement>(null);
+  const { appSettings } = useAppMode();
+  const shareMode = mode === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS;
   const isOwned = user?.username === item.owner;
   const isShareable = isOwned;
-  const canEdit = isOwned || item.permissions?.canEdit === true;
+  const isLocked = Boolean(item.lockReason);
+  const canEdit = !isLocked && (isOwned || item.permissions?.canEdit === true);
   const canDelete = isOwned || item.permissions?.canDelete === true;
-
-  const grants = shareGrants(
-    globalSharing,
-    item.uuid || "",
-    mode === Modes.NOTES ? Modes.NOTES : Modes.CHECKLISTS,
-  );
-
-  const [isTogglingPin, setIsTogglingPin] = useState<string | null>(null);
 
   const itemType =
     mode === Modes.NOTES ? ItemTypes.NOTE : ItemTypes.CHECKLIST;
+  const { toggle: togglePin, toggling } = usePinToggle(itemType);
   const itemHref = itemUrl(itemType, item.uuid!);
 
   const handleDeleteItem = async () => {
@@ -114,37 +107,27 @@ export const SidebarItem = ({
       router.refresh();
     } else {
       console.error("Failed to leave share:", result.error);
+      showToast({
+        type: "error",
+        title: t("common.error"),
+        message: t(
+          result.error === DETACH_LOSSY ? "sharing.cantLeave" : "sharing.leaveFailed",
+        ),
+      });
     }
 
     setShowLeaveModal(false);
   };
 
-  const handleTogglePin = async () => {
-    if (!user || isTogglingPin || !item.uuid) return;
-
-    setIsTogglingPin(item.uuid);
-    try {
-      const result = await togglePin(item.uuid, itemType);
-      if (result.success) {
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Failed to toggle pin:", error);
-    } finally {
-      setIsTogglingPin(null);
-    }
+  const handleTogglePin = () => {
+    if (user) togglePin(item.uuid);
   };
 
-  const isItemPinned = () => {
-    if (!user) return false;
-    const pinnedItems =
-      mode === Modes.CHECKLISTS ? user.pinnedLists : user.pinnedNotes;
-    if (!pinnedItems) return false;
-
-    return (pinnedItems as string[]).some(
-      (entry) => isPinnedEntry(entry, item.uuid),
-    );
-  };
+  const pinnedEntries =
+    mode === Modes.CHECKLISTS ? user?.pinnedLists : user?.pinnedNotes;
+  const isPinned = Boolean(
+    pinnedEntries?.some((entry) => isPinnedEntry(entry, item.uuid)),
+  );
 
   const editActions = [
     ...(onEditItem && canEdit
@@ -156,7 +139,7 @@ export const SidebarItem = ({
           },
         ]
       : []),
-    ...(isShareable
+    ...(isShareable && !isLocked
       ? [
           {
             label: t("sharing.share"),
@@ -194,14 +177,10 @@ export const SidebarItem = ({
     ...editActions,
     ...(editActions.length > 0 ? [{ type: "divider" as const }] : []),
     {
-      label: isItemPinned() ? t("common.unpinFromHome") : t("common.pinToHome"),
+      label: isPinned ? t("common.unpinFromHome") : t("common.pinToHome"),
       onClick: handleTogglePin,
-      icon: isItemPinned() ? (
-        <PinOffIcon className="h-4 w-4" />
-      ) : (
-        <PinIcon className="h-4 w-4" />
-      ),
-      disabled: isTogglingPin === item.uuid,
+      icon: <PinStateIcon isPinned={isPinned} className="h-4 w-4" />,
+      disabled: toggling === item.uuid || isLocked,
     },
     ...(item.category !== ARCHIVED_DIR_NAME && canEdit
       ? [
@@ -209,9 +188,11 @@ export const SidebarItem = ({
             label: t("common.archive"),
             onClick: async () => {
               const result = await toggleArchive(item, mode);
-              if (result.success) {
-                router.refresh();
+              if (!result.success) return;
+              if (isSelected) {
+                checkNavigation(() => router.push(returnPath));
               }
+              router.refresh();
             },
             icon: <Archive02Icon className="h-4 w-4" />,
           },
@@ -236,6 +217,7 @@ export const SidebarItem = ({
   return (
     <div className="flex items-center group/item" style={style}>
       <Link
+        ref={itemRef}
         href={itemHref}
         prefetch={false}
         onClick={handleClick}
@@ -247,32 +229,14 @@ export const SidebarItem = ({
             : "hover:bg-muted/50 text-foreground",
         )}
       >
-        {mode === Modes.NOTES ? (
-          <File02Icon
-            className={cn(
-              "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
-              isSelected ? "text-primary-foreground" : "text-foreground",
-            )}
-          />
-        ) : (
-          <>
-            {"type" in item && isKanbanType(item.type) ? (
-              <TaskDaily01Icon
-                className={cn(
-                  "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
-                  isSelected ? "text-primary-foreground" : "text-foreground",
-                )}
-              />
-            ) : (
-              <CheckmarkSquare04Icon
-                className={cn(
-                  "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
-                  isSelected ? "text-primary-foreground" : "text-foreground",
-                )}
-              />
-            )}
-          </>
-        )}
+        <ItemIcon
+          type={itemType}
+          listType={"type" in item ? item.type : undefined}
+          className={cn(
+            "h-5 w-5 lg:h-4 lg:w-4 text-foreground flex-shrink-0",
+            isSelected ? "text-primary-foreground" : "text-foreground",
+          )}
+        />
         <span className="truncate flex-1">
           {appSettings?.parseContent === "yes"
             ? item.title
@@ -285,18 +249,12 @@ export const SidebarItem = ({
               <LockKeyIcon className="h-4 w-4 text-primary" />
             </span>
           )}
-          {item.sharedFrom ? (
-            <SharedFromBadge
-              owner={item.sharedFrom}
-              permissions={item.permissions}
-            />
-          ) : (
-            <ShareBadges grants={grants} isPublic={isPubliclyShared} />
-          )}
+          <ItemShareMark item={item} mode={shareMode} iconClassName="h-4 w-4" />
         </div>
       </Link>
 
       <DropdownMenu
+        contextTarget={itemRef}
         align="right"
         items={dropdownItems}
         trigger={

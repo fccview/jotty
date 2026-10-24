@@ -2,7 +2,8 @@
 
 import { ReactNode } from "react";
 import { MinimalModeEditor } from "./MinimalModeEditor";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 
 interface MinimalEditorPanelProps {
   isEditing: boolean;
@@ -23,7 +24,7 @@ export const MinimalEditorPanel = ({
   className = "flex-1 h-full pb-10 lg:pb-0",
   renderWrapper,
 }: MinimalEditorPanelProps) => {
-  const { compactMode } = useSettings();
+  const compactMode = useQuickValue(QuickSettingId.COMPACT_MODE);
 
   const editor = (
     <MinimalModeEditor

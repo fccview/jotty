@@ -6,6 +6,7 @@ import { updateUserSettings } from "@/app/_server/actions/users";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { getFlagPath } from '@/app/_utils/global-utils';
 import { isSpecialTranslation } from "@/app/_utils/special-translations-utils";
+import { MENU_CLASS, MENU_ITEM_CLASS } from "@/app/_consts/styling";
 
 export const LanguageSelector = ({ currentLocale }: { currentLocale: string }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -69,12 +70,12 @@ export const LanguageSelector = ({ currentLocale }: { currentLocale: string }) =
         />
       </button>
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-card border rounded-jotty shadow-lg z-50">
+        <div className={`absolute right-0 mt-2 w-48 z-50 flex flex-col gap-px p-1 ${MENU_CLASS}`}>
           {locales.map(({ code, flagPath, name }) => (
             <button
               key={code}
               onClick={() => handleChange(code)}
-              className="w-full flex items-center gap-3 px-4 py-2 hover:bg-accent"
+              className={MENU_ITEM_CLASS}
             >
               <img src={flagPath} alt={name} className="w-5 h-4" />
               <span>{name}</span>

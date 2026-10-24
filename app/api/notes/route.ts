@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getUserNotes } from "@/app/_server/actions/note/queries";
+import { apiNoteListing } from "@/app/_server/actions/note/api-listing";
 import { makeNote } from "@/app/_server/actions/note/creator";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, envelope, page, totalField } from "@/app/_schemas/api/common";
+import { ERRORS, envelope, totalField } from "@/app/_schemas/api/common";
 import { toApiNote } from "@/app/_utils/api-note";
-import { tagMatchesFilter } from "@/app/_utils/tag-utils";
 import { noteCreateBody, noteListQuery, noteSchema } from "@/app/_schemas/api/notes";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { TEMPLATE_ID_FIELD } from "@/app/_consts/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -28,24 +28,14 @@ export const GET = defineRoute(
     },
   },
   async ({ user, query }) => {
-    const notes = await getUserNotes({ username: user.username });
-    if (!notes.success || !notes.data) {
-      return refuse(notes.error || "Failed to fetch notes", 500);
+    const listed = await apiNoteListing(user.username, query);
+    if (!listed.success || !listed.data) {
+      return refuse(listed.error || "Failed to fetch notes", 500);
     }
 
-    const needle = query.q?.toLowerCase();
-    const matches = notes.data.filter(
-      (note) =>
-        (!query.category || note.category === query.category) &&
-        (!query.tag || (note.tags || []).some((tag) => tagMatchesFilter(tag, query.tag!))) &&
-        (!needle ||
-          note.title?.toLowerCase().includes(needle) ||
-          note.content?.toLowerCase().includes(needle)),
-    );
-
     return NextResponse.json({
-      notes: page(matches, query).map((note) => toApiNote(note, query.view)),
-      total: matches.length,
+      notes: listed.data.notes.map((note) => toApiNote(note, query.view)),
+      total: listed.data.total,
     });
   },
 );
@@ -70,6 +60,7 @@ export const POST = defineRoute(
     formData.append("title", body.title);
     formData.append("rawContent", body.content);
     formData.append("category", body.category);
+    if (body.templateId) formData.append(TEMPLATE_ID_FIELD, body.templateId);
 
     const result = await makeNote(user, formData);
     if (result.error) return refuse(result.error, 400);

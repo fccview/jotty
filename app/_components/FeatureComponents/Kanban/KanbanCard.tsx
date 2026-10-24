@@ -27,7 +27,9 @@ import { CircleIcon, Notification03Icon, UserIcon } from "hugeicons-react";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
 import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
+import { AgentChip } from "./AgentChip";
 import { TimeEntriesModal } from "./TimeEntriesModal";
+import { FALLBACK_STATUS_COLOR } from "@/app/_consts/kanban";
 
 interface KanbanCardProps {
   checklist: Checklist;
@@ -138,7 +140,7 @@ const KanbanCardComponent = ({
                 >
                   <span
                     className="h-3 w-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: status.color || "#6b7280" }}
+                    style={{ backgroundColor: status.color || FALLBACK_STATUS_COLOR }}
                   />
                   <span className="text-sm">{status.name}</span>
                 </button>
@@ -247,6 +249,14 @@ const KanbanCardComponent = ({
                   />
                   {item.assignee}
                 </span>
+              )}
+
+              {item.agent && (
+                <AgentChip
+                  agentId={item.agent}
+                  checklist={checklist}
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground"
+                />
               )}
             </div>
 

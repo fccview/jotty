@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import { Result } from "@/app/_types";
 import { SharingPermissions } from "@/app/_types/core";
 import { Modes } from "@/app/_types/enums";
-import { DATA_DIR, ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { DATA_DIR, RESERVED_DIRS } from "@/app/_consts/files";
 import {
   CATEGORY_INFO_FILE,
   LEGACY_ORDER_FILE,
@@ -64,7 +64,7 @@ const _userDirs = async (mode: Modes): Promise<string[]> => {
 };
 
 const _subDirs = async (dirPath: string): Promise<string[]> => {
-  const excluded = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const excluded = RESERVED_DIRS;
 
   try {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });

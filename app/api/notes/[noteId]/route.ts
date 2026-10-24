@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dropNote, editNote } from "@/app/_server/actions/note/editor";
-import { getNoteById, getUserNotes } from "@/app/_server/actions/note/queries";
+import { getNoteById } from "@/app/_server/actions/note/queries";
 import { resolveApiId } from "@/app/_server/actions/lib/legacy-lookup";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
@@ -43,9 +43,7 @@ const _noteUuid = async (
 
 const _ownNote = async (request: NextRequest, noteId: string, username: string) => {
   const uuid = await _noteUuid(request, noteId, username);
-  const notes = await getUserNotes({ username });
-  if (!notes.success || !notes.data) return { error: "Failed to fetch notes" };
-  return { note: notes.data.find((n) => n.uuid === uuid) };
+  return uuid ? getNoteById(uuid, username) : undefined;
 };
 
 export const GET = defineRoute(
@@ -66,10 +64,8 @@ export const GET = defineRoute(
     },
   },
   async ({ request, user, params, query }) => {
-    const uuid = await _noteUuid(request, params.noteId, user.username);
-    const note = uuid ? await getNoteById(uuid, user.username) : undefined;
+    const note = await _ownNote(request, params.noteId, user.username);
     if (!note) return refuse(NOT_FOUND, 404);
-
 
     return NextResponse.json({
       success: true,
@@ -108,8 +104,7 @@ export const PUT = defineRoute(
     },
   },
   async ({ request, user, params, body }) => {
-    const { note, error } = await _ownNote(request, params.noteId, user.username);
-    if (error) return refuse(error, 500);
+    const note = await _ownNote(request, params.noteId, user.username);
     if (!note) return refuse(NOT_FOUND, 404);
 
     const formData = new FormData();
@@ -201,8 +196,7 @@ export const DELETE = defineRoute(
     },
   },
   async ({ request, user, params }) => {
-    const { note, error } = await _ownNote(request, params.noteId, user.username);
-    if (error) return refuse(error, 500);
+    const note = await _ownNote(request, params.noteId, user.username);
     if (!note) return refuse(NOT_FOUND, 404);
 
     const formData = new FormData();

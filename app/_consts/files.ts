@@ -4,8 +4,20 @@ import { CHECKLISTS_FOLDER } from "./checklists";
 import { NOTES_FOLDER } from "./notes";
 
 export const ARCHIVED_DIR_NAME = ".archive";
+export const ARCHIVE_PATH = "/archive";
+export const TEMPLATES_DIR_NAME = ".templates";
 export const COMMENTS_DIR_NAME = ".comments";
 export const EXCLUDED_DIRS = ["images", "files", "videos", ".git", COMMENTS_DIR_NAME];
+export const HIDDEN_DIRS = [ARCHIVED_DIR_NAME, TEMPLATES_DIR_NAME];
+export const RESERVED_DIRS = [...EXCLUDED_DIRS, ...HIDDEN_DIRS];
+
+export const hiddenDirs = (allowArchived = false): string[] =>
+  allowArchived ? [TEMPLATES_DIR_NAME] : HIDDEN_DIRS;
+
+export const skippedDirs = (allowArchived = false): string[] => [
+  ...EXCLUDED_DIRS,
+  ...hiddenDirs(allowArchived),
+];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024;
 

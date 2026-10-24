@@ -9,6 +9,7 @@ import {
   Target02Icon,
 } from "hugeicons-react";
 import type { BrainNode } from "@/app/_types/relations";
+import { RangeSlider } from "@/app/_components/GlobalComponents/FormElements/RangeSlider";
 import {
   BrainColourModes,
   BrainDimensions,
@@ -150,19 +151,16 @@ export const BrainToolbar = ({
         )}
 
         {scope.local && hasFocus && (
-          <label className="flex items-center gap-2 text-md lg:text-sm text-muted-foreground">
-            {t("brain.depth", { depth: scope.depth })}
-            <input
-              type="range"
-              min={1}
-              max={MAX_DEPTH}
-              value={scope.depth}
-              onChange={(event) =>
-                onScope({ ...scope, depth: Number(event.target.value) })
-              }
-              className="accent-primary"
-            />
-          </label>
+          <RangeSlider
+            id="brain-depth"
+            label={t("brain.depth", { depth: scope.depth })}
+            value={scope.depth}
+            min={1}
+            max={MAX_DEPTH}
+            valueText={t("brain.depth", { depth: scope.depth })}
+            onChange={(depth) => onScope({ ...scope, depth })}
+            className="w-56"
+          />
         )}
 
         <select

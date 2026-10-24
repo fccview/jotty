@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import fs from "fs/promises";
-import path from "path";
 import { getEnvOrFile } from "@/app/_server/actions/file";
-import { lock, unlock } from "proper-lockfile";
 import { getAuthMode } from "@/app/_utils/env-utils";
 import { ensureUser } from "@/app/_server/actions/users/ensure-user";
 import { jwtVerify, createRemoteJWKSet, decodeJwt } from "jose";
@@ -15,6 +12,18 @@ import {
 import { USERS_FILE } from "@/app/_consts/files";
 import { logAudit } from "@/app/_server/actions/log";
 import { isDebugFlag, isSecureEnv, getSessionCookieName } from "@/app/_utils/env-utils";
+import { OIDC_CALLBACK_PATH, OidcCookies, SsoErrorCodes } from "@/app/_consts/sso";
+import {
+  SsoFailure,
+  describeError,
+  fetchDiscovery,
+  jwtErrorCode,
+  loginRedirect,
+  providerErrorCode,
+  refuseSso,
+  tokenErrorCode,
+  toProviderUrl,
+} from "@/app/_utils/oidc-utils";
 
 const debugProxy = isDebugFlag("proxy");
 
@@ -49,54 +58,57 @@ function checkClaims(
   return isAllowed;
 }
 
-
-export async function GET(request: NextRequest) {
-  const appUrl = process.env.APP_URL || request.nextUrl.origin;
-
-  if (getAuthMode() !== "oidc") {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+const readOauthError = async (response: Response): Promise<string | undefined> => {
+  try {
+    const body: { error?: unknown } = await response.json();
+    return typeof body.error === "string" ? body.error : undefined;
+  } catch (error) {
+    console.error("SSO CALLBACK - token error response is not JSON:", describeError(error));
+    return undefined;
   }
+};
 
+const completeLogin = async (request: NextRequest, appUrl: string) => {
   let issuer = process.env.OIDC_ISSUER || "";
   if (issuer && !issuer.endsWith("/")) {
     issuer = `${issuer}/`;
   }
   const clientId = await getEnvOrFile("OIDC_CLIENT_ID", "OIDC_CLIENT_ID_FILE");
   if (!issuer || !clientId) {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+    throw new SsoFailure(
+      SsoErrorCodes.MISCONFIGURED,
+      `${issuer ? "OIDC_CLIENT_ID" : "OIDC_ISSUER"} is not set`,
+    );
   }
 
-  const code = request.nextUrl.searchParams.get("code");
-  const state = request.nextUrl.searchParams.get("state");
-  const savedState = request.cookies.get("oidc_state")?.value;
-  const verifier = request.cookies.get("oidc_verifier")?.value;
-  const nonce = request.cookies.get("oidc_nonce")?.value;
+  const params = request.nextUrl.searchParams;
+  const providerError = params.get("error");
+  if (providerError) {
+    throw new SsoFailure(
+      providerErrorCode(providerError),
+      `provider returned "${providerError}": ${params.get("error_description") || "no description"}`,
+    );
+  }
+
+  const code = params.get("code");
+  const state = params.get("state");
+  const savedState = request.cookies.get(OidcCookies.STATE)?.value;
+  const verifier = request.cookies.get(OidcCookies.VERIFIER)?.value;
+  const nonce = request.cookies.get(OidcCookies.NONCE)?.value;
   if (!code || !state || !savedState || state !== savedState || !verifier) {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+    throw new SsoFailure(
+      SsoErrorCodes.CALLBACK_FAILED,
+      "missing code, state or verifier, or state mismatch (expired login, blocked cookies or another tab)",
+    );
   }
 
-  const discoveryUrl = issuer.includes(".well-known/openid-configuration")
-    ? issuer
-    : issuer.endsWith("/")
-      ? `${issuer}.well-known/openid-configuration`
-      : `${issuer}/.well-known/openid-configuration`;
-  const discoveryRes = await fetch(discoveryUrl, { cache: "no-store" });
-  if (!discoveryRes.ok) {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
-  }
-  const discovery = (await discoveryRes.json()) as {
-    token_endpoint: string;
-    jwks_uri: string;
-    issuer: string;
-    userinfo_endpoint?: string;
-  };
-  const tokenEndpoint = discovery.token_endpoint;
-  const jwksUri = discovery.jwks_uri;
+  const discovery = await fetchDiscovery(issuer, ["token_endpoint", "jwks_uri"]);
+  const tokenEndpoint = toProviderUrl(discovery.token_endpoint, "token_endpoint");
   const oidcIssuer = discovery.issuer;
 
-  const JWKS = createRemoteJWKSet(new URL(jwksUri));
+  const JWKS = createRemoteJWKSet(toProviderUrl(discovery.jwks_uri, "jwks_uri"));
 
-  const redirectUri = `${appUrl}/api/oidc/callback`;
+  const redirectUri = `${appUrl}${OIDC_CALLBACK_PATH}`;
   const clientSecret = await getEnvOrFile(
     "OIDC_CLIENT_SECRET",
     "OIDC_CLIENT_SECRET_FILE",
@@ -113,23 +125,44 @@ export async function GET(request: NextRequest) {
     body.set("client_secret", clientSecret);
   }
 
-  const tokenRes = await fetch(tokenEndpoint, {
-    method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded" },
-    body,
-  });
+  let tokenRes: Response;
+  try {
+    tokenRes = await fetch(tokenEndpoint, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body,
+    });
+  } catch (error) {
+    throw new SsoFailure(
+      SsoErrorCodes.UNREACHABLE,
+      `token request to ${tokenEndpoint.origin} failed: ${describeError(error)}`,
+    );
+  }
 
   if (!tokenRes.ok) {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+    const oauthError = await readOauthError(tokenRes);
+    throw new SsoFailure(
+      tokenErrorCode(tokenRes.status, oauthError),
+      `token endpoint answered ${tokenRes.status} ${oauthError || tokenRes.statusText} (check client id, client secret and redirect URI)`,
+    );
   }
-  const token = (await tokenRes.json()) as {
-    id_token?: string;
-    access_token?: string;
-  };
+
+  let token: { id_token?: string; access_token?: string };
+  try {
+    token = await tokenRes.json();
+  } catch (error) {
+    throw new SsoFailure(
+      SsoErrorCodes.MISCONFIGURED,
+      `token response is not JSON: ${describeError(error)}`,
+    );
+  }
   const idToken = token.id_token;
   const accessToken = token.access_token;
   if (!idToken) {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+    throw new SsoFailure(
+      SsoErrorCodes.MISCONFIGURED,
+      "token response has no id_token (is the openid scope allowed for this client?)",
+    );
   }
 
   if (debugProxy) {
@@ -152,19 +185,21 @@ export async function GET(request: NextRequest) {
     });
     claims = payload;
   } catch (error) {
-    console.error("ID Token validation failed:", error);
     if (debugProxy) {
       console.error("ID_TOKEN_ERROR_DEBUG:", {
         tokenLength: idToken?.length,
         tokenStructure: idToken?.split(".").length,
-        error: error instanceof Error ? error.message : String(error),
+        error: describeError(error),
       });
     }
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+    throw new SsoFailure(
+      jwtErrorCode(error),
+      `ID token validation failed: ${describeError(error)}`,
+    );
   }
 
   if (nonce && claims.nonce && claims.nonce !== nonce) {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+    throw new SsoFailure(SsoErrorCodes.CALLBACK_FAILED, "ID token nonce does not match");
   }
 
   const missingIdentityClaims = !claims.preferred_username && !claims.email;
@@ -269,7 +304,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (!username) {
-    return NextResponse.redirect(`${appUrl}/auth/login`);
+    throw new SsoFailure(
+      SsoErrorCodes.MISCONFIGURED,
+      "ID token has no preferred_username, email or sub claim",
+    );
   }
 
   const isInAdminGroup = checkClaims(
@@ -339,7 +377,7 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      return NextResponse.redirect(`${appUrl}/auth/login?error=unauthorized`);
+      return loginRedirect(appUrl, SsoErrorCodes.UNAUTHORIZED);
     }
   }
 
@@ -360,33 +398,24 @@ export async function GET(request: NextRequest) {
     maxAge: 30 * 24 * 60 * 60,
   });
 
-  const sessionsFile = path.join(
-    process.cwd(),
-    "data",
-    "users",
-    "sessions.json",
-  );
-  await fs.mkdir(path.dirname(sessionsFile), { recursive: true });
-
-  await lock(sessionsFile);
-  try {
-    let sessions: Record<string, string> = {};
-    try {
-      const content = await fs.readFile(sessionsFile, "utf-8");
-      if (content) {
-        sessions = JSON.parse(content);
-      }
-    } catch {}
-    sessions[sessionId] = username;
-    await fs.writeFile(sessionsFile, JSON.stringify(sessions, null, 2));
-  } finally {
-    await unlock(sessionsFile);
-  }
-
   await createSession(sessionId, username, "sso");
 
-  response.cookies.delete("oidc_verifier");
-  response.cookies.delete("oidc_state");
-  response.cookies.delete("oidc_nonce");
+  response.cookies.delete(OidcCookies.VERIFIER);
+  response.cookies.delete(OidcCookies.STATE);
+  response.cookies.delete(OidcCookies.NONCE);
   return response;
+};
+
+export async function GET(request: NextRequest) {
+  const appUrl = process.env.APP_URL || request.nextUrl.origin;
+
+  if (getAuthMode() !== "oidc") {
+    return loginRedirect(appUrl);
+  }
+
+  try {
+    return await completeLogin(request, appUrl);
+  } catch (error) {
+    return refuseSso(appUrl, "CALLBACK", error, SsoErrorCodes.CALLBACK_FAILED);
+  }
 }

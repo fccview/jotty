@@ -57,7 +57,8 @@ const _decode = async (response: Response): Promise<unknown> => {
   if (!text) return null;
   try {
     return JSON.parse(text);
-  } catch {
+  } catch (error) {
+    logger.debug(LOG_NS, "Jotty answered with a body that isn't JSON", error);
     return text;
   }
 };
@@ -67,13 +68,13 @@ const _messageOf = (data: unknown, status: number): string =>
     ? data.error
     : `Jotty answered ${status}`;
 
-const _fingerprint = (apiKey: string): string =>
+export const fingerprintOf = (apiKey: string): string =>
   new Bun.CryptoHasher("sha256").update(apiKey).digest("hex").slice(0, 16);
 
 export const createClient = (config: JottyConfig, apiKey = config.apiKey): JottyClient => ({
   baseUrl: config.url,
   hasApiKey: Boolean(apiKey),
-  identity: `${config.url}#${_fingerprint(apiKey)}`,
+  identity: `${config.url}#${fingerprintOf(apiKey)}`,
   send: ({ method, path, query, body, signal }) =>
     withDeadline(
       config.timeoutMs,

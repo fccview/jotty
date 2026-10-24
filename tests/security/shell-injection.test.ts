@@ -1,5 +1,6 @@
-import { describe, it, expect, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, afterAll, beforeAll, beforeEach, vi } from "vitest";
 import os from "os";
+import { mockFs } from "../setup";
 import path from "path";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "fs";
 import {
@@ -20,6 +21,11 @@ const UUID = "0798d08a-5750-4035-aa73-4d45e008f3bb";
 
 const EVIL_DIR = path.join(ROOT, PAYLOAD);
 const EVIL_NOTE = path.join(EVIL_DIR, "note.md");
+
+beforeAll(async () => {
+  const real = await vi.importActual<typeof import("fs/promises")>("fs/promises");
+  mockFs.open.mockImplementation(real.open as never);
+});
 
 afterAll(() => {
   rmSync(ROOT, { recursive: true, force: true });

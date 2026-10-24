@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   ReactNode,
 } from "react";
 
@@ -17,6 +18,7 @@ interface NavigationGuardContextType {
   checkNavigation: (action: () => void) => void;
   checkWouldBlock: () => boolean;
   setPendingNavigation: (action: () => void) => void;
+  clearPendingNavigation: () => void;
   executePendingNavigation: () => void;
 }
 
@@ -33,9 +35,11 @@ export const NavigationGuardProvider = ({
   const [navigationGuard, setNavigationGuard] = useState<
     (() => boolean) | null
   >(null);
-  const [pendingNavigation, setPendingNavigation] = useState<
-    (() => void) | null
-  >(null);
+  const pendingRef = useRef<(() => void) | null>(null);
+
+  const setPendingNavigation = useCallback((action: () => void) => {
+    pendingRef.current = action;
+  }, []);
 
   const registerNavigationGuard = useCallback((guard: () => boolean) => {
     setNavigationGuard(() => guard);
@@ -48,7 +52,7 @@ export const NavigationGuardProvider = ({
   const checkNavigation = useCallback(
     (action: () => void) => {
       if (navigationGuard && !navigationGuard()) {
-        setPendingNavigation(() => action);
+        pendingRef.current = action;
         return;
       }
       action();
@@ -72,12 +76,15 @@ export const NavigationGuardProvider = ({
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  const clearPendingNavigation = useCallback(() => {
+    pendingRef.current = null;
+  }, []);
+
   const executePendingNavigation = useCallback(() => {
-    if (pendingNavigation) {
-      pendingNavigation();
-      setPendingNavigation(null);
-    }
-  }, [pendingNavigation]);
+    const pending = pendingRef.current;
+    pendingRef.current = null;
+    pending?.();
+  }, []);
 
   return (
     <NavigationGuardContext.Provider
@@ -89,6 +96,7 @@ export const NavigationGuardProvider = ({
         checkNavigation,
         checkWouldBlock,
         setPendingNavigation,
+        clearPendingNavigation,
         executePendingNavigation,
       }}
     >

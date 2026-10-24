@@ -35,15 +35,166 @@ const _getLineAtPosition = (
   };
 };
 
+export const MARKDOWN_TEXTAREA_ID = "markdown-editor-textarea";
+export const MARKDOWN_EDITOR_CLASS = "markdown-code-editor";
+
+export const getMarkdownTextarea = (): HTMLTextAreaElement | null =>
+  document.getElementById(MARKDOWN_TEXTAREA_ID) as HTMLTextAreaElement | null;
+
+const _diffRange = (prev: string, next: string) => {
+  const max = Math.min(prev.length, next.length);
+  let head = 0;
+  while (head < max && prev[head] === next[head]) head++;
+  let tail = 0;
+  while (
+    tail < max - head &&
+    prev[prev.length - 1 - tail] === next[next.length - 1 - tail]
+  )
+    tail++;
+  return {
+    from: head,
+    to: prev.length - tail,
+    text: next.slice(head, next.length - tail),
+  };
+};
+
+export const mapPosition = (prev: string, next: string, position: number) => {
+  const { from, to, text } = _diffRange(prev, next);
+  if (position <= from) return position;
+  if (position >= to) return position + next.length - prev.length;
+  return from + text.length;
+};
+
+interface PendingCaret {
+  value: string;
+  start: number;
+  end: number;
+  focus: boolean;
+}
+
+let pendingCaret: PendingCaret | null = null;
+
+export const applyPendingCaret = () => {
+  const pending = pendingCaret;
+  const textarea = getMarkdownTextarea();
+  if (!pending || !textarea || textarea.value !== pending.value) return;
+  pendingCaret = null;
+  if (pending.focus) textarea.focus({ preventScroll: true });
+  textarea.setSelectionRange(pending.start, pending.end);
+};
+
+export const keepCaretThrough = (prev: string, next: string) => {
+  const textarea = getMarkdownTextarea();
+  if (!textarea || document.activeElement !== textarea || prev === next) return;
+  const base =
+    pendingCaret?.value === prev
+      ? pendingCaret
+      : textarea.value === prev
+        ? { start: textarea.selectionStart, end: textarea.selectionEnd, focus: false }
+        : null;
+  if (!base) return;
+  pendingCaret = {
+    value: next,
+    start: mapPosition(prev, next, base.start),
+    end: mapPosition(prev, next, base.end),
+    focus: base.focus,
+  };
+};
+
+const _nativeReplace = (textarea: HTMLTextAreaElement, next: string) => {
+  if (typeof document === "undefined" || document.activeElement !== textarea)
+    return false;
+  const { from, to, text } = _diffRange(textarea.value, next);
+  textarea.setSelectionRange(from, to);
+  try {
+    return text
+      ? document.execCommand("insertText", false, text)
+      : document.execCommand("delete");
+  } catch (error) {
+    console.warn("Native markdown edit failed, falling back:", error);
+    return false;
+  }
+};
+
 const _updateEditor = (
   textarea: HTMLTextAreaElement,
   content: string,
   start: number,
   end: number
 ): string => {
-  textarea.value = content;
+  if (textarea.value !== content) {
+    const applied = _nativeReplace(textarea, content);
+    if (!applied || textarea.value !== content) textarea.value = content;
+  }
   textarea.setSelectionRange(start, end);
   return content;
+};
+
+interface HistoryRecord {
+  value: string;
+  selectionStart: number;
+  selectionEnd: number;
+  timestamp: number;
+}
+
+export interface MarkdownHistory {
+  stack: HistoryRecord[];
+  offset: number;
+}
+
+type HistorySource = () => MarkdownHistory | null;
+
+const HISTORY_LIMIT = 100;
+const SEALED_TIMESTAMP = 0;
+
+let historySource: HistorySource | null = null;
+
+export const bindMarkdownHistory = (source: HistorySource) => {
+  historySource = source;
+  return () => {
+    if (historySource === source) historySource = null;
+  };
+};
+
+const _snapshot = (textarea: HTMLTextAreaElement): HistoryRecord => ({
+  value: textarea.value,
+  selectionStart: textarea.selectionStart,
+  selectionEnd: textarea.selectionEnd,
+  timestamp: SEALED_TIMESTAMP,
+});
+
+export const recordMarkdownEdit = (
+  history: MarkdownHistory,
+  before: HistoryRecord,
+  after: HistoryRecord,
+  top: { offset: number; record: HistoryRecord | null }
+) => {
+  if (before.value === after.value) return;
+  const kept = history.stack.slice(0, Math.max(top.offset, 0));
+  if (top.record && top.record.value !== before.value) kept.push(top.record);
+  const stack = [...kept, before, after].slice(-HISTORY_LIMIT);
+  history.stack = stack;
+  history.offset = stack.length - 1;
+};
+
+export const runMarkdownEdit = (
+  edit: (textarea: HTMLTextAreaElement) => string,
+  onChange?: (content: string) => void
+) => {
+  const textarea = getMarkdownTextarea();
+  if (!textarea || !onChange) return;
+  textarea.focus({ preventScroll: true });
+  const history = historySource?.() ?? null;
+  const top = history
+    ? { offset: history.offset, record: history.stack[history.offset] ? { ...history.stack[history.offset] } : null }
+    : null;
+  const before = _snapshot(textarea);
+  const content = edit(textarea);
+  const after = { ..._snapshot(textarea), value: content };
+  if (history && top) recordMarkdownEdit(history, before, after, top);
+  pendingCaret = { value: content, start: after.selectionStart, end: after.selectionEnd, focus: true };
+  onChange(content);
+  applyPendingCaret();
 };
 
 export const insertTextAtCursor = (
@@ -60,6 +211,16 @@ export const insertTextAtCursor = (
   const newCursorPos =
     start + textBefore.length + selectedText.length + cursorOffset;
   return _updateEditor(textarea, newValue, newCursorPos, newCursorPos);
+};
+
+export const insertSelectedText = (
+  textarea: HTMLTextAreaElement,
+  text: string
+): string => {
+  const { start, end } = getTextareaSelection(textarea);
+  const value = textarea.value;
+  const newValue = value.substring(0, start) + text + value.substring(end);
+  return _updateEditor(textarea, newValue, start, start + text.length);
 };
 
 export const wrapOrInsert = (
@@ -159,123 +320,87 @@ export const insertHighlight = (ta: HTMLTextAreaElement) =>
 export const insertAbbreviation = (ta: HTMLTextAreaElement, title: string) =>
   wrapOrInsert(ta, `<abbr title="${title}">`, "</abbr>", "");
 
-const processLineSelection = (
+const _shiftSelection = (
   textarea: HTMLTextAreaElement,
-  pattern: RegExp,
-  processFn: (line: string, index: number, allMatch: boolean) => string
+  lineStart: number,
+  oldLines: string[],
+  newLines: string[]
+) => {
+  const { start, end } = getTextareaSelection(textarea);
+  const firstDelta = newLines[0].length - oldLines[0].length;
+  const blockEnd = lineStart + newLines.join("\n").length;
+  const totalDelta = blockEnd - lineStart - oldLines.join("\n").length;
+  const from = Math.min(blockEnd, Math.max(lineStart, start + firstDelta));
+  const to = start === end ? from : Math.min(blockEnd, Math.max(from, end + totalDelta));
+  return { from, to };
+};
+
+const _replaceLines = (
+  textarea: HTMLTextAreaElement,
+  mapLines: (lines: string[]) => string[]
 ): string => {
   const { start, end } = getTextareaSelection(textarea);
   const value = textarea.value;
   const { lineStart } = _getLineAtPosition(value, start);
   const { lineEnd } = _getLineAtPosition(value, end);
   const lines = value.substring(lineStart, lineEnd).split("\n");
-
-  const hasNonEmpty = lines.some((l) => l.trim() !== "");
-  const allMatch = hasNonEmpty && lines.every((l) => pattern.test(l) || l.trim() === "");
-  const newLines = lines.map((line, i) => processFn(line, i, allMatch));
-  const newContent = newLines.join("\n");
-  const newValue =
-    value.substring(0, lineStart) + newContent + value.substring(lineEnd);
-
-  const cursorTarget = lineStart + newLines[0].length;
-
-  if (allMatch) {
-    _updateEditor(textarea, newValue, lineStart, lineStart + newContent.length);
-  } else {
-    _updateEditor(textarea, newValue, cursorTarget, cursorTarget);
-  }
-
-  return newValue;
+  const newLines = mapLines(lines);
+  const newValue = value.substring(0, lineStart) + newLines.join("\n") + value.substring(lineEnd);
+  const { from, to } = _shiftSelection(textarea, lineStart, lines, newLines);
+  return _updateEditor(textarea, newValue, from, to);
 };
 
-export const insertBulletList = (textarea: HTMLTextAreaElement): string => {
-  const { start, end } = getTextareaSelection(textarea);
-  const value = textarea.value;
-  const { lineStart } = _getLineAtPosition(value, start);
-  const { lineEnd } = _getLineAtPosition(value, end);
-  const lines = value.substring(lineStart, lineEnd).split("\n");
-
-  const nonEmpty = lines.filter((l) => l.trim() !== "");
-  const allBullet =
-    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*-\s/.test(l));
-  const allOrdered =
-    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*\d+\.\s/.test(l));
-  const toggle = allBullet || allOrdered;
-
-  const newLines = lines.map((line) => {
-    if (allBullet) {
-      return line.trim() === "" ? line : line.replace(/^(\s*)-\s+/, "$1");
-    }
-    if (allOrdered) {
-      return line.trim() === "" ? line : line.replace(/^(\s*)\d+\.\s+/, "$1-   ");
-    }
-    if (line.trim() === "") return "-   ";
-    if (/^\s*-\s/.test(line)) return line;
-    if (/^\s*\d+\.\s/.test(line))
-      return line.replace(/^(\s*)\d+\.\s+/, "$1-   ");
-    return "-   " + line;
+const processLineSelection = (
+  textarea: HTMLTextAreaElement,
+  pattern: RegExp,
+  processFn: (line: string, index: number, allMatch: boolean) => string
+): string =>
+  _replaceLines(textarea, (lines) => {
+    const hasNonEmpty = lines.some((l) => l.trim() !== "");
+    const allMatch = hasNonEmpty && lines.every((l) => pattern.test(l) || l.trim() === "");
+    return lines.map((line, i) => processFn(line, i, allMatch));
   });
 
-  const newContent = newLines.join("\n");
-  const newValue =
-    value.substring(0, lineStart) + newContent + value.substring(lineEnd);
-  const cursorTarget = lineStart + newLines[0].length;
-  if (toggle) {
-    _updateEditor(textarea, newValue, lineStart, lineStart + newContent.length);
-  } else {
-    _updateEditor(textarea, newValue, cursorTarget, cursorTarget);
-  }
-  return newValue;
+const BULLET_LINE = /^\s*[-*+]\s/;
+const BULLET_MARKER = /^(\s*)[-*+]\s+/;
+const ORDERED_LINE = /^\s*\d+\.\s/;
+const ORDERED_MARKER = /^(\s*)\d+\.\s+/;
+const TASK_LINE = /^\s*[-*+]\s\[[ xX]\]/;
+const BULLET = "- ";
+
+const _allNonEmpty = (lines: string[], pattern: RegExp) => {
+  const nonEmpty = lines.filter((l) => l.trim() !== "");
+  return nonEmpty.length > 0 && nonEmpty.every((l) => pattern.test(l));
 };
 
-export const insertOrderedList = (textarea: HTMLTextAreaElement): string => {
-  const { start, end } = getTextareaSelection(textarea);
-  const value = textarea.value;
-  const { lineStart } = _getLineAtPosition(value, start);
-  const { lineEnd } = _getLineAtPosition(value, end);
-  const lines = value.substring(lineStart, lineEnd).split("\n");
-
-  const nonEmpty = lines.filter((l) => l.trim() !== "");
-  const allOrdered =
-    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*\d+\.\s/.test(l));
-  const allBullet =
-    nonEmpty.length > 0 && nonEmpty.every((l) => /^\s*-\s/.test(l));
-  const toggle = allOrdered || allBullet;
-
-  let num = 1;
-  const newLines = lines.map((line) => {
-    if (allOrdered) {
-      return line.trim() === "" ? line : line.replace(/^(\s*)\d+\.\s+/, "$1");
-    }
-    if (allBullet) {
-      if (line.trim() === "") return line;
-      return line.replace(/^(\s*)-\s+/, `$1${num++}.  `);
-    }
-    if (line.trim() === "") return `${num++}.  `;
-    if (/^\s*\d+\.\s/.test(line)) {
-      const indent = line.match(/^(\s*)/)?.[1] ?? "";
-      const clean = line.replace(/^\s*\d+\.\s+/, "");
-      return `${indent}${num++}.  ${clean}`;
-    }
-    if (/^\s*-\s/.test(line)) {
-      const indent = line.match(/^(\s*)/)?.[1] ?? "";
-      const clean = line.replace(/^\s*-\s+/, "");
-      return `${indent}${num++}.  ${clean}`;
-    }
-    return `${num++}.  ${line}`;
+export const insertBulletList = (textarea: HTMLTextAreaElement): string =>
+  _replaceLines(textarea, (lines) => {
+    const allBullet = _allNonEmpty(lines, BULLET_LINE);
+    const allOrdered = _allNonEmpty(lines, ORDERED_LINE);
+    return lines.map((line) => {
+      if (allBullet) return line.trim() === "" ? line : line.replace(BULLET_MARKER, "$1");
+      if (allOrdered) return line.trim() === "" ? line : line.replace(ORDERED_MARKER, `$1${BULLET}`);
+      if (line.trim() === "") return BULLET;
+      if (BULLET_LINE.test(line)) return line;
+      if (ORDERED_LINE.test(line)) return line.replace(ORDERED_MARKER, `$1${BULLET}`);
+      return BULLET + line;
+    });
   });
 
-  const newContent = newLines.join("\n");
-  const newValue =
-    value.substring(0, lineStart) + newContent + value.substring(lineEnd);
-  const cursorTarget = lineStart + newLines[0].length;
-  if (toggle) {
-    _updateEditor(textarea, newValue, lineStart, lineStart + newContent.length);
-  } else {
-    _updateEditor(textarea, newValue, cursorTarget, cursorTarget);
-  }
-  return newValue;
-};
+export const insertOrderedList = (textarea: HTMLTextAreaElement): string =>
+  _replaceLines(textarea, (lines) => {
+    const allOrdered = _allNonEmpty(lines, ORDERED_LINE);
+    const allBullet = _allNonEmpty(lines, BULLET_LINE);
+    let num = 1;
+    return lines.map((line) => {
+      if (allOrdered) return line.trim() === "" ? line : line.replace(ORDERED_MARKER, "$1");
+      if (allBullet) return line.trim() === "" ? line : line.replace(BULLET_MARKER, `$1${num++}. `);
+      if (line.trim() === "") return `${num++}. `;
+      if (ORDERED_LINE.test(line)) return line.replace(ORDERED_MARKER, `$1${num++}. `);
+      if (BULLET_LINE.test(line)) return line.replace(BULLET_MARKER, `$1${num++}. `);
+      return `${num++}. ${line}`;
+    });
+  });
 
 export const insertTaskList = (textarea: HTMLTextAreaElement): string =>
   processLineSelection(textarea, /^-\s\[[ x]\]\s/, (line, _, allMatch) => {
@@ -363,32 +488,31 @@ export const insertInternalLink = (
   href: string
 ) => insertTextAtCursor(ta, `[${title}](`, ")", href, 0);
 
-export const insertCodeBlock = (ta: HTMLTextAreaElement, lang: string = "") => {
-  const { selectedText } = getTextareaSelection(ta);
-  const open = "```" + lang + "\n";
-  const close = "\n```\n";
-  return selectedText
-    ? insertTextAtCursor(ta, open, close, selectedText)
-    : insertTextAtCursor(ta, open, close, "", -close.length + 1);
+const _ownLines = (ta: HTMLTextAreaElement) => {
+  const { start, end } = getTextareaSelection(ta);
+  const value = ta.value;
+  return {
+    lead: start > 0 && value[start - 1] !== "\n" ? "\n" : "",
+    trail: value[end] === "\n" ? "" : "\n",
+  };
 };
 
-export const insertDetails = (
-  ta: HTMLTextAreaElement,
-  sum: string = "Details"
-) => {
-  const { selectedText } = getTextareaSelection(ta);
-  const open = `<details>\n<summary>${sum}</summary>\n\n`;
-  const close = `\n\n</details>\n`;
-  return selectedText
-    ? insertTextAtCursor(ta, open, close, selectedText)
-    : insertTextAtCursor(ta, open, close, "", -close.length + 3);
+const _insertBlock = (ta: HTMLTextAreaElement, open: string, close: string, body: string) => {
+  const { lead, trail } = _ownLines(ta);
+  return insertTextAtCursor(ta, lead + open, close + trail, body, 0);
 };
+
+export const insertCodeBlock = (ta: HTMLTextAreaElement, lang: string = "") =>
+  _insertBlock(ta, "```" + lang + "\n", "\n```", getTextareaSelection(ta).selectedText);
+
+export const insertDetails = (ta: HTMLTextAreaElement, sum: string = "Details") =>
+  _insertBlock(ta, `<details>\n<summary>${sum}</summary>\n\n`, "\n\n</details>", getTextareaSelection(ta).selectedText);
 
 export const insertMermaid = (ta: HTMLTextAreaElement, content?: string) => {
   const def =
     content ||
     `graph TD\n    A[Start] --> B{Decision}\n    B -->|Yes| C[Option 1]\n    B -->|No| D[Option 2]\n    C --> E[End]\n    D --> E`;
-  return insertTextAtCursor(ta, "```mermaid\n", "\n```\n", def, 0);
+  return _insertBlock(ta, "```mermaid\n", "\n```", def);
 };
 
 export const insertTable = (
@@ -504,7 +628,7 @@ export const indentLines = (textarea: HTMLTextAreaElement): string => {
       if (!lastWasOrdered) orderedCounter = 1;
       const [, indent, , content] = orderedMatch;
       lastWasOrdered = true;
-      return `    ${indent}${orderedCounter++}.  ${content}`;
+      return `    ${indent}${orderedCounter++}. ${content}`;
     }
     lastWasOrdered = false;
     return "    " + line;
@@ -544,3 +668,77 @@ export const autolinkPastedContent = (
   const newEnd = start + selectedText.length + href.length + 4;
   return _updateEditor(textarea, newVal, start, newEnd);
 };
+
+export interface MarkdownFormats {
+  heading: number;
+  blockquote: boolean;
+  bulletList: boolean;
+  orderedList: boolean;
+  taskList: boolean;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  strike: boolean;
+  code: boolean;
+  link: boolean;
+}
+
+export const NO_MARKDOWN_FORMATS: MarkdownFormats = {
+  heading: 0,
+  blockquote: false,
+  bulletList: false,
+  orderedList: false,
+  taskList: false,
+  bold: false,
+  italic: false,
+  underline: false,
+  strike: false,
+  code: false,
+  link: false,
+};
+
+const HEADING_LINE = /^(#{1,6})\s/;
+const QUOTE_LINE = /^\s*>/;
+const DOUBLE_STAR = /\*\*/g;
+const LINK_SPAN = /!?\[[^\]]*\]\([^)]*\)/g;
+
+const _count = (text: string, needle: string) => text.split(needle).length - 1;
+
+const _between = (before: string, after: string, delimiter: string) =>
+  _count(before, delimiter) % 2 === 1 && after.includes(delimiter);
+
+const _insideTag = (before: string, after: string, open: string, close: string) =>
+  before.lastIndexOf(open) > before.lastIndexOf(close) && after.includes(close);
+
+const _insideLink = (line: string, column: number) =>
+  Array.from(line.matchAll(LINK_SPAN)).some(
+    (match) => column > match.index && column < match.index + match[0].length
+  );
+
+export const markdownFormatsAt = (value: string, position: number): MarkdownFormats => {
+  const { lineStart, lineContent } = _getLineAtPosition(value, position);
+  const column = position - lineStart;
+  const before = lineContent.slice(0, column);
+  const after = lineContent.slice(column);
+  const body = lineContent.replace(BULLET_MARKER, "$1");
+  const bodyOffset = lineContent.length - body.length;
+  const plainBefore = before.slice(Math.min(bodyOffset, before.length)).replace(DOUBLE_STAR, "");
+  const plainAfter = after.replace(DOUBLE_STAR, "");
+  const taskList = TASK_LINE.test(lineContent);
+  return {
+    heading: HEADING_LINE.exec(lineContent)?.[1].length ?? 0,
+    blockquote: QUOTE_LINE.test(lineContent),
+    bulletList: BULLET_LINE.test(lineContent) && !taskList,
+    orderedList: ORDERED_LINE.test(lineContent),
+    taskList,
+    bold: _between(before, after, "**"),
+    italic: _between(plainBefore, plainAfter, "*"),
+    underline: _insideTag(before, after, "<u>", "</u>"),
+    strike: _between(before, after, "~~"),
+    code: _between(before, after, "`"),
+    link: _insideLink(lineContent, column),
+  };
+};
+
+export const sameFormats = (a: MarkdownFormats, b: MarkdownFormats) =>
+  (Object.keys(a) as (keyof MarkdownFormats)[]).every((key) => a[key] === b[key]);

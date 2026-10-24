@@ -296,7 +296,7 @@ describe('Security: kanban API routes hold every share grant', () => {
       const response = await PUT(apiRequest('PUT', `${BASE}/items/card/status`, { status: 'nowhere' }), onCard())
 
       expect(response.status).toBe(400)
-      expect((await response.json()).error).toBe('Status not found on this board')
+      expect((await response.json()).error).toBe('Status not found on this board. Its columns are todo, done')
       expect(mockWrite).not.toHaveBeenCalled()
     })
   })

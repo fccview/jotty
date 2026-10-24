@@ -15,9 +15,10 @@ export const BrainPage = async ({ username, focus }: BrainPageProps) => {
   const user = await getCurrentUser();
   if (!user?.username) redirect("/");
 
-  const [brain, categories] = await Promise.all([
+  const [brain, notesCategories, listsCategories] = await Promise.all([
     getBrain(username),
     getCategories(Modes.NOTES),
+    getCategories(Modes.CHECKLISTS),
   ]);
   if (!brain.success || !brain.data) notFound();
 
@@ -26,7 +27,8 @@ export const BrainPage = async ({ username, focus }: BrainPageProps) => {
       graph={brain.data}
       focus={focus && isUuid(focus) ? focus.toLowerCase() : null}
       isOwnBrain={brain.data.owner === user.username}
-      categories={categories.success ? categories.data || [] : []}
+      notesCategories={notesCategories.success ? notesCategories.data || [] : []}
+      listsCategories={listsCategories.success ? listsCategories.data || [] : []}
       user={user}
     />
   );

@@ -28,4 +28,13 @@ if (fs.existsSync(wsSource)) {
   copyDirSync(wsSource, wsDest);
 }
 
-console.log("Postbuild: custom server.js and ws module copied to standalone");
+for (const name of ["yjs", "y-protocols", "lib0"]) {
+  copyDirSync(
+    path.join(__dirname, "..", "node_modules", name),
+    path.join(standaloneDir, "node_modules", name),
+  );
+}
+
+fs.rmSync(path.join(standaloneDir, "data"), { recursive: true, force: true });
+
+console.log("Postbuild: custom server.js and ws module copied to standalone, traced data dropped");

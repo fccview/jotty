@@ -8,6 +8,11 @@ const mockReadSessions = vi.fn()
 const mockLogUserEvent = vi.fn()
 const mockLogAudit = vi.fn()
 const mockRevokeGrants = vi.fn()
+const mockBroadcast = vi.fn()
+
+vi.mock('@/app/_server/actions/ws/broadcast', () => ({
+  broadcast: (...args: unknown[]) => mockBroadcast(...args),
+}))
 
 vi.mock('@/app/_server/actions/file', () => ({
   readJsonFile: (...args: any[]) => mockReadJsonFile(...args),
@@ -546,19 +551,19 @@ describe('Users Actions', () => {
     })
 
     it('creates the first user as both admin and superAdmin', async () => {
-      mockFs.readFile.mockResolvedValue('[]')
+      mockReadJsonFile.mockResolvedValue([])
       await ensureUser('alice', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       expect(written).toHaveLength(1)
       expect(written[0]).toMatchObject({ username: 'alice', isAdmin: true, isSuperAdmin: true })
     })
 
     it('creates a subsequent user with isAdmin=false when false is passed', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
-      ]))
+      ])
       await ensureUser('bob', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const bob = written.find((u: any) => u.username === 'bob')
       expect(bob).toBeDefined()
       expect(bob.isAdmin).toBe(false)
@@ -566,47 +571,53 @@ describe('Users Actions', () => {
     })
 
     it('creates a subsequent user with isAdmin=true when true is passed', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
-      ]))
+      ])
       await ensureUser('bob', true)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const bob = written.find((u: any) => u.username === 'bob')
       expect(bob.isAdmin).toBe(true)
     })
 
     it('promotes an existing non-admin user to admin when isAdmin=true', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'existing', passwordHash: '', isAdmin: true, isSuperAdmin: true },
         { username: 'alice', passwordHash: '', isAdmin: false },
-      ]))
+      ])
       await ensureUser('alice', true)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const alice = written.find((u: any) => u.username === 'alice')
       expect(alice.isAdmin).toBe(true)
     })
 
     it('does NOT demote an existing admin user when isAdmin=false', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'alice', passwordHash: '', isAdmin: true },
-      ]))
+      ])
       await ensureUser('alice', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       const alice = written.find((u: any) => u.username === 'alice')
       expect(alice.isAdmin).toBe(true)
     })
 
     it('does not create a duplicate entry if called with an existing username', async () => {
-      mockFs.readFile.mockResolvedValue(JSON.stringify([
+      mockReadJsonFile.mockResolvedValue([
         { username: 'alice', passwordHash: '', isAdmin: false },
-      ]))
+      ])
       await ensureUser('alice', false)
-      const written = JSON.parse(mockFs.writeFile.mock.calls[0][1])
+      const written = mockWriteJsonFile.mock.calls[0][0]
       expect(written.filter((u: any) => u.username === 'alice')).toHaveLength(1)
     })
 
+    it('refuses to overwrite a users file it cannot read', async () => {
+      mockReadJsonFile.mockResolvedValue(null)
+      await expect(ensureUser('alice', false)).rejects.toThrow()
+      expect(mockWriteJsonFile).not.toHaveBeenCalled()
+    })
+
     it('creates the checklist and notes directories for the user', async () => {
-      mockFs.readFile.mockResolvedValue('[]')
+      mockReadJsonFile.mockResolvedValue([])
       await ensureUser('alice', false)
       const mkdirPaths = mockFs.mkdir.mock.calls.map((c: any[]) => c[0] as string)
       expect(mkdirPaths.some((p) => p.includes('checklists') && p.includes('alice'))).toBe(true)
@@ -650,6 +661,21 @@ describe('Users Actions', () => {
 
       expect(result.success).toBe(true)
       expect(result.data?.user.newItemInsertion).toBe('bottom')
+    })
+
+    it('should clamp the note font size before saving it', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false },
+      ])
+
+      const tooBig = await updateUserSettings({ notesFontSize: 400 })
+      expect(tooBig.data?.user.notesFontSize).toBe(24)
+
+      const sneaky = await updateUserSettings({ notesFontSize: '18px; color: red' as unknown as number })
+      expect(sneaky.data?.user.notesFontSize).toBe(0)
+
+      const reset = await updateUserSettings({ notesFontSize: 0 })
+      expect(reset.data?.user.notesFontSize).toBe(0)
     })
 
     it('should return the updated user without credentials or mfa secrets', async () => {
@@ -757,6 +783,94 @@ describe('Users Actions', () => {
       expect(written[0].encryptionSettings.customKeyPath).toBe('/safe/path')
       expect(written[0].encryptionSettings.method).toBe('xchacha')
       expect(written[0].encryptionSettings.autoDecrypt).toBe(false)
+    })
+
+    it('should clear an editable setting so it follows the default again', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, handedness: 'left-handed', preferredBorderRadius: 1 },
+      ])
+
+      const result = await updateUserSettings({ handedness: null, preferredBorderRadius: null })
+
+      expect(result.success).toBe(true)
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0]).not.toHaveProperty('handedness')
+      expect(written[0]).not.toHaveProperty('preferredBorderRadius')
+      expect(result.data?.user).not.toHaveProperty('handedness')
+      expect(mockLogAudit).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'user_settings_updated',
+        metadata: expect.objectContaining({ settingsCleared: ['preferredBorderRadius', 'handedness'] }),
+      }))
+    })
+
+    it('should refuse to clear a field that is not an editable setting', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: true, apiKey: 'key', mfaSecret: 'secret' },
+      ])
+
+      await updateUserSettings({ isAdmin: null, passwordHash: null, apiKey: null, mfaSecret: null, username: null })
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0]).toMatchObject({ username: 'testuser', passwordHash: 'hash', isAdmin: true, apiKey: 'key', mfaSecret: 'secret' })
+      expect(mockLogAudit).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'user_settings_rejected',
+        metadata: expect.objectContaining({
+          rejected: ['isAdmin', 'passwordHash', 'apiKey', 'mfaSecret', 'username'],
+        }),
+      }))
+    })
+
+    it('should not let null wipe encryption settings', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, encryptionSettings: { method: 'pgp', hasKeys: true, autoDecrypt: true } },
+      ])
+
+      await updateUserSettings({ encryptionSettings: null })
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0].encryptionSettings).toEqual({ method: 'pgp', hasKeys: true, autoDecrypt: true })
+    })
+
+    it('should keep validating values next to a cleared field', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, browseViewMode: 'list', preferredBorderRadius: 1 },
+      ])
+
+      const result = await updateUserSettings({
+        browseViewMode: 'carousel' as never,
+        preferredBorderRadius: 'huge' as never,
+        notesFontSize: 400,
+        handedness: null,
+      })
+
+      const written = mockWriteJsonFile.mock.calls.at(-1)?.[0]
+      expect(written[0].browseViewMode).toBe('list')
+      expect(written[0].preferredBorderRadius).toBe(1)
+      expect(written[0].notesFontSize).toBe(24)
+      expect(result.data?.user.notesFontSize).toBe(24)
+    })
+
+    it('should keep reading old records that store explicit default values', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false, notesFontSize: 0, kanbanColumnWidth: 0, landingPage: 'checklists' },
+      ])
+
+      const result = await updateUserSettings({ handedness: 'left-handed' })
+
+      expect(result.data?.user).toMatchObject({ notesFontSize: 0, kanbanColumnWidth: 0, landingPage: 'checklists', handedness: 'left-handed' })
+    })
+
+    it('should broadcast a settings change only to the user who made it', async () => {
+      mockReadJsonFile.mockResolvedValue([
+        { username: 'testuser', passwordHash: 'hash', isAdmin: false },
+      ])
+
+      await updateUserSettings({ handedness: 'left-handed' })
+
+      expect(mockBroadcast).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'settings',
+        recipient: 'testuser',
+      }))
     })
 
     it('should audit rejected fields', async () => {

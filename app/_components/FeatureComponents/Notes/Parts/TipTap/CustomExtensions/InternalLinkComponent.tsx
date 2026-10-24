@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { NodeViewWrapper } from "@tiptap/react";
 import { File02Icon, CheckmarkSquare04Icon, TaskDaily01Icon } from "hugeicons-react";
@@ -12,6 +12,7 @@ import { viewList } from "@/app/_server/actions/checklist";
 import { itemHref } from "@/app/_utils/global-utils";
 import { parseItemHref } from "@/app/_utils/item-href-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { LinkedItem, useLinkedItem } from "@/app/_hooks/useCatalog";
 import { NoteCard } from "@/app/_components/GlobalComponents/Cards/NoteCard";
 import { ChecklistCard } from "@/app/_components/GlobalComponents/Cards/ChecklistCard";
 import { Checklist, Note } from "@/app/_types";
@@ -32,8 +33,6 @@ interface InternalLinkComponentProps {
   showCategory?: boolean;
 }
 
-type LinkedItem = Partial<Note> | Partial<Checklist>;
-
 const isChecklist = (item?: LinkedItem | null): item is Partial<Checklist> =>
   Boolean(item && "type" in item && item.type);
 
@@ -53,7 +52,7 @@ export const InternalLinkComponent = ({ node, showCategory = true }: InternalLin
   const t = useTranslations();
   const router = useRouter();
   const { href, title, alias, uuid: attrUuid, category } = node.attrs;
-  const { appSettings, notes, checklists } = useAppMode();
+  const { appSettings } = useAppMode();
   const [showPopup, setShowPopup] = useState(false);
   const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null);
   const [loadedItem, setLoadedItem] = useState<Note | Checklist | null>(null);
@@ -62,12 +61,7 @@ export const InternalLinkComponent = ({ node, showCategory = true }: InternalLin
   const target = useMemo(() => parseItemHref(href), [href]);
   const uuid = (target?.uuid || attrUuid || "").toLowerCase();
 
-  const knownItem: LinkedItem | undefined = useMemo(
-    () =>
-      notes.find((note) => note.uuid?.toLowerCase() === uuid) ||
-      checklists.find((list) => list.uuid?.toLowerCase() === uuid),
-    [notes, checklists, uuid],
-  );
+  const knownItem = useLinkedItem(uuid);
 
   const item: LinkedItem | undefined = loadedItem || knownItem;
   const type = item
@@ -76,8 +70,11 @@ export const InternalLinkComponent = ({ node, showCategory = true }: InternalLin
       : ItemTypes.NOTE
     : target?.type;
 
+  const attempted = useRef<string | null>(null);
+
   const loadItem = useCallback(async () => {
-    if (loadedItem || isLoading || !uuid) return;
+    if (loadedItem || !uuid || attempted.current === uuid) return;
+    attempted.current = uuid;
     setIsLoading(true);
     try {
       setLoadedItem(await _fetchItem(uuid, type));
@@ -86,10 +83,11 @@ export const InternalLinkComponent = ({ node, showCategory = true }: InternalLin
     } finally {
       setIsLoading(false);
     }
-  }, [loadedItem, isLoading, uuid, type]);
+  }, [loadedItem, uuid, type]);
 
   useEffect(() => {
     if (showPopup) loadItem();
+    else attempted.current = null;
   }, [showPopup, loadItem]);
 
   const handleClick = async (event: React.MouseEvent) => {

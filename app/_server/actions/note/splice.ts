@@ -12,7 +12,7 @@ import { commitNote } from "@/app/_server/actions/history/repo";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
-import { extractHashtagsFromContent, normalizeTag } from "@/app/_utils/tag-utils";
+import { mergeTags, tagList } from "@/app/_utils/tag-utils";
 import {
   extractYamlMetadata,
   generateYamlFrontmatter,
@@ -35,19 +35,13 @@ export interface Spliced {
   managed: boolean;
 }
 
-const _tagSet = (body: string): Set<string> => new Set(extractHashtagsFromContent(body));
-
-const _storedTags = (metadata: Record<string, unknown>): string[] =>
-  Array.isArray(metadata.tags) ? metadata.tags.map((tag) => normalizeTag(String(tag))).filter(Boolean) : [];
+const _storedTags = (metadata: Record<string, unknown>): string[] => tagList(metadata.tags);
 
 const _retagged = (metadata: Record<string, unknown>, before: string, after: string): string[] | null => {
-  const was = _tagSet(before);
-  const now = _tagSet(after);
-  const added = Array.from(now).filter((tag) => !was.has(tag));
-  const dropped = new Set(Array.from(was).filter((tag) => !now.has(tag)));
-  if (!added.length && !dropped.size) return null;
-  const kept = _storedTags(metadata).filter((tag) => !dropped.has(tag));
-  return Array.from(new Set([...kept, ...added])).sort();
+  if (before === after) return null;
+  const stored = _storedTags(metadata);
+  const next = mergeTags(stored, before, after);
+  return next.length === stored.length && next.every((tag, index) => tag === stored[index]) ? null : next;
 };
 
 const _nextTags = (
@@ -133,16 +127,15 @@ export const spliceNote = async (
   uuid: string,
   edit: (body: string) => SpliceEdit,
   options: SpliceOptions = {},
-): Promise<Result<Spliced>> => {
-  const filePath = await reachableFile(uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
-  if (!filePath) return { success: false, error: SPLICE_DENIED };
-
-  return runQueued(itemLane(Modes.NOTES, uuid), async () => {
+): Promise<Result<Spliced>> =>
+  runQueued(itemLane(Modes.NOTES, uuid), async (): Promise<Result<Spliced>> => {
     try {
+      const filePath = await reachableFile(uuid, ItemTypes.NOTE, actor.username, PermissionTypes.EDIT);
+      if (!filePath) return { success: false, error: SPLICE_DENIED };
+
       return await _splice(actor, uuid, filePath, edit, options);
     } catch (error) {
       console.error(`spliceNote failed for ${uuid}:`, error);
       return { success: false, error: "Failed to update note" };
     }
   });
-};

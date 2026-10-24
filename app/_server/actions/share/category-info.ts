@@ -102,10 +102,10 @@ export const patchCatInfo = async (
 
 export const mutateCatInfo = async (
   dirPath: string,
-  mutator: (info: CategoryInfo) => CategoryInfo | null,
+  mutator: (info: CategoryInfo) => CategoryInfo | null | Promise<CategoryInfo | null>,
 ): Promise<boolean> =>
   runQueued(_lane(dirPath), async () => {
-    const next = mutator(await readCatInfo(dirPath));
+    const next = await mutator(await readCatInfo(dirPath));
     return next ? writeCatInfo(dirPath, next) : false;
   });
 

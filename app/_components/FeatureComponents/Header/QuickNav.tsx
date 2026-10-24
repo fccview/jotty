@@ -13,7 +13,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { AppMode, User, SanitisedUser } from "@/app/_types";
 import { BottomBarSpaces, Modes } from "@/app/_types/enums";
-import { cn, handleScroll } from "@/app/_utils/global-utils";
+import { cn, handleScroll, isPageScroller } from "@/app/_utils/global-utils";
 import { NavigationGlobalIcon } from "../Navigation/Parts/NavigationGlobalIcon";
 import { NavigationSearchIcon } from "../Navigation/Parts/NavigationSearchIcon";
 import { UserDropdown } from "../Navigation/Parts/UserDropdown";
@@ -65,7 +65,7 @@ export const QuickNav = ({
     const handleGlobalScroll = (e: Event) => {
       handleScroll(e, "jotty-scrollable-content", setIsScrolled, lastScrollY);
       const target = e.target as HTMLElement;
-      if (target.classList?.contains("jotty-scrollable-content")) {
+      if (isPageScroller(target, "jotty-scrollable-content")) {
         setIsAtTop(target.scrollTop <= 0);
       }
     };

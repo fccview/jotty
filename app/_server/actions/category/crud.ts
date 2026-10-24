@@ -18,7 +18,9 @@ import {
   targetDir,
   bouncer,
   refusalMessage,
+  reservedRefusal,
 } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { catUuid } from "@/app/_server/actions/share/category-info";
 import { PermissionTypes } from "@/app/_types/enums";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
@@ -36,6 +38,11 @@ export const createCategory = async (formData: FormData) => {
     const name = formData.get("name") as string;
     const parent = formData.get("parent") as string;
     const mode = formData.get("mode") as Modes;
+    const requested = parent ? `${parent}/${name}` : name;
+
+    if (isReservedCategory(requested)) {
+      return { error: await reservedRefusal(requested) };
+    }
 
     const mountParent = await _mountTarget(mode, parent);
 
@@ -277,6 +284,10 @@ export const renameCategory = async (formData: FormData) => {
     const pathParts = oldPath.split("/");
     pathParts[pathParts.length - 1] = newName;
     const newPath = pathParts.join("/");
+
+    if (isReservedCategory(newPath)) {
+      return { error: await reservedRefusal(newPath) };
+    }
 
     if (!isPathSafe(userDir, newPath)) {
       await logAudit({

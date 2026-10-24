@@ -3,6 +3,7 @@ export interface WsEvent {
   action: "created" | "updated" | "deleted";
   entityId?: string;
   username: string;
+  recipient?: string;
   connectionId?: string;
 }
 

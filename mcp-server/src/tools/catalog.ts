@@ -1,3 +1,4 @@
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { ToolErrorKind, type ErrorHints } from "./errors.ts";
 
 export interface CatalogEntry {
@@ -6,9 +7,21 @@ export interface CatalogEntry {
   pick?: string;
   omit?: string[];
   hints?: ErrorHints;
+  annotations?: Tool["annotations"];
 }
 
 const SUMMARY_PAGE = { view: "summary", limit: 25 };
+
+const CARD_NOT_FOUND =
+  "list_boards gives the board uuid and get_board lists its cards with their ids. A card id also works without the board uuid in front of it.";
+
+const CARD_NOISE = ["history", "timeEntries", "order", "createdBy", "createdAt"];
+
+const FIND_HINT =
+  "find has to appear exactly once. Re-read the note with get_note and copy the text exactly, adding nearby text when it shows up more than once. The end of the note counts as a line end.";
+
+const SORT_HINT =
+  "sort is alphabetical, created, modified or shuffle. direction is asc (A to Z, oldest first) or desc (Z to A, newest first) and is ignored by shuffle. Kanban boards can't be sorted this way, move their cards instead.";
 
 export const CATALOG: CatalogEntry[] = [
   { id: "search", omit: ["id"] },
@@ -18,9 +31,9 @@ export const CATALOG: CatalogEntry[] = [
   { id: "listNotes", defaults: SUMMARY_PAGE },
   { id: "getNote" },
   { id: "getNotes" },
-  { id: "createNote" },
-  { id: "updateNote" },
-  { id: "patchNote" },
+  { id: "createNote", omit: ["content"] },
+  { id: "updateNote", omit: ["content"] },
+  { id: "patchNote", hints: { [ToolErrorKind.Input]: FIND_HINT } },
   { id: "tagNote" },
   { id: "listTags" },
   { id: "deleteNote" },
@@ -34,12 +47,48 @@ export const CATALOG: CatalogEntry[] = [
   { id: "deleteChecklistItem" },
   { id: "checkChecklistItem" },
   { id: "uncheckChecklistItem" },
+  {
+    id: "sortChecklistItems",
+    hints: { [ToolErrorKind.Input]: SORT_HINT },
+    annotations: { idempotentHint: false },
+  },
   { id: "listBoards", defaults: SUMMARY_PAGE },
   { id: "getBoard" },
   { id: "createBoard" },
-  { id: "createBoardItem" },
-  { id: "updateBoardItem", pick: "item" },
-  { id: "moveBoardItem", pick: "item" },
+  { id: "createBoardItem", omit: CARD_NOISE },
+  { id: "updateBoardItem", pick: "item", omit: CARD_NOISE },
+  {
+    id: "moveBoardItem",
+    pick: "item",
+    omit: CARD_NOISE,
+    hints: { [ToolErrorKind.Input]: "Move it to one of the column ids the message lists." },
+  },
+  {
+    id: "assignAgent",
+    pick: "item",
+    omit: CARD_NOISE,
+    hints: {
+      [ToolErrorKind.Input]:
+        "Agent ids use 1-64 letters, digits, dots, dashes or underscores with no spaces, and Jotty lowercases them. Any id works, and a warning says when the spec's Agents section doesn't list it. An empty agent clears the card.",
+      [ToolErrorKind.NotFound]: CARD_NOT_FOUND,
+    },
+  },
+  {
+    id: "setBoardSpec",
+    hints: {
+      [ToolErrorKind.Input]:
+        "noteId has to be the uuid of a note you can read that isn't encrypted. search or list_notes gives it. An empty noteId unpins the spec.",
+    },
+  },
+  { id: "getTaskContext", hints: { [ToolErrorKind.NotFound]: CARD_NOT_FOUND } },
+  {
+    id: "listAgentTasks",
+    defaults: { limit: 25 },
+    hints: {
+      [ToolErrorKind.Input]:
+        "agent is one exact agent id, boardId a board uuid, and status a comma separated list of status ids that get_board shows.",
+    },
+  },
   { id: "getRelated" },
   { id: "getBrain" },
   { id: "listOrphans" },
@@ -57,8 +106,22 @@ export const CATALOG: CatalogEntry[] = [
     },
   },
   { id: "listShares", defaults: { limit: 25 } },
-  { id: "listDocs" },
-  { id: "readDoc" },
+  {
+    id: "shareItem",
+    hints: {
+      [ToolErrorKind.Input]:
+        "username is an existing user's exact username, or public for a read-only link. permission is r, rw or rwd. You can't share with yourself.",
+      [ToolErrorKind.Forbidden]: "Only the item's owner or an admin can change who it's shared with.",
+      [ToolErrorKind.NotFound]: "itemId is the uuid of a note or checklist you can see. search or list_notes gives it.",
+    },
+  },
+  {
+    id: "unshareItem",
+    hints: {
+      [ToolErrorKind.Forbidden]: "Only the item's owner or an admin can change who it's shared with.",
+      [ToolErrorKind.NotFound]: "itemId is the uuid of a note or checklist you can see. list_shares with item shows who holds it.",
+    },
+  },
   { id: "listDuplicateUuids" },
   { id: "repairDuplicateUuid" },
 ];

@@ -2,7 +2,7 @@ import { Add01Icon } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { CategoryTreeSelector } from "../Dropdowns/CategoryTreeSelector";
 import { Category } from "@/app/_types";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { RESERVED_DIRS } from "@/app/_consts/files";
 import { useTranslations } from "next-intl";
 
 interface CategoryInputProps {
@@ -32,7 +32,7 @@ export const CategoryInput = ({
     selectedCategory
     : t('common.rootLevel');
 
-  const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const notAllowedNames = RESERVED_DIRS;
   const isNotAllowedName = notAllowedNames.includes(
     newCategory?.trim()?.toLowerCase()
   );

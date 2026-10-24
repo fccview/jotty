@@ -1,90 +1,55 @@
-import { lock, unlock } from "proper-lockfile";
 import { CHECKLISTS_FOLDER } from "@/app/_consts/checklists";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { isDebugFlag } from "@/app/_utils/env-utils";
+import { User } from "@/app/_types";
 import fs from "fs/promises";
 import path from "path";
+import { mutateUsers } from "./records";
 
 const debugProxy = isDebugFlag("proxy");
 
-export async function ensureUser(
-  username: string,
-  isAdmin: boolean,
-): Promise<void> {
-  const usersFile = path.join(process.cwd(), "data", "users", "users.json");
-  await fs.mkdir(path.dirname(usersFile), { recursive: true });
+const _ssoLog = (message: string, detail: unknown) => {
+  if (debugProxy) console.log(`SSO CALLBACK - ${message}`, detail);
+};
 
-  await lock(usersFile);
-  try {
-    let users: any[] = [];
-    try {
-      const content = await fs.readFile(usersFile, "utf-8");
-      if (content) {
-        users = JSON.parse(content);
-      }
-    } catch {}
+const _fresh = (username: string, isAdmin: boolean): User => ({
+  username,
+  passwordHash: "",
+  isAdmin,
+  createdAt: new Date().toISOString(),
+  preferredDateFormat: "system",
+  preferredTimeFormat: "system",
+});
 
-    if (users.length === 0) {
-      users.push({
-        username,
-        passwordHash: "",
-        isAdmin: true,
-        isSuperAdmin: true,
-        createdAt: new Date().toISOString(),
-      });
-      if (debugProxy) {
-        console.log(
-          "SSO CALLBACK - Created first user as super admin:",
-          username,
-        );
-      }
-    } else {
-      const existing = users.find((u) => u.username === username);
-      if (!existing) {
-        users.push({
-          username,
-          passwordHash: "",
-          isAdmin,
-          createdAt: new Date().toISOString(),
-        });
-        if (debugProxy) {
-          console.log("SSO CALLBACK - Created new user:", {
-            username,
-            isAdmin,
-          });
-        }
-      } else {
-        const wasAdmin = existing.isAdmin;
-        if (isAdmin && !existing.isAdmin) {
-          existing.isAdmin = true;
-          if (debugProxy) {
-            console.log("SSO CALLBACK - Updated existing user to admin:", {
-              username,
-              wasAdmin,
-              nowAdmin: true,
-            });
-          }
-        } else if (debugProxy) {
-          console.log("SSO CALLBACK - User already exists:", {
-            username,
-            currentIsAdmin: existing.isAdmin,
-            requestedAdmin: isAdmin,
-          });
-        }
-      }
-    }
-    await fs.writeFile(usersFile, JSON.stringify(users, null, 2));
-  } finally {
-    await unlock(usersFile);
+const _greet = (users: User[], username: string, isAdmin: boolean): true => {
+  if (users.length === 0) {
+    users.push({ ..._fresh(username, true), isSuperAdmin: true });
+    _ssoLog("Created first user as super admin:", username);
+    return true;
   }
 
-  const checklistDir = path.join(
-    process.cwd(),
-    "data",
-    CHECKLISTS_FOLDER,
-    username,
-  );
-  const notesDir = path.join(process.cwd(), "data", NOTES_FOLDER, username);
-  await fs.mkdir(checklistDir, { recursive: true });
-  await fs.mkdir(notesDir, { recursive: true });
-}
+  const existing = users.find((user) => user.username === username);
+
+  if (!existing) {
+    users.push(_fresh(username, isAdmin));
+    _ssoLog("Created new user:", { username, isAdmin });
+    return true;
+  }
+
+  if (isAdmin && !existing.isAdmin) {
+    existing.isAdmin = true;
+    _ssoLog("Updated existing user to admin:", { username, wasAdmin: false, nowAdmin: true });
+    return true;
+  }
+
+  _ssoLog("User already exists:", { username, currentIsAdmin: existing.isAdmin, requestedAdmin: isAdmin });
+  return true;
+};
+
+export const ensureUser = async (username: string, isAdmin: boolean): Promise<void> => {
+  const saved = await mutateUsers((users) => _greet(users, username, isAdmin));
+  if (!saved) throw new Error(`Could not save the user record for ${username}`);
+
+  await fs.mkdir(path.join(process.cwd(), "data", CHECKLISTS_FOLDER, username), { recursive: true });
+  await fs.mkdir(path.join(process.cwd(), "data", NOTES_FOLDER, username), { recursive: true });
+};

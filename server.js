@@ -47,12 +47,15 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
-function authenticateWs(req) {
+function sessionIdOf(req) {
   const cookies = parseCookies(req.headers.cookie);
-  const isHttps = process.env.HTTPS === "true";
-  const sessionId = isHttps
+  return process.env.HTTPS === "true"
     ? cookies["__Host-session"]
     : cookies["session"];
+}
+
+function authenticateWs(req) {
+  const sessionId = sessionIdOf(req);
 
   if (!sessionId) return null;
 
@@ -104,12 +107,14 @@ wss.on("close", () => {
   clearInterval(heartbeat);
 });
 
+const reachesUser = (event, username) => !event.recipient || event.recipient === username;
+
 globalThis.__jottyBroadcast = (event) => {
   const payload = JSON.stringify(event);
   wss.clients.forEach((client) => {
-    if (client.readyState === 1) {
-      client.send(payload);
-    }
+    if (client.readyState !== 1) return;
+    if (!reachesUser(event, connectedClients.get(client)?.username)) return;
+    client.send(payload);
   });
 };
 
@@ -135,6 +140,15 @@ app.prepare().then(() => {
 
   server.on("upgrade", (req, socket, head) => {
     const { pathname } = parse(req.url);
+    if (pathname.startsWith("/_live/")) {
+      const username = authenticateWs(req);
+      if (!username || !globalThis.__jottyLiveUpgrade) {
+        socket.destroy();
+        return;
+      }
+      globalThis.__jottyLiveUpgrade(req, socket, head, username, sessionIdOf(req));
+      return;
+    }
     if (pathname === "/_ws") {
       const username = authenticateWs(req);
       if (!username) {

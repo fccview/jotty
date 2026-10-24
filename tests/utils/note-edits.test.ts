@@ -12,6 +12,22 @@ import {
 } from "@/app/_utils/note-edits";
 
 describe("findReplace", () => {
+  it("lets the end of the note stand in for a closing newline", () => {
+    expect(findReplace("## Blockers\n\n## Handover", "## Handover\n", "## Handover\n- entry\n")).toEqual({
+      body: "## Blockers\n\n## Handover\n- entry\n",
+    });
+  });
+
+  it("does the same for CRLF notes", () => {
+    expect(findReplace("a\r\n## Handover", "## Handover\n", "## Handover\n- x\n")).toEqual({
+      body: "a\r\n## Handover\r\n- x\r\n",
+    });
+  });
+
+  it("still refuses a heading that only appears mid-line", () => {
+    expect(findReplace("see ## Handover later", "## Handover\n", "x")).toEqual({ error: FIND_MISSING });
+  });
+
   it("swaps a unique match and leaves the rest alone", () => {
     expect(findReplace("one\ntwo\nthree\n", "two", "2")).toEqual({ body: "one\n2\nthree\n" });
   });
