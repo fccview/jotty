@@ -111,3 +111,15 @@ export enum DropPosition {
   BEFORE = "before",
   AFTER = "after",
 }
+
+export enum ItemSort {
+  ALPHABETICAL = "alphabetical",
+  SHUFFLE = "shuffle",
+  CREATED = "created",
+  MODIFIED = "modified",
+}
+
+export enum SortDirection {
+  ASC = "asc",
+  DESC = "desc",
+}

@@ -53,6 +53,7 @@ describe("http transport", () => {
       "create_note",
       "delete_note",
       "check_checklist_item",
+      "sort_checklist_items",
       "update_board_item",
       "assign_agent",
       "set_board_spec",

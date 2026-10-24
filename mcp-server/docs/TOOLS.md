@@ -100,6 +100,7 @@ If a script rewrites one of your notes, add `managed: true` to its frontmatter. 
 | `delete_checklist_item` | Removes an item and its sub-items | `listId`, `itemIndex` |
 | `check_checklist_item` | Ticks an item and its sub-items | `listId`, `itemIndex` |
 | `uncheck_checklist_item` | Unticks an item and its sub-items | `listId`, `itemIndex` |
+| `sort_checklist_items` | Puts the whole list in alphabetical, creation, last-modified or random order. Sub-items sort under their parent. Simple checklists only | `listId`, `sort` (`alphabetical`, `created`, `modified` or `shuffle`), `direction` (`asc` for A to Z or oldest first, `desc` for Z to A or newest first, ignored by shuffle) |
 
 ```json
 { "listId": "9a7f3e21-6c4b-4e08-b2d5-18f0c7a3e964", "text": "Buy charcoal", "parentIndex": "2" }

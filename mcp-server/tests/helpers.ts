@@ -110,6 +110,28 @@ export const FAKE_SPEC: OpenApiDocument = {
         ],
       },
     },
+    "/checklists/{listId}/items/sort": {
+      put: {
+        operationId: "sortChecklistItems",
+        summary: "Sort checklist items",
+        tags: ["Checklist items"],
+        parameters: [{ name: "listId", in: "path" as never, required: true, schema: { type: "string" } }],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  sort: { type: "string", enum: ["alphabetical", "shuffle", "created", "modified"] },
+                  direction: { type: "string", enum: ["asc", "desc"], default: "asc" },
+                },
+                required: ["sort"],
+              },
+            },
+          },
+        },
+      },
+    },
     "/relations/links": {
       post: {
         operationId: "connectItems",
@@ -206,6 +228,11 @@ export const serveJotty = (spec: OpenApiDocument | null = FAKE_SPEC): FakeJotty 
       if (url.pathname === "/api/admin/duplicate-uuids") return _json({ duplicates: [{ uuid: "d-1" }], total: 1 });
       if (url.pathname === "/api/tasks") return _json({ tasks: MANY_NOTES });
       if (url.pathname === "/api/tasks/bad/statuses") return _json({ error: "Status id is required" }, 400);
+      if (url.pathname.endsWith("/items/sort")) {
+        const { sort } = body as { sort?: string };
+        if (!["alphabetical", "shuffle", "created", "modified"].includes(sort ?? "")) return _json({ error: "'sort' must be one of: alphabetical, shuffle, created, modified" }, 400);
+        return _json({ success: true, data: { id: "l-1", items: [{ id: "i-1", itemIndex: "0", text: "Apple" }] } });
+      }
       if (url.pathname.endsWith("/check")) return _json({ error: "Item index out of range" }, 400);
       if (url.pathname === "/api/relations/links") return _json({ error: "Mention not found" }, 400);
       if (url.pathname === "/api/notes") return _json(request.method === "GET" ? { notes: [NOTE] } : { success: true, data: NOTE });

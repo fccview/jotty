@@ -10,6 +10,7 @@ import * as checklistsListIdItemsItemIndex from "@/app/api/checklists/[listId]/i
 import * as checklistsListIdItemsItemIndexCheck from "@/app/api/checklists/[listId]/items/[itemIndex]/check/route";
 import * as checklistsListIdItemsItemIndexUncheck from "@/app/api/checklists/[listId]/items/[itemIndex]/uncheck/route";
 import * as checklistsListIdItemsReorder from "@/app/api/checklists/[listId]/items/reorder/route";
+import * as checklistsListIdItemsSort from "@/app/api/checklists/[listId]/items/sort/route";
 import * as docs from "@/app/api/docs/route";
 import * as exports from "@/app/api/exports/route";
 import * as exportsFilename from "@/app/api/exports/[filename]/route";
@@ -70,6 +71,7 @@ export const ROUTE_MODULES: object[] = [
   checklistsListIdItemsItemIndexCheck,
   checklistsListIdItemsItemIndexUncheck,
   checklistsListIdItemsReorder,
+  checklistsListIdItemsSort,
   docs,
   exports,
   exportsFilename,

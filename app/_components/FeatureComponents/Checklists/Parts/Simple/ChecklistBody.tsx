@@ -11,7 +11,8 @@ import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checkli
 import VirtualizedChecklistItems from "./VirtualizedChecklistItems";
 import { Checklist, Item } from "@/app/_types";
 import { DropIndicator } from "./DropIndicator";
-import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
+import { ItemSort, ItemTypes, SortDirection, TaskStatusLabels } from "@/app/_types/enums";
+import { ChecklistSortMenu } from "./ChecklistSortMenu";
 import { useMemo, useState } from "react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
@@ -28,6 +29,10 @@ interface ChecklistBodyProps {
   handleAddSubItem: (parentId: string, text: string) => void;
   handleBulkToggle: (completed: boolean) => void;
   handleClearAll: (type: "completed" | "incomplete") => void;
+  handleSort: (sort: ItemSort, direction?: SortDirection) => void;
+  handleUndoSort: () => void;
+  canUndoSort: boolean;
+  isSyncing: boolean;
   handleDragEnd: (event: DragEndEvent) => void;
   sensors: any;
   isLoading: boolean;
@@ -44,6 +49,10 @@ export const ChecklistBody = ({
   handleAddSubItem,
   handleBulkToggle,
   handleClearAll,
+  handleSort,
+  handleUndoSort,
+  canUndoSort,
+  isSyncing,
   handleDragEnd,
   sensors,
   isLoading,
@@ -103,6 +112,15 @@ export const ChecklistBody = ({
     });
   };
 
+  const sortMenu = (
+    <ChecklistSortMenu
+      onSort={handleSort}
+      onUndo={handleUndoSort}
+      canUndo={canUndoSort}
+      disabled={isLoading || isSyncing}
+    />
+  );
+
   if (localList.items.length === 0) {
     return (
       <>
@@ -141,6 +159,7 @@ export const ChecklistBody = ({
                 count={incompleteItems.length}
                 onBulkToggle={() => handleBulkToggle(true)}
                 onClearAll={() => handleClearAll("incomplete")}
+                actions={sortMenu}
                 isLoading={isLoading}
               >
                 {incompleteItems.length >= 50 ? (
@@ -208,6 +227,7 @@ export const ChecklistBody = ({
                 count={completedItems.length}
                 onBulkToggle={() => handleBulkToggle(false)}
                 onClearAll={() => handleClearAll("completed")}
+                actions={incompleteItems.length === 0 && sortMenu}
                 isLoading={isLoading}
                 isCompleted
               >
