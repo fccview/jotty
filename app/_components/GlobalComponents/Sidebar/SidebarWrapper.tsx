@@ -6,7 +6,7 @@ import { AppName } from "@/app/_components/GlobalComponents/Layout/AppName";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useResizing } from "@/app/_hooks/useResizing";
 import { useSidebarStore } from "@/app/_utils/sidebar-store";
-import { ReactNode, Ref, useRef, useLayoutEffect, useCallback } from "react";
+import { MutableRefObject, ReactNode, Ref, useRef, useLayoutEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { ConnectionIndicator } from "@/app/_components/GlobalComponents/Indicators/ConnectionIndicator";
 
@@ -33,13 +33,14 @@ export const SidebarWrapper = ({
 }: SidebarWrapperProps) => {
   const { isDemoMode, isRwMarkable } = useAppMode();
   const { sidebarWidth, isResizing, startResizing } = useResizing();
-  const { scrollTop, setScrollTop } = useSidebarStore();
+  const setScrollTop = useSidebarStore((state) => state.setScrollTop);
   const internalScrollRef = useRef<HTMLDivElement>(null);
   const isRestoringScroll = useRef(false);
   const pathname = usePathname();
 
   useLayoutEffect(() => {
     const el = internalScrollRef.current;
+    const scrollTop = useSidebarStore.getState().scrollTop;
     if (el && scrollTop > 0) {
       isRestoringScroll.current = true;
       el.scrollTop = scrollTop;
@@ -48,6 +49,15 @@ export const SidebarWrapper = ({
       });
     }
   }, [pathname]);
+
+  const attachScroll = useCallback(
+    (element: HTMLDivElement | null) => {
+      internalScrollRef.current = element;
+      if (typeof scrollRef === "function") scrollRef(element);
+      else if (scrollRef) (scrollRef as MutableRefObject<HTMLDivElement | null>).current = element;
+    },
+    [scrollRef],
+  );
 
   const handleScroll = useCallback(() => {
     if (isRestoringScroll.current) return;
@@ -113,7 +123,7 @@ export const SidebarWrapper = ({
           </div>
           {navigation}
           <div
-            ref={internalScrollRef}
+            ref={attachScroll}
             onScroll={handleScroll}
             className="jotty-sidebar-categories flex-1 overflow-y-auto p-2 space-y-2"
           >

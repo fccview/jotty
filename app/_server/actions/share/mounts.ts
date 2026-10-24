@@ -10,6 +10,8 @@ import {
   CHECKLISTS_DIR,
 } from "@/app/_consts/files";
 import { mountName, parseSharedWith } from "@/app/_utils/sharing-utils";
+import { currentFrontmatterOf } from "@/app/_server/actions/lib/frontmatter-memo";
+import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import {
   getOrCompute,
   dropByPrefix,
@@ -47,16 +49,42 @@ const _ownTopNames = async (
 const _mountsKey = (mode: Modes, username: string): string =>
   `${MOUNTS_CACHE_PREFIX}${mode}:${username}`;
 
+const _touchesViewer = async (
+  filePath: string,
+  username: string,
+  mounts: SharedMount[],
+): Promise<boolean> => {
+  const metadata = await currentFrontmatterOf(filePath);
+  if (parseSharedWith(metadata?.[SHARED_WITH_KEY])?.users[username]) return true;
+  const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : null;
+  return mounts.some((mount) => mount.isImplicit && (!uuid || mount.itemUuids?.includes(uuid)));
+};
+
+const _patchMounts =
+  (username: string) =>
+  async (paths: string[], current: SharedMount[]): Promise<SharedMount[] | null> => {
+    for (const filePath of paths) {
+      if (await _touchesViewer(filePath, username, current)) return null;
+    }
+    return current;
+  };
+
 const _cachedMounts = async (
   mode: Modes,
   username: string,
 ): Promise<SharedMount[]> => {
   const watched = path.join(process.cwd(), DATA_DIR, mode);
 
-  return getOrCompute(_mountsKey(mode, username), watched, () =>
-    listMounts(mode, username),
+  return getOrCompute(
+    _mountsKey(mode, username),
+    watched,
+    () => listMounts(mode, username),
+    _patchMounts(username),
   );
 };
+
+export const shareFactsKey = (mode: Modes, dir: string): string =>
+  `${MOUNTS_CACHE_PREFIX}${mode}:share-facts:${dir}`;
 
 export function dropMounts(mode: Modes) {
   dropByPrefix(`${MOUNTS_CACHE_PREFIX}${mode}:`);

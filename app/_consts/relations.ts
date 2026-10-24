@@ -1,5 +1,5 @@
 export const RELATIONS_DB_NAME = ".relations.db";
-export const RELATIONS_SCHEMA_VERSION = 7;
+export const RELATIONS_SCHEMA_VERSION = 8;
 export const LEGACY_LINK_PREFIX = "/jotty/";
 export const WIKILINK_REGEX =
   /\[\[([^\[\]|#^\n]+)(?:[#^][^\[\]|\n]*)?(?:\|([^\[\]\n]*))?\]\]/g;
@@ -38,6 +38,23 @@ export enum RelationsStatus {
   BUILDING = "building",
   READY = "ready",
 }
+
+export enum ShiftKinds {
+  RECONCILE = "reconcile",
+  REFRESH = "refresh",
+  OWNER = "owner",
+  TREE = "tree",
+}
+
+export enum ShiftNotes {
+  DONE = "done",
+  FAILED = "failed",
+  RELINK = "relink",
+}
+
+export const RELATIONS_ACTOR = "system";
+export const RECONCILE_EVERY_MS = 60_000;
+export const STALE_READ_RETRIES = 3;
 
 export enum BrainNodeKinds {
   NOTE = "note",

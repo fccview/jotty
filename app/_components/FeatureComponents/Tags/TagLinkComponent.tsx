@@ -7,7 +7,8 @@ import { NodeViewWrapper } from "@tiptap/react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { TagHoverCard } from "@/app/_components/FeatureComponents/Tags/TagHoverCard";
 import { Note } from "@/app/_types";
-import { normalizeTag, tagHref, tagMatchesFilter } from "@/app/_utils/tag-utils";
+import { normalizeTag, tagHref } from "@/app/_utils/tag-utils";
+import { useTaggedItems } from "@/app/_hooks/useCatalog";
 
 interface TagLinkComponentProps {
   node: {
@@ -24,22 +25,13 @@ export const TagLinkComponent = ({ node }: TagLinkComponentProps) => {
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const wrapperRef = useRef<HTMLElement>(null);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const { notes, checklists, tagsIndex } = useAppMode();
+  const { tagsIndex } = useAppMode();
 
   const normalizedTag = normalizeTag(tag);
   const tagInfo = tagsIndex[normalizedTag];
-
-  const notesWithTag = tagInfo
-    ? (notes.filter((n) =>
-        n.tags?.some((t) => tagMatchesFilter(t, normalizedTag)),
-      ) as Note[])
-    : [];
-
-  const checklistsWithTag = tagInfo
-    ? checklists.filter((c) =>
-        c.tags?.some((t) => tagMatchesFilter(t, normalizedTag)),
-      )
-    : [];
+  const tagged = useTaggedItems(tagInfo ? normalizedTag : "", showPopup);
+  const notesWithTag = (tagged?.notes || []) as Note[];
+  const checklistsWithTag = tagged?.checklists || [];
 
   const hasItems = notesWithTag.length > 0 || checklistsWithTag.length > 0;
 
@@ -112,22 +104,13 @@ export const TagLinkViewComponent = ({ tag }: TagLinkViewComponentProps) => {
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const wrapperRef = useRef<HTMLSpanElement>(null);
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const { notes, checklists, tagsIndex } = useAppMode();
+  const { tagsIndex } = useAppMode();
 
   const normalizedTag = normalizeTag(tag);
   const tagInfo = tagsIndex[normalizedTag];
-
-  const notesWithTag = tagInfo
-    ? (notes.filter((n) =>
-        n.tags?.some((t) => tagMatchesFilter(t, normalizedTag)),
-      ) as Note[])
-    : [];
-
-  const checklistsWithTag = tagInfo
-    ? checklists.filter((c) =>
-        c.tags?.some((t) => tagMatchesFilter(t, normalizedTag)),
-      )
-    : [];
+  const tagged = useTaggedItems(tagInfo ? normalizedTag : "", showPopup);
+  const notesWithTag = (tagged?.notes || []) as Note[];
+  const checklistsWithTag = tagged?.checklists || [];
 
   const hasItems = notesWithTag.length > 0 || checklistsWithTag.length > 0;
 

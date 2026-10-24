@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FileAddIcon } from "hugeicons-react";
@@ -11,7 +11,8 @@ import { createNote } from "@/app/_server/actions/note";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { MARKDOWN_EXT, WikiRanks } from "@/app/_consts/relations";
+import { useWikiHit } from "@/app/_hooks/useCatalog";
+import { wikiKey } from "@/app/_utils/wiki-match-utils";
 import { InternalLinkComponent } from "./TipTap/CustomExtensions/InternalLinkComponent";
 
 interface WikiLinkProps {
@@ -20,59 +21,9 @@ interface WikiLinkProps {
   showCategory?: boolean;
 }
 
-interface Candidate {
-  type: ItemTypes;
-  uuid?: string;
-  title?: string;
-  owner?: string;
-  id?: string;
-  category?: string;
-}
-
-const titleKey = (title = "") => title.trim().replace(/\s+/g, " ").toLowerCase();
-
-const folderOf = (item: Candidate) =>
-  item.category === UNCATEGORIZED ? [] : (item.category || "").split("/").filter(Boolean);
-
-const pathKey = (item: Candidate) => [...folderOf(item), item.id || ""].map(titleKey).join("/");
-
-const stripMd = (key: string) =>
-  key.endsWith(MARKDOWN_EXT) ? key.slice(0, -MARKDOWN_EXT.length).trim() : key;
-
-const rankOf = (item: Candidate, key: string): number | null => {
-  const named = stripMd(key);
-  const full = pathKey(item);
-  if (titleKey(item.title) === key) return WikiRanks.TITLE;
-  if (titleKey(item.id) === named) return WikiRanks.FILENAME;
-  if (named.includes("/") && (full === named || full.endsWith(`/${named}`))) return WikiRanks.PATH;
-  return null;
-};
-
-export const useWikiMatch = (target: string): Candidate | null => {
-  const { notes, checklists, user } = useAppMode();
+export const useWikiMatch = (target: string) => {
   const { wikis } = useRelations();
-
-  return useMemo(() => {
-    const key = titleKey(target);
-    const candidates: Candidate[] = [
-      ...notes.map((item) => ({ ...item, type: ItemTypes.NOTE })),
-      ...checklists.map((item) => ({ ...item, type: ItemTypes.CHECKLIST })),
-    ].filter((item) => item.uuid);
-
-    const bound = wikis[key]?.toLowerCase();
-    if (bound) {
-      const pinned = candidates.find((item) => item.uuid!.toLowerCase() === bound);
-      if (pinned) return pinned;
-    }
-
-    const ranked = candidates
-      .filter((item) => !item.owner || item.owner === user?.username)
-      .map((item) => ({ item, rank: rankOf(item, key), path: pathKey(item) }))
-      .filter((entry): entry is { item: Candidate; rank: number; path: string } => entry.rank !== null)
-      .sort((a, b) => a.rank - b.rank || a.path.localeCompare(b.path));
-
-    return ranked[0]?.item || null;
-  }, [notes, checklists, target, wikis, user?.username]);
+  return useWikiHit(target, wikis[wikiKey(target)]?.toLowerCase());
 };
 
 export const WikiLink = ({ target = "", label, showCategory = true }: WikiLinkProps) => {
@@ -84,7 +35,7 @@ export const WikiLink = ({ target = "", label, showCategory = true }: WikiLinkPr
 
   const match = useWikiMatch(target);
 
-  if (!user) return <span>{label || target}</span>;
+  if (!user || match === undefined) return <span>{label || target}</span>;
 
   if (match) {
     return (

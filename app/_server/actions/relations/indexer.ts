@@ -1,19 +1,16 @@
-import fs from "fs/promises";
 import nodeFs from "fs";
 import path from "path";
 import type { DatabaseSync } from "node:sqlite";
-import { CHECKLIST_PIPE, LinkKinds, RelationsStatus } from "@/app/_consts/relations";
+import { isMainThread, parentPort } from "node:worker_threads";
+import { CHECKLIST_PIPE, LinkKinds, ShiftNotes } from "@/app/_consts/relations";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { titleOf } from "@/app/_utils/title-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
-import { singleFlight } from "@/app/_server/actions/lib/concurrency";
 import { pathUuid, uuidOf } from "@/app/_server/actions/lib/read-only";
-import { getAllFileStats } from "@/app/_server/actions/file";
 import { rankClaims, warnClash } from "@/app/_server/actions/lib/uuid-keeper";
-import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { readLinks, titleKey, type LinkTarget } from "./parser";
-import { appOrigins, itemFileInfo, itemTreeRoots } from "./paths";
+import { appOrigins, itemFileInfo } from "./paths";
 import { searchableOf } from "./searchable";
 import {
   aliasKeysOf,
@@ -25,15 +22,7 @@ import {
   rewire,
   type ItemKeys,
 } from "./resolve";
-import {
-  inTransaction,
-  relationsDb,
-  relationsStatus,
-  setRelationsStatus,
-} from "./store";
-
-const RELATIONS_ACTOR = "system";
-const RECONCILE_EVERY_MS = 60_000;
+import { inTransaction, relationsDb } from "./store";
 
 const _tally = (keys: string[]): Map<string, number> => {
   const counts = new Map<string, number>();
@@ -59,7 +48,7 @@ const _hrefLinks = (targets: LinkTarget[], self: string): HrefLink[] => {
   return Array.from(links.values());
 };
 
-const _prefixOf = (dir: string): string =>
+export const treePrefix = (dir: string): string =>
   path.resolve(dir).replace(/[\\/]+$/, "") + path.sep;
 
 const _createdAt = (metadata: Record<string, unknown>, mtime: number): number => {
@@ -96,6 +85,9 @@ interface Indexed {
   gone: Map<string, Snapshot>;
   relinks: Relink[];
 }
+
+const _dropText = (db: DatabaseSync, uuid: string) =>
+  db.prepare("DELETE FROM texts WHERE rowid = (SELECT rowid FROM items WHERE uuid = ?)").run(uuid);
 
 const _snapshot = (db: DatabaseSync, uuid: string): Snapshot | null => {
   const row = db
@@ -158,8 +150,12 @@ const _relinksFor = (
 
 const pendingRelinks = new Set<Promise<void>>();
 
-const _relinkLater = (relinks: Relink[]) => {
+export const relinkLater = (relinks: Relink[]) => {
   if (!relinks.length) return;
+  if (!isMainThread) {
+    parentPort?.postMessage({ kind: ShiftNotes.RELINK, relinks });
+    return;
+  }
   const work = import("./relink")
     .then(({ relinkSources }) => relinkSources(relinks))
     .catch((error) => console.error("Relations could not relink renamed wikilinks:", error))
@@ -291,9 +287,12 @@ export const indexItemFile = (
 
     _rewireAround(db, before?.keys || null, after);
 
-    db.prepare("DELETE FROM texts WHERE uuid = ?").run(uuid);
+    _dropText(db, uuid);
     if (searchable) {
-      db.prepare("INSERT INTO texts (uuid, title, body, prose, extra) VALUES (?, ?, ?, ?, ?)").run(
+      db.prepare(
+        `INSERT INTO texts (rowid, uuid, title, body, prose, extra)
+         VALUES ((SELECT rowid FROM items WHERE uuid = ?1), ?1, ?, ?, ?, ?)`,
+      ).run(
         uuid,
         title,
         searchable.body,
@@ -307,21 +306,21 @@ export const indexItemFile = (
   });
 
   _promoteClaims(indexed.gone);
-  _relinkLater(indexed.relinks);
+  relinkLater(indexed.relinks);
   return loses ? null : uuid;
 };
 
 const _forgetUuid = (db: DatabaseSync, uuid: string): Snapshot | null => {
   const snapshot = _snapshot(db, uuid);
   db.prepare("DELETE FROM links WHERE src = ?").run(uuid);
-  db.prepare("DELETE FROM texts WHERE uuid = ?").run(uuid);
+  _dropText(db, uuid);
   db.prepare("DELETE FROM aliases WHERE uuid = ?").run(uuid);
   db.prepare("DELETE FROM items WHERE uuid = ?").run(uuid);
   if (snapshot) _rewireAround(db, snapshot.keys, null);
   return snapshot;
 };
 
-const _forgetWhere = (where: string, value: string) => {
+const _forgetWhere = (where: string, value: string): number => {
   const forgotten = inTransaction((db) => {
     db.prepare(`DELETE FROM clashes WHERE ${where}`).run(value);
     const rows = db.prepare(`SELECT uuid FROM items WHERE ${where}`).all(value) as {
@@ -332,201 +331,14 @@ const _forgetWhere = (where: string, value: string) => {
       const snapshot = _forgetUuid(db, row.uuid);
       if (snapshot) gone.set(row.uuid, snapshot);
     });
-    return gone;
+    return { gone, count: rows.length };
   });
-  _promoteClaims(forgotten);
+  _promoteClaims(forgotten.gone);
+  return forgotten.count;
 };
 
 export const forgetItemFile = (filePath: string) =>
   _forgetWhere("path = ?", path.resolve(filePath));
 
-export const forgetItemTree = (dir: string) => {
-  const prefix = _prefixOf(dir);
-  _forgetWhere("instr(path, ?) = 1", prefix);
-};
-
-const _changedSince = async (filePath: string, mtime: number): Promise<boolean> => {
-  const now = await fs.stat(filePath).catch(() => null);
-  return !now || Math.floor(now.mtimeMs) !== mtime;
-};
-
-const _indexFromDisk = async (filePath: string, mtime?: number, recheck = false) => {
-  try {
-    const [content, stats] = await Promise.all([
-      fs.readFile(filePath, "utf-8"),
-      mtime === undefined ? fs.stat(filePath) : Promise.resolve(null),
-    ]);
-    const stamp = mtime ?? Math.floor(stats!.mtimeMs);
-    if (recheck && (await _changedSince(filePath, stamp))) return;
-    indexItemFile(filePath, content, stamp);
-  } catch (error) {
-    console.error(`Relations could not index ${filePath}:`, error);
-  }
-};
-
-export const indexItemTree = async (dir: string) => {
-  const stats = await getAllFileStats(dir);
-  for (const [filePath, entry] of Array.from(stats)) {
-    if (itemFileInfo(filePath)) await _indexFromDisk(filePath, entry.mtime.getTime());
-  }
-};
-
-const _indexedMtimes = (): Map<string, number> => {
-  const rows = relationsDb()
-    .prepare("SELECT path, mtime FROM items UNION ALL SELECT path, mtime FROM clashes")
-    .all() as {
-    path: string;
-    mtime: number;
-  }[];
-  return new Map(rows.map((row) => [row.path, row.mtime]));
-};
-
-const _reconcile = async (force = false): Promise<number> => {
-  const wasBuilding = relationsStatus() === RelationsStatus.BUILDING;
-  const indexed = _indexedMtimes();
-  const onDisk = new Map<string, number>();
-
-  for (const root of itemTreeRoots()) {
-    const stats = await getAllFileStats(root);
-    stats.forEach((entry, filePath) => {
-      if (itemFileInfo(filePath)) onDisk.set(path.resolve(filePath), entry.mtime.getTime());
-    });
-  }
-
-  let changed = 0;
-  for (const [filePath, mtime] of Array.from(onDisk)) {
-    if (!force && indexed.get(filePath) === mtime) continue;
-    await _indexFromDisk(filePath, mtime);
-    changed++;
-  }
-
-  for (const filePath of Array.from(indexed.keys())) {
-    if (onDisk.has(filePath)) continue;
-    forgetItemFile(filePath);
-    changed++;
-  }
-
-  setRelationsStatus(RelationsStatus.READY);
-
-  if (wasBuilding || changed > 0) {
-    await broadcast({ type: "relations", action: "updated", username: RELATIONS_ACTOR });
-  }
-
-  return changed;
-};
-
-const _statOf = (target: string) => fs.stat(target).catch(() => null);
-
-const _refreshPath = async (target: string, indexed: Map<string, number>): Promise<boolean> => {
-  const absPath = path.resolve(target);
-  const stats = await _statOf(absPath);
-
-  if (!stats) {
-    if (indexed.has(absPath)) {
-      forgetItemFile(absPath);
-      return true;
-    }
-    const before = indexed.size;
-    forgetItemTree(absPath);
-    return _indexedMtimes().size !== before;
-  }
-
-  if (stats.isDirectory()) {
-    await indexItemTree(absPath);
-    await forgetMissing(absPath);
-    return true;
-  }
-
-  if (!itemFileInfo(absPath)) return false;
-  const mtime = Math.floor(stats.mtimeMs);
-  if (indexed.get(absPath) === mtime) return false;
-  await _indexFromDisk(absPath, mtime, true);
-  return true;
-};
-
-export const refreshItemPaths = async (targets: string[]): Promise<number> => {
-  const indexed = _indexedMtimes();
-  let changed = 0;
-  for (const target of targets) {
-    try {
-      if (await _refreshPath(target, indexed)) changed++;
-    } catch (error) {
-      console.error(`Relations could not refresh ${target}:`, error);
-    }
-  }
-  if (changed > 0) {
-    await broadcast({ type: "relations", action: "updated", username: RELATIONS_ACTOR });
-  }
-  return changed;
-};
-
-export const reconcileRelations = (force = false): Promise<number> =>
-  singleFlight(`relations:reconcile:${force}`, async () => {
-    try {
-      return await _reconcile(force);
-    } catch (error) {
-      console.error("Relations reconcile failed:", error);
-      return 0;
-    }
-  });
-
-export const rebuildRelations = async (): Promise<number> => {
-  setRelationsStatus(RelationsStatus.BUILDING);
-  return reconcileRelations(true);
-};
-
-export const forgetMissing = async (dir: string) => {
-  const prefix = _prefixOf(dir);
-  const rows = relationsDb()
-    .prepare("SELECT path FROM items WHERE substr(path, 1, length(?1)) = ?1")
-    .all(prefix) as { path: string }[];
-  for (const row of rows) {
-    const present = await fs.stat(row.path).then(
-      () => true,
-      () => false,
-    );
-    if (!present) forgetItemFile(row.path);
-  }
-};
-
-export const rebuildOwnerRelations = async (owner: string): Promise<number> => {
-  const dirs = itemTreeRoots().map((root) => path.join(root, owner));
-  for (const dir of dirs) {
-    await indexItemTree(dir);
-    await forgetMissing(dir);
-  }
-  await broadcast({ type: "relations", action: "updated", username: owner });
-  return dirs.length;
-};
-
-declare global {
-  var __jottyRelationsCheckedAt: number | undefined;
-}
-
-export const ensureRelations = (): RelationsStatus => {
-  const status = relationsStatus();
-  const checkedAt = globalThis.__jottyRelationsCheckedAt || 0;
-  const watched = Boolean(globalThis.__jottyRelationsWatch?.healthy);
-  const stale = !watched && Date.now() - checkedAt > RECONCILE_EVERY_MS;
-  if (status === RelationsStatus.BUILDING || stale) {
-    globalThis.__jottyRelationsCheckedAt = Date.now();
-    void reconcileRelations();
-  }
-  return status;
-};
-
-export const settleRelations = async (): Promise<void> => {
-  if (relationsStatus() === RelationsStatus.BUILDING) return;
-  if (globalThis.__jottyRelationsWatch?.healthy) return;
-  if (Date.now() - (globalThis.__jottyRelationsCheckedAt || 0) <= RECONCILE_EVERY_MS) return;
-  globalThis.__jottyRelationsCheckedAt = Date.now();
-  await reconcileRelations();
-};
-
-export const refreshItems = async (uuids: string[]): Promise<number> => {
-  if (!uuids.length) return 0;
-  const rows = relationsDb()
-    .prepare("SELECT path FROM items WHERE uuid IN (SELECT value FROM json_each(?))")
-    .all(JSON.stringify(uuids.map((uuid) => uuid.toLowerCase()))) as { path: string }[];
-  return refreshItemPaths(rows.map((row) => row.path));
-};
+export const forgetItemTree = (dir: string) =>
+  _forgetWhere("instr(path, ?) = 1", treePrefix(dir));

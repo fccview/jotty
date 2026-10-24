@@ -18,6 +18,7 @@ import {
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
 import {
+  patchListListing,
   readListsRecursively,
   type ChecklistReadResult,
   type ListReadOptions,
@@ -90,7 +91,12 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     const readOwn = () => readListsRecursively(userDir, currentUser.username, readOptions);
 
     const cached: ChecklistReadResult[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, absUserDir, readOwn)
+      ? await getOrCompute(
+          ownCacheKey,
+          absUserDir,
+          readOwn,
+          patchListListing(absUserDir, currentUser.username, readOptions),
+        )
       : await readOwn();
 
     let lists: ChecklistReadResult[] = dropClashes(cached, absUserDir);
@@ -125,7 +131,12 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
 
         const readOwner = () => readListsRecursively(ownerDir, mount.owner, readOptions);
         const ownerLists = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerDir, readOwner)
+          ? await getOrCompute(
+              ownerCacheKey,
+              ownerDir,
+              readOwner,
+              patchListListing(ownerDir, mount.owner, readOptions),
+            )
           : await readOwner();
 
         const shared = await mountedItems(

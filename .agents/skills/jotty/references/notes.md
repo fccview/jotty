@@ -26,7 +26,7 @@ Autosave is a real save. Same permission check, same uuid, same broadcast.
 
 ## Links
 
-Internal links are uuid-based: `/jotty/<uuid>` and `data-uuid`. `parseInternalLinks` + `updateIndexForItem` keep `.index.json` honest. Convert old path-shaped links to uuid when you already have the note open for another reason. Do not invent a crawler that decrypts bodies to find them.
+Internal links are uuid-based: `/jotty/<uuid>` and `data-uuid`. The relations index picks them up when the file helpers write ([persistence.md](persistence.md)). Link chips, wikilinks and the `@` picker ask the server through `useCatalog` and `ui-lookups`. They never get the note list. Convert old path-shaped links to uuid when you already have the note open for another reason. Do not invent a crawler that decrypts bodies to find them.
 
 ## History
 

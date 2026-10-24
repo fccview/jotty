@@ -21,7 +21,7 @@ import type {
   RelatedItem,
 } from "@/app/_types/relations";
 import { titleKey } from "./parser";
-import { ensureRelations } from "./indexer";
+import { ensureRelations } from "./night-shift";
 import { relationsDb } from "./store";
 import { suggestEdges } from "./suggestions";
 

@@ -60,8 +60,6 @@ interface EditorSettings {
 }
 
 interface EditorData {
-  notes?: any[];
-  checklists?: any[];
   username?: string;
   tags?: string[];
 }
@@ -136,9 +134,6 @@ export const createEditorExtensions = (
       },
     }),
     SlashCommands.configure({
-      notes: editorData?.notes || [],
-      checklists: editorData?.checklists || [],
-      username: editorData?.username || "",
       tags: editorData?.tags || [],
       enableBilateralLinks: settings.enableBilateralLinks,
       enableSlashCommands: settings.enableSlashCommands,

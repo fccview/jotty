@@ -11,10 +11,7 @@ import {
   extractYamlMetadata,
   toIso,
 } from "@/app/_utils/yaml-metadata-utils";
-import {
-  grepExtractFrontmatter,
-  grepExtractExcerpt,
-} from "@/app/_utils/grep-utils";
+import { grepExtractExcerpt } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
 import { dirUuids } from "@/app/_server/actions/share/category-info";
 import { orderByUuids } from "@/app/_utils/order-utils";
@@ -24,14 +21,19 @@ import { boxedShell } from "@/app/_utils/shell-utils";
 import { claimOf, claimUuid, lacksUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import { pathUuid } from "@/app/_server/actions/lib/read-only";
 import { titleFromFile } from "@/app/_server/actions/lib/file-title";
-import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
-import { metaGrep, scanFrontmatter } from "@/app/_utils/frontmatter-scan";
+import { fillFrontmatters, frontmatterOf } from "@/app/_server/actions/lib/frontmatter-memo";
 import { summarizeNote } from "@/app/_utils/note-display-utils";
 import { STAT_PRINTF, parseStatLine, summaryMemo } from "@/app/_server/actions/lib/summary-memo";
+import { listingPatcher } from "@/app/_server/actions/lib/listing-patch";
+import { verifyListing } from "@/app/_server/actions/lib/listing-verify";
 
 export type ListedNote = Note & { sourcePath?: string };
 
-const memo = summaryMemo<ListedNote>();
+declare global {
+  var __jottyNoteSummaryMemo: ReturnType<typeof summaryMemo<ListedNote>> | undefined;
+}
+
+const memo = (globalThis.__jottyNoteSummaryMemo ??= summaryMemo<ListedNote>());
 
 const summed = (note: Note, filePath: string): ListedNote => ({
   ...note,
@@ -60,6 +62,132 @@ export interface NoteReadOptions {
   summarize?: boolean;
 }
 
+export interface KnownFile {
+  stats?: FileStatsEntry;
+  metadata?: Record<string, unknown>;
+}
+
+export const readNoteEntry = async (
+  filePath: string,
+  categoryPath: string,
+  owner: string,
+  options: NoteReadOptions = {},
+  known: KnownFile = {},
+): Promise<ListedNote | null> => {
+  const { isRaw = false, metadataOnly = false, excerptLength, summarize = false } = options;
+  const fileName = path.basename(filePath);
+  const id = path.basename(fileName, ".md");
+  try {
+    const stats = known.stats ?? (await fs.stat(filePath));
+
+    if (metadataOnly) {
+      const metadata =
+        known.metadata ?? (await frontmatterOf(filePath, stats));
+
+      const tags = Array.isArray(metadata?.tags)
+        ? (metadata.tags as string[])
+        : [];
+
+      const claim = await claimOf(metadata?.uuid, filePath);
+      const uuid = claim?.uuid;
+
+      if (!uuid) {
+        console.warn("Skipping note without a resolvable uuid:", filePath);
+        return null;
+      }
+
+      return {
+        id,
+        uuid,
+        ...(claim?.refusal && { lockReason: claim.refusal }),
+        title: await titleFromFile(metadata, filePath, id),
+        category: categoryPath,
+        createdAt: createdAtOf(metadata, stats.birthtime),
+        updatedAt: toIso(stats.mtime),
+        owner,
+        isShared: false,
+        sharedWith: metadata?.sharedWith as string | string[] | undefined,
+        encrypted: metadata?.encrypted === true,
+        tags,
+      } as ListedNote;
+    } else if (excerptLength) {
+      const metadata =
+        known.metadata ?? (await frontmatterOf(filePath, stats));
+      const tags = Array.isArray(metadata?.tags)
+        ? (metadata.tags as string[])
+        : [];
+      const excerpt = await grepExtractExcerpt(filePath, excerptLength);
+
+      const claim = await claimOf(metadata?.uuid, filePath);
+      const uuid = claim?.uuid;
+
+      if (!uuid) {
+        console.warn("Skipping note without a resolvable uuid:", filePath);
+        return null;
+      }
+
+      return {
+        id,
+        uuid,
+        ...(claim?.refusal && { lockReason: claim.refusal }),
+        title: await titleFromFile(metadata, filePath, id),
+        content: excerpt,
+        category: categoryPath,
+        createdAt: createdAtOf(metadata, stats.birthtime),
+        updatedAt: toIso(stats.mtime),
+        owner,
+        isShared: false,
+        sharedWith: metadata?.sharedWith as string | string[] | undefined,
+        encrypted: metadata?.encrypted === true,
+        tags,
+      };
+    } else {
+      const remembered = summarize && !isRaw ? memo.recall(filePath, stats) : undefined;
+      if (remembered) return remembered;
+      const content = await serverReadFile(filePath);
+      if (isRaw) {
+        const { metadata } = extractYamlMetadata(content);
+        const claim = await claimOf(metadata.uuid, filePath);
+        return {
+          id,
+          uuid: claim?.uuid || pathUuid(filePath),
+          ...(claim?.refusal && { lockReason: claim.refusal }),
+          title: id,
+          content: "",
+          category: categoryPath,
+          createdAt: createdAtOf(metadata, stats.birthtime),
+          updatedAt: toIso(stats.mtime),
+          owner,
+          isShared: false,
+          sharedWith: metadata.sharedWith as string | string[] | undefined,
+          rawContent: content,
+        };
+      } else {
+        const note = parseMarkdownNote(
+          content,
+          id,
+          categoryPath,
+          owner,
+          false,
+          {
+            birthtime: new Date(toIso(stats.birthtime)),
+            mtime: new Date(toIso(stats.mtime)),
+          },
+          fileName,
+        );
+        if (lacksUuid(content)) {
+          const claimed = await claimedNote(note, filePath);
+          return summarize ? summed(claimed, filePath) : claimed;
+        }
+        return summarize ? memo.remember(filePath, stats, summed(note, filePath)) : note;
+      }
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") console.error("Could not read note:", filePath, error);
+    return null;
+  }
+};
+
 export const readNotesRecursively = async (
   dir: string,
   owner: string,
@@ -82,22 +210,16 @@ export const readNotesRecursively = async (
     try {
       const excludeStr = hiddenFindFilter(allowArchived);
       const statsCmd = `find "$1" -name "*.md" ${excludeStr} -printf "${STAT_PRINTF}"`;
-      const metaCmd = metaGrep(["title", "uuid", "tags", "encrypted", "createdAt", SHARED_WITH_KEY]);
-      const [statsOut, metaOut] = await Promise.all([
-        boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
-          () => "",
-        ),
-        boxedShell(metaCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
-          () => "",
-        ),
-      ]);
+      const statsOut = await boxedShell(statsCmd, [dir], { maxBuffer: 10 * 1024 * 1024 }).catch(
+        () => "",
+      );
 
       statsOut.split("\n").forEach((line) => {
         const parsed = parseStatLine(line);
         if (parsed) statsCache!.set(parsed[0], parsed[1]);
       });
 
-      scanFrontmatter(metaOut, metadataCache!);
+      await fillFrontmatters(statsCache!, metadataCache!);
     } catch (e) {
       console.warn("Optimization failed, falling back to standard mode", e);
     }
@@ -140,122 +262,12 @@ export const readNotesRecursively = async (
     .map((f) => path.basename(f.name, ".md"))
     .sort((a, b) => a.localeCompare(b));
 
-  const filePromises = orderedIds.map(async (id) => {
-    const fileName = `${id}.md`;
-    const filePath = path.join(categoryDir, fileName);
-    try {
-      const cachedStats = statsCache?.get(filePath);
-      const stats = cachedStats
-        ? cachedStats
-        : await fs.stat(filePath);
-
-      if (metadataOnly) {
-        const metadata =
-          metadataCache?.get(filePath) ??
-          (await grepExtractFrontmatter(filePath));
-
-        const tags = Array.isArray(metadata?.tags)
-          ? (metadata.tags as string[])
-          : [];
-
-        const claim = await claimOf(metadata?.uuid, filePath);
-        const uuid = claim?.uuid;
-
-        if (!uuid) {
-          console.warn("Skipping note without a resolvable uuid:", filePath);
-          return null;
-        }
-
-        return {
-          id,
-          uuid,
-          ...(claim?.refusal && { lockReason: claim.refusal }),
-          title: await titleFromFile(metadata, filePath, id),
-          category: categoryPath,
-          createdAt: createdAtOf(metadata, stats.birthtime),
-          updatedAt: toIso(stats.mtime),
-          owner,
-          isShared: false,
-          sharedWith: metadata?.sharedWith as string | string[] | undefined,
-          encrypted: metadata?.encrypted === true,
-          tags,
-        };
-      } else if (excerptLength) {
-        const metadata =
-          metadataCache?.get(filePath) ??
-          (await grepExtractFrontmatter(filePath));
-        const tags = Array.isArray(metadata?.tags)
-          ? (metadata.tags as string[])
-          : [];
-        const excerpt = await grepExtractExcerpt(filePath, excerptLength);
-
-        const claim = await claimOf(metadata?.uuid, filePath);
-        const uuid = claim?.uuid;
-
-        if (!uuid) {
-          console.warn("Skipping note without a resolvable uuid:", filePath);
-          return null;
-        }
-
-        return {
-          id,
-          uuid,
-          ...(claim?.refusal && { lockReason: claim.refusal }),
-          title: await titleFromFile(metadata, filePath, id),
-          content: excerpt,
-          category: categoryPath,
-          createdAt: createdAtOf(metadata, stats.birthtime),
-          updatedAt: toIso(stats.mtime),
-          owner,
-          isShared: false,
-          sharedWith: metadata?.sharedWith as string | string[] | undefined,
-          encrypted: metadata?.encrypted === true,
-          tags,
-        };
-      } else {
-        const remembered = summarize && !isRaw ? memo.recall(filePath, stats) : undefined;
-        if (remembered) return remembered;
-        const content = await serverReadFile(filePath);
-        if (isRaw) {
-          const { metadata } = extractYamlMetadata(content);
-          const claim = await claimOf(metadata.uuid, filePath);
-          return {
-            id,
-            uuid: claim?.uuid || pathUuid(filePath),
-            ...(claim?.refusal && { lockReason: claim.refusal }),
-            title: id,
-            content: "",
-            category: categoryPath,
-            createdAt: createdAtOf(metadata, stats.birthtime),
-            updatedAt: toIso(stats.mtime),
-            owner,
-            isShared: false,
-            sharedWith: metadata.sharedWith as string | string[] | undefined,
-            rawContent: content,
-          };
-        } else {
-          const note = parseMarkdownNote(
-            content,
-            id,
-            categoryPath,
-            owner,
-            false,
-            {
-              birthtime: new Date(toIso(stats.birthtime)),
-              mtime: new Date(toIso(stats.mtime)),
-            },
-            fileName,
-          );
-          if (lacksUuid(content)) {
-            const claimed = await claimedNote(note, filePath);
-            return summarize ? summed(claimed, filePath) : claimed;
-          }
-          return summarize ? memo.remember(filePath, stats, summed(note, filePath)) : note;
-        }
-      }
-    } catch (e) {
-      return null;
-    }
+  const filePromises = orderedIds.map((id) => {
+    const filePath = path.join(categoryDir, `${id}.md`);
+    return readNoteEntry(filePath, categoryPath, owner, options, {
+      stats: statsCache?.get(filePath),
+      metadata: metadataCache?.get(filePath),
+    });
   });
 
   const [subDirNotes, currentDirNotes] = await Promise.all([
@@ -274,3 +286,10 @@ export const readNotesRecursively = async (
 
   return notes;
 };
+
+export const patchNoteListing = (dir: string, owner: string, options: NoteReadOptions = {}) =>
+  listingPatcher<ListedNote>(dir, skippedDirs(options.allowArchived), (filePath, category) =>
+    readNoteEntry(filePath, category, owner, options),
+  );
+
+export const verifyNoteSummaries = (key: string, dir: string) => verifyListing(key, dir, memo);

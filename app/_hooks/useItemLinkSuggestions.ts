@@ -1,14 +1,26 @@
 "use client";
 
-import { RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { itemHref } from "@/app/_utils/global-utils";
 import { escapeLinkText } from "@/app/_utils/item-href-utils";
 import { ItemTypes } from "@/app/_types/enums";
+import { fetchItems } from "@/app/_utils/ui-lookups";
 
 const LINK_TRIGGER = /(?:^|\s)(@|\[\[)([^\s@[\]]*(?: [^\s@[\]]+)*)$/;
 const AT_TRIGGER = "@";
 const SUGGESTION_LIMIT = 20;
+const SUGGESTION_DEBOUNCE_MS = 120;
+
+const _suggestion = (
+  item: { uuid?: string; title?: string; category?: string },
+  type: ItemTypes,
+): LinkSuggestion => ({
+  id: item.uuid!,
+  title: item.title || "",
+  type,
+  category: item.category || "",
+});
 
 export interface LinkSuggestion {
   id: string;
@@ -37,7 +49,7 @@ export const useItemLinkSuggestions = (
   setValue: (next: string) => void,
   inputRef: RefObject<HTMLInputElement | HTMLTextAreaElement | null>,
 ) => {
-  const { notes, checklists, appSettings } = useAppMode();
+  const { appSettings } = useAppMode();
   const enabled = appSettings?.editor?.enableBilateralLinks !== false;
   const [dismissed, setDismissed] = useState<string | null>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -47,22 +59,35 @@ export const useItemLinkSuggestions = (
   const found = enabled ? linkQueryOf(value) : null;
   const open = Boolean(found) && dismissed !== value;
 
-  const items = useMemo<LinkSuggestion[]>(() => {
-    if (!found) return [];
-    const needle = found.query.toLowerCase();
-    return [
-      ...notes.map((note) => ({ ...note, type: ItemTypes.NOTE })),
-      ...checklists.map((list) => ({ ...list, type: ItemTypes.CHECKLIST })),
-    ]
-      .filter((item) => item.uuid && !item.lockReason && (item.title || "").toLowerCase().includes(needle))
-      .slice(0, SUGGESTION_LIMIT)
-      .map((item) => ({
-        id: item.uuid!,
-        title: item.title || "",
-        type: item.type,
-        category: item.category || "",
-      }));
-  }, [found?.query, notes, checklists]);
+  const query = found?.query;
+  const [items, setItems] = useState<LinkSuggestion[]>([]);
+
+  useEffect(() => {
+    if (query === undefined) {
+      setItems([]);
+      return;
+    }
+    let live = true;
+    const timer = setTimeout(() => {
+      fetchItems(query, SUGGESTION_LIMIT, false)
+        .then((result) => {
+          if (!live) return;
+          if (!result.success || !result.data) {
+            console.error("Could not find items to link:", result.error);
+            return;
+          }
+          setItems([
+            ...result.data.notes.map((note) => _suggestion(note, ItemTypes.NOTE)),
+            ...result.data.checklists.map((list) => _suggestion(list, ItemTypes.CHECKLIST)),
+          ]);
+        })
+        .catch((error) => console.error("Could not find items to link:", error));
+    }, SUGGESTION_DEBOUNCE_MS);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [query]);
 
   useEffect(() => {
     if (!open || !inputRef.current) return;

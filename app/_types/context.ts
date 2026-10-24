@@ -4,6 +4,8 @@ import { User, SanitisedUser } from "./user";
 import { AppSettings } from "./config";
 import { AllSharedItems, UserSharedItems } from "./sharing";
 import { TagsIndex } from "./tags";
+import { SidebarSnapshots } from "./sidebar";
+import { LibraryStats } from "./catalog";
 
 export type AppMode = "checklists" | "notes" | "tags";
 
@@ -27,8 +29,8 @@ export interface AppModeContextType {
   appVersion: string;
   appSettings: AppSettings | null;
   usersPublicData: Partial<User>[];
-  notes: Partial<Note>[];
-  checklists: Partial<Checklist>[];
+  library: LibraryStats;
+  sidebar: SidebarSnapshots;
   allSharedItems: AllSharedItems | null;
   userSharedItems: UserSharedItems | null;
   globalSharing: any;

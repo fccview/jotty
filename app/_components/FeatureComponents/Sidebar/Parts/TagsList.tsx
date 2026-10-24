@@ -39,8 +39,8 @@ const TagRenderer = ({
 }) => {
   const children = getChildTags(tagsIndex, tag.name);
   const hasContent =
-    tag.noteUuids.length > 0 ||
-    tag.checklistUuids.length > 0 ||
+    tag.noteCount > 0 ||
+    tag.checklistCount > 0 ||
     children.length > 0;
   const hasSubtags = children.length > 0;
   const isCollapsed = collapsedTags.has(tag.name);

@@ -13,7 +13,17 @@ import { ItemTypes, Modes } from "../_types/enums";
 import { itemHref } from "../_utils/global-utils";
 import { deleteCategory, renameCategory } from "../_server/actions/category";
 import { useSidebarStore } from "../_utils/sidebar-store";
+import { useShallow } from "zustand/react/shallow";
 import { tagHref } from "../_utils/tag-utils";
+import { collapsiblePaths } from "../_utils/sidebar-tree-utils";
+import { fetchSidebarSpot } from "../_utils/ui-lookups";
+import { useSidebarRows } from "./useSidebarRows";
+
+const NO_FOLDERS = {};
+const ITEM_ROUTES: Partial<Record<AppMode, string>> = {
+  [Modes.NOTES]: "/note/",
+  [Modes.CHECKLISTS]: "/checklist/",
+};
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -33,7 +43,13 @@ export const useSidebar = (props: SidebarProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { mode, setMode, isInitialized, checklists, notes, selectedFilter, setSelectedFilter } = useAppMode();
+  const { mode, setMode, isInitialized, sidebar: snapshots, selectedFilter, setSelectedFilter } = useAppMode();
+  const snapshot = mode === Modes.TAGS ? undefined : snapshots[mode];
+  const { ensure } = useSidebarRows(mode, snapshot);
+  const ensureRef = useRef(ensure);
+  ensureRef.current = ensure;
+  const stamp = snapshot?.stamp;
+  const lastSpot = useRef<string | null>(null);
   const { checkNavigation } = useNavigationGuard();
 
   const {
@@ -47,7 +63,20 @@ export const useSidebar = (props: SidebarProps) => {
     setCategoriesSectionCollapsed,
     collapsedTags,
     toggleTag: storeToggleTag,
-  } = useSidebarStore();
+  } = useSidebarStore(
+    useShallow((state) => ({
+      collapsedCategories: state.collapsedCategories,
+      toggleCategory: state.toggleCategory,
+      expandCategoryPath: state.expandCategoryPath,
+      setAllCategoriesCollapsed: state.setAllCategoriesCollapsed,
+      tagsCollapsed: state.tagsCollapsed,
+      setTagsCollapsed: state.setTagsCollapsed,
+      categoriesSectionCollapsed: state.categoriesSectionCollapsed,
+      setCategoriesSectionCollapsed: state.setCategoriesSectionCollapsed,
+      collapsedTags: state.collapsedTags,
+      toggleTag: state.toggleTag,
+    })),
+  );
 
   const [modalState, setModalState] = useState<{
     type: string | null;
@@ -99,30 +128,13 @@ export const useSidebar = (props: SidebarProps) => {
   };
 
   const { allCollapsiblePaths, areAnyCollapsed } = useMemo(() => {
-    const items = mode === Modes.CHECKLISTS ? checklists : notes;
-
-    const pathsOfParentsToCategories = new Set(
-      categories.map((c) => c.parent).filter(Boolean) as string[]
-    );
-    const pathsOfParentsToItems = new Set(
-      items.map((item) => item.category).filter(Boolean) as string[]
-    );
-
-    const allPaths = new Set(
-      Array.from(pathsOfParentsToCategories).concat(
-        Array.from(pathsOfParentsToItems)
-      )
-    );
-
-    const anyCollapsed = Array.from(allPaths).some((path) =>
-      collapsedCategoriesForMode.has(path)
-    );
-
+    const allPaths = collapsiblePaths(categories, snapshot?.folders || NO_FOLDERS);
+    const anyCollapsed = allPaths.some((path) => collapsedCategoriesForMode.has(path));
     return { allCollapsiblePaths: allPaths, areAnyCollapsed: anyCollapsed };
-  }, [categories, checklists, notes, mode, collapsedCategoriesForMode]);
+  }, [categories, snapshot, collapsedCategoriesForMode]);
 
   const handleToggleAllCategories = () => {
-    setAllCategoriesCollapsed(mode, Array.from(allCollapsiblePaths), !areAnyCollapsed);
+    setAllCategoriesCollapsed(mode, allCollapsiblePaths, !areAnyCollapsed);
   };
 
   const toggleCategory = useCallback(
@@ -208,22 +220,26 @@ export const useSidebar = (props: SidebarProps) => {
     [mode, storeExpandCategoryPath]
   );
 
+  const openUuid = pathname.startsWith(ITEM_ROUTES[mode] || "\0") ? pathname.split("/").pop() : undefined;
+
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized || !openUuid) return;
+    let cancelled = false;
 
-    const itemUuid = pathname.split("/").pop();
-    let currentItem: Partial<Checklist> | Partial<Note> | undefined;
+    fetchSidebarSpot(mode, openUuid)
+      .then((result) => {
+        if (cancelled || !result.success || !result.data) return;
+        const spot = `${mode}:${openUuid}:${result.data.category}`;
+        if (lastSpot.current !== spot) expandCategoryPath(result.data.category);
+        lastSpot.current = spot;
+        ensureRef.current([result.data]);
+      })
+      .catch((error) => console.error("Sidebar could not find the open item:", error));
 
-    if (mode === Modes.CHECKLISTS) {
-      currentItem = checklists.find((c) => c.uuid === itemUuid);
-    } else {
-      currentItem = notes.find((n) => n.uuid === itemUuid);
-    }
-
-    if (currentItem && currentItem.category) {
-      expandCategoryPath(currentItem.category);
-    }
-  }, [pathname, mode, checklists, notes, isInitialized, expandCategoryPath]);
+    return () => {
+      cancelled = true;
+    };
+  }, [openUuid, mode, isInitialized, expandCategoryPath, stamp]);
 
   return {
     mode,

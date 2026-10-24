@@ -33,6 +33,7 @@
     "@hugeicons/core-free-icons": "3.0.0",
     "@hugeicons/react": "1.1.2",
     "@rcode-link/tiptap-drawio": "1.0.21",
+    "@tanstack/react-virtual": "3.14.22",
     "@tiptap/core": "3.31.3",
     "@tiptap/extension-bubble-menu": "3.31.3",
     "@tiptap/extension-code-block": "3.31.3",

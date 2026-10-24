@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Category } from "@/app/_types";
 import { BrowseScope, BrowseSort } from "@/app/_consts/browse";
-import { BrowseControls } from "@/app/_hooks/useBrowse";
+import { BrowseControls } from "@/app/_hooks/useServerBrowse";
 import { FilterSentence } from "./FilterSentence";
 import { FilterChips } from "./FilterChips";
 

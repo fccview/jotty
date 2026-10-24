@@ -73,6 +73,18 @@ export type { Category } from "./category";
 
 
 export type { TagInfo, TagsIndex } from "./tags";
+export type { AdjacentNotes, ItemShelf, LibraryStats, WikiAsk, WikiHit } from "./catalog";
+export type { BrowsePage, BrowseQuery } from "./browse";
+export type {
+  FolderStats,
+  SidebarEntry,
+  SidebarPage,
+  SidebarRow,
+  SidebarSearch,
+  SidebarSnapshot,
+  SidebarSnapshots,
+  SidebarSpot,
+} from "./sidebar";
 
 export type {
   EncryptionMethod,

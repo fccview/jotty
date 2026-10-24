@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Category } from "@/app/_types";
 import { BrowseScope } from "@/app/_consts/browse";
-import { BrowseControls } from "@/app/_hooks/useBrowse";
+import { BrowseControls } from "@/app/_hooks/useServerBrowse";
 import { ItemsEmpty } from "@/app/_components/GlobalComponents/Cards/ItemsEmpty";
 import { EmptyActions } from "@/app/_components/GlobalComponents/Cards/EmptyState";
 import { Pagination } from "@/app/_components/GlobalComponents/Layout/Pagination";

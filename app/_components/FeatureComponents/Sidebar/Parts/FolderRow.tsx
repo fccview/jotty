@@ -13,100 +13,63 @@ import {
   Share08Icon,
   Delete03Icon,
 } from "hugeicons-react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-import {
-  AppMode,
-  Category,
-  Checklist,
-  Note,
-  SanitisedUser,
-} from "@/app/_types";
-import { Draggable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Draggable";
-import { SidebarItem } from "@/app/_components/FeatureComponents/Sidebar/Parts/SidebarItem";
+import { AppMode, Category, FolderStats } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { DropIndicator } from "@/app/_components/FeatureComponents/Sidebar/Parts/DropIndicator";
+import { Draggable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Draggable";
 import { Droppable } from "@/app/_components/FeatureComponents/Sidebar/Parts/Droppable";
-import { useTranslations } from "next-intl";
 import { PUBLIC_USER } from "@/app/_consts/sharing";
-import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
 import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { leaveFolder } from "@/app/_server/actions/share/operations";
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { canFill } from "@/app/_utils/sharing-utils";
 
-interface CategoryRendererProps {
-  category: Category;
-  allCategories: Category[];
-  allItems: (Checklist | Note)[];
-  collapsedCategories: Set<string>;
-  onToggleCategory: (categoryName: string) => void;
+export interface FolderActions {
+  onToggleCategory: (categoryPath: string) => void;
   onCategorySelect: (categoryPath: string) => void;
-  onDeleteCategory: (categoryName: string) => void;
-  onRenameCategory: (categoryName: string) => void;
-  onQuickCreate: (categoryName: string) => void;
+  onDeleteCategory: (categoryPath: string) => void;
+  onRenameCategory: (categoryPath: string) => void;
+  onQuickCreate: (categoryPath: string) => void;
   onCreateSubcategory: (categoryPath: string) => void;
   onShareCategory: (categoryPath: string) => void;
-  onClose?: () => void;
-  onEditItem?: (item: Checklist | Note) => void;
-  isItemSelected: (item: Checklist | Note) => boolean;
-  mode: AppMode;
-  user?: SanitisedUser;
 }
 
-export const CategoryRenderer = (props: CategoryRendererProps) => {
-  const t = useTranslations();
-  const {
-    category,
-    allCategories,
-    allItems,
-    collapsedCategories,
-    onToggleCategory,
-    onCategorySelect,
-    onDeleteCategory,
-    onRenameCategory,
-    onQuickCreate,
-    onCreateSubcategory,
-    onShareCategory,
-    onClose,
-    onEditItem,
-    isItemSelected,
-    mode,
-    user,
-  } = props;
+interface FolderRowProps extends FolderActions {
+  category: Category;
+  stats?: FolderStats;
+  hasSubfolders: boolean;
+  isCollapsed: boolean;
+  mode: AppMode;
+  rowIndex: number;
+}
 
+export const FolderRow = ({
+  category,
+  stats,
+  hasSubfolders,
+  isCollapsed,
+  mode,
+  rowIndex,
+  onToggleCategory,
+  onCategorySelect,
+  onDeleteCategory,
+  onRenameCategory,
+  onQuickCreate,
+  onCreateSubcategory,
+  onShareCategory,
+}: FolderRowProps) => {
+  const t = useTranslations();
   const router = useRouter();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const folderRef = useRef<HTMLDivElement>(null);
 
-  const getItemsInCategory = (categoryPath: string) =>
-    allItems.filter(
-      (item) => (item.category || UNCATEGORIZED) === categoryPath,
-    );
-  const getSubCategories = (parentPath: string) =>
-    allCategories.filter((cat) => cat.parent === parentPath);
-
-  const getTotalItemsInCategory = (categoryPath: string): number => {
-    const directItems = getItemsInCategory(categoryPath).length;
-    const subCategories = getSubCategories(categoryPath);
-    return (
-      directItems +
-      subCategories.reduce(
-        (total, subCat) => total + getTotalItemsInCategory(subCat.path),
-        0,
-      )
-    );
-  };
-
-  const categoryItems = getItemsInCategory(category.path);
-  const subCategories = getSubCategories(category.path);
-  const isCollapsed = collapsedCategories.has(category.path);
-  const hasContent = categoryItems.length > 0 || subCategories.length > 0;
-
+  const hasContent = (stats?.direct || 0) > 0 || hasSubfolders;
   const isOwned = !category.sharedFrom;
   const canRemove = isOwned || category.permissions?.canDelete === true;
   const canFillCategory = canFill(category);
@@ -197,20 +160,14 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
     ...(isOwned ? ownerActions : leaveAction),
   ];
 
-  const firstChildType = subCategories[0] ? "category" : "item";
-  const firstChildId = subCategories[0]
-    ? `category::${subCategories[0].path}`
-    : categoryItems[0]
-      ? `item::${categoryItems[0].uuid}`
-      : undefined;
-
   return (
-    <div className="space-y-1">
+    <>
       <Draggable
         id={`category::${category.path}`}
         data={{
           type: "category",
           categoryPath: category.path,
+          rowIndex,
         }}
       >
         <Droppable
@@ -290,7 +247,7 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
                       !isSharedOut && !category.sharedFrom && "ml-auto",
                     )}
                   >
-                    {getTotalItemsInCategory(category.path)}
+                    {stats?.total || 0}
                   </span>
                 </button>
               </div>
@@ -315,69 +272,6 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
         </Droppable>
       </Draggable>
 
-      {!isCollapsed && (
-        <div className="ml-2 border-l border-border/30 pl-2">
-          <DropIndicator
-            id={`drop-start::${category.path}`}
-            data={{
-              type: "drop-indicator",
-              parentPath: category.path,
-              position: "before",
-              targetDndId: firstChildId,
-              targetType: firstChildType,
-            }}
-          />
-
-          {subCategories.map((subCat) => (
-            <div key={subCat.path}>
-              <CategoryRenderer {...props} category={subCat} />
-              <DropIndicator
-                id={`drop-after-category::${subCat.path}`}
-                data={{
-                  type: "drop-indicator",
-                  parentPath: category.path,
-                  position: "after",
-                  targetDndId: `category::${subCat.path}`,
-                  targetType: "category",
-                }}
-              />
-            </div>
-          ))}
-
-          {categoryItems.map((item) => (
-            <div key={item.uuid}>
-              <Draggable
-                id={`item::${item.uuid}`}
-                data={{
-                  type: "item",
-                  uuid: item.uuid,
-                }}
-              >
-                <SidebarItem
-                  item={item}
-                  mode={mode}
-                  isSelected={isItemSelected(item)}
-                  onClose={onClose}
-                  onEditItem={onEditItem}
-                  style={{ paddingLeft: `${category.level * 16}px` }}
-                  user={user}
-                />
-              </Draggable>
-              <DropIndicator
-                id={`drop-after-item::${item.uuid}`}
-                data={{
-                  type: "drop-indicator",
-                  parentPath: category.path,
-                  position: "after",
-                  targetDndId: `item::${item.uuid}`,
-                  targetType: "item",
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
       <ConfirmModal
         isOpen={showLeaveModal}
         onClose={() => setShowLeaveModal(false)}
@@ -390,6 +284,6 @@ export const CategoryRenderer = (props: CategoryRendererProps) => {
         confirmText={t("sharing.leaveShare")}
         variant="destructive"
       />
-    </div>
+    </>
   );
 };

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { itemTreeRoots } from "./paths";
-import { refreshItemPaths } from "./indexer";
+import { refreshItemPaths } from "./night-shift";
 
 export const WATCH_FLUSH_MS = 60_000;
 export const WATCH_SETTLE_MS = 1_000;
@@ -118,6 +118,7 @@ export const watchRelations = (): boolean => {
 
   for (const root of itemTreeRoots()) {
     try {
+      fs.mkdirSync(root, { recursive: true });
       const watcher = fs.watch(root, { recursive: true, persistent: false }, (_event, filename) => {
         const name = filename?.toString();
         if (!name || _ignored(name)) return;

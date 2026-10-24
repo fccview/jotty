@@ -1,11 +1,17 @@
-import { describe, it, expect, afterAll } from "vitest";
+import { describe, it, expect, afterAll, beforeAll, vi } from "vitest";
 import os from "os";
+import { mockFs } from "../setup";
 import path from "path";
 import { mkdtempSync, writeFileSync, rmSync } from "fs";
 import {
   grepExtractFrontmatter,
   grepExtractExcerpt,
 } from "@/app/_utils/grep-utils";
+
+beforeAll(async () => {
+  const real = await vi.importActual<typeof import("fs/promises")>("fs/promises");
+  mockFs.open.mockImplementation(real.open as never);
+});
 
 const tmpRoot = mkdtempSync(path.join(os.tmpdir(), "jotty-grep-sed-"));
 

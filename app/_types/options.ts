@@ -16,6 +16,7 @@ export interface GetNotesOptions {
   summarize?: boolean;
   bodiesFor?: (notes: Note[]) => string[];
   keepSources?: boolean;
+  verify?: boolean;
 }
 
 export interface GetChecklistsOptions {

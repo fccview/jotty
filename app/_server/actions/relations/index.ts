@@ -6,7 +6,7 @@ import { LinkStyles, RelationsStatus } from "@/app/_consts/relations";
 import type { Result, SanitisedUser } from "@/app/_types";
 import type { BrainGraph, ItemRelations } from "@/app/_types/relations";
 import { backlinksFor, graphFor, visibleItems } from "./queries";
-import { rebuildOwnerRelations, rebuildRelations } from "./indexer";
+import { rebuildOwnerRelations, rebuildRelations } from "./night-shift";
 import { relationsDb } from "./store";
 import { linkItems, linksEnabled, type LinkWrite } from "./explore";
 

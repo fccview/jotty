@@ -1805,6 +1805,18 @@
   resolved "https://registry.yarnpkg.com/@tabby_ai/hijri-converter/-/hijri-converter-1.0.5.tgz#b664994892348a402ae7529e648c819eee39208b"
   integrity sha512-r5bClKrcIusDoo049dSL8CawnHR6mRdDwhlQuIgZRNty68q0x8k3Lf1BtPAMxRf/GgnHBnIO4ujd3+GQdLWzxQ==
 
+"@tanstack/react-virtual@3.14.22":
+  version "3.14.22"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.14.22.tgz#0eb7aaf3c40757cbb8cc437dd375b2102dc24083"
+  integrity sha512-zNiB9IF3prySTfAUrj9tPHjD/lonBYkfxrPP4v4ITUx+qwHajJR5cY/xirjvwc+KWkur10GX3TpsbKh7JkD8Lw==
+  dependencies:
+    "@tanstack/virtual-core" "3.19.7"
+
+"@tanstack/virtual-core@3.19.7":
+  version "3.19.7"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.19.7.tgz#6e88e87174108789637527ce9d4e5e1b9bda00f7"
+  integrity sha512-gxy5SvH0mFRJ0YujtrflB/1HAu9Wn1KGvL0bjZfQkYVVMsIpQiwcf1mR06/ViN4NjllUb4HNCjqE9FGwgTvMCQ==
+
 "@tiptap/core@3.31.3":
   version "3.31.3"
   resolved "https://registry.yarnpkg.com/@tiptap/core/-/core-3.31.3.tgz#97e1a5aa228ee8bce19b23d6570d4985446a0b9b"

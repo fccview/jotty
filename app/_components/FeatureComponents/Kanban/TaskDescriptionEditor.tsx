@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import {
-  TiptapEditor,
-  TiptapEditorRef,
-} from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
+import { TiptapEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
@@ -18,20 +14,8 @@ export const TaskDescriptionEditor = ({
   content,
   onContentChange,
 }: TaskDescriptionEditorProps) => {
-  const { user, notes, checklists } = useAppMode();
-  const editorRef = useRef<TiptapEditorRef>(null);
+  const { user } = useAppMode();
   const isMinimalMode = useMinimalMode();
-
-  useEffect(() => {
-    if (!isMinimalMode && editorRef.current) {
-      editorRef.current.updateAtMentionData(
-        notes,
-        checklists,
-        user?.username || "",
-      );
-    }
-  }, [notes, checklists, user?.username, isMinimalMode]);
-
 
   if (isMinimalMode) {
     return (
@@ -49,12 +33,9 @@ export const TaskDescriptionEditor = ({
   return (
     <div className="h-[40vh] min-h-[200px] lg:h-[48vh] border border-input rounded-jotty overflow-hidden">
       <TiptapEditor
-        ref={editorRef}
         content={content}
         onChange={(next) => onContentChange(next)}
         tableSyntax={user?.tableSyntax}
-        notes={notes}
-        checklists={checklists}
       />
     </div>
   );

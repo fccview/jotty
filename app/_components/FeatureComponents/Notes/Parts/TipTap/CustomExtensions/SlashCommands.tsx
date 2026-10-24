@@ -22,17 +22,14 @@ import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Par
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
 import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import { ItemType } from "@/app/_types";
-import { ItemTypes } from "@/app/_types/enums";
 import { PluginKey } from "@tiptap/pm/state";
 import { suggestionPopup } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/suggestionPopup";
 import { itemHref } from "@/app/_utils/global-utils";
+import { findMentionables } from "@/app/_utils/mention-lookup";
 
 const WIKILINK_OPEN = "[[";
 
 const WIKILINK_CLOSE_CHAR = "]";
-
-const mentionable = <T extends { uuid?: string }>(items?: T[]): T[] =>
-  items?.filter((item) => Boolean(item.uuid)) || [];
 
 export interface SlashCommandItem {
   title: string;
@@ -48,12 +45,6 @@ export interface AtMentionItem {
   id: string;
   uuid?: string;
 }
-
-let atMentionData = {
-  notes: [] as any[],
-  checklists: [] as any[],
-  username: "",
-};
 
 let tagSuggestionData = {
   tags: [] as string[],
@@ -258,28 +249,7 @@ export const SlashCommands = Extension.create({
             })
             .run();
         },
-        items: ({ query }: { query: string }) => {
-          const allItems = [
-            ...atMentionData.notes.map((note: any) => ({
-              ...note,
-              type: ItemTypes.NOTE as const,
-            })),
-            ...atMentionData.checklists.map((checklist: any) => ({
-              ...checklist,
-              type: ItemTypes.CHECKLIST as const,
-            })),
-          ].filter((item) => !item.lockReason);
-
-          if (!query.trim()) return allItems;
-
-          const lowerCaseQuery = query.toLowerCase();
-
-          return allItems.filter(
-            (item) =>
-              item.title.toLowerCase().includes(lowerCaseQuery) ||
-              item.category?.toLowerCase().includes(lowerCaseQuery)
-          );
-        },
+        items: ({ query }: { query: string }) => findMentionables(query),
         render: suggestionPopup(AtMentionsList),
       },
       hashSuggestion: {
@@ -344,13 +314,6 @@ export const SlashCommands = Extension.create({
   /** @ts-ignore */
   addCommands() {
     return {
-      updateAtMentionData:
-        (notes: any[], checklists: any[], username: string) => () => {
-          atMentionData.notes = mentionable(notes);
-          atMentionData.checklists = mentionable(checklists);
-
-          return true;
-        },
       updateTagSuggestionData:
         (tags: string[]) => () => {
           tagSuggestionData.tags = tags || [];
@@ -360,8 +323,6 @@ export const SlashCommands = Extension.create({
   },
 
   addProseMirrorPlugins() {
-    atMentionData.notes = mentionable(this.options.notes);
-    atMentionData.checklists = mentionable(this.options.checklists);
     tagSuggestionData.tags = this.options.tags || [];
 
     const plugins = [];

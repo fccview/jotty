@@ -89,12 +89,7 @@ export const NoteCard = ({
         )}
       </button>
       {isRich && !isEncrypted && (
-        <div
-          className={cn(
-            "jotty-note-card-content mx-4 mt-2 mb-3 text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>p]:!text-sm [&>pre]:!text-xs [&>img]:!max-h-32",
-            fullScrollableContent ? "max-h-[200px] overflow-y-auto" : "line-clamp-3",
-          )}
-        >
+        <div className="jotty-note-card-content mx-4 mt-2 mb-3 max-h-[200px] overflow-y-auto overscroll-contain text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>p]:!text-sm [&>pre]:!text-xs [&>img]:!max-h-32">
           <UnifiedMarkdownRenderer content={content} />
         </div>
       )}

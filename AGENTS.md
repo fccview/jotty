@@ -16,6 +16,8 @@ Indexes go stale quietly. The file helpers keep the caches and the relations ind
 
 Loops are expensive. One helper reading one item is fine. That same helper running once per item for a user with 800 notes is a stat storm. Caches and indexes already exist for this, look for them before you walk a directory yourself.
 
+Some users have tens of thousands of notes, and Jotty should feel the same with a million. A page load, a keystroke or a save shouldn't cost something for every item in the library, and the browser only gets what it is showing. Slow at scale is a bug, not a property of files.
+
 People update their instance when they remember, so the shape you are reading may have been written a year ago. Changing how something is stored means a migration, and it has to survive data that is old, new, half done or already migrated. We keep reading old shapes long after we stop writing them.
 
 The REST API is a published contract. Users hit it with an API key from scripts, shortcuts and home automations, and they never read the changelog. Adding a field is safe. Renaming one, dropping one, changing a type or changing what a status value means will break somebody's morning routine.

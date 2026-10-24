@@ -27,6 +27,10 @@ import {
   grepFilesByText,
   grepListAllFiles,
 } from "@/app/_utils/grep-utils";
+import { getAllFileStats } from "@/app/_server/actions/file";
+import { fillFrontmatters } from "@/app/_server/actions/lib/frontmatter-memo";
+import { getOrCompute } from "@/app/_server/actions/lib/metadata-cache";
+import { shareFactsKey } from "./mounts";
 import { modeFor } from "@/app/_utils/sharing-utils";
 import { isPathUuid } from "@/app/_server/actions/lib/read-only";
 import { isLockedItem } from "@/app/_server/actions/lib/unstamped";
@@ -250,11 +254,16 @@ const _grantingDirs = async (mode: Modes): Promise<string[]> => {
   return dirs;
 };
 
+const _explicitlyShared = async (mode: Modes): Promise<string[]> => {
+  const frontmatters = new Map<string, Record<string, unknown>>();
+  await fillFrontmatters(await getAllFileStats(_modeDir(mode)), frontmatters);
+  return Array.from(frontmatters)
+    .filter(([, metadata]) => Boolean(metadata[SHARED_WITH_KEY]))
+    .map(([filePath]) => filePath);
+};
+
 const _reachableFiles = async (mode: Modes): Promise<string[]> => {
-  const [explicit, dirs] = await Promise.all([
-    grepFilesByText(_modeDir(mode), `${SHARED_WITH_KEY}:`, "*.md"),
-    _grantingDirs(mode),
-  ]);
+  const [explicit, dirs] = await Promise.all([_explicitlyShared(mode), _grantingDirs(mode)]);
 
   const paths = new Set(explicit);
 
@@ -267,6 +276,7 @@ const _reachableFiles = async (mode: Modes): Promise<string[]> => {
 };
 
 interface SharedFact {
+  path: string;
   uuid: string;
   owner: string;
   users: Record<string, SharingPermissions>;
@@ -274,28 +284,53 @@ interface SharedFact {
   viaCategory?: string;
 }
 
-const _factsFor = cache(async (mode: Modes): Promise<SharedFact[]> => {
-  const files = await _reachableFiles(mode);
+const _factOf = async (mode: Modes, filePath: string): Promise<SharedFact | null> => {
+  const access = await resolveAccess(mode, filePath);
+  const uuid = access?.uuid;
+  if (!uuid || !access || Object.keys(access.users).length === 0) return null;
+
+  return {
+    path: filePath,
+    uuid,
+    owner: access.owner,
+    users: access.users,
+    isPublic: access.isPublic,
+    viaCategory: access.inherited ? access.viaCategory : undefined,
+  };
+};
+
+const _computeFacts = async (mode: Modes): Promise<SharedFact[]> => {
   const facts: SharedFact[] = [];
-
-  for (const filePath of files) {
-    const access = await resolveAccess(mode, filePath);
-
-    const uuid = access?.uuid;
-    if (!uuid || !access) continue;
-    if (Object.keys(access.users).length === 0) continue;
-
-    facts.push({
-      uuid,
-      owner: access.owner,
-      users: access.users,
-      isPublic: access.isPublic,
-      viaCategory: access.inherited ? access.viaCategory : undefined,
-    });
+  for (const filePath of await _reachableFiles(mode)) {
+    const fact = await _factOf(mode, filePath);
+    if (fact) facts.push(fact);
   }
-
   return facts;
-});
+};
+
+const _patchFacts =
+  (mode: Modes) =>
+  async (paths: string[], current: SharedFact[]): Promise<SharedFact[]> => {
+    const next = [...current];
+    for (const filePath of paths) {
+      const fact = await _factOf(mode, filePath);
+      const at = next.findIndex((known) => known.path === filePath);
+      if (at >= 0 && fact) next[at] = fact;
+      else if (at >= 0) next.splice(at, 1);
+      else if (fact) next.push(fact);
+    }
+    return next;
+  };
+
+const _factsFor = cache(
+  (mode: Modes): Promise<SharedFact[]> =>
+    getOrCompute(
+      shareFactsKey(mode, _modeDir(mode)),
+      _modeDir(mode),
+      () => _computeFacts(mode),
+      _patchFacts(mode),
+    ),
+);
 
 const _entriesFor = async (
   mode: Modes,

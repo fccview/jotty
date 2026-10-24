@@ -2,13 +2,8 @@ import fs from "fs/promises";
 import path from "path";
 import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 import { dataRoot, itemFileInfo } from "./paths";
-import {
-  forgetMissing,
-  forgetItemFile,
-  forgetItemTree,
-  indexItemFile,
-  indexItemTree,
-} from "./indexer";
+import { forgetItemFile, forgetItemTree, indexItemFile } from "./indexer";
+import { sweepMovedTree } from "./night-shift";
 
 const _withinData = (target: string): boolean => {
   const rel = path.relative(dataRoot(), path.resolve(target));
@@ -51,8 +46,7 @@ export const trackMove = async (from: string, to: string) => {
   await _safely("move", `${from} -> ${to}`, async () => {
     const stats = await fs.stat(to);
     if (stats.isDirectory()) {
-      await indexItemTree(to);
-      await forgetMissing(from);
+      await sweepMovedTree(to, from);
       return;
     }
     if (itemFileInfo(to)) {
