@@ -35,7 +35,8 @@ import { isKanbanType } from "@/app/_types/enums";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { assigneeRefusal } from "@/app/_server/actions/kanban/assignee";
 import { agentRefusal, normalAgent } from "@/app/_consts/agents";
-import { boardColumns, unknownStatus } from "@/app/_consts/kanban";
+import { TAKEN_EXTERNAL_ID, boardColumns, unknownStatus } from "@/app/_consts/kanban";
+import { cardWithExternalId } from "@/app/_utils/kanban/card-tree";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { rehomeRefs } from "@/app/_server/actions/attachments/adopt";
@@ -91,6 +92,11 @@ const _editItem = async (
     const agentRefused = agentRefusal(agent ?? "");
     if (agentRefused) return { success: false, error: agentRefused };
 
+    const externalRaw = formData.get("externalId") as string | null;
+    const externalId = externalRaw === null ? null : externalRaw.trim();
+    const holder = externalId ? cardWithExternalId(stored.items, externalId) : undefined;
+    if (holder && holder.id !== itemId) return { success: false, error: TAKEN_EXTERNAL_ID };
+
     const _updateParentBasedOnChildren = (parent: Item): Item => {
       if ((parent.children || []).length < 1) return parent;
       return { ...parent, completed: areAllItemsCompleted(parent.children!) };
@@ -144,6 +150,7 @@ const _editItem = async (
         ...(score !== null && { score: score ? parseInt(score) : undefined }),
         ...(assignee !== null && { assignee: assignee || undefined }),
         ...(agent !== null && { agent: agent || undefined }),
+        ...(externalId !== null && { externalId: externalId || undefined }),
         ...(reminder !== null && {
           reminder: reminder ? JSON.parse(reminder) : undefined,
         }),

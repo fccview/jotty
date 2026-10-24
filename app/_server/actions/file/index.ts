@@ -57,11 +57,12 @@ export const ensureCorDirsAndFiles = async (): Promise<{
   }
 };
 
-export const ensureDir = async (dir: string) => {
+export const ensureDir = async (dir: string): Promise<boolean> => {
   try {
     await fs.access(dir);
+    return false;
   } catch {
-    await fs.mkdir(dir, { recursive: true });
+    return (await fs.mkdir(dir, { recursive: true })) !== undefined;
   }
 };
 

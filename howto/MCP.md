@@ -143,7 +143,7 @@ An assistant reads every character a tool sends back, and a long answer pushes t
 - An answer longer than `JOTTY_MCP_MAX_TEXT_CHARS` keeps the rows that fit and adds a `trimmed` field with the `offset` for the next ones. A single record that's still too long gets cut.
 - That limit is only the default. Every tool takes `maxChars`, so the assistant can ask for more when it needs a whole answer, or less to save room.
 - `get_note` gives the note's length in `contentLength` and takes `offset` and `limit`, so the assistant can read a very long note in slices. `get_notes` reads up to 50 notes by UUID in one call, each with its `contentLength`, and lists any it couldn't find under `missing`.
-- Updating or moving a card returns that card, not the whole board.
+- Updating or moving a card returns that card, not the whole board. `create_board_items` adds up to 200 cards in one call and returns them without their history.
 - Search puts the best matches first and gives you the `uuid` the other tools take and the file name as `slug`.
 - `get_brain` returns 60 items at most by default, nearest and most linked first, and says when it left some out.
 - Export downloads aren't fetched. You get the link to download the file yourself.

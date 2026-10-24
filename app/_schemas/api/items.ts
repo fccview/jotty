@@ -31,7 +31,10 @@ export const kanbanStatusSchema = z
   .object({
     id: z.string().describe("Status id, used as an item's status value"),
     label: z.string(),
-    color: z.string().optional(),
+    color: z
+      .string()
+      .optional()
+      .describe("Hex colour as #rrggbb, like #3b82f6. Left out, the column gets a default grey or its built-in colour"),
     order: z.number(),
     autoComplete: z.boolean().optional().describe("Items moved here are marked completed"),
   })

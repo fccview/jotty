@@ -18,6 +18,7 @@ export const mockEditList = vi.fn();
 export const mockDropList = vi.fn();
 export const mockAddItem = vi.fn();
 export const mockEditItem = vi.fn();
+export const mockDealCards = vi.fn();
 export const mockStampStatus = vi.fn();
 export const mockGetUserNotes = vi.fn();
 export const mockCreateNote = vi.fn();
@@ -109,6 +110,10 @@ vi.mock("@/app/_server/actions/checklist/editor", () => ({
 vi.mock("@/app/_server/actions/checklist-item/editor", () => ({
   addItem: (...args: any[]) => mockAddItem(...args),
   editItem: (...args: any[]) => mockEditItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/kanban/dealer", () => ({
+  dealCards: (...args: any[]) => mockDealCards(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item/remover", () => ({
@@ -217,6 +222,7 @@ export function resetApiMocks() {
   mockDropList.mockReset();
   mockAddItem.mockReset();
   mockEditItem.mockReset();
+  mockDealCards.mockReset();
   mockStampStatus.mockReset();
   mockGetUserNotes.mockReset();
   mockCreateNote.mockReset();

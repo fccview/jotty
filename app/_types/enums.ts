@@ -112,6 +112,11 @@ export enum DropPosition {
   AFTER = "after",
 }
 
+export enum CardPlacement {
+  TOP = "top",
+  BOTTOM = "bottom",
+}
+
 export enum ItemSort {
   ALPHABETICAL = "alphabetical",
   SHUFFLE = "shuffle",

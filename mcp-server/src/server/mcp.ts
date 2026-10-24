@@ -17,6 +17,7 @@ export const SERVER_INSTRUCTIONS = [
   "Link items with connect_items only when they relate to each other, and remove a link with disconnect_items. An item with no links is fine, so don't add links just to empty list_orphans.",
   "A script rewrites any note with managed: true, so edits to it may not last. Write tools say so in a warning.",
   "jotty_docs lists and reads Jotty's own guides, mcp_docs the ones that ship with this MCP server. Read jotty_docs api before writing a note file or its frontmatter by hand.",
+  "create_board_items adds or updates up to 200 cards in one call. Give each card an externalId, like its issue URL, and sending it again updates that card instead of adding a duplicate. Boards live in checklist categories, and create_board makes a missing category and says so with categoryCreated.",
   "Boards can coordinate agents that run elsewhere. set_board_spec pins a spec note to a board, assign_agent puts an agent on a card and warns when the spec disagrees, get_task_context returns a card with its slice of the spec, and list_agent_tasks lists the cards agents hold. Jotty stores the plan, assignments and progress but runs nothing. A card id works with or without the board uuid in front, so the spec can use the short form. mcp_docs agents explains the workflow, and mcp_docs tools describes every tool.",
   "The dedicated tools cover search, links, tags, shares, notes, checklists and boards. Use discover and call_operation for everything else the instance offers.",
 ].join(" ");

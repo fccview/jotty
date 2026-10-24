@@ -48,6 +48,12 @@ export const boardColumns = (statuses?: KanbanStatus[]): KanbanStatus[] =>
 export const unknownStatus = (statuses?: KanbanStatus[]): string =>
   `${UNKNOWN_STATUS}. Its columns are ${boardColumns(statuses).map((column) => column.id).join(", ")}`;
 
+export const TAKEN_EXTERNAL_ID = "Another card on this board already has that externalId";
+
+export const MAX_CARD_BATCH = 200;
+
+export const MAX_EXTERNAL_ID = 512;
+
 export const isUnknownStatus = (error?: string): boolean => !!error?.startsWith(UNKNOWN_STATUS);
 
 export const PROPERTY_FIELD_CLASS =

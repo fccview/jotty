@@ -78,6 +78,7 @@ export interface Item {
   assignee?: string;
   agent?: string;
   reminder?: KanbanReminder;
+  externalId?: string;
 }
 
 export interface ItemStub {

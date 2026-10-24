@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   ReactNode,
 } from "react";
@@ -32,9 +33,7 @@ export const NavigationGuardProvider = ({
   children: ReactNode;
 }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [navigationGuard, setNavigationGuard] = useState<
-    (() => boolean) | null
-  >(null);
+  const guardRef = useRef<(() => boolean) | null>(null);
   const pendingRef = useRef<(() => void) | null>(null);
 
   const setPendingNavigation = useCallback((action: () => void) => {
@@ -42,27 +41,25 @@ export const NavigationGuardProvider = ({
   }, []);
 
   const registerNavigationGuard = useCallback((guard: () => boolean) => {
-    setNavigationGuard(() => guard);
+    guardRef.current = guard;
   }, []);
 
   const unregisterNavigationGuard = useCallback(() => {
-    setNavigationGuard(null);
+    guardRef.current = null;
   }, []);
 
-  const checkNavigation = useCallback(
-    (action: () => void) => {
-      if (navigationGuard && !navigationGuard()) {
-        pendingRef.current = action;
-        return;
-      }
-      action();
-    },
-    [navigationGuard]
-  );
+  const checkNavigation = useCallback((action: () => void) => {
+    if (guardRef.current && !guardRef.current()) {
+      pendingRef.current = action;
+      return;
+    }
+    action();
+  }, []);
 
-  const checkWouldBlock = useCallback(() => {
-    return navigationGuard ? !navigationGuard() : false;
-  }, [navigationGuard]);
+  const checkWouldBlock = useCallback(
+    () => (guardRef.current ? !guardRef.current() : false),
+    [],
+  );
 
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -86,20 +83,32 @@ export const NavigationGuardProvider = ({
     pending?.();
   }, []);
 
+  const value = useMemo(
+    () => ({
+      hasUnsavedChanges,
+      setHasUnsavedChanges,
+      registerNavigationGuard,
+      unregisterNavigationGuard,
+      checkNavigation,
+      checkWouldBlock,
+      setPendingNavigation,
+      clearPendingNavigation,
+      executePendingNavigation,
+    }),
+    [
+      hasUnsavedChanges,
+      registerNavigationGuard,
+      unregisterNavigationGuard,
+      checkNavigation,
+      checkWouldBlock,
+      setPendingNavigation,
+      clearPendingNavigation,
+      executePendingNavigation,
+    ],
+  );
+
   return (
-    <NavigationGuardContext.Provider
-      value={{
-        hasUnsavedChanges,
-        setHasUnsavedChanges,
-        registerNavigationGuard,
-        unregisterNavigationGuard,
-        checkNavigation,
-        checkWouldBlock,
-        setPendingNavigation,
-        clearPendingNavigation,
-        executePendingNavigation,
-      }}
-    >
+    <NavigationGuardContext.Provider value={value}>
       {children}
     </NavigationGuardContext.Provider>
   );

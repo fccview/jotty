@@ -119,11 +119,18 @@ If a script rewrites one of your notes, add `managed: true` to its frontmatter. 
 | `list_boards` | Your boards, 25 at a time with card counts per column | `category`, `status`, `q`, `view`, `limit`, `offset` |
 | `get_board` | One board with its columns, its cards and `specNote` when a spec is pinned | `boardId` |
 | `create_board` | Makes a board, with the default columns unless you pass your own | `title`, `category`, `statuses` |
-| `create_board_item` | Adds a card and returns it with its id | `boardId`, `text`, `status`, `description` |
-| `update_board_item` | Changes a card's text, priority, score, human assignee or reminder | `boardId`, `itemId`, `text`, `priority`, `score`, `assignee`, `reminder` |
+| `create_board_item` | Adds a card and returns it with its id | `boardId`, `text`, `status`, `description`, `priority`, `score`, `assignee`, `externalId`, `position` |
+| `create_board_items` | Adds or updates up to 200 cards in one call | `boardId`, `cards`, `position` |
+| `update_board_item` | Changes a card's text, description, priority, score, human assignee, reminder or external id | `boardId`, `itemId`, `text`, `description`, `priority`, `score`, `assignee`, `reminder`, `externalId` |
 | `move_board_item` | Moves a card to another column and records it in the card's history | `boardId`, `itemId`, `status` |
 
-The default columns are `todo`, `in_progress`, `completed` and `paused`. Moving a card into a column marked `autoComplete` also marks it completed. A column the board doesn't have is refused, and the error lists the ones it does. Updating or moving a card returns that card without its history, not the whole board.
+The default columns are `todo`, `in_progress`, `completed` and `paused`. A column's `color` is a hex colour like `#3b82f6`. Moving a card into a column marked `autoComplete` also marks it completed, and so does creating it there. A column the board doesn't have is refused, and the error lists the ones it does. Updating or moving a card returns that card without its history, not the whole board.
+
+Boards live in checklist categories, so `list_categories` shows them under `checklists`. `create_board` makes a category that doesn't exist yet and answers with `categoryCreated: true` when it did.
+
+New cards go to the top or bottom of the board as the user's new item setting says. Pass `position` as `top` or `bottom` to choose. `create_board_items` keeps the cards in the order you send them either way.
+
+`externalId` is your own reference for a card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card with the fields you send instead of adding a duplicate, so an import can run again safely. The answer says `updated: true` for a single card, and `create_board_items` counts `created` and `updated`. Two cards on one board can't share an `externalId`.
 
 ```json
 {
@@ -140,6 +147,17 @@ The default columns are `todo`, `in_progress`, `completed` and `paused`. Moving 
 
 ```json
 { "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50", "text": "Build the parser", "status": "todo", "description": "Tokenizer and recursive descent parser" }
+```
+
+```json
+{
+  "boardId": "c41e7a92-0d5b-4f38-a6e1-7b2c9d8f3a50",
+  "position": "bottom",
+  "cards": [
+    { "text": "Fix the login loop", "status": "todo", "priority": "critical", "externalId": "https://github.com/acme/app/issues/643" },
+    { "text": "Dark mode toggle", "status": "in_progress", "description": "Follow the system setting first", "externalId": "https://github.com/acme/app/issues/651" }
+  ]
+}
 ```
 
 ```json

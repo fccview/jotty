@@ -330,6 +330,9 @@ export const parseMarkdown = (
   };
 };
 
+const pipeSafeJson = (value: unknown) =>
+  JSON.stringify(value).replace(/\|/g, "\\u007c");
+
 const generateItemMarkdown = (
   item: Item,
   type: ChecklistType,
@@ -367,11 +370,14 @@ const generateItemMarkdown = (
       itemMetadata.archivedBy = item.archivedBy;
       itemMetadata.previousStatus = item.previousStatus;
     }
+    if (item.externalId) {
+      itemMetadata.externalId = item.externalId;
+    }
 
     const timeEntries = item.timeEntries;
 
     if (timeEntries && timeEntries.length > 0) {
-      metadata.push(`time:${JSON.stringify(timeEntries)}`);
+      metadata.push(`time:${pipeSafeJson(timeEntries)}`);
     } else {
       metadata.push("time:0");
     }
@@ -414,11 +420,11 @@ const generateItemMarkdown = (
     }
 
     if (item.reminder) {
-      metadata.push(`reminder:${JSON.stringify(item.reminder)}`);
+      metadata.push(`reminder:${pipeSafeJson(item.reminder)}`);
     }
 
     if (Object.keys(itemMetadata).length > 0) {
-      metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
+      metadata.push(`metadata:${pipeSafeJson(itemMetadata)}`);
     }
 
     itemLine = `${indent}- [${item.completed ? "x" : " "
@@ -483,7 +489,7 @@ const generateItemMarkdown = (
     }
 
     if (Object.keys(itemMetadata).length > 0) {
-      metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
+      metadata.push(`metadata:${pipeSafeJson(itemMetadata)}`);
     }
 
     if (item.recurrence) {

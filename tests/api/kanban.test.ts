@@ -8,8 +8,8 @@ import {
   mockEditList,
   mockDropList,
   mockGetListById,
-  mockAddItem,
   mockEditItem,
+  mockDealCards,
   mockRemoveItem,
   mockStampStatus,
   mockRestatus,
@@ -26,6 +26,7 @@ import { GET as GET_BOARD, PUT as UPDATE_BOARD, DELETE as DELETE_BOARD } from "@
 import { PUT as SET_STATUSES } from "@/app/api/kanban/[boardId]/statuses/route"
 import { GET as GET_CALENDAR } from "@/app/api/kanban/[boardId]/calendar/route"
 import { POST as CREATE_CARD } from "@/app/api/kanban/[boardId]/items/route"
+import { POST as CREATE_CARDS } from "@/app/api/kanban/[boardId]/items/batch/route"
 import { PUT as UPDATE_CARD, DELETE as DELETE_CARD } from "@/app/api/kanban/[boardId]/items/[itemId]/route"
 import { PUT as MOVE_CARD } from "@/app/api/kanban/[boardId]/items/[itemId]/status/route"
 import { PUT as ASSIGN_CARD } from "@/app/api/kanban/[boardId]/items/[itemId]/assign/route"
@@ -163,6 +164,18 @@ describe("Kanban API", () => {
       expect(data.data.id).toBe(BOARD_UUID)
       expect(formData.get("type")).toBe("kanban")
       expect(formData.get("category")).toBe("Uncategorized")
+    })
+
+    it("says when the category had to be created", async () => {
+      mockMakeList.mockResolvedValue({ success: true, data: board(), categoryCreated: true })
+
+      const created = await getResponseJson(await CREATE_BOARD(createMockRequest("POST", BASE, { title: "Sprint", category: "Projects" })))
+
+      mockMakeList.mockResolvedValue({ success: true, data: board() })
+      const existing = await getResponseJson(await CREATE_BOARD(createMockRequest("POST", BASE, { title: "Sprint", category: "Work" })))
+
+      expect(created.categoryCreated).toBe(true)
+      expect(existing).not.toHaveProperty("categoryCreated")
     })
 
     it("hands custom columns to makeList so they are written with the board", async () => {
@@ -379,19 +392,59 @@ describe("Kanban API", () => {
   })
 
   describe("POST /api/kanban/:boardId/items", () => {
+    const dealt = (overrides: Record<string, unknown> = {}, updated = false) => ({
+      success: true,
+      data: [{ card: { id: "card-2", text: "Ship", completed: false, order: 0, ...overrides }, updated }],
+    })
+
     it("adds a card", async () => {
-      mockAddItem.mockResolvedValue({ success: true, data: { id: "card-2", text: "Ship", completed: false, order: 0 } })
+      mockDealCards.mockResolvedValue(dealt())
 
       const response = await CREATE_CARD(
         createMockRequest("POST", `${BASE}/${BOARD_UUID}/items`, { text: "Ship", status: "done" }),
         boardParams(),
       )
-      const formData: FormData = mockAddItem.mock.calls[0][2]
+      const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
-      expect((await getResponseJson(response)).data.id).toBe("card-2")
-      expect(formData.get("status")).toBe("done")
-      expect(formData.get("description")).toBeNull()
+      expect(data.data.id).toBe("card-2")
+      expect(data.updated).toBe(false)
+      expect(mockDealCards).toHaveBeenCalledWith(expect.anything(), BOARD_UUID, [{ text: "Ship", status: "done" }], undefined)
+    })
+
+    it("passes priority, score, assignee, externalId and position through", async () => {
+      mockDealCards.mockResolvedValue(dealt({ priority: "critical" }, true))
+
+      const response = await CREATE_CARD(
+        createMockRequest("POST", `${BASE}/${BOARD_UUID}/items`, {
+          text: "Ship",
+          priority: "critical",
+          score: 5,
+          assignee: "alice",
+          externalId: "  acme/app#643  ",
+          position: "bottom",
+        }),
+        boardParams(),
+      )
+
+      expect(response.status).toBe(200)
+      expect((await getResponseJson(response)).updated).toBe(true)
+      expect(mockDealCards).toHaveBeenCalledWith(
+        expect.anything(),
+        BOARD_UUID,
+        [{ text: "Ship", priority: "critical", score: 5, assignee: "alice", externalId: "acme/app#643" }],
+        "bottom",
+      )
+    })
+
+    it("rejects an unknown position", async () => {
+      const response = await CREATE_CARD(
+        createMockRequest("POST", `${BASE}/${BOARD_UUID}/items`, { text: "Ship", position: "middle" }),
+        boardParams(),
+      )
+
+      expect(response.status).toBe(400)
+      expect(mockDealCards).not.toHaveBeenCalled()
     })
 
     it("keeps the exact message for missing text", async () => {
@@ -405,7 +458,7 @@ describe("Kanban API", () => {
     })
 
     it("answers 400 when the action refuses", async () => {
-      mockAddItem.mockResolvedValue({ success: false, error: DENIED })
+      mockDealCards.mockResolvedValue({ success: false, error: DENIED })
 
       const response = await CREATE_CARD(
         createMockRequest("POST", `${BASE}/${BOARD_UUID}/items`, { text: "Sneaky" }),
@@ -414,6 +467,76 @@ describe("Kanban API", () => {
 
       expect(response.status).toBe(400)
       expect(await getResponseJson(response)).toEqual({ error: DENIED })
+    })
+  })
+
+  describe("POST /api/kanban/:boardId/items/batch", () => {
+    const url = `${BASE}/${BOARD_UUID}/items/batch`
+
+    it("adds every card in one call and counts what was created and updated", async () => {
+      mockDealCards.mockResolvedValue({
+        success: true,
+        data: [
+          { card: { id: "card-2", text: "One", completed: false, order: 0 }, updated: false },
+          { card: { id: "card-1", text: "Two", completed: false, order: 1 }, updated: true },
+        ],
+      })
+      const cards = [{ text: "One" }, { text: "Two", externalId: "gh-2" }]
+
+      const response = await CREATE_CARDS(createMockRequest("POST", url, { cards, position: "top" }), boardParams())
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.data.map((card: { id: string }) => card.id)).toEqual(["card-2", "card-1"])
+      expect(data.created).toBe(1)
+      expect(data.updated).toBe(1)
+      expect(mockDealCards).toHaveBeenCalledOnce()
+      expect(mockDealCards).toHaveBeenCalledWith(expect.anything(), BOARD_UUID, cards, "top")
+    })
+
+    it("refuses an empty batch", async () => {
+      const response = await CREATE_CARDS(createMockRequest("POST", url, { cards: [] }), boardParams())
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe("Send at least one card")
+      expect(mockDealCards).not.toHaveBeenCalled()
+    })
+
+    it("refuses a batch over the limit", async () => {
+      const cards = Array.from({ length: 201 }, (_, index) => ({ text: `Card ${index}` }))
+
+      const response = await CREATE_CARDS(createMockRequest("POST", url, { cards }), boardParams())
+
+      expect(response.status).toBe(400)
+      expect(mockDealCards).not.toHaveBeenCalled()
+    })
+
+    it("refuses a card without text", async () => {
+      const response = await CREATE_CARDS(
+        createMockRequest("POST", url, { cards: [{ text: "Fine" }, { status: "todo" }] }),
+        boardParams(),
+      )
+
+      expect(response.status).toBe(400)
+      expect(mockDealCards).not.toHaveBeenCalled()
+    })
+
+    it("answers 400 when the action refuses", async () => {
+      mockDealCards.mockResolvedValue({ success: false, error: DENIED })
+
+      const response = await CREATE_CARDS(createMockRequest("POST", url, { cards: [{ text: "Sneaky" }] }), boardParams())
+
+      expect(response.status).toBe(400)
+      expect(await getResponseJson(response)).toEqual({ error: DENIED })
+    })
+
+    it("answers 404 for a board the key owner cannot see", async () => {
+      mockGetListById.mockResolvedValue(undefined)
+
+      const response = await CREATE_CARDS(createMockRequest("POST", url, { cards: [{ text: "Hidden" }] }), boardParams())
+
+      expect(response.status).toBe(404)
+      expect(mockDealCards).not.toHaveBeenCalled()
     })
   })
 
@@ -452,6 +575,21 @@ describe("Kanban API", () => {
       expect(JSON.parse(formData.get("reminder") as string)).toEqual({ datetime: "2030-01-01T09:00:00.000Z" })
       expect(formData.has("text")).toBe(false)
       expect(formData.has("assignee")).toBe(false)
+      expect(formData.has("description")).toBe(false)
+      expect(formData.has("externalId")).toBe(false)
+    })
+
+    it("forwards description and externalId, empty ones included so they clear", async () => {
+      mockEditItem.mockResolvedValue({ success: true, data: board() })
+
+      await UPDATE_CARD(
+        createMockRequest("PUT", `${BASE}/${BOARD_UUID}/items/card-1`, { description: "", externalId: " gh-643 " }),
+        cardParams(),
+      )
+      const formData: FormData = mockEditItem.mock.calls[0][2]
+
+      expect(formData.get("description")).toBe("")
+      expect(formData.get("externalId")).toBe("gh-643")
     })
 
     it("accepts a legacy task-typed board", async () => {

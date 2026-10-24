@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { PermissionTypes } from "@/app/_types/enums";
-import { addItem } from "@/app/_server/actions/checklist-item/editor";
+import { dealCards } from "@/app/_server/actions/kanban/dealer";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, envelope } from "@/app/_schemas/api/common";
-import { BOARD_REFUSED, boardParams, cardCreateBody, storedCardSchema } from "@/app/_schemas/api/kanban";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, boardParams, cardCreateBody, cardCreatedSchema } from "@/app/_schemas/api/kanban";
 import { boardFor } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +16,11 @@ export const POST = defineRoute(
     path: "/kanban/{boardId}/items",
     tag: ApiTag.KANBAN,
     summary: "Add a card to a board",
-    description: "Lands at the top or bottom depending on the key owner's insertion setting. On a shared board the card is assigned to its creator. Needs edit permission.",
+    description: "Lands at the top or bottom, as position says or the key owner's insertion setting when it's left out. A card created in a column with autoComplete starts completed. When externalId matches a card already on the board, that card is updated instead and updated is true. On a shared board a card without an assignee is assigned to its creator. To add many cards use createBoardItems. Needs edit permission.",
     params: boardParams,
     body: cardCreateBody,
     responses: {
-      200: { description: "The new card", schema: envelope(storedCardSchema) },
+      200: { description: "The new or updated card", schema: cardCreatedSchema },
       400: BOARD_REFUSED,
       401: ERRORS[401],
       403: ERRORS[403],
@@ -32,16 +32,13 @@ export const POST = defineRoute(
     const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT });
     if (refused) return refused;
 
-    const formData = new FormData();
-    formData.append("text", body.text);
-    if (body.status) formData.append("status", body.status);
-    if (body.description) formData.append("description", body.description);
-
-    const result = await addItem(user, board, formData);
-    if (!result.success || !result.data) {
+    const { position, ...draft } = body;
+    const result = await dealCards(user, board.uuid, [draft], position);
+    const dealt = result.data?.[0];
+    if (!result.success || !dealt) {
       return refuse(result.error || "Failed to create item", 400);
     }
 
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data: dealt.card, updated: dealt.updated });
   },
 );

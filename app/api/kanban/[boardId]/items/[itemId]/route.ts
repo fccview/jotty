@@ -17,7 +17,7 @@ export const PUT = defineRoute(
     path: "/kanban/{boardId}/items/{itemId}",
     tag: ApiTag.KANBAN,
     summary: "Update a card",
-    description: "Fields left out keep their current value. Assigning someone else notifies them. Use the status route to move a card between columns. Needs edit permission.",
+    description: "Fields left out keep their current value, so send only what changes. Assigning someone else notifies them. Use the status route to move a card between columns. Needs edit permission.",
     params: cardParams,
     body: cardUpdateBody,
     responses: {
@@ -40,6 +40,8 @@ export const PUT = defineRoute(
     if (body.score !== undefined) formData.append("score", String(body.score));
     if (body.assignee !== undefined) formData.append("assignee", body.assignee);
     if (body.reminder !== undefined) formData.append("reminder", JSON.stringify(body.reminder));
+    if (body.description !== undefined) formData.append("description", body.description);
+    if (body.externalId !== undefined) formData.append("externalId", body.externalId);
 
     const result = await editItem(user, board, formData);
     if (!result.success) return refuse(result.error || "Failed to update item", 400);

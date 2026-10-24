@@ -21,6 +21,7 @@ import * as kanban from "@/app/api/kanban/route";
 import * as kanbanBoardId from "@/app/api/kanban/[boardId]/route";
 import * as kanbanBoardIdCalendar from "@/app/api/kanban/[boardId]/calendar/route";
 import * as kanbanBoardIdItems from "@/app/api/kanban/[boardId]/items/route";
+import * as kanbanBoardIdItemsBatch from "@/app/api/kanban/[boardId]/items/batch/route";
 import * as kanbanBoardIdItemsItemId from "@/app/api/kanban/[boardId]/items/[itemId]/route";
 import * as kanbanBoardIdItemsItemIdAgent from "@/app/api/kanban/[boardId]/items/[itemId]/agent/route";
 import * as kanbanBoardIdItemsItemIdAssign from "@/app/api/kanban/[boardId]/items/[itemId]/assign/route";
@@ -82,6 +83,7 @@ export const ROUTE_MODULES: object[] = [
   kanbanBoardId,
   kanbanBoardIdCalendar,
   kanbanBoardIdItems,
+  kanbanBoardIdItemsBatch,
   kanbanBoardIdItemsItemId,
   kanbanBoardIdItemsItemIdAgent,
   kanbanBoardIdItemsItemIdAssign,

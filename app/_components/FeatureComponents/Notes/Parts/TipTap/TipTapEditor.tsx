@@ -289,8 +289,12 @@ export const TiptapEditor = (
     [changeMarkdown],
   );
 
-  const handleMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-    changeMarkdown(e.target.value);
+  const changeRef = useRef(changeMarkdown);
+  changeRef.current = changeMarkdown;
+  const handleMarkdownChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => changeRef.current(e.target.value),
+    [],
+  );
 
   const handleVisualFileDrop = useCallback(
     (files: File[]) => {
@@ -321,22 +325,30 @@ export const TiptapEditor = (
     [editor, uploadHook],
   );
 
+  const dropMarkdown = (files: File[]) => {
+    files.forEach((file) => {
+      uploadHook.handleFileUpload(
+        file,
+        {
+          onImageUpload: (url) => insertSnippet(`![${file.name}](${url})`),
+          onFileUpload: (data) =>
+            insertSnippet(`[📎 ${data.fileName}](${data.url})`),
+        },
+        true,
+      );
+    });
+  };
+  const dropRef = useRef(dropMarkdown);
+  dropRef.current = dropMarkdown;
   const handleMarkdownFileDrop = useCallback(
-    (files: File[]) => {
-      files.forEach((file) => {
-        uploadHook.handleFileUpload(
-          file,
-          {
-            onImageUpload: (url) => insertSnippet(`![${file.name}](${url})`),
-            onFileUpload: (data) =>
-              insertSnippet(`[📎 ${data.fileName}](${data.url})`),
-          },
-          true,
-        );
-      });
-    },
-    [uploadHook, insertSnippet],
+    (files: File[]) => dropRef.current(files),
+    [],
   );
+
+  const handleMarkdownLinkRequest = useCallback((hasSelection: boolean) => {
+    setLinkRequestHasSelection(hasSelection);
+    setLinkRequestPending(true);
+  }, []);
 
   return (
     <div className="flex flex-col flex-1 h-full pb-0">
@@ -389,10 +401,7 @@ export const TiptapEditor = (
           content={markdownContent}
           onChange={handleMarkdownChange}
           onFileDrop={handleMarkdownFileDrop}
-          onLinkRequest={(hasSelection) => {
-            setLinkRequestHasSelection(hasSelection);
-            setLinkRequestPending(true);
-          }}
+          onLinkRequest={handleMarkdownLinkRequest}
         />
       ) : (
         <>

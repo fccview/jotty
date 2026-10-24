@@ -34,7 +34,15 @@ interface TableOfContentsProps {
   isEditing?: boolean;
 }
 
-const findHeadingEl = (id: string, text: string): HTMLElement | null => {
+const sameHeadings = (a: Heading[], b: Heading[]) =>
+  a.length === b.length &&
+  a.every((heading, index) =>
+    heading.id === b[index].id &&
+    heading.text === b[index].text &&
+    heading.level === b[index].level,
+  );
+
+const findHeadingEl =(id: string, text: string): HTMLElement | null => {
   const byId = document.getElementById(id);
   if (byId && !byId.closest(LINK_PREVIEW)) return byId;
   return ownHeadings(document).find((h) => h.textContent?.trim() === text) ?? null;
@@ -42,22 +50,19 @@ const findHeadingEl = (id: string, text: string): HTMLElement | null => {
 
 const useTableOfContents = (content?: string, isEditing?: boolean) => {
   const [activeHeading, setActiveHeading] = useState<string | null>(null);
-  const [headings, setHeadings] = useState<Heading[]>([]);
+  const [domHeadings, setDomHeadings] = useState<Heading[]>([]);
   const pinned = useRef<Pin | null>(null);
   const settle = useRef(() => {});
 
-  const markdownHeadings = useMemo(() => {
-    if (isEditing && content) {
-      return extractHeadingsFromMarkdown(content);
-    }
-    return [];
-  }, [content, isEditing]);
+  const markdownHeadings = useMemo(
+    () => (isEditing && content ? extractHeadingsFromMarkdown(content) : []),
+    [content, isEditing],
+  );
+
+  const headings = isEditing ? markdownHeadings : domHeadings;
 
   useEffect(() => {
-    if (isEditing) {
-      setHeadings(markdownHeadings);
-      return;
-    }
+    if (isEditing) return;
 
     const extractHeadingsFromDOM = (): Heading[] => {
       const contentArea = document.querySelector(".prose, [class*='prose']");
@@ -80,8 +85,8 @@ const useTableOfContents = (content?: string, isEditing?: boolean) => {
     };
 
     const updateHeadings = () => {
-      const extracted = extractHeadingsFromDOM();
-      setHeadings(extracted);
+      const next = extractHeadingsFromDOM();
+      setDomHeadings((current) => (sameHeadings(current, next) ? current : next));
     };
 
     const timeoutId = setTimeout(updateHeadings, 100);
@@ -99,7 +104,7 @@ const useTableOfContents = (content?: string, isEditing?: boolean) => {
       clearTimeout(timeoutId);
       observer.disconnect();
     };
-  }, [isEditing, markdownHeadings]);
+  }, [isEditing]);
 
   useEffect(() => {
     if (headings.length === 0) return;

@@ -12,6 +12,9 @@ export const flatCards = (items: Item[], parentId?: string): CardSpot[] =>
     ...flatCards(item.children || [], item.id),
   ]);
 
+export const cardWithExternalId = (items: Item[], externalId: string): Item | undefined =>
+  flatCards(items).find(({ item }) => item.externalId === externalId)?.item;
+
 export const cardStatus = (item: Item): string => item.status || TaskStatus.TODO;
 
 export const isCardDone = (item: Item): boolean =>

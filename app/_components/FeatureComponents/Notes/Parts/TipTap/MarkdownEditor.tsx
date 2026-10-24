@@ -1,7 +1,7 @@
 import { SyntaxHighlightedEditor } from "./SyntaxHighlightedEditor";
 import { useNotesStore } from "@/app/_utils/notes-store";
 import { VisualGuideRuler } from "./VisualGuideRuler";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 interface MarkdownEditorProps {
   content: string;
@@ -11,7 +11,7 @@ interface MarkdownEditorProps {
   onCodeBlockRequest?: (language?: string) => void;
 }
 
-export const MarkdownEditor = ({
+export const MarkdownEditor = memo(({
   content,
   onChange,
   onFileDrop,
@@ -59,4 +59,6 @@ export const MarkdownEditor = ({
       </div>
     </div>
   );
-};
+});
+
+MarkdownEditor.displayName = "MarkdownEditor";

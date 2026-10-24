@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
-import { KanbanPriorityLevel } from "@/app/_types/enums";
+import { CardPlacement, KanbanPriorityLevel } from "@/app/_types/enums";
+import { MAX_CARD_BATCH, MAX_EXTERNAL_ID } from "@/app/_consts/kanban";
 import {
   ListView,
   categoryField,
@@ -32,8 +33,12 @@ type CardShape = {
   assignee?: string;
   agent?: string;
   reminder?: z.infer<typeof reminderSchema>;
+  description?: string;
+  externalId?: string;
   children?: CardShape[];
 };
+
+const EXTERNAL_ID_NOTE = "Your own reference for the card, like a GitHub issue URL";
 
 export const kanbanCardSchema: z.ZodType<CardShape> = z
   .object({
@@ -47,6 +52,8 @@ export const kanbanCardSchema: z.ZodType<CardShape> = z
     assignee: z.string().optional().describe("Username"),
     agent: z.string().optional().describe("Virtual agent id from the board's spec note, not a user"),
     reminder: reminderSchema.optional(),
+    description: z.string().optional(),
+    externalId: z.string().optional().describe(EXTERNAL_ID_NOTE),
     get children() {
       return z.array(kanbanCardSchema).optional();
     },
@@ -85,6 +92,7 @@ type StoredCardShape = {
   assignee?: string;
   agent?: string;
   reminder?: z.infer<typeof reminderSchema>;
+  externalId?: string;
   timeEntries?: z.infer<typeof timeEntrySchema>[];
   history?: z.infer<typeof statusChangeSchema>[];
   createdBy?: string;
@@ -107,6 +115,7 @@ export const storedCardSchema: z.ZodType<StoredCardShape> = z
     assignee: z.string().optional(),
     agent: z.string().optional(),
     reminder: reminderSchema.optional(),
+    externalId: z.string().optional().describe(EXTERNAL_ID_NOTE),
     timeEntries: z.array(timeEntrySchema).optional(),
     history: z.array(statusChangeSchema).optional(),
     createdBy: z.string().optional(),
@@ -196,10 +205,68 @@ export const statusesBody = z.object({
     .describe("The full new column list. Cards in a removed column move to the lowest-order one"),
 });
 
-export const cardCreateBody = z.object({
+const placementField = z
+  .enum(CardPlacement)
+  .optional()
+  .describe("Where new cards go, top or bottom of the board. Left out, it follows the key owner's new item setting");
+
+export const cardDraftSchema = z.object({
   text: required("Text"),
   status: z.string().optional().describe("Status id, defaults to the board's first column"),
   description: z.string().optional(),
+  priority: prioritySchema.optional().describe("none clears it"),
+  score: z.number().int("Score must be a whole number").optional(),
+  assignee: z
+    .string()
+    .optional()
+    .describe("Username of somebody who can see the board. On a shared board a card without one is assigned to you"),
+  externalId: z
+    .string()
+    .trim()
+    .min(1)
+    .max(MAX_EXTERNAL_ID)
+    .optional()
+    .describe(
+      `${EXTERNAL_ID_NOTE}. When a card on the board already has it, that card is updated with the fields you send instead of a new one being added, so an import can be re-run safely`,
+    ),
+});
+
+export const cardCreateBody = cardDraftSchema.extend({ position: placementField });
+
+export const cardBatchBody = z.object({
+  cards: z
+    .array(cardDraftSchema)
+    .min(1, "Send at least one card")
+    .max(MAX_CARD_BATCH, `Send at most ${MAX_CARD_BATCH} cards at a time`)
+    .describe(`Up to ${MAX_CARD_BATCH} cards. New ones land together in the order given`)
+    .superRefine((cards, ctx) => {
+      const seen = new Set<string>();
+      cards.forEach(({ externalId }, index) => {
+        if (!externalId) return;
+        if (seen.has(externalId)) {
+          ctx.addIssue({
+            code: "custom",
+            path: [index, "externalId"],
+            message: `externalId ${externalId} appears more than once in this batch`,
+          });
+        }
+        seen.add(externalId);
+      });
+    }),
+  position: placementField,
+});
+
+const UPDATED_NOTE = "true when externalId matched a card already on the board and that card was updated";
+
+export const cardCreatedSchema = envelope(storedCardSchema).extend({
+  updated: z.boolean().describe(UPDATED_NOTE),
+});
+
+export const cardsCreatedSchema = envelope(
+  z.array(storedCardSchema).describe("The cards in the order they were sent"),
+).extend({
+  created: z.number().describe("Cards added"),
+  updated: z.number().describe("Cards updated because their externalId was already on the board"),
 });
 
 export const cardUpdateBody = z.object({
@@ -211,6 +278,13 @@ export const cardUpdateBody = z.object({
     .describe("Empty string clears it"),
   assignee: z.string().optional().describe("Username, empty string clears it"),
   reminder: reminderSchema.nullable().optional().describe("null clears it"),
+  description: z.string().optional().describe("Empty string clears it"),
+  externalId: z
+    .string()
+    .trim()
+    .max(MAX_EXTERNAL_ID)
+    .optional()
+    .describe(`${EXTERNAL_ID_NOTE}. Empty string clears it. Two cards on one board can't share one`),
 });
 
 export const cardStatusBody = z.object({

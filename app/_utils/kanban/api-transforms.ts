@@ -15,6 +15,8 @@ interface TransformedItem {
   assignee?: string;
   agent?: string;
   reminder?: { datetime: string; notified?: boolean };
+  description?: string;
+  externalId?: string;
   children?: TransformedItem[];
 }
 
@@ -30,6 +32,8 @@ export const transformItem = (item: Item, index: number): TransformedItem => {
     assignee: item.assignee,
     agent: item.agent,
     reminder: item.reminder,
+    description: item.description,
+    externalId: item.externalId,
   };
 
   if (item.children && item.children.length > 0) {

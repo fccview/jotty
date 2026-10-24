@@ -22,7 +22,7 @@ export const GET = defineRoute(
     path: "/categories",
     tag: ApiTag.DISCOVERY,
     summary: "List categories",
-    description: "Your note and checklist categories, including shared ones. Archived categories and templates are left out.",
+    description: "Your note and checklist categories, including shared ones. Kanban boards live in the checklist categories. Archived categories and templates are left out.",
     responses: {
       200: { description: "Categories per mode", schema: categoriesSchema },
       401: ERRORS[401],

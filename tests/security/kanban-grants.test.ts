@@ -122,6 +122,7 @@ const editRoutes = async (): Promise<Record<string, Call>> => {
   const board = await import('@/app/api/kanban/[boardId]/route')
   const statuses = await import('@/app/api/kanban/[boardId]/statuses/route')
   const items = await import('@/app/api/kanban/[boardId]/items/route')
+  const batch = await import('@/app/api/kanban/[boardId]/items/batch/route')
   const item = await import('@/app/api/kanban/[boardId]/items/[itemId]/route')
   const status = await import('@/app/api/kanban/[boardId]/items/[itemId]/status/route')
   const assign = await import('@/app/api/kanban/[boardId]/items/[itemId]/assign/route')
@@ -132,6 +133,8 @@ const editRoutes = async (): Promise<Record<string, Call>> => {
     'PUT /api/kanban/:id/statuses': () =>
       statuses.PUT(apiRequest('PUT', `${BASE}/statuses`, { statuses: [{ id: 'todo', label: 'To Do', order: 0 }] }), onBoard()),
     'POST /api/kanban/:id/items': () => items.POST(apiRequest('POST', `${BASE}/items`, { text: 'Sneaky' }), onBoard()),
+    'POST /api/kanban/:id/items/batch': () =>
+      batch.POST(apiRequest('POST', `${BASE}/items/batch`, { cards: [{ text: 'Sneaky' }, { text: 'Sneakier' }] }), onBoard()),
     'PUT /api/kanban/:id/items/:itemId': () => item.PUT(apiRequest('PUT', `${BASE}/items/card`, { text: 'Mine' }), onCard()),
     'PUT /api/kanban/:id/items/:itemId/status': () =>
       status.PUT(apiRequest('PUT', `${BASE}/items/card/status`, { status: 'done' }), onCard()),
@@ -212,6 +215,7 @@ describe('Security: kanban API routes hold every share grant', () => {
       const through = [
         'PUT /api/kanban/:id/statuses',
         'POST /api/kanban/:id/items',
+        'POST /api/kanban/:id/items/batch',
         'PUT /api/kanban/:id/items/:itemId',
         'PUT /api/kanban/:id/items/:itemId/assign',
         'PUT /api/kanban/:id/items/:itemId/reminder',
@@ -241,6 +245,26 @@ describe('Security: kanban API routes hold every share grant', () => {
       const { PUT } = await import('@/app/api/kanban/[boardId]/items/[itemId]/assign/route')
 
       const response = await PUT(apiRequest('PUT', `${BASE}/items/card/assign`, { assignee }), onCard())
+
+      expect(response.status).toBe(400)
+      expect((await response.json()).error).toBe(message)
+      expect(mockWrite).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('assigning while creating cards', () => {
+    beforeEach(() => keyFor(OWNER))
+
+    it.each([
+      ['a user that does not exist', 'ghost', "Assignee not found: ghost"],
+      ['a user who cannot see the board', STRANGER, `Assignee can't see this board: ${STRANGER}`],
+    ])('refuses the whole batch for %s and writes nothing', async (_label, assignee, message) => {
+      const { POST } = await import('@/app/api/kanban/[boardId]/items/batch/route')
+
+      const response = await POST(
+        apiRequest('POST', `${BASE}/items/batch`, { cards: [{ text: 'Fine' }, { text: 'Leak', assignee }] }),
+        onBoard(),
+      )
 
       expect(response.status).toBe(400)
       expect((await response.json()).error).toBe(message)

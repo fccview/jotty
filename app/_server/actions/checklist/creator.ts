@@ -23,7 +23,7 @@ export const makeList = async (
   actor: SanitisedUser,
   formData: FormData,
   statuses?: KanbanStatus[],
-): Promise<{ success?: boolean; data?: Checklist; error?: string }> => {
+): Promise<{ success?: boolean; data?: Checklist; error?: string; categoryCreated?: boolean }> => {
   try {
     const title = formData.get("title") as string;
     const category = (formData.get("category") as string) || UNCATEGORIZED;
@@ -45,7 +45,7 @@ export const makeList = async (
     }
 
     const categoryDir = target.dir;
-    await ensureDir(categoryDir);
+    const freshFolder = await ensureDir(categoryDir);
 
     const fileRenameMode = actor.fileRenameMode || "minimal";
     const filename = await generateUniqueFilename(
@@ -93,7 +93,7 @@ export const makeList = async (
       username: actor.username,
     });
 
-    return { success: true, data: newList };
+    return { success: true, data: newList, ...(freshFolder && target.category && { categoryCreated: true }) };
   } catch (error) {
     const { title, uuid } = getFormData(formData, ["title", "uuid"]);
     await logContentEvent(

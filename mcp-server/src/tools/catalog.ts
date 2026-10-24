@@ -56,6 +56,7 @@ export const CATALOG: CatalogEntry[] = [
   { id: "getBoard" },
   { id: "createBoard" },
   { id: "createBoardItem", omit: CARD_NOISE },
+  { id: "createBoardItems", omit: CARD_NOISE },
   { id: "updateBoardItem", pick: "item", omit: CARD_NOISE },
   {
     id: "moveBoardItem",

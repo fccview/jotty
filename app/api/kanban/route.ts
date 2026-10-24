@@ -59,10 +59,15 @@ export const POST = defineRoute(
     path: "/kanban",
     tag: ApiTag.KANBAN,
     summary: "Create a Kanban board",
-    description: "Needs create permission on the target folder, which a shared folder may not grant.",
+    description: "Boards share their categories with checklists, so listCategories shows them under checklists. A category that doesn't exist yet is created, and categoryCreated says so. Columns take a hex colour like #3b82f6. Needs create permission on the target folder, which a shared folder may not grant.",
     body: boardCreateBody,
     responses: {
-      200: { description: "Created board", schema: envelope(boardSchema) },
+      200: {
+        description: "Created board",
+        schema: envelope(boardSchema).extend({
+          categoryCreated: z.boolean().optional().describe("true when the category didn't exist and was made for this board"),
+        }),
+      },
       400: ERRORS[400],
       401: ERRORS[401],
       500: ERRORS[500],
@@ -80,6 +85,10 @@ export const POST = defineRoute(
       return refuse(result.error || "Failed to create board", 400);
     }
 
-    return NextResponse.json({ success: true, data: transformBoard(result.data) });
+    return NextResponse.json({
+      success: true,
+      data: transformBoard(result.data),
+      ...(result.categoryCreated && { categoryCreated: true }),
+    });
   },
 );
