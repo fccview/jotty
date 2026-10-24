@@ -30,6 +30,7 @@ type CardShape = {
   priority?: KanbanPriorityLevel;
   score?: number;
   assignee?: string;
+  agent?: string;
   reminder?: z.infer<typeof reminderSchema>;
   children?: CardShape[];
 };
@@ -44,6 +45,7 @@ export const kanbanCardSchema: z.ZodType<CardShape> = z
     priority: prioritySchema.optional(),
     score: z.number().optional(),
     assignee: z.string().optional().describe("Username"),
+    agent: z.string().optional().describe("Virtual agent id from the board's spec note, not a user"),
     reminder: reminderSchema.optional(),
     get children() {
       return z.array(kanbanCardSchema).optional();
@@ -59,6 +61,7 @@ export const boardSchema = z
     statuses: z
       .array(kanbanStatusSchema)
       .describe("The board's columns, or the default columns when the board never changed them"),
+    specNote: z.string().optional().describe("Uuid of the note pinned as this board's spec"),
     items: z.array(kanbanCardSchema).optional().describe("Left out in the summary view"),
     itemCount: z.number().optional().describe("Top-level cards, in the summary view"),
     statusCounts: z
@@ -80,6 +83,7 @@ type StoredCardShape = {
   priority?: KanbanPriorityLevel;
   score?: number;
   assignee?: string;
+  agent?: string;
   reminder?: z.infer<typeof reminderSchema>;
   timeEntries?: z.infer<typeof timeEntrySchema>[];
   history?: z.infer<typeof statusChangeSchema>[];
@@ -101,6 +105,7 @@ export const storedCardSchema: z.ZodType<StoredCardShape> = z
     priority: prioritySchema.optional(),
     score: z.number().optional(),
     assignee: z.string().optional(),
+    agent: z.string().optional(),
     reminder: reminderSchema.optional(),
     timeEntries: z.array(timeEntrySchema).optional(),
     history: z.array(statusChangeSchema).optional(),
@@ -124,6 +129,7 @@ export const storedBoardSchema = z
     category: z.string().optional(),
     owner: z.string().optional(),
     statuses: z.array(kanbanStatusSchema).optional(),
+    specNote: z.string().optional(),
     items: z.array(storedCardSchema),
     createdAt: timestamp,
     updatedAt: timestamp,

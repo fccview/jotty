@@ -15,6 +15,11 @@ export {
 } from "./reorder";
 
 export {
+  sortItems,
+  undoSort,
+} from "./sort";
+
+export {
   updateItemStatus,
 } from "./status";
 

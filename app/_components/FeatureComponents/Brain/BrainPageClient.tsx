@@ -1,21 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { AiBrain04Icon } from "hugeicons-react";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { MobileHeader } from "@/app/_components/GlobalComponents/Layout/MobileHeader";
 import { IndexingRelations } from "@/app/_components/GlobalComponents/Layout/IndexingRelations";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { connectItems } from "@/app/_server/actions/relations";
 import { createNote } from "@/app/_server/actions/note";
 import { BrainNodeKinds, RelationsStatus } from "@/app/_consts/relations";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { ItemTypes } from "@/app/_types/enums";
+import { ItemTypes, Modes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
+import { tagHref } from "@/app/_utils/tag-utils";
 import type { Category, SanitisedUser } from "@/app/_types";
 import type { BrainGraph, BrainNode } from "@/app/_types/relations";
 import { BrainToolbar } from "./Parts/BrainToolbar";
@@ -36,24 +38,30 @@ interface BrainPageClientProps {
   graph: BrainGraph;
   focus: string | null;
   isOwnBrain: boolean;
-  categories: Category[];
+  notesCategories: Category[];
+  listsCategories: Category[];
   user: SanitisedUser | null;
 }
-
-const TAG_ROUTE = (tag: string) => `/?mode=tags&tag=${encodeURIComponent(tag)}`;
 
 export const BrainPageClient = ({
   graph,
   focus,
   isOwnBrain,
-  categories,
+  notesCategories,
+  listsCategories,
   user,
 }: BrainPageClientProps) => {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const { showToast } = useToast();
-  const { openSettings, openCreateNoteModal, openCreateCategoryModal } =
-    useShortcut();
+  const {
+    openSettings,
+    openCreateNoteModal,
+    openCreateChecklistModal,
+    openCreateCategoryModal,
+  } = useShortcut();
+  const { mode } = useAppMode();
   const palette = useBrainPalette();
   const focusId =
     focus && graph.nodes.some((node) => node.id === focus) ? focus : null;
@@ -78,6 +86,8 @@ export const BrainPageClient = ({
     setFlyTo({ id, at: Date.now() });
   }, []);
 
+  const creating = useRef(false);
+
   const open = useCallback(
     async (node: BrainNode) => {
       if (node.kind === BrainNodeKinds.NOTE)
@@ -85,23 +95,30 @@ export const BrainPageClient = ({
       if (node.kind === BrainNodeKinds.CHECKLIST)
         return router.push(itemHref(ItemTypes.CHECKLIST, node.id));
       if (node.kind === BrainNodeKinds.TAG)
-        return router.push(TAG_ROUTE(node.title.replace(/^#/, "")));
-      if (!isOwnBrain) return;
+        return router.push(tagHref(node.title.replace(/^#/, "")));
+      if (!isOwnBrain || creating.current) return;
 
-      const formData = new FormData();
-      formData.append("title", node.title);
-      formData.append("category", UNCATEGORIZED);
-      formData.append("rawContent", "");
-      const result = await createNote(formData);
-      if (result.success && result.data?.uuid) {
-        router.push(itemHref(ItemTypes.NOTE, result.data.uuid));
-        return;
+      creating.current = true;
+      try {
+        const formData = new FormData();
+        formData.append("title", node.title);
+        formData.append("category", UNCATEGORIZED);
+        formData.append("rawContent", "");
+        const result = await createNote(formData);
+        if (result.success && result.data?.uuid) {
+          router.push(itemHref(ItemTypes.NOTE, result.data.uuid));
+          return;
+        }
+        showToast({
+          type: "error",
+          title: t("common.error"),
+          message: t("brain.createFailed"),
+        });
+      } catch (error) {
+        console.error("Could not create a note from the brain:", error);
+      } finally {
+        creating.current = false;
       }
-      showToast({
-        type: "error",
-        title: t("common.error"),
-        message: t("brain.createFailed"),
-      });
     },
     [router, isOwnBrain, showToast, t],
   );
@@ -135,11 +152,20 @@ export const BrainPageClient = ({
   const building = graph.status === RelationsStatus.BUILDING;
   const empty = !building && graph.nodes.length === 0;
 
+  const categories =
+    mode === Modes.TAGS
+      ? []
+      : mode === Modes.NOTES
+        ? notesCategories
+        : listsCategories;
+  const openCreate =
+    mode === Modes.NOTES ? openCreateNoteModal : openCreateChecklistModal;
+
   return (
     <Layout
       categories={categories}
       onOpenSettings={openSettings}
-      onOpenCreateModal={openCreateNoteModal}
+      onOpenCreateModal={openCreate}
       onOpenCategoryModal={openCreateCategoryModal}
       user={user}
     >
@@ -147,7 +173,7 @@ export const BrainPageClient = ({
         <MobileHeader
           user={user}
           onOpenSettings={openSettings}
-          currentLocale={user?.preferredLocale || "en"}
+          currentLocale={locale}
         />
 
         <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-background">

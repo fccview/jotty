@@ -1,7 +1,6 @@
-import { Extension } from "@tiptap/core";
-import { ReactRenderer } from "@tiptap/react";
+import { Extension, type Editor, type Range } from "@tiptap/core";
+import { DEFAULT_MERMAID_DIAGRAM } from "@/app/_consts/diagrams";
 import Suggestion from "@tiptap/suggestion";
-import tippy from "tippy.js";
 import {
   Heading01Icon,
   Heading02Icon,
@@ -23,16 +22,14 @@ import { SlashCommandsList } from "@/app/_components/FeatureComponents/Notes/Par
 import { AtMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtMentionsList";
 import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import { ItemType } from "@/app/_types";
-import { ItemTypes } from "@/app/_types/enums";
-import { PluginKey } from "@tiptap/pm/state";
+import { PluginKey, type EditorState } from "@tiptap/pm/state";
+import { suggestionPopup } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/suggestionPopup";
 import { itemHref } from "@/app/_utils/global-utils";
+import { findMentionables } from "@/app/_utils/mention-lookup";
 
 const WIKILINK_OPEN = "[[";
 
 const WIKILINK_CLOSE_CHAR = "]";
-
-const mentionable = <T extends { uuid?: string }>(items?: T[]): T[] =>
-  items?.filter((item) => Boolean(item.uuid)) || [];
 
 export interface SlashCommandItem {
   title: string;
@@ -48,12 +45,6 @@ export interface AtMentionItem {
   id: string;
   uuid?: string;
 }
-
-let atMentionData = {
-  notes: [] as any[],
-  checklists: [] as any[],
-  username: "",
-};
 
 let tagSuggestionData = {
   tags: [] as string[],
@@ -169,18 +160,7 @@ const getSlashCommands = (t: (key: string) => string): SlashCommandItem[] => [
     description: t("editor.createMermaidDiagram"),
     icon: <SharedWifiIcon className="h-4 w-4" />,
     command: ({ editor, range }) => {
-      const defaultMermaid = `graph TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Option 1]
-    B -->|No| D[Option 2]
-    C --> E[End]
-    D --> E`;
-      editor
-        .chain()
-        .focus()
-        .deleteRange(range)
-        .setMermaid(defaultMermaid)
-        .run();
+      editor.chain().focus().deleteRange(range).setMermaid(DEFAULT_MERMAID_DIAGRAM).run();
     },
   },
   {
@@ -235,81 +215,7 @@ export const SlashCommands = Extension.create({
               item.description.toLowerCase().includes(query.toLowerCase())
           );
         },
-        render: () => {
-          let component: ReactRenderer;
-          let popup: any;
-
-          return {
-            onStart: (props: any) => {
-              component = new ReactRenderer(SlashCommandsList, {
-                props,
-                editor: props.editor,
-              });
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const referenceElement = document.createElement("div");
-              referenceElement.style.position = "absolute";
-              referenceElement.style.pointerEvents = "none";
-              referenceElement.style.zIndex = "10";
-              document.body.appendChild(referenceElement);
-
-              const rect = props.clientRect();
-              referenceElement.style.left = `${rect.left}px`;
-              referenceElement.style.top = `${rect.top}px`;
-
-              popup = tippy(referenceElement, {
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: "manual",
-                placement: "bottom-start",
-                theme: "light",
-                maxWidth: "none",
-                appendTo: () => document.body,
-              });
-
-              (popup as any).referenceElement = referenceElement;
-            },
-
-            onUpdate(props: any) {
-              component.updateProps(props);
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const rect = props.clientRect();
-              const referenceElement = (popup as any).referenceElement;
-              if (referenceElement) {
-                referenceElement.style.left = `${rect.left}px`;
-                referenceElement.style.top = `${rect.top}px`;
-              }
-            },
-
-            onKeyDown(props: any) {
-              if (props.event.key === "Escape") {
-                popup[0].hide();
-                return true;
-              }
-
-              return (component.ref as any)?.onKeyDown?.(props.event);
-            },
-
-            onExit() {
-              if (popup && popup[0]) {
-                popup[0].destroy();
-                const referenceElement = (popup as any).referenceElement;
-                if (referenceElement && referenceElement.parentNode) {
-                  referenceElement.parentNode.removeChild(referenceElement);
-                }
-              }
-              component.destroy();
-            },
-          };
-        },
+        render: suggestionPopup(SlashCommandsList),
       },
       atSuggestion: {
         char: "@",
@@ -343,103 +249,8 @@ export const SlashCommands = Extension.create({
             })
             .run();
         },
-        items: ({ query }: { query: string }) => {
-          const allItems = [
-            ...atMentionData.notes.map((note: any) => ({
-              ...note,
-              type: ItemTypes.NOTE as const,
-            })),
-            ...atMentionData.checklists.map((checklist: any) => ({
-              ...checklist,
-              type: ItemTypes.CHECKLIST as const,
-            })),
-          ];
-
-          if (!query.trim()) return allItems;
-
-          const lowerCaseQuery = query.toLowerCase();
-
-          return allItems.filter(
-            (item) =>
-              item.title.toLowerCase().includes(lowerCaseQuery) ||
-              item.category?.toLowerCase().includes(lowerCaseQuery)
-          );
-        },
-        render: () => {
-          let component: ReactRenderer;
-          let popup: any;
-
-          return {
-            onStart: (props: any) => {
-              component = new ReactRenderer(AtMentionsList, {
-                props,
-                editor: props.editor,
-              });
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const referenceElement = document.createElement("div");
-              referenceElement.style.position = "absolute";
-              referenceElement.style.pointerEvents = "none";
-              referenceElement.style.zIndex = "10";
-              document.body.appendChild(referenceElement);
-
-              const rect = props.clientRect();
-              referenceElement.style.left = `${rect.left}px`;
-              referenceElement.style.top = `${rect.top}px`;
-
-              popup = tippy(referenceElement, {
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: "manual",
-                placement: "bottom-start",
-                theme: "light",
-                maxWidth: "none",
-                appendTo: () => document.body,
-              });
-
-              (popup as any).referenceElement = referenceElement;
-            },
-
-            onUpdate(props: any) {
-              component.updateProps(props);
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const rect = props.clientRect();
-              const referenceElement = (popup as any).referenceElement;
-              if (referenceElement) {
-                referenceElement.style.left = `${rect.left}px`;
-                referenceElement.style.top = `${rect.top}px`;
-              }
-            },
-
-            onKeyDown(props: any) {
-              if (props.event.key === "Escape") {
-                popup[0].hide();
-                return true;
-              }
-
-              return (component.ref as any)?.onKeyDown?.(props.event);
-            },
-
-            onExit() {
-              if (popup && popup[0]) {
-                popup[0].destroy();
-                const referenceElement = (popup as any).referenceElement;
-                if (referenceElement && referenceElement.parentNode) {
-                  referenceElement.parentNode.removeChild(referenceElement);
-                }
-              }
-              component.destroy();
-            },
-          };
-        },
+        items: ({ query }: { query: string }) => findMentionables(query),
+        render: suggestionPopup(AtMentionsList),
       },
       hashSuggestion: {
         char: "#",
@@ -489,81 +300,7 @@ export const SlashCommands = Extension.create({
 
           return results;
         },
-        render: () => {
-          let component: ReactRenderer;
-          let popup: any;
-
-          return {
-            onStart: (props: any) => {
-              component = new ReactRenderer(TagMentionsList, {
-                props,
-                editor: props.editor,
-              });
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const referenceElement = document.createElement("div");
-              referenceElement.style.position = "absolute";
-              referenceElement.style.pointerEvents = "none";
-              referenceElement.style.zIndex = "10";
-              document.body.appendChild(referenceElement);
-
-              const rect = props.clientRect();
-              referenceElement.style.left = `${rect.left}px`;
-              referenceElement.style.top = `${rect.top}px`;
-
-              popup = tippy(referenceElement, {
-                content: component.element,
-                showOnCreate: true,
-                interactive: true,
-                trigger: "manual",
-                placement: "bottom-start",
-                theme: "light",
-                maxWidth: "none",
-                appendTo: () => document.body,
-              });
-
-              (popup as any).referenceElement = referenceElement;
-            },
-
-            onUpdate(props: any) {
-              component.updateProps(props);
-
-              if (!props.clientRect) {
-                return;
-              }
-
-              const rect = props.clientRect();
-              const referenceElement = (popup as any).referenceElement;
-              if (referenceElement) {
-                referenceElement.style.left = `${rect.left}px`;
-                referenceElement.style.top = `${rect.top}px`;
-              }
-            },
-
-            onKeyDown(props: any) {
-              if (props.event.key === "Escape") {
-                popup[0].hide();
-                return true;
-              }
-
-              return (component.ref as any)?.onKeyDown?.(props.event);
-            },
-
-            onExit() {
-              if (popup && popup[0]) {
-                popup[0].destroy();
-                const referenceElement = (popup as any).referenceElement;
-                if (referenceElement && referenceElement.parentNode) {
-                  referenceElement.parentNode.removeChild(referenceElement);
-                }
-              }
-              component.destroy();
-            },
-          };
-        },
+        render: suggestionPopup(TagMentionsList),
       },
     };
   },
@@ -577,13 +314,6 @@ export const SlashCommands = Extension.create({
   /** @ts-ignore */
   addCommands() {
     return {
-      updateAtMentionData:
-        (notes: any[], checklists: any[], username: string) => () => {
-          atMentionData.notes = mentionable(notes);
-          atMentionData.checklists = mentionable(checklists);
-
-          return true;
-        },
       updateTagSuggestionData:
         (tags: string[]) => () => {
           tagSuggestionData.tags = tags || [];
@@ -593,8 +323,6 @@ export const SlashCommands = Extension.create({
   },
 
   addProseMirrorPlugins() {
-    atMentionData.notes = mentionable(this.options.notes);
-    atMentionData.checklists = mentionable(this.options.checklists);
     tagSuggestionData.tags = this.options.tags || [];
 
     const plugins = [];
@@ -623,7 +351,7 @@ export const SlashCommands = Extension.create({
           ...this.options.atSuggestion,
           char: WIKILINK_OPEN,
           allowSpaces: true,
-          allow: ({ editor, state, range }: { editor: any; state: any; range: { from: number; to: number } }) =>
+          allow: ({ editor, state, range }: { editor: Editor; state: EditorState; range: Range }) =>
             !editor.isActive("codeBlock") &&
             !state.doc.textBetween(range.from, range.to).includes(WIKILINK_CLOSE_CHAR),
           pluginKey: new PluginKey("wikiSuggestion"),

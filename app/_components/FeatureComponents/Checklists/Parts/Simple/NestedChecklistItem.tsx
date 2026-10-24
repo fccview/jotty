@@ -41,6 +41,7 @@ import {
   MenuSide,
   menuPlacementClasses,
 } from "@/app/_utils/menu-placement-utils";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -161,7 +162,7 @@ const NestedChecklistItemComponent = ({
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
       inputRef.current.select();
     }
   }, [isEditing]);
@@ -264,18 +265,13 @@ const NestedChecklistItemComponent = ({
     { id: "delete", name: t("common.delete"), icon: Delete03Icon },
   ];
 
+  const childrenDone = Boolean(
+    hasChildren && item.children?.every((child) => child.completed),
+  );
+
   useEffect(() => {
-    if (hasChildren && item.children) {
-      const allChildrenCompleted = item.children.every(
-        (child) => child.completed,
-      );
-      if (allChildrenCompleted) {
-        setIsExpanded(false);
-      } else {
-        setIsExpanded(true);
-      }
-    }
-  }, [item.children, hasChildren]);
+    if (hasChildren) setIsExpanded(!childrenDone);
+  }, [childrenDone, hasChildren]);
 
   const isBeingDragged = draggedItemId === item.id;
 
@@ -543,7 +539,8 @@ const NestedChecklistItemComponent = ({
                       <div
                         ref={dropdownMenuRef}
                         className={cn(
-                          "absolute z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
+                          "absolute z-50 w-48",
+                          MENU_CLASS,
                           menuPlacementClasses(dropdownPlacement),
                         )}
                       >

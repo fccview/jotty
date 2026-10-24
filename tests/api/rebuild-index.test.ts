@@ -10,7 +10,7 @@ import {
 const mockRebuildOwner = vi.fn()
 const mockGetUserIndex = vi.fn()
 
-vi.mock("@/app/_server/actions/relations/indexer", () => ({
+vi.mock("@/app/_server/actions/relations/night-shift", () => ({
   rebuildOwnerRelations: (...args: unknown[]) => mockRebuildOwner(...args),
 }))
 

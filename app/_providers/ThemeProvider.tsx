@@ -1,28 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSettings } from "@/app/_utils/settings-store";
+import { resolveTheme } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId, SYSTEM_THEME } from "@/app/_consts/quick-settings";
 import { BUILT_IN_THEMES, getCustomThemeColors } from "@/app/_consts/themes";
 import { useAppMode } from "./AppModeProvider";
 import { useRadiusOverride } from "@/app/_hooks/useRadiusOverride";
-import { User } from "../_types";
+import { useNoteFontSizeOverride } from "@/app/_hooks/useNoteFontSizeOverride";
+import { useBodyCookieSync } from "@/app/_hooks/browse/useBodyCookieSync";
 import { useTranslations } from "next-intl";
+import { syncThemeColorMeta } from "@/app/_utils/theme-color-utils";
 
-export const ThemeProvider = ({
-  children,
-  user,
-}: {
-  children: React.ReactNode;
-  user: Partial<User>;
-}) => {
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const { isRwMarkable } = useAppMode();
   const t = useTranslations();
-  const { theme: localStorageTheme, getResolvedTheme } = useSettings();
+  const theme = useQuickValue(QuickSettingId.THEME);
   const [resolvedTheme, setResolvedTheme] = useState<string>(() =>
-    getResolvedTheme(isRwMarkable, user.preferredTheme)
+    resolveTheme(theme, isRwMarkable)
   );
 
   useRadiusOverride();
+  useNoteFontSizeOverride();
+  useBodyCookieSync();
 
   const themeIDs = BUILT_IN_THEMES.map((theme) => theme.id);
 
@@ -73,23 +73,19 @@ export const ThemeProvider = ({
 
   useEffect(() => {
     const updateResolvedTheme = () => {
-      const resolved = getResolvedTheme(isRwMarkable, user.preferredTheme);
-      setResolvedTheme(resolved);
+      setResolvedTheme(resolveTheme(theme, isRwMarkable));
     };
 
     updateResolvedTheme();
 
-    if (
-      (localStorageTheme === "system" || user.preferredTheme === "system") &&
-      typeof window !== "undefined"
-    ) {
+    if (theme === SYSTEM_THEME && typeof window !== "undefined") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => updateResolvedTheme();
 
       mediaQuery.addEventListener("change", handleChange);
       return () => mediaQuery.removeEventListener("change", handleChange);
     }
-  }, [localStorageTheme, user.preferredTheme, getResolvedTheme]);
+  }, [theme, isRwMarkable]);
 
   useEffect(() => {
     const allThemes = [...themeIDs, ...Object.keys(customThemeColors)];
@@ -144,6 +140,8 @@ export const ThemeProvider = ({
 
       customStyleElement.textContent = customCSS;
     }
+
+    syncThemeColorMeta();
   }, [resolvedTheme, customThemeColors, customCSS]);
 
   return <>{children}</>;

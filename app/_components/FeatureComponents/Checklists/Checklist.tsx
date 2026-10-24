@@ -68,6 +68,7 @@ export const ChecklistView = ({
     const result = await toggleArchive(localList, Modes.CHECKLISTS);
 
     if (result.success) {
+      onBack();
       router.refresh();
     }
   };

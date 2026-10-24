@@ -33,10 +33,14 @@ export const ApiExplorer = ({ spec }: ApiExplorerProps) => {
   }, [spec, filter]);
 
   const fillMyKey = async () => {
-    const result = await getApiKey();
-    const key = result.success ? result.data : null;
-    setKeyMissing(!key);
-    if (key) setApiKey(key);
+    try {
+      const result = await getApiKey();
+      const key = result.success ? result.data : null;
+      setKeyMissing(!key);
+      if (key) setApiKey(key);
+    } catch (error) {
+      console.error("Could not load the API key for the explorer:", error);
+    }
   };
 
   return (

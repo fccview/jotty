@@ -6,6 +6,9 @@ import { createNote } from "@/app/_server/actions/note";
 import { Category, Note } from "@/app/_types";
 import { Modal } from "../Modal";
 import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/CategoryInput";
+import { TemplateInput } from "@/app/_components/GlobalComponents/FormElements/TemplateInput";
+import { useTemplateList, useTemplateMaker } from "@/app/_hooks/useTemplates";
+import { TEMPLATE_ID_FIELD } from "@/app/_consts/templates";
 import { Modes } from "@/app/_types/enums";
 import { createCategory } from "@/app/_server/actions/category";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
@@ -23,6 +26,8 @@ interface CreateNoteModalProps {
   onCreated: (doc?: Note) => void;
   categories: Category[];
   initialCategory?: string;
+  initialTitle?: string;
+  initialTemplate?: string;
 }
 
 export const CreateNoteModal = ({
@@ -30,17 +35,23 @@ export const CreateNoteModal = ({
   onCreated,
   categories,
   initialCategory = "",
+  initialTitle = "",
+  initialTemplate = "",
 }: CreateNoteModalProps) => {
   const t = useTranslations();
   const { user } = useAppMode();
   const { showToast } = useToast();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle);
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [encryptOnCreate, setEncryptOnCreate] = useState(false);
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
+  const [templateId, setTemplateId] = useState(initialTemplate);
+  const { templates } = useTemplateList();
+  const { makeBlank, isMaking } = useTemplateMaker();
+  const isBusy = isCreating || isMaking;
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const encryptionMethod = user?.encryptionSettings?.method || "xchacha";
@@ -85,6 +96,7 @@ export const CreateNoteModal = ({
     formData.append("title", title.trim());
     formData.append("category", finalCategoryPath);
     formData.append("rawContent", rawContent);
+    if (templateId && !isEncrypted) formData.append(TEMPLATE_ID_FIELD, templateId);
     const result = await createNote(formData);
     if (!result.success) {
       _complain(t("notes.createNoteFailed"), result.error);
@@ -124,6 +136,17 @@ export const CreateNoteModal = ({
     }
   };
 
+  const handleMakeBlank = async (name: string): Promise<boolean> => {
+    const made = await makeBlank(name);
+    if (made) onClose();
+    return made;
+  };
+
+  const handleEncryptToggle = (encrypt: boolean) => {
+    setEncryptOnCreate(encrypt);
+    if (encrypt) setTemplateId("");
+  };
+
   const handleShowNewCategory = (show: boolean) => {
     setShowNewCategory(show);
     if (!show) setNewCategory("");
@@ -142,7 +165,7 @@ export const CreateNoteModal = ({
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t('notes.enterNoteTitle')}
           required
-          disabled={isCreating}
+          disabled={isBusy}
           autoFocus
         />
 
@@ -154,7 +177,15 @@ export const CreateNoteModal = ({
           onNewCategoryChange={setNewCategory}
           showNewCategory={showNewCategory}
           onShowNewCategoryChange={handleShowNewCategory}
-          disabled={isCreating}
+          disabled={isBusy}
+        />
+
+        <TemplateInput
+          templates={templates}
+          selectedTemplate={templateId}
+          onTemplateChange={setTemplateId}
+          onMakeBlank={handleMakeBlank}
+          disabled={isBusy || encryptOnCreate}
         />
 
         <div className="flex items-center justify-between gap-3">
@@ -164,8 +195,8 @@ export const CreateNoteModal = ({
           <Toggle
             id="encryptOnCreate"
             checked={encryptOnCreate}
-            onCheckedChange={setEncryptOnCreate}
-            disabled={isCreating}
+            onCheckedChange={handleEncryptToggle}
+            disabled={isBusy || Boolean(templateId)}
           />
         </div>
 
@@ -174,11 +205,11 @@ export const CreateNoteModal = ({
             type="button"
             variant="outline"
             onClick={onClose}
-            disabled={isCreating}
+            disabled={isBusy}
           >{t('common.cancel')}</Button>
           <Button
             type="submit"
-            disabled={!title.trim() || isCreating}
+            disabled={!title.trim() || isBusy}
             className="flex-1"
           >
             {isCreating ? t('common.creating') : t('common.create')}

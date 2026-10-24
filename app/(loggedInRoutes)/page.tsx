@@ -2,6 +2,7 @@ import { getCategories } from "@/app/_server/actions/category";
 import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
 import { getUserNotes } from "@/app/_server/actions/note/queries";
+import { everyBody } from "@/app/_server/actions/note/browse";
 import { HomeClient } from "@/app/_components/FeatureComponents/Home/HomeClient";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
@@ -20,16 +21,21 @@ export default async function HomePage() {
       getUserChecklists({
         limit: HOMEPAGE_ITEMS_LIMIT,
         pinnedPaths: user?.pinnedLists,
+        countOpenItems: true,
+        summarize: true,
       }),
       getUserNotes({
         limit: HOMEPAGE_ITEMS_LIMIT,
         pinnedPaths: user?.pinnedNotes,
+        summarize: true,
+        bodiesFor: everyBody,
       }),
       getCategories(Modes.CHECKLISTS),
       getCategories(Modes.NOTES),
     ]);
 
   const lists = listsResult.success && listsResult.data ? listsResult.data : [];
+  const openItems = "openItems" in listsResult ? listsResult.openItems || 0 : 0;
   const notes = notesResult.success && notesResult.data ? notesResult.data : [];
 
   const categories =
@@ -48,6 +54,7 @@ export default async function HomePage() {
       initialCategories={categories}
       initialDocs={notes as Note[]}
       initialDocsCategories={notesCategories}
+      openItems={openItems}
       user={user}
     />
   );

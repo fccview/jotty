@@ -17,11 +17,14 @@ import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { assigneeRefusal } from "@/app/_server/actions/kanban/assignee";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 
+export type ListVet = (list: Checklist) => Promise<string | null>;
+
 const _tweakItem = async (
   actor: SanitisedUser,
   uuid: string,
   itemId: string,
   patch: Partial<Item>,
+  vet?: ListVet,
 ): Promise<Result<Checklist>> => {
   const username = actor?.username;
   if (!username) return { success: false, error: "Not authenticated" };
@@ -33,6 +36,9 @@ const _tweakItem = async (
 
   const list = await getListById(uuid, username);
   if (!list) return { success: false, error: "List not found" };
+
+  const refusal = vet ? await vet(list) : null;
+  if (refusal) return { success: false, error: refusal };
 
   try {
     const now = new Date().toISOString();
@@ -74,9 +80,10 @@ export const tweakItem = async (
   uuid: string,
   itemId: string,
   patch: Partial<Item>,
+  vet?: ListVet,
 ): Promise<Result<Checklist>> =>
   runQueued(itemLane(Modes.CHECKLISTS, uuid), () =>
-    _tweakItem(actor, uuid, itemId, patch),
+    _tweakItem(actor, uuid, itemId, patch, vet),
   );
 
 export const assignItem = async (

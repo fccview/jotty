@@ -1,4 +1,7 @@
 import type { ServerConfig } from "../config/schema.ts";
+import { logger } from "../utils/logger.ts";
+
+const LOG_NS = "exposure";
 
 export const PLACEHOLDER_TOKEN = "changeme";
 
@@ -32,7 +35,8 @@ export const hostsFor = (server: ServerConfig): string[] => {
 const _hostnameOf = (origin: string): string | null => {
   try {
     return _bare(new URL(origin).host);
-  } catch {
+  } catch (error) {
+    logger.debug(LOG_NS, `Origin header isn't a URL: ${origin}`, error);
     return null;
   }
 };

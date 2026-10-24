@@ -12,14 +12,20 @@ export type {
   List,
   Checklist,
   Comment,
+  ItemStub,
+  TickCell,
+  ListTicks,
+  MiniColumn,
+  ListSummary,
 } from "./checklist";
 
-export type { Note, NoteEditorViewModel } from "./note";
+export type { Note, NoteBody, NoteEditorViewModel, NoteSummary, TemplateSummary } from "./note";
 
 export type {
   User,
   Session,
   SanitisedUser,
+  UserSettingsPatch,
   PublicUserInfo,
   EnableRecurrence,
   ShowCompletedSuggestions,
@@ -47,6 +53,8 @@ export type {
   CodeBlockStyle,
   ChecklistItemClickAction,
   NewItemInsertion,
+  NotesCardPreview,
+  NotesCompactMode,
 } from "./user";
 
 export type {
@@ -65,6 +73,19 @@ export type { Category } from "./category";
 
 
 export type { TagInfo, TagsIndex } from "./tags";
+export type { AdjacentNotes, ItemShelf, LibraryStats, WikiAsk, WikiHit } from "./catalog";
+export type { BrowsePage, BrowseQuery } from "./browse";
+export type {
+  FolderStats,
+  SidebarAnchor,
+  SidebarEntry,
+  SidebarPage,
+  SidebarRow,
+  SidebarSearch,
+  SidebarSnapshot,
+  SidebarSnapshots,
+  SidebarSpot,
+} from "./sidebar";
 
 export type {
   EncryptionMethod,
@@ -92,6 +113,7 @@ export type {
 } from "./audit";
 
 export type { ExportProgress, ExportResult, ExportType } from "./export";
+export type { AttachmentFolder, AttachmentMigrationReport, AttachmentPage, FileItem } from "./attachments";
 
 export type { AppMode, ContentFilter, AppModeContextType } from "./context";
 

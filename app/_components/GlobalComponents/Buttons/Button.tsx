@@ -9,39 +9,56 @@ export interface ButtonProps
     | "outline"
     | "secondary"
     | "ghost"
-    | "link";
+    | "link"
+    | "soft";
   size?: "default" | "xs" | "sm" | "lg" | "icon";
 }
+
+type ButtonVariant = NonNullable<ButtonProps["variant"]>;
+type ButtonSize = NonNullable<ButtonProps["size"]>;
+
+const buttonVariants = ({
+  variant = "default",
+  size = "default",
+  className,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+}) =>
+  cn(
+    "jotty-button inline-flex items-center justify-center whitespace-nowrap rounded-jotty text-md lg:text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    {
+      "jotty-button-default bg-primary text-primary-foreground hover:bg-primary/90":
+        variant === "default",
+      "jotty-button-destructive text-destructive hover:text-destructive-foreground hover:bg-destructive":
+        variant === "destructive",
+      "jotty-button-outline border border-input bg-background hover:bg-accent hover:text-accent-foreground":
+        variant === "outline",
+      "jotty-button-secondary bg-secondary text-secondary-foreground hover:bg-secondary/80":
+        variant === "secondary",
+      "jotty-button-ghost hover:bg-accent hover:text-accent-foreground":
+        variant === "ghost",
+      "jotty-button-link text-primary underline-offset-4 hover:underline":
+        variant === "link",
+      "jotty-button-soft bg-primary/10 text-primary hover:bg-primary/[0.15]":
+        variant === "soft",
+    },
+    {
+      "h-14 lg:h-10 px-4 py-2": size === "default",
+      "h-8 rounded-jotty px-2 text-xs": size === "xs",
+      "h-9 rounded-jotty px-3": size === "sm",
+      "h-11 rounded-jotty px-8": size === "lg",
+      "h-10 w-10": size === "icon",
+    },
+    className
+  );
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
     return (
       <button
-        className={cn(
-          "jotty-button inline-flex items-center justify-center whitespace-nowrap rounded-jotty text-md lg:text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-          {
-            "jotty-button-default bg-primary text-primary-foreground hover:bg-primary/90":
-              variant === "default",
-            "jotty-button-destructive text-destructive hover:text-destructive-foreground hover:bg-destructive":
-              variant === "destructive",
-            "jotty-button-outline border border-input bg-background hover:bg-accent hover:text-accent-foreground":
-              variant === "outline",
-            "jotty-button-secondary bg-secondary text-secondary-foreground hover:bg-secondary/80":
-              variant === "secondary",
-            "jotty-button-ghost hover:bg-accent hover:text-accent-foreground":
-              variant === "ghost",
-            "jotty-button-link text-primary underline-offset-4 hover:underline":
-              variant === "link",
-          },
-          {
-            "h-14 lg:h-10 px-4 py-2": size === "default",
-            "h-8 rounded-jotty px-2 text-xs": size === "xs",
-            "h-9 rounded-jotty px-3": size === "sm",
-            "h-11 rounded-jotty px-8": size === "lg",
-            "h-10 w-10": size === "icon",
-          },
-          className
-        )}
+        className={buttonVariants({ variant, size, className })}
         ref={ref}
         {...props}
       />
@@ -50,4 +67,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-export { Button };
+export { Button, buttonVariants };

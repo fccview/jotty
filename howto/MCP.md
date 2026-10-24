@@ -91,7 +91,7 @@ claude mcp add jotty -e JOTTY_URL=https://jotty.example.com -e JOTTY_API_KEY=ck_
 
 Each everyday action has its own tool, named after its API operation in snake case, so `listNotes` becomes `list_notes`. They cover search, categories, the usage summary, notes, checklists and their items, and the common board actions.
 
-The assistant can also follow your [links](BRAIN.md) and see what's shared:
+The assistant can also follow your [links](BRAIN.md), see what's shared and share your items:
 
 | Tool | What it does |
 |---|---|
@@ -100,7 +100,9 @@ The assistant can also follow your [links](BRAIN.md) and see what's shared:
 | `list_orphans` | Items with no links. That's normal, it isn't a to-do list |
 | `connect_items` | Links a note to another item it relates to |
 | `disconnect_items` | Takes a note's links to an item back out, and closes the gap they leave |
-| `list_shares` | What other people shared with you and what you shared, with who can do what. Read only |
+| `list_shares` | What other people shared with you and what you shared, with who can do what. Filter it to one item or one person |
+| `share_item` | Shares a note or checklist you own with someone, as read, edit or edit and delete, or makes a read-only public link |
+| `unshare_item` | Takes someone's access to your note or checklist away, or turns its public link off |
 
 These tools change part of a note without resending the rest. Everything else in the file stays byte for byte, line endings included.
 
@@ -119,7 +121,7 @@ Two tools deal with duplicate UUIDs. They usually show up when a script copies a
 | `list_duplicate_uuids` | Which UUIDs more than one file uses, and which file keeps each one |
 | `repair_duplicate_uuid` | Gives the newer file, or the one you pick, a new UUID. Links whose text names that file move with it. Links that could mean either file stay put, and the tool lists them |
 
-The assistant can read these guides too. `list_docs` lists them and `read_doc` returns one as markdown, so it can check how Jotty works instead of guessing.
+The assistant can read these guides too. `jotty_docs` lists them and returns one as markdown, so it can check how Jotty works instead of guessing. `mcp_docs` does the same for two guides that ship with the MCP server for the assistant: `tools` describes every tool, and `agents` explains how to coordinate a team of AI agents on a Kanban board.
 
 Three more tools reach everything else:
 

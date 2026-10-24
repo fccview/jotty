@@ -1,6 +1,6 @@
 "use server";
 
-import { Checklist } from "@/app/_types";
+import { Checklist, ContentFilter } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { isUuid } from "@/app/_consts/identity";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
@@ -29,7 +29,7 @@ export const viewList = async (
 };
 
 export const getChecklistsForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
+  filter?: ContentFilter | null,
   limit: number = 20,
   offset: number = 0,
 ) => {
@@ -37,5 +37,6 @@ export const getChecklistsForDisplay = async (
     filter: filter || undefined,
     limit,
     offset: filter ? offset : undefined,
+    summarize: true,
   });
 };

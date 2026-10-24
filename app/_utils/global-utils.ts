@@ -168,6 +168,11 @@ export const getFormData = (formData: FormData, keys: string[]) => {
   return data;
 };
 
+const CONTAINED_SCROLLER = '[role="dialog"], .overscroll-contain';
+
+export const isPageScroller = (target: HTMLElement, targetClass: string): boolean =>
+  Boolean(target.classList?.contains(targetClass)) && !target.closest?.(CONTAINED_SCROLLER);
+
 export const handleScroll = (
   e: Event,
   targetClass: string,
@@ -176,7 +181,7 @@ export const handleScroll = (
 ) => {
   const target = e.target as HTMLElement;
 
-  if (!target.classList?.contains(targetClass)) return;
+  if (!isPageScroller(target, targetClass)) return;
 
   if (window.innerWidth >= 1024) {
     setIsVisible(true);
@@ -196,3 +201,6 @@ export const handleScroll = (
 
   lastScrollY.current = currentScrollY;
 };
+
+export const rangeFill = (value: number, min: number, max: number): string =>
+  `${max === min ? 0 : ((value - min) / (max - min)) * 100}%`;

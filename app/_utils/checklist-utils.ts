@@ -15,19 +15,12 @@ import {
   strayMeta,
   createdAtOf,
   OwnedMetaKeys,
+  BoardMetaKeys,
+  LIST_META_KEYS,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
-
-export const isItemCompleted = (item: Item, checklistType: string): boolean => {
-  if (
-    checklistType === ChecklistsTypes.KANBAN ||
-    checklistType === ChecklistsTypes.TASK
-  ) {
-    return item.status === TaskStatus.COMPLETED || !!item.completed;
-  }
-  return !!item.completed;
-};
+import { AGENT_SEGMENT } from "@/app/_consts/agents";
 
 export const areAllItemsCompleted = (items: any[]): boolean => {
   if (items.length === 0) return true;
@@ -44,41 +37,6 @@ export const formatTime = (seconds: number): string => {
   const minutes = Math.floor((seconds % 3600) / 60);
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
-};
-
-export const countItems = (
-  items: Item[],
-  checklistType?: string,
-): { total: number; completed: number } =>
-  items.reduce(
-    (acc, item) => {
-      if (item.isArchived) return acc;
-
-      if (item.children && item.children.length > 0) {
-        const childCounts = countItems(item.children, checklistType);
-        return {
-          total: acc.total + childCounts.total,
-          completed: acc.completed + childCounts.completed,
-        };
-      }
-
-      return {
-        total: acc.total + 1,
-        completed: isItemCompleted(item, checklistType || "")
-          ? acc.completed + 1
-          : acc.completed,
-      };
-    },
-    { total: 0, completed: 0 },
-  );
-
-export const getCompletionRate = (
-  items: Item[],
-  checklistType?: string,
-): number => {
-  const { total, completed } = countItems(items, checklistType);
-  if (total === 0) return 0;
-  return Math.round((completed / total) * 100);
 };
 
 const _flatDescription = (text: string): string =>
@@ -188,6 +146,7 @@ export const parseMarkdown = (
           let priority: KanbanPriority | undefined;
           let score: number | undefined;
           let assignee: string | undefined;
+          let agent: string | undefined;
           let reminder: KanbanReminder | undefined;
 
           metadata.forEach((meta) => {
@@ -224,6 +183,8 @@ export const parseMarkdown = (
               score = parseInt(meta.substring(6));
             } else if (meta.startsWith("assignee:")) {
               assignee = meta.substring(9);
+            } else if (meta.startsWith(AGENT_SEGMENT)) {
+              agent = meta.substring(AGENT_SEGMENT.length).trim() || undefined;
             } else if (meta.startsWith("reminder:")) {
               try {
                 reminder = JSON.parse(meta.substring(9));
@@ -249,6 +210,7 @@ export const parseMarkdown = (
             ...(priority ? { priority } : {}),
             ...(score !== undefined ? { score } : {}),
             ...(assignee ? { assignee } : {}),
+            ...(agent ? { agent } : {}),
             ...(reminder ? { reminder } : {}),
           };
         } else {
@@ -358,10 +320,13 @@ export const parseMarkdown = (
     isShared,
     ...(statuses && { statuses }),
     ...(tags.length > 0 && { tags }),
+    ...(typeof metadata[BoardMetaKeys.SPEC_NOTE] === "string" && {
+      specNote: metadata[BoardMetaKeys.SPEC_NOTE] as string,
+    }),
     ...(metadata[SHARED_WITH_KEY] !== undefined && {
       sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
     }),
-    extraMetadata: strayMeta(metadata),
+    extraMetadata: strayMeta(metadata, LIST_META_KEYS),
   };
 };
 
@@ -444,6 +409,10 @@ const generateItemMarkdown = (
       metadata.push(`assignee:${item.assignee}`);
     }
 
+    if (item.agent) {
+      metadata.push(`${AGENT_SEGMENT}${item.agent}`);
+    }
+
     if (item.reminder) {
       metadata.push(`reminder:${JSON.stringify(item.reminder)}`);
     }
@@ -499,6 +468,9 @@ const generateItemMarkdown = (
     }
     if (item.assignee) {
       itemMetadata.assignee = item.assignee;
+    }
+    if (item.agent) {
+      itemMetadata.agent = item.agent;
     }
     if (item.reminder) {
       itemMetadata.reminder = item.reminder;
@@ -557,6 +529,10 @@ export const listToMarkdown = (list: Checklist): string => {
 
   if (list.sharedWith !== undefined) {
     metadata[SHARED_WITH_KEY] = list.sharedWith;
+  }
+
+  if (list.specNote) {
+    metadata[BoardMetaKeys.SPEC_NOTE] = list.specNote;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);

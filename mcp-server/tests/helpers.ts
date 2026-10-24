@@ -5,6 +5,7 @@ import type { OpenApiDocument } from "../src/jotty/openapi.ts";
 import { createSpecSource } from "../src/jotty/spec.ts";
 import type { ToolContext } from "../src/tools/context.ts";
 import type { ToolResult } from "../src/tools/result.ts";
+import { AGENT_PATHS, agentReply } from "./agent-fakes.ts";
 
 export const API_KEY = "ck_test";
 
@@ -28,6 +29,21 @@ const MANY_NOTES = Array.from({ length: 30 }, (_, n) => ({ ...NOTE, id: `n-${n}`
 export const FAKE_SPEC: OpenApiDocument = {
   info: { title: "Jotty API", version: "9.9.9" },
   paths: {
+    "/howto": {
+      get: { operationId: "listDocs", summary: "List the guides", tags: ["Guides"] },
+    },
+    "/howto/{docId}": {
+      get: {
+        operationId: "readDoc",
+        summary: "Read a guide",
+        tags: ["Guides"],
+        parameters: [
+          { name: "docId", in: "path" as never, required: true, schema: { type: "string" } },
+          { name: "offset", in: "query" as never, required: false, schema: { type: "integer" } },
+          { name: "limit", in: "query" as never, required: false, schema: { type: "integer" } },
+        ],
+      },
+    },
     "/notes": {
       get: {
         operationId: "listNotes",
@@ -94,6 +110,28 @@ export const FAKE_SPEC: OpenApiDocument = {
         ],
       },
     },
+    "/checklists/{listId}/items/sort": {
+      put: {
+        operationId: "sortChecklistItems",
+        summary: "Sort checklist items",
+        tags: ["Checklist items"],
+        parameters: [{ name: "listId", in: "path" as never, required: true, schema: { type: "string" } }],
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  sort: { type: "string", enum: ["alphabetical", "shuffle", "created", "modified"] },
+                  direction: { type: "string", enum: ["asc", "desc"], default: "asc" },
+                },
+                required: ["sort"],
+              },
+            },
+          },
+        },
+      },
+    },
     "/relations/links": {
       post: {
         operationId: "connectItems",
@@ -140,6 +178,7 @@ export const FAKE_SPEC: OpenApiDocument = {
         requestBody: { content: { "application/json": { schema: { type: "object", properties: { text: { type: "string" } } } } } },
       },
     },
+    ...AGENT_PATHS,
     "/tasks/{taskId}/statuses": {
       post: {
         operationId: "createTaskStatus",
@@ -169,20 +208,31 @@ export const serveJotty = (spec: OpenApiDocument | null = FAKE_SPEC): FakeJotty 
       const url = new URL(request.url);
       const apiKey = request.headers.get("x-api-key");
       const text = request.method === "GET" ? "" : await request.text();
-      hits.push({ method: request.method, path: `${url.pathname}${url.search}`, apiKey, body: text ? JSON.parse(text) : undefined });
+      const body = text ? JSON.parse(text) : undefined;
+      hits.push({ method: request.method, path: `${url.pathname}${url.search}`, apiKey, body });
 
       if (url.pathname === "/api/health") return _json({ status: "healthy", version: spec?.info.version ?? "1.27.0" });
       if (apiKey !== API_KEY) return _json({ error: "Unauthorized" }, 401);
       if (url.pathname === "/api/openapi.json") return spec ? _json(spec) : _json({ error: "Not found" }, 404);
+      const agentAnswer = agentReply(url, body);
+      if (agentAnswer) return agentAnswer;
       if (url.pathname === "/api/notes" && url.searchParams.get("q") === "many") {
         return _json({ notes: MANY_NOTES, total: MANY_NOTES.length });
       }
+      if (url.pathname === "/api/howto") return _json({ docs: [{ id: "api", title: "API" }], total: 1 });
+      if (url.pathname === "/api/howto/api") return _json({ id: "api", title: "API", content: "# API", contentLength: 5 });
+      if (url.pathname.startsWith("/api/howto/")) return _json({ error: "Guide not found" }, 404);
       if (url.pathname === "/api/search") {
         return _json({ results: [{ uuid: "u-1", slug: "milk", id: "milk", title: "Milk" }], total: 1 });
       }
       if (url.pathname === "/api/admin/duplicate-uuids") return _json({ duplicates: [{ uuid: "d-1" }], total: 1 });
       if (url.pathname === "/api/tasks") return _json({ tasks: MANY_NOTES });
       if (url.pathname === "/api/tasks/bad/statuses") return _json({ error: "Status id is required" }, 400);
+      if (url.pathname.endsWith("/items/sort")) {
+        const { sort } = body as { sort?: string };
+        if (!["alphabetical", "shuffle", "created", "modified"].includes(sort ?? "")) return _json({ error: "'sort' must be one of: alphabetical, shuffle, created, modified" }, 400);
+        return _json({ success: true, data: { id: "l-1", items: [{ id: "i-1", itemIndex: "0", text: "Apple" }] } });
+      }
       if (url.pathname.endsWith("/check")) return _json({ error: "Item index out of range" }, 400);
       if (url.pathname === "/api/relations/links") return _json({ error: "Mention not found" }, 400);
       if (url.pathname === "/api/notes") return _json(request.method === "GET" ? { notes: [NOTE] } : { success: true, data: NOTE });

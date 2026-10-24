@@ -38,11 +38,19 @@ const _read = (): BrainPalette => {
   };
 };
 
+const _samePalette = (a: BrainPalette, b: BrainPalette): boolean =>
+  (Object.keys(a) as (keyof BrainPalette)[]).every((key) =>
+    a[key].every((channel, index) => channel === b[key][index]),
+  );
+
 export const useBrainPalette = (): BrainPalette => {
   const [palette, setPalette] = useState<BrainPalette>(FALLBACK);
 
   useEffect(() => {
-    const update = () => setPalette(_read());
+    const update = () => {
+      const next = _read();
+      setPalette((current) => (_samePalette(current, next) ? current : next));
+    };
     update();
     const observer = new MutationObserver(update);
     observer.observe(document.documentElement, {

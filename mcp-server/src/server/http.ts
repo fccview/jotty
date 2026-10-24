@@ -1,5 +1,5 @@
 import type { McpConfig } from "../config/schema.ts";
-import { createClient } from "../jotty/client.ts";
+import { createClient, fingerprintOf } from "../jotty/client.ts";
 import type { ToolContext } from "../tools/context.ts";
 import { logger } from "../utils/logger.ts";
 import { API_KEY_HEADER, createGuard, deniedResponse } from "./auth.ts";
@@ -33,6 +33,7 @@ export const createSidecar = (ctx: ToolContext): Sidecar => {
         client: createClient(ctx.config.jotty, request.headers.get(API_KEY_HEADER)?.trim() || ctx.config.jotty.apiKey),
       }),
     { allowedHosts: ctx.config.server.allowedHosts, allowedOrigins: ctx.config.server.allowedOrigins },
+    (request) => fingerprintOf(request.headers.get(API_KEY_HEADER)?.trim() ?? ""),
   );
 
   if (!guard.required && ctx.config.jotty.apiKey) {

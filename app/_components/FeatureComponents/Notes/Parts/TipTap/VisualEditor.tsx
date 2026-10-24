@@ -42,7 +42,7 @@ export const VisualEditor = ({
   }, [editor, onTextSelection]);
   return (
     <div
-      className="flex-1 overflow-y-auto jotty-scrollable-content min-h-0"
+      className="flex flex-col flex-1 overflow-y-auto jotty-scrollable-content min-h-0"
       onDragOver={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -56,7 +56,10 @@ export const VisualEditor = ({
         }
       }}
     >
-      <EditorContent editor={editor} className="w-full h-full" />
+      <EditorContent
+        editor={editor}
+        className="flex flex-1 flex-col w-full h-full [&>.ProseMirror]:flex-1"
+      />
     </div>
   );
 };

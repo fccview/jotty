@@ -49,6 +49,7 @@ export const mockGetAppSettings = vi.fn();
 export const mockResolveApiId = vi.fn();
 export const mockLegacyResolve = vi.fn();
 export const mockRemoveItem = vi.fn();
+export const mockSortListItems = vi.fn();
 export const mockGraftItem = vi.fn();
 export const mockRestatus = vi.fn();
 export const mockAssignItem = vi.fn();
@@ -112,6 +113,11 @@ vi.mock("@/app/_server/actions/checklist-item/editor", () => ({
 
 vi.mock("@/app/_server/actions/checklist-item/remover", () => ({
   removeItem: (...args: any[]) => mockRemoveItem(...args),
+}));
+
+vi.mock("@/app/_server/actions/checklist-item/sorter", async (original) => ({
+  ...(await original<typeof import("@/app/_server/actions/checklist-item/sorter")>()),
+  sortListItems: (...args: unknown[]) => mockSortListItems(...args),
 }));
 
 vi.mock("@/app/_server/actions/checklist-item/grafter", () => ({
@@ -243,6 +249,7 @@ export function resetApiMocks() {
   mockResolveApiId.mockImplementation(async (_mode: Modes, param: string) => param);
   mockRemoveItem.mockReset();
   mockRemoveItem.mockResolvedValue({ success: true });
+  mockSortListItems.mockReset();
   mockGraftItem.mockReset();
   mockGraftItem.mockResolvedValue({ success: true });
   mockRestatus.mockReset();

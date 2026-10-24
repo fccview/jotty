@@ -10,6 +10,7 @@ const mockGrepExcerpt = vi.fn();
 vi.mock("@/app/_server/actions/file", () => ({
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: any[]) => (await mockServerReadFile(...args)) ?? null,
   serverWriteFile: (...args: any[]) => mockFs.writeFile(...args),
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
 }));
@@ -65,14 +66,7 @@ describe("readNotesRecursively uuid contract", () => {
     mockGrepFrontmatter.mockResolvedValue({ title: "Stampable" });
     mockServerReadFile.mockResolvedValue("---\ntitle: Stampable\n---\n\nBody");
 
-    const notes = await readNotesRecursively(
-      DIR,
-      "Work",
-      "testuser",
-      false,
-      false,
-      true,
-    );
+    const notes = await readNotesRecursively(DIR, "testuser", { basePath: "Work", metadataOnly: true });
 
     expect(notes).toHaveLength(1);
     expect(notes[0].uuid).toBeTruthy();
@@ -84,14 +78,7 @@ describe("readNotesRecursively uuid contract", () => {
     mockGrepFrontmatter.mockResolvedValue({ title: "Unreadable" });
     mockServerReadFile.mockResolvedValue(null);
 
-    const notes = await readNotesRecursively(
-      DIR,
-      "Work",
-      "testuser",
-      false,
-      false,
-      true,
-    );
+    const notes = await readNotesRecursively(DIR, "testuser", { basePath: "Work", metadataOnly: true });
 
     expect(notes).toHaveLength(0);
   });
@@ -102,14 +89,7 @@ describe("readNotesRecursively uuid contract", () => {
     mockServerReadFile.mockResolvedValue("---\ntitle: Read only\n---\n\nBody");
     mockFs.writeFile.mockRejectedValue(new Error("EROFS"));
 
-    const notes = await readNotesRecursively(
-      DIR,
-      "Work",
-      "testuser",
-      false,
-      false,
-      true,
-    );
+    const notes = await readNotesRecursively(DIR, "testuser", { basePath: "Work", metadataOnly: true });
 
     expect(notes).toHaveLength(0);
   });
@@ -120,15 +100,7 @@ describe("readNotesRecursively uuid contract", () => {
     mockServerReadFile.mockResolvedValue("---\ntitle: Excerpt\n---\n\nBody");
     mockFs.writeFile.mockRejectedValue(new Error("EROFS"));
 
-    const notes = await readNotesRecursively(
-      DIR,
-      "Work",
-      "testuser",
-      false,
-      false,
-      false,
-      200,
-    );
+    const notes = await readNotesRecursively(DIR, "testuser", { basePath: "Work", excerptLength: 200 });
 
     expect(notes).toHaveLength(0);
   });
@@ -137,21 +109,13 @@ describe("readNotesRecursively uuid contract", () => {
     mockServerReadDir.mockResolvedValue([fileEntry("kept.md")]);
     mockGrepFrontmatter.mockResolvedValue({
       title: "Kept",
-      uuid: "known-uuid",
+      uuid: "0b6c3c1e-1111-4222-8333-944455556666",
     });
 
-    const notes = await readNotesRecursively(
-      DIR,
-      "Work",
-      "testuser",
-      false,
-      false,
-      false,
-      200,
-    );
+    const notes = await readNotesRecursively(DIR, "testuser", { basePath: "Work", excerptLength: 200 });
 
     expect(notes).toHaveLength(1);
-    expect(notes[0].uuid).toBe("known-uuid");
+    expect(notes[0].uuid).toBe("0b6c3c1e-1111-4222-8333-944455556666");
     expect(mockFs.writeFile).not.toHaveBeenCalled();
   });
 
@@ -162,19 +126,12 @@ describe("readNotesRecursively uuid contract", () => {
     ]);
     mockGrepFrontmatter.mockImplementation(async (filePath: string) =>
       filePath.endsWith("good.md")
-        ? { title: "Good", uuid: "good-uuid" }
+        ? { title: "Good", uuid: "0c6c3c1e-1111-4222-8333-944455556666" }
         : { title: "Broken" },
     );
     mockServerReadFile.mockResolvedValue(null);
 
-    const notes = await readNotesRecursively(
-      DIR,
-      "Work",
-      "testuser",
-      false,
-      false,
-      true,
-    );
+    const notes = await readNotesRecursively(DIR, "testuser", { basePath: "Work", metadataOnly: true });
 
     expect(notes).toHaveLength(1);
     expect(notes.every((note) => Boolean(note.uuid))).toBe(true);

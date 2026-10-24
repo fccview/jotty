@@ -3,6 +3,7 @@
 import { Checklist, Item, ChecklistType, KanbanStatus, Result } from "@/app/_types";
 import {
   ItemTypes,
+  Modes,
   PermissionTypes,
   TaskStatus,
   isKanbanType,
@@ -15,30 +16,25 @@ import { getFormData } from "@/app/_utils/global-utils";
 import { reachableFile } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { getListById } from "./queries";
 import { restatus } from "./restatus";
 
-export const convertChecklistType = async (formData: FormData) => {
+const _convert = async (
+  username: string,
+  uuid: string,
+  newType: ChecklistType,
+) => {
   try {
-    const { newType: type, uuid } = getFormData(formData, ["newType", "uuid"]);
-    const newType = type as ChecklistType;
-
-    if (!uuid || !newType) {
-      return { error: "UUID and type are required" };
-    }
-
-    const actor = await sessionActor();
-    if ("error" in actor) return { error: actor.error };
-
     const filePath = await reachableFile(
       uuid,
       ItemTypes.CHECKLIST,
-      actor.username,
+      username,
       PermissionTypes.EDIT,
     );
-    if (!filePath) return { error: "Permission denied" };
+    if (!filePath) return { success: false, error: "Permission denied" };
 
-    const list = await getListById(uuid, actor.username);
+    const list = await getListById(uuid, username);
 
     if (!list || !list.id || !list.createdAt) {
       throw new Error("List not found or is malformed");
@@ -48,7 +44,7 @@ export const convertChecklistType = async (formData: FormData) => {
       return { success: true };
     }
 
-    let convertedItems: any[];
+    let convertedItems: Item[];
 
     if (isKanbanType(newType)) {
       const statuses = list.statuses || [];
@@ -95,10 +91,12 @@ export const convertChecklistType = async (formData: FormData) => {
       isShared: list.isShared,
       isDeleted: list.isDeleted,
       type: newType,
-      items: convertedItems as Item[],
+      items: convertedItems,
       updatedAt: new Date().toISOString(),
       ...(list.statuses && { statuses: list.statuses }),
       ...(list.tags && { tags: list.tags }),
+      ...(list.sharedWith !== undefined && { sharedWith: list.sharedWith }),
+      ...(list.specNote && { specNote: list.specNote }),
       ...(list.extraMetadata && { extraMetadata: list.extraMetadata }),
     };
 
@@ -116,13 +114,31 @@ export const convertChecklistType = async (formData: FormData) => {
       type: "checklist",
       action: "updated",
       entityId: updatedList.uuid,
-      username: actor.username,
+      username,
     });
     return { success: true, data: updatedList };
   } catch (error) {
     console.error("Error converting checklist type:", error);
-    return { error: "Failed to convert checklist type" };
+    return { success: false, error: "Failed to convert checklist type" };
   }
+};
+
+export const convertChecklistType = async (
+  formData: FormData,
+): Promise<Result<Checklist>> => {
+  const { newType: type, uuid } = getFormData(formData, ["newType", "uuid"]);
+  const newType = type as ChecklistType;
+
+  if (!uuid || !newType) {
+    return { success: false, error: "UUID and type are required" };
+  }
+
+  const actor = await sessionActor();
+  if ("error" in actor) return { success: false, error: actor.error };
+
+  return runQueued(itemLane(Modes.CHECKLISTS, uuid), () =>
+    _convert(actor.username, uuid, newType),
+  );
 };
 
 export const updateChecklistStatuses = async (
@@ -151,32 +167,27 @@ export const updateChecklistStatuses = async (
   }
 };
 
-export const clearAllChecklistItems = async (formData: FormData) => {
+const _clearItems = async (
+  username: string,
+  uuid: string,
+  type: "completed" | "incomplete",
+) => {
   try {
-    const uuid = formData.get("uuid") as string;
-    const type = formData.get("type") as "completed" | "incomplete";
-
-    const actingUser = await getCurrentUser();
-
-    if (!actingUser?.username) {
-      return { error: "Not authenticated" };
-    }
-
     const filePath = await reachableFile(
       uuid,
       ItemTypes.CHECKLIST,
-      actingUser.username,
+      username,
       PermissionTypes.EDIT,
     );
 
     if (!filePath) {
-      return { error: "Permission denied" };
+      return { success: false, error: "Permission denied" };
     }
 
     const checklist = await getListById(uuid);
 
     if (!checklist) {
-      return { error: "Checklist not found" };
+      return { success: false, error: "Checklist not found" };
     }
 
     const filteredItems = checklist.items.filter((item) => {
@@ -205,9 +216,33 @@ export const clearAllChecklistItems = async (formData: FormData) => {
       );
     }
 
+    await broadcast({
+      type: "checklist",
+      action: "updated",
+      entityId: checklist.uuid,
+      username,
+    });
+
     return { success: true, data: updatedChecklist };
   } catch (error) {
     console.error("Error clearing checklist items:", error);
-    return { error: "Failed to clear checklist items" };
+    return { success: false, error: "Failed to clear checklist items" };
   }
+};
+
+export const clearAllChecklistItems = async (
+  formData: FormData,
+): Promise<Result<Checklist>> => {
+  const uuid = formData.get("uuid") as string;
+  const type = formData.get("type") as "completed" | "incomplete";
+
+  const actingUser = await getCurrentUser();
+
+  if (!actingUser?.username) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  return runQueued(itemLane(Modes.CHECKLISTS, uuid), () =>
+    _clearItems(actingUser.username, uuid, type),
+  );
 };

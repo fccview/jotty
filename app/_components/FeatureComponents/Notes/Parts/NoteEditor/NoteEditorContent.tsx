@@ -1,13 +1,10 @@
-import {
-  TiptapEditor,
-  TiptapEditorRef,
-} from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
+import { TiptapEditor } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/TipTapEditor";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
-import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 import { ReadingProgressBar } from "@/app/_components/GlobalComponents/Layout/ReadingProgressBar";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useSettings } from "@/app/_utils/settings-store";
-import { useEffect, useRef, useMemo } from "react";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MinimalEditorPanel } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/MinimalEditorPanel";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { LockKeyIcon, ViewIcon, SquareUnlock01Icon } from "hugeicons-react";
@@ -17,7 +14,10 @@ import {
   isEncrypted,
 } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
+import { useReadingAnchor } from "@/app/_hooks/useReadingAnchor";
+import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 import { ItemTypes } from "@/app/_types/enums";
+import { cn } from "@/app/_utils/global-utils";
 
 interface NoteEditorContentProps {
   isEditorVisible: boolean;
@@ -28,6 +28,7 @@ interface NoteEditorContentProps {
     isMarkdown: boolean,
     isDirty: boolean,
   ) => void;
+  onRemoteContentChange?: (content: string, isMarkdown: boolean) => void;
   noteId?: string;
   encrypted?: boolean;
   onOpenDecryptModal?: () => void;
@@ -39,36 +40,25 @@ export const NoteEditorContent = ({
   noteContent,
   editorContent,
   onEditorContentChange,
+  onRemoteContentChange,
   noteId,
   encrypted,
   onOpenDecryptModal,
   onOpenViewModal,
 }: NoteEditorContentProps) => {
   const t = useTranslations();
-  const { user, notes, checklists } = useAppMode();
-  const { compactMode } = useSettings();
-  const editorRef = useRef<TiptapEditorRef>(null);
+  const { user } = useAppMode();
+  const compactMode = useQuickValue(QuickSettingId.COMPACT_MODE);
   const isMinimalMode = useMinimalMode();
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (
-      editorRef.current &&
-      isEditorVisible &&
-      !isMinimalMode
-    ) {
-      editorRef.current.updateAtMentionData(
-        notes,
-        checklists,
-        user?.username || "",
-      );
-    }
-  }, [
-    notes,
-    checklists,
-    isEditorVisible,
-    editorRef,
-    isMinimalMode,
-  ]);
+  const [modeSwitches, setModeSwitches] = useState(0);
+  const holdAnchor = useReadingAnchor(rootRef, String(modeSwitches));
+
+  const handleModeChange = useCallback(() => {
+    holdAnchor();
+    setModeSwitches((count) => count + 1);
+  }, [holdAnchor]);
 
   const isContentEncrypted = isEncrypted(editorContent || "");
 
@@ -130,15 +120,20 @@ export const NoteEditorContent = ({
   }
 
   return (
-    <div className="flex-1 h-full">
+    <div
+      ref={rootRef}
+      className={cn("flex-1 min-h-full", isEditorVisible && "flex flex-col")}
+    >
       {isEditorVisible ? (
         <TiptapEditor
-          ref={editorRef}
+          key={noteId}
+          collaborationUuid={!encrypted ? noteId : undefined}
+          attachTarget={noteId ? { uuid: noteId, type: ItemTypes.NOTE } : undefined}
           content={editorContent}
           onChange={onEditorContentChange}
+          onRemoteChange={onRemoteContentChange}
+          onModeChange={handleModeChange}
           tableSyntax={user?.tableSyntax}
-          notes={notes}
-          checklists={checklists}
         />
       ) : (
         <>
@@ -150,8 +145,8 @@ export const NoteEditorContent = ({
           >
             <UnifiedMarkdownRenderer
               content={encrypted ? editorContent : noteContent || ""}
+              className={NOTE_PROSE_CLASS}
             />
-            <ReferencedBySection />
           </div>
         </>
       )}

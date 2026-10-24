@@ -1,8 +1,9 @@
 export interface WsEvent {
-  type: "checklist" | "note" | "category" | "settings" | "sharing" | "notification" | "relations";
+  type: "checklist" | "note" | "category" | "settings" | "sharing" | "notification" | "relations" | "attachments";
   action: "created" | "updated" | "deleted";
   entityId?: string;
   username: string;
+  recipient?: string;
   connectionId?: string;
 }
 

@@ -5,10 +5,10 @@ import {
   NOTES_DIR,
   USERS_FILE,
 } from "@/app/_consts/files";
-import { readJsonFile, writeJsonFile } from "../file";
+import { readJsonFile } from "../file";
 import { Result, SanitisedUser, User } from "@/app/_types";
 import { sanitizeUserForClient } from "@/app/_utils/user-sanitize-utils";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { ItemTypes } from "@/app/_types/enums";
 import { DEFAULT_WEEK_START } from "@/app/_consts/calendar";
 import { getFormData } from "@/app/_utils/global-utils";
@@ -17,6 +17,8 @@ import { _deleteUserCore, _updateUserCore } from "./core";
 import type { UserUpdatePayload } from "./core";
 import { getCurrentUser } from "./queries";
 import { findUserRecord, mutateUsers } from "./records";
+import { ownsAvatar } from "@/app/_consts/attachments";
+import { removeAvatar } from "@/app/_server/actions/attachments/avatars";
 
 export type { UserUpdatePayload };
 
@@ -63,19 +65,10 @@ export const createUser = async (
       };
     }
 
-    const existingUsers = await readJsonFile(USERS_FILE);
-    const userExists = await findUserRecord(username);
-
-    if (userExists) {
-      return {
-        success: false,
-        error: "Username already exists",
-      };
-    }
-
     const hashedPassword = createHash("sha256").update(password).digest("hex");
 
     const newUser: User = {
+      uuid: randomUUID(),
       username,
       passwordHash: hashedPassword,
       isAdmin,
@@ -88,9 +81,20 @@ export const createUser = async (
       hideMobileStatusDropdown: "disable",
     };
 
-    const updatedUsers = [...existingUsers, newUser];
+    let taken = false;
+    const created = await mutateUsers((users) => {
+      taken = users.some((user: User) => user.username === username);
+      if (taken) return null;
+      users.push(newUser);
+      return true;
+    });
 
-    await writeJsonFile(updatedUsers, USERS_FILE);
+    if (!created) {
+      return {
+        success: false,
+        error: taken ? "Username already exists" : "Failed to create user",
+      };
+    }
 
     const { passwordHash: _, ...userWithoutPassword } = newUser;
 
@@ -246,6 +250,11 @@ export const updateProfile = async (
     }
 
     await logUserEvent("profile_updated", currentUser.username, true, { changes: Object.keys(updates) });
+
+    const userUuid = result.data?.uuid;
+    if ("avatarUrl" in updates && userUuid && !ownsAvatar(updates.avatarUrl, userUuid)) {
+      await removeAvatar(userUuid);
+    }
 
     return { success: true, data: null };
   } catch (error) {

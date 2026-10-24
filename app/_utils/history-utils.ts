@@ -7,6 +7,7 @@ const actionTranslationKeys: Record<string, string> = {
   update: "history.actionUpdate",
   rename: "history.actionRename",
   move: "history.actionMove",
+  attachments: "history.actionAttachments",
   delete: "history.actionDelete",
   init: "history.actionInit",
 };

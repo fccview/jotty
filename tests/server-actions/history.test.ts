@@ -37,7 +37,7 @@ vi.mock("@/app/_server/actions/history/repo", async (importOriginal) => {
 });
 
 vi.mock("simple-git", () => ({
-    default: vi.fn(() => mockGitInstance),
+    simpleGit: vi.fn(() => mockGitInstance),
 }));
 
 vi.mock("@/app/_server/actions/config", () => ({

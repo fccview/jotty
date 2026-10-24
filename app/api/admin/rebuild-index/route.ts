@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUserIndex } from "@/app/_server/actions/users/helpers";
-import { rebuildOwnerRelations } from "@/app/_server/actions/relations/indexer";
+import { rebuildOwnerRelations } from "@/app/_server/actions/relations/night-shift";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";

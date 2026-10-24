@@ -5,12 +5,15 @@ vi.unmock("unist-util-visit");
 vi.unmock("js-beautify");
 vi.unmock("@/app/_utils/markdown-utils");
 
-import {
-  convertHtmlToMarkdown,
-  convertMarkdownToHtml,
-  sanitizeMarkdown,
-  tagOutsideCode,
-} from "@/app/_utils/markdown-utils";
+import { sanitizeMarkdown, tagOutsideCode } from "@/app/_utils/markdown-utils";
+import { markdownToEditorHtml } from "@/app/_utils/markdown/parse/to-html";
+import { serializeDoc } from "@/app/_utils/markdown/serialize";
+import type { NodeJson } from "@/app/_utils/markdown/serialize/types";
+
+const paragraph = (text?: string): NodeJson =>
+  text ? { type: "paragraph", content: [{ type: "text", text }] } : { type: "paragraph" };
+
+const doc = (...content: NodeJson[]): NodeJson => ({ type: "doc", content });
 
 const ZWSP = "​";
 
@@ -46,49 +49,62 @@ describe("markdown round trip", () => {
     );
   });
 
+  it("leaves colours inside html attributes alone for the view renderer", () => {
+    const markdown = '<span style="color: #ff0000">red</span> #tag';
+
+    expect(tagOutsideCode(markdown)).toBe(
+      '<span style="color: #ff0000">red</span> <span data-tag="tag">tag</span>',
+    );
+  });
+
   it("keeps a bash code block with $' intact when rendering to html", () => {
-    const html = convertMarkdownToHtml(markdown);
+    const html = markdownToEditorHtml(markdown);
     const code = html.match(/<code[^>]*>([\s\S]*?)<\/code>/)?.[1] ?? "";
 
-    expect(decodeEntities(code)).toBe(`${BASH_SNIPPET}\n`);
+    expect(decodeEntities(code)).toBe(BASH_SNIPPET);
     expect(html).not.toContain("__CODE_BLOCK_");
   });
 
   it("keeps every replacement pattern literal inside code", () => {
     const tricky = "echo $& $` $' $$ $1 $<name>";
-    const html = convertMarkdownToHtml(
+    const html = markdownToEditorHtml(
       `\`\`\`\n${tricky}\n\`\`\`\n\n#after and \`$'\` then #more`
     );
 
-    expect(decodeEntities(html)).toContain(`<code>${tricky}\n</code>`);
+    expect(decodeEntities(html)).toContain(`<code>${tricky}</code>`);
     expect(decodeEntities(html)).toContain("<code>$'</code> then");
   });
 
-  it("survives html -> markdown -> html unchanged", () => {
-    const html = convertMarkdownToHtml(markdown);
-    const saved = convertHtmlToMarkdown(html);
+  it("writes a bash code block back byte for byte", () => {
+    const saved = serializeDoc(
+      doc(
+        paragraph("Before"),
+        { type: "codeBlock", attrs: { language: "bash" }, content: [{ type: "text", text: BASH_SNIPPET }] },
+        paragraph("After"),
+      ),
+    );
 
-    expect(saved).toContain(BASH_SNIPPET);
+    expect(saved).toBe(`Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter`);
     expect(saved).not.toContain(ZWSP);
-    expect(convertHtmlToMarkdown(convertMarkdownToHtml(saved))).toBe(saved);
   });
 });
 
 describe("saved note bytes", () => {
-  const editorHtml =
-    "<p>just testing this out</p><ul><li><p>goo</p></li><li><p>bar</p></li></ul><p></p>";
-
-  it("does not end a note with a zero-width space from the trailing empty paragraph", () => {
-    const markdown = convertHtmlToMarkdown(editorHtml);
+  it("does not end a note with the trailing empty paragraph", () => {
+    const markdown = serializeDoc(doc(paragraph("just testing this out"), paragraph()));
 
     expect(markdown).not.toContain(ZWSP);
-    expect(markdown.endsWith("bar")).toBe(true);
+    expect(markdown).toBe("just testing this out");
   });
 
-  it("still keeps an empty paragraph in the middle of a note", () => {
-    const markdown = convertHtmlToMarkdown("<p>one</p><p></p><p>two</p>");
+  it("keeps an empty paragraph in the middle of a note as a visible nbsp", () => {
+    const markdown = serializeDoc(doc(paragraph("one"), paragraph(), paragraph("two")));
 
-    expect(markdown).toBe(`one\n\n${ZWSP}\n\ntwo`);
+    expect(markdown).toBe("one\n\n&nbsp;\n\ntwo");
+  });
+
+  it("reads the legacy zero-width empty paragraph back as an empty paragraph", () => {
+    expect(markdownToEditorHtml(`one\n\n${ZWSP}\n\ntwo`)).toContain("<p></p>");
   });
 
   it("strips the CRLF a multipart form post adds and the stray zero-width tail", async () => {

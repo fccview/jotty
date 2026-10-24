@@ -1,4 +1,4 @@
-import { refreshItems, settleRelations } from "./indexer";
+import { refreshItems, settleRelations } from "./night-shift";
 import { flushRelationsWatch } from "./watcher";
 
 export const freshRelations = async (uuids: string[] = []): Promise<void> => {

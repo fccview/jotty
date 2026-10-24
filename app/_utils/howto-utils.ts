@@ -34,6 +34,20 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.brain",
   },
   {
+    id: "templates",
+    name: t("help.templates"),
+    filename: "TEMPLATES.md",
+    icon: "template",
+    translationKey: "help.templates",
+  },
+  {
+    id: "sharing",
+    name: t("help.sharing"),
+    filename: "SHARING.md",
+    icon: "share",
+    translationKey: "help.sharing",
+  },
+  {
     id: API_GUIDE_ID,
     name: t("common.api"),
     filename: "API.md",
@@ -56,17 +70,10 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
   },
   {
     id: "docker",
-    name: t("help.docker"),
+    name: t("help.selfHosting"),
     filename: "DOCKER.md",
     icon: "laptop",
-    translationKey: "help.docker",
-  },
-  {
-    id: "unraid",
-    name: t("help.unraid"),
-    filename: "UNRAID.md",
-    icon: "rain",
-    translationKey: "help.unraid",
+    translationKey: "help.selfHosting",
   },
   {
     id: "env-variables",
@@ -74,13 +81,6 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     filename: "ENV-VARIABLES.md",
     icon: "key",
     translationKey: "help.envVariables",
-  },
-  {
-    id: "pwa",
-    name: t("help.pwa"),
-    filename: "PWA.md",
-    icon: "smartphone",
-    translationKey: "help.pwa",
   },
   {
     id: "encryption",
@@ -116,13 +116,6 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     filename: "TRANSLATIONS.md",
     icon: "translation",
     translationKey: "help.translations",
-  },
-  {
-    id: "patches",
-    name: t("help.patches"),
-    filename: "PATCHES.md",
-    icon: "patch",
-    translationKey: "help.patches",
   },
 ];
 

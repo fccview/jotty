@@ -7,6 +7,7 @@ import {
   MIN_BORDER_RADIUS,
   radiusToRem,
 } from "@/app/_consts/styling";
+import { RangeSlider } from "@/app/_components/GlobalComponents/FormElements/RangeSlider";
 
 interface RadiusSliderProps {
   value: number;
@@ -58,24 +59,17 @@ export const RadiusSlider = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <input
-          id="border-radius"
-          type="range"
-          min={MIN_BORDER_RADIUS}
-          max={MAX_BORDER_RADIUS}
-          step={BORDER_RADIUS_STEP}
-          value={value}
-          disabled={disabled}
-          aria-label={t("settingsModal.borderRadius")}
-          aria-valuetext={radius}
-          onChange={(event) => onChange(Number(event.target.value))}
-          className="w-full accent-primary disabled:opacity-50"
-        />
-        <span className="w-20 shrink-0 text-right font-mono text-md lg:text-xs text-muted-foreground">
-          {radius}
-        </span>
-      </div>
+      <RangeSlider
+        id="border-radius"
+        label={t("settingsModal.borderRadius")}
+        value={value}
+        min={MIN_BORDER_RADIUS}
+        max={MAX_BORDER_RADIUS}
+        step={BORDER_RADIUS_STEP}
+        valueText={radius}
+        onChange={onChange}
+        disabled={disabled}
+      />
 
       {withPreview && <RadiusPreview radius={radius} />}
     </div>

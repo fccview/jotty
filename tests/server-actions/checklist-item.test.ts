@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mockRevalidatePath, resetAllMocks, createFormData } from "../setup";
+import { INVALID_AGENT } from "@/app/_consts/agents";
 
 const mockGetUserModeDir = vi.fn();
 const mockEnsureDir = vi.fn();
@@ -190,6 +191,36 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       expect(result.success).toBe(true);
     });
 
+    it("swaps a human assignee for an agent in one write", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemId: "item-1",
+        assignee: "",
+        agent: " Parser-Bot ",
+      });
+
+      const result = await updateItem(mockChecklist, formData);
+      const updatedItem = result.data?.items.find((i: any) => i.id === "item-1");
+
+      expect(result.success).toBe(true);
+      expect(updatedItem?.agent).toBe("parser-bot");
+      expect(updatedItem?.assignee).toBeUndefined();
+      expect(mockServerWriteFile).toHaveBeenCalledOnce();
+    });
+
+    it("refuses an agent name that could break the card line", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemId: "item-1",
+        agent: "bad | agent:x",
+      });
+
+      const result = await updateItem(mockChecklist, formData);
+
+      expect(result).toEqual({ success: false, error: INVALID_AGENT });
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
+    });
+
     it("should return error when permission denied", async () => {
       mockCanReach.mockResolvedValue(false);
 
@@ -370,7 +401,6 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const writtenList = mockListToMarkdown.mock.calls.at(-1)?.[0];
       expect(writtenList.items[0].id).toBe(result.data?.id);
       expect(writtenList.items[0].order).toBe(0);
-      // existing items shifted down by one
       expect(writtenList.items[1].order).toBe(1);
     });
 
@@ -389,14 +419,11 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const result = await createItem(mockChecklist, formData);
 
       expect(result.success).toBe(true);
-      // existing max order is 2 (item-3), so new order is 3
       expect(result.data?.order).toBe(3);
 
       const writtenList = mockListToMarkdown.mock.calls.at(-1)?.[0];
-      // new item is the last element
       expect(writtenList.items.at(-1).id).toBe(result.data?.id);
       expect(writtenList.items.at(-1).order).toBe(3);
-      // existing items keep their original order (not shifted)
       expect(writtenList.items[0].order).toBe(0);
       expect(writtenList.items[1].order).toBe(1);
       expect(writtenList.items[2].order).toBe(2);

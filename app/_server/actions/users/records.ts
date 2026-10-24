@@ -1,14 +1,13 @@
-import { lock, unlock } from "proper-lockfile";
 import fs from "fs/promises";
 import path from "path";
+import { randomUUID } from "crypto";
 import { USERS_FILE } from "@/app/_consts/files";
 import { readJsonFile, writeJsonFile } from "../file";
 import { User } from "@/app/_types";
 import { getSessionId, readSessions } from "../session/store";
+import { withFileLock } from "../lib/file-lock";
 
-const LOCK_RETRIES = { retries: 10, minTimeout: 50, maxTimeout: 500 };
-
-const touchUsersFile = async (): Promise<string> => {
+export const touchUsersFile = async (): Promise<string> => {
   const usersPath = path.join(process.cwd(), USERS_FILE);
 
   await fs.mkdir(path.dirname(usersPath), { recursive: true });
@@ -44,6 +43,13 @@ export const getCurrentUserRecord = async (): Promise<User | null> => {
   return findUserRecord(currentUsername);
 };
 
+const readUsersForWrite = async (usersPath: string): Promise<unknown> => {
+  const users = await readJsonFile(USERS_FILE);
+  if (users !== null) return users;
+  const raw = await fs.readFile(usersPath, "utf-8");
+  return raw.trim() ? null : [];
+};
+
 /**
  * Every read-modify-write of the users file goes through here. The mutator sees
  * the freshest records while the lock is held; returning null aborts the write.
@@ -51,42 +57,31 @@ export const getCurrentUserRecord = async (): Promise<User | null> => {
 export const mutateUsers = async <T>(
   mutator: (users: User[]) => Promise<T | null> | T | null,
 ): Promise<T | null> => {
-  const usersPath = await touchUsersFile();
-
   try {
-    await lock(usersPath, { retries: LOCK_RETRIES });
-  } catch (error) {
-    console.error("Failed to lock users file for update:", error);
-    return null;
-  }
+    const usersPath = await touchUsersFile();
+    return await withFileLock(usersPath, async () => {
+      const allUsers = await readUsersForWrite(usersPath);
 
-  try {
-    const allUsers = await readJsonFile(USERS_FILE);
+      if (!Array.isArray(allUsers)) return null;
 
-    if (!Array.isArray(allUsers)) return null;
+      const outcome = await mutator(allUsers);
 
-    const outcome = await mutator(allUsers);
+      if (outcome === null) return null;
 
-    if (outcome === null) return null;
+      await writeJsonFile(allUsers, USERS_FILE);
 
-    await writeJsonFile(allUsers, USERS_FILE);
-
-    return outcome;
+      return outcome;
+    });
   } catch (error) {
     console.error("Failed to update user record:", error);
     return null;
-  } finally {
-    try {
-      await unlock(usersPath);
-    } catch (error) {
-      console.error("Failed to release users file lock:", error);
-    }
   }
 };
 
 export const patchUserFields = async (
   username: string,
   updates: Partial<User>,
+  cleared: ReadonlyArray<keyof User> = [],
 ): Promise<User | null> => {
   if (!username) return null;
 
@@ -98,8 +93,32 @@ export const patchUserFields = async (
     if (userIndex === -1) return null;
 
     const updatedUser: User = { ...allUsers[userIndex], ...updates };
+    cleared.forEach((key) => delete updatedUser[key]);
     allUsers[userIndex] = updatedUser;
 
     return updatedUser;
   });
 };
+
+export const ensureUserUuid = async (username: string): Promise<string | null> => {
+  if (!username) return null;
+
+  return mutateUsers((allUsers) => {
+    const user = allUsers.find((candidate: User) => candidate.username === username);
+    if (!user) return null;
+
+    user.uuid ||= randomUUID();
+    return user.uuid;
+  });
+};
+
+export const backfillUserUuids = async (): Promise<number | null> =>
+  mutateUsers((allUsers) => {
+    let stamped = 0;
+    allUsers.forEach((user: User) => {
+      if (user.uuid) return;
+      user.uuid = randomUUID();
+      stamped++;
+    });
+    return stamped;
+  });

@@ -11,10 +11,8 @@ import {
   repairMojibake,
   utf8ToBase64,
 } from "@/app/_utils/base64-utils";
-import {
-  convertHtmlToMarkdown,
-  convertMarkdownToHtml,
-} from "@/app/_utils/markdown-utils";
+import { markdownToEditorHtml } from "@/app/_utils/markdown/parse/to-html";
+import { serializeDoc } from "@/app/_utils/markdown/serialize";
 
 const accented = "Café à la crème, naïve façade";
 const wide = "图表 🦄 Ωmega";
@@ -60,16 +58,17 @@ describe("drawio diagram round trip", () => {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg"><text>${accented} ${wide}</text></svg>`;
   const xml = `<mxfile><diagram name="${accented}"/></mxfile>`;
 
-  it("should survive editor html -> markdown -> editor html", () => {
-    const markdown = convertHtmlToMarkdown(
-      `<div data-drawio="" data-drawio-data="${xml.replace(/"/g, "&quot;")}" data-drawio-svg="${svg.replace(/"/g, "&quot;")}" data-drawio-theme="light">[Draw.io Diagram]</div>`,
-    );
+  it("should survive editor -> markdown -> editor html", () => {
+    const markdown = serializeDoc({
+      type: "doc",
+      content: [{ type: "drawio", attrs: { diagramData: xml, svgData: svg, themeMode: "light" } }],
+    });
     const data = markdown.match(/data: (\S+)/)?.[1] ?? "";
     const preview = markdown.match(/svg: (\S+)/)?.[1] ?? "";
     expect(base64ToText(data)).toBe(xml);
     expect(base64ToSvg(preview)).toBe(svg);
 
-    const html = convertMarkdownToHtml(markdown);
+    const html = markdownToEditorHtml(markdown);
     expect(html).toContain(accented);
     expect(html).toContain(wide);
   });

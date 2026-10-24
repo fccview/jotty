@@ -38,6 +38,31 @@ describe("http transport", () => {
     expect(response.status).toBe(401);
   });
 
+  it("refuses a session id presented with a different API key", async () => {
+    const transport = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${server.port}/mcp`), {
+      requestInit: { headers: { authorization: `Bearer ${TOKEN}`, "x-api-key": API_KEY } },
+    });
+    const client = new Client({ name: "test", version: "0" });
+    await client.connect(transport);
+    const sessionId = transport.sessionId ?? "";
+
+    const hijack = await fetch(`http://127.0.0.1:${server.port}/mcp`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${TOKEN}`,
+        "x-api-key": "someone-else",
+        "mcp-session-id": sessionId,
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 9, method: "tools/list" }),
+    });
+
+    expect(sessionId).not.toBe("");
+    expect(hijack.status).toBe(404);
+    await client.close();
+  });
+
   it("keeps /health open for orchestrators", async () => {
     const response = await fetch(`http://127.0.0.1:${server.port}/health`);
     expect(response.status).toBe(200);
@@ -53,12 +78,19 @@ describe("http transport", () => {
       "create_note",
       "delete_note",
       "check_checklist_item",
+      "sort_checklist_items",
       "update_board_item",
+      "assign_agent",
+      "set_board_spec",
+      "get_task_context",
+      "list_agent_tasks",
       "connect_items",
       "list_duplicate_uuids",
       "discover",
       "call_operation",
       "health",
+      "mcp_docs",
+      "jotty_docs",
     ]);
     const result = await client.callTool({ name: "get_note", arguments: { noteId: "n-1" } });
     expect(result.structuredContent).toMatchObject({ success: true, data: { id: "n-1" } });
@@ -69,7 +101,7 @@ describe("http transport", () => {
   it("falls back to built-in tools when the session has no working key", async () => {
     const client = await connect({ authorization: `Bearer ${TOKEN}` });
     const { tools } = await client.listTools();
-    expect(tools.map((tool) => tool.name)).toEqual(["discover", "call_operation", "health"]);
+    expect(tools.map((tool) => tool.name)).toEqual(["discover", "call_operation", "health", "mcp_docs", "jotty_docs"]);
     await client.close();
   });
 });

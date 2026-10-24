@@ -112,3 +112,13 @@ export const BOUNCED_ELEMENTS = [
 ];
 
 export const SVG_FRAME_ATTR = "data-svg-frame";
+
+export const NOTE_PROSE_CLASS = "jotty-note-prose";
+
+export const CARD_EXCERPT_LIMIT = 1500;
+
+export enum NotePanelTabs {
+  CONTENTS = "contents",
+  TAGS = "tags",
+  LINKS = "links",
+}

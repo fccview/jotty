@@ -3,11 +3,11 @@
 import { plainItemText } from "@/app/_utils/item-href-utils";
 import { useState, useMemo } from "react";
 import { Archive02Icon } from "hugeicons-react";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Item, KanbanStatus } from "@/app/_types";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
-import { TaskStatus } from "@/app/_types/enums";
+import { FALLBACK_STATUS_COLOR, statusColor } from "@/app/_consts/kanban";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Undo02Icon } from "@hugeicons/core-free-icons";
 import { useTranslations } from "next-intl";
@@ -20,13 +20,6 @@ interface ArchivedItemsModalProps {
   onUnarchive: (itemId: string) => void;
   statuses: KanbanStatus[];
 }
-
-const defaultStatusColors: Record<string, string> = {
-  [TaskStatus.TODO]: "#6b7280",
-  [TaskStatus.IN_PROGRESS]: "#3b82f6",
-  [TaskStatus.COMPLETED]: "#10b981",
-  [TaskStatus.PAUSED]: "#f59e0b",
-};
 
 export const ArchivedItemsModal = ({
   isOpen,
@@ -53,8 +46,7 @@ export const ArchivedItemsModal = ({
   }, [archivedItems, filterStatus]);
 
   const getStatusColor = (statusId: string) => {
-    const status = statusMap[statusId];
-    return status?.color || defaultStatusColors[statusId] || "#6b7280";
+    return statusColor(statusMap[statusId] || { id: statusId });
   };
 
   const getStatusLabel = (statusId: string) => {
@@ -72,7 +64,13 @@ export const ArchivedItemsModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t("checklists.archivedItems")}
-      className="lg:max-w-2xl"
+      variant={ModalVariant.PANEL}
+      width={ModalWidth.WIDE}
+      footer={(close) => (
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={close}>{t('common.close')}</Button>
+        </div>
+      )}
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -94,7 +92,7 @@ export const ArchivedItemsModal = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+          <div className="space-y-2">
             {filteredItems.map((item) => (
               <div
                 key={item.id}
@@ -102,7 +100,7 @@ export const ArchivedItemsModal = ({
                 style={{
                   borderLeftColor: item.previousStatus
                     ? getStatusColor(item.previousStatus)
-                    : "#6b7280",
+                    : FALLBACK_STATUS_COLOR,
                 }}
               >
                 <div className="flex-1 min-w-0">
@@ -144,10 +142,6 @@ export const ArchivedItemsModal = ({
             ))}
           </div>
         )}
-
-        <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>{t('common.close')}</Button>
-        </div>
       </div>
     </Modal>
   );

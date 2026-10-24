@@ -7,6 +7,7 @@ import {
   ReactNode,
   useEffect,
   useMemo,
+  useCallback,
 } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -17,12 +18,22 @@ import {
   User,
   AppModeContextType,
   AllSharedItems,
+  ContentFilter,
   UserSharedItems,
   SanitisedUser,
+  SidebarSnapshots,
+  LibraryStats,
+  TagsIndex,
 } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
-import { buildTagsIndex } from "../_utils/tag-utils";
 import { useSidebarStore } from "../_utils/sidebar-store";
+
+const sameUser = (left: SanitisedUser | null, right: SanitisedUser) =>
+  JSON.stringify(left) === JSON.stringify(right);
+
+const NO_SIDEBAR: SidebarSnapshots = {};
+const NO_TAGS: TagsIndex = {};
+const NO_LIBRARY: LibraryStats = { notes: 0, encryptedNotes: 0, checklists: 0, boards: 0 };
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
@@ -35,8 +46,9 @@ export const AppModeProvider = ({
   pathname,
   appVersion,
   initialSettings,
-  notes,
-  checklists,
+  library,
+  tagsIndex,
+  sidebar,
   allSharedItems,
   userSharedItems,
   globalSharing,
@@ -50,8 +62,9 @@ export const AppModeProvider = ({
   pathname?: string;
   appVersion?: string;
   initialSettings?: AppSettings;
-  notes?: Partial<Note>[];
-  checklists?: Partial<Checklist>[];
+  library?: LibraryStats;
+  tagsIndex?: TagsIndex;
+  sidebar?: SidebarSnapshots;
   allSharedItems?: AllSharedItems | null;
   userSharedItems?: UserSharedItems | null;
   globalSharing?: any;
@@ -98,10 +111,7 @@ export const AppModeProvider = ({
       ? { type: "category" as const, value: categoryParam }
       : null;
 
-  const [selectedFilter, setSelectedFilter] = useState<{
-    type: "category" | "tag";
-    value: string;
-  } | null>(initialFilter);
+  const [selectedFilter, setSelectedFilter] = useState<ContentFilter | null>(initialFilter);
   const [isInitialized, setIsInitialized] = useState(false);
   const [user, setUser] = useState<SanitisedUser | null>(initialUser || null);
 
@@ -110,12 +120,11 @@ export const AppModeProvider = ({
   }, []);
 
   useEffect(() => {
-    if (initialUser && (!user || user.username !== initialUser.username)) {
-      setUser(initialUser);
-    }
+    if (!initialUser) return;
+    setUser((prev) => (sameUser(prev, initialUser) ? prev : initialUser));
   }, [initialUser]);
 
-  const { setMode: setStoredMode } = useSidebarStore();
+  const setStoredMode = useSidebarStore((state) => state.setMode);
 
   useEffect(() => {
     if (modeParam === Modes.TAGS || tagParam) {
@@ -139,22 +148,19 @@ export const AppModeProvider = ({
     }
   }, [modeParam, tagParam, categoryParam, setStoredMode]);
 
-  const handleSetMode = (newMode: AppMode) => {
-    setMode(newMode);
-    if (newMode !== Modes.TAGS) {
-      setSelectedFilter(null);
-    }
-    setStoredMode(newMode);
-  };
+  const handleSetMode = useCallback(
+    (newMode: AppMode) => {
+      setMode(newMode);
+      if (newMode !== Modes.TAGS) {
+        setSelectedFilter(null);
+      }
+      setStoredMode(newMode);
+    },
+    [setStoredMode],
+  );
 
   const tagsEnabled = appSettings?.editor?.enableTags !== false;
 
-  const tagsIndex = useMemo(() => {
-    if (!tagsEnabled) return {};
-    const notesList = Array.isArray(notes) ? notes : [];
-    const checklistsList = Array.isArray(checklists) ? checklists : [];
-    return buildTagsIndex(notesList, checklistsList);
-  }, [notes, checklists, tagsEnabled]);
 
   const contextValue = useMemo(
     () => ({
@@ -172,13 +178,13 @@ export const AppModeProvider = ({
       appSettings,
       appVersion: appVersion || "",
       usersPublicData,
-      notes: notes || [],
-      checklists: checklists || [],
+      library: library || NO_LIBRARY,
+      sidebar: sidebar || NO_SIDEBAR,
       allSharedItems: allSharedItems || null,
       userSharedItems: userSharedItems || null,
       globalSharing: globalSharing || null,
       availableLocales: availableLocales || [],
-      tagsIndex,
+      tagsIndex: tagsEnabled ? tagsIndex || NO_TAGS : NO_TAGS,
       tagsEnabled,
     }),
     [
@@ -194,8 +200,8 @@ export const AppModeProvider = ({
       appSettings,
       appVersion,
       usersPublicData,
-      notes,
-      checklists,
+      library,
+      sidebar,
       allSharedItems,
       userSharedItems,
       globalSharing,

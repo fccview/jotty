@@ -2,6 +2,7 @@ import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { FileAttachmentNode } from "./FileAttachmentNode";
 import { InputRule } from "@tiptap/core";
+import { mimeOf, urlKind } from "@/app/_consts/attachments";
 
 export interface FileAttachmentOptions {
   HTMLAttributes: Record<string, any>;
@@ -140,16 +141,14 @@ export const FileAttachmentExtension = Node.create<FileAttachmentOptions>({
         find: /\[📎\s+([^\]]+)\]\(([^)]+)\)/g,
         handler: ({ match, commands }) => {
           const [, fileName, url] = match;
-          const isImage = url.includes("/api/image/");
-          const isVideo = url.includes("/api/video/");
 
           commands.insertContent({
             type: this.name,
             attrs: {
               url,
               fileName,
-              mimeType: isImage ? "image/jpeg" : isVideo ? "video/mp4" : "application/octet-stream",
-              type: isImage ? "image" : isVideo ? "video" : "file",
+              mimeType: mimeOf(fileName),
+              type: urlKind(url),
             },
           });
         },

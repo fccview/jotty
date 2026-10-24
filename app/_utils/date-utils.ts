@@ -1,3 +1,7 @@
+import type { TranslationValues } from "next-intl";
+
+type Translate = (key: string, values?: TranslationValues) => string;
+
 enum TimeUnit {
   JustNow = "justNow",
   Minutes = "minutes",
@@ -30,7 +34,7 @@ const getTimeUnit = (dateString: string) => {
   return { unit: TimeUnit.Years, value: years };
 };
 
-const formatWithTranslation = (unit: TimeUnit, value: number, t: (key: string, options?: any) => string): string => {
+const formatWithTranslation = (unit: TimeUnit, value: number, t: Translate): string => {
   if (unit === TimeUnit.JustNow) return t("common.justNow");
 
   const key = `common.${unit}Ago`;
@@ -54,9 +58,14 @@ const formatEnglishFallback = (unit: TimeUnit, value: number): string => {
   return `${value} ${unitName}${isSingular ? "" : "s"} ago`;
 };
 
-export const formatRelativeTime = (dateString: string, t?: (key: string, options?: any) => string): string => {
+export const formatRelativeTime = (dateString: string, t?: Translate): string => {
   const { unit, value } = getTimeUnit(dateString);
   return t ? formatWithTranslation(unit, value, t) : formatEnglishFallback(unit, value);
+};
+
+export const formatShortTime = (dateString: string, t: Translate): string => {
+  const { unit, value } = getTimeUnit(dateString);
+  return t(`common.${unit}Short`, { count: value });
 };
 
 export const formatDate = (dateString: string): string => {
@@ -82,7 +91,7 @@ const formatTimeAgoEnglish = (unit: TimeUnit, value: number): string => {
   return `${value} day${value > 1 ? "s" : ""} ago`;
 };
 
-export const formatTimeAgo = (dateString: string, t?: (key: string, options?: any) => string): string => {
+export const formatTimeAgo = (dateString: string, t?: Translate): string => {
   const { unit, value } = getTimeUnitSimple(dateString);
   return t ? formatWithTranslation(unit, value, t) : formatTimeAgoEnglish(unit, value);
 };

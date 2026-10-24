@@ -19,7 +19,9 @@ import {
   shownAs,
   movePlan,
   refusalMessage,
+  reservedRefusal,
 } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { logContentEvent } from "@/app/_server/actions/log";
 import { getListById } from "./queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
@@ -30,6 +32,7 @@ import {
 import { isWritable } from "@/app/_server/actions/lib/read-only";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
+import { sweepOrphans } from "@/app/_server/actions/attachments/lifecycle";
 
 const _listDirFor = (owner: string, category?: string): string =>
   path.join(
@@ -81,6 +84,10 @@ const _editList = async (actingUser: SanitisedUser, formData: FormData) => {
       currentList,
       shownCategory
     );
+
+    if (isMoving && isReservedCategory(destination.category)) {
+      return { error: await reservedRefusal(destination.category) };
+    }
 
     if (isMoving) {
       const verdict = await bouncer(
@@ -275,6 +282,7 @@ const _dropList = async (
     );
 
     await serverDeleteFile(filePath);
+    await sweepOrphans([list.uuid!]);
 
     try {
       revalidatePath("/");

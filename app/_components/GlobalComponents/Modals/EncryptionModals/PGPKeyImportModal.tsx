@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { Modal } from "../Modal";
+import { Modal, ModalWidth } from "../Modal";
 import { InfoBox } from "@/app/_components/GlobalComponents/Cards/InfoBox";
 import { Textarea } from "@/app/_components/GlobalComponents/FormElements/Textarea";
 import { importKeys } from "@/app/_server/actions/pgp";
@@ -108,7 +108,7 @@ export const PGPKeyImportModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={t("encryption.importPGPKeys")}
-      className="max-w-2xl"
+      width={ModalWidth.WIDE}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <InfoBox

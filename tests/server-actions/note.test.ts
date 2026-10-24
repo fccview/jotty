@@ -41,6 +41,7 @@ vi.mock("@/app/_server/actions/file", () => ({
   serverDeleteFile: (...args: any[]) => mockServerDeleteFile(...args),
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: any[]) => (await mockServerReadFile(...args)) ?? null,
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
   readJsonFile: vi.fn().mockResolvedValue([]),
 }));
@@ -106,10 +107,18 @@ vi.mock("@/app/_utils/markdown-utils", () => ({
   sanitizeMarkdown: vi.fn().mockImplementation((content) => content),
 }));
 
-vi.mock("@/app/_utils/tag-utils", () => ({
-  extractHashtagsFromContent: (...args: any[]) =>
-    mockExtractHashtagsFromContent(...args),
-}));
+vi.mock("@/app/_utils/tag-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/app/_utils/tag-utils")>();
+  const extract = (...args: any[]) => mockExtractHashtagsFromContent(...args);
+  return {
+    ...actual,
+    extractHashtagsFromContent: extract,
+    mergeTags: (stored: unknown, before: string, after: string) => {
+      const was = new Set(extract(before));
+      return actual.tagList([...actual.tagList(stored).filter((tag) => !was.has(tag)), ...extract(after)]);
+    },
+  };
+});
 
 vi.mock("@/app/_utils/encryption-utils", () => ({
   isEncrypted: vi.fn().mockReturnValue(false),
@@ -278,6 +287,20 @@ describe("Note Actions", () => {
         expect.any(String),
         expect.stringContaining("tidied body"),
       );
+    });
+
+    it("should return the body exactly as it is written to disk", async () => {
+      mockExtractYamlMetadata.mockReturnValue({
+        metadata: {},
+        contentWithoutMetadata: "\n\n\nhello\n",
+      });
+
+      const result = await createNote(
+        createFormData({ title: "Blank lead", category: "TestCategory", rawContent: "\n\n\nhello\n" }),
+      );
+
+      expect(result.data?.content).toBe("hello");
+      expect(mockServerWriteFile.mock.calls[0][1]).toMatch(/---\nhello$/);
     });
 
     it("should commit note to history", async () => {
@@ -639,6 +662,26 @@ describe("Note Actions", () => {
 
         mockExtractTitle.mockReturnValue("Test Note");
       };
+
+      it("should return the body exactly as it is written to disk", async () => {
+        setupUpdateNoteMocks();
+        mockExtractYamlMetadata.mockReturnValue({
+          metadata: {},
+          contentWithoutMetadata: "\n\n\nhello\n",
+        });
+
+        const result = await updateNote(
+          createFormData({
+            uuid: "test-uuid-123",
+            title: "Test Note",
+            content: "\n\n\nhello\n",
+            category: "TestCategory",
+          }),
+        );
+
+        expect(result.data?.content).toBe("hello");
+        expect(mockServerWriteFile.mock.calls[0][1]).toMatch(/---\nhello$/);
+      });
 
       it("should extract tags from updated content", async () => {
         setupUpdateNoteMocks();

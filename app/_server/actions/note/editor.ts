@@ -14,13 +14,10 @@ import { revalidatePath } from "next/cache";
 import { NOTES_DIR } from "@/app/_consts/files";
 import { PermissionTypes, Modes } from "@/app/_types/enums";
 import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
-import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
+import { mergeTags } from "@/app/_utils/tag-utils";
 import { getFormData } from "@/app/_utils/global-utils";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import {
-  refreshWikilinks,
-  tidyItemLinks,
-} from "@/app/_server/actions/relations/tidy";
+import { tidyItemLinks } from "@/app/_server/actions/relations/tidy";
 import { canReach } from "@/app/_server/actions/share/queries";
 import {
   extractYamlMetadata as stripYaml,
@@ -37,7 +34,9 @@ import {
   shownAs,
   movePlan,
   refusalMessage,
+  reservedRefusal,
 } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import {
   failedWith,
@@ -46,6 +45,8 @@ import {
 import { isWritable } from "@/app/_server/actions/lib/read-only";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { fenceFilename } from "@/app/_server/actions/lib/filename-fence";
+import { sweepOrphans } from "@/app/_server/actions/attachments/lifecycle";
+import { rehomeRefs } from "@/app/_server/actions/attachments/adopt";
 
 const _noteDirFor = (owner: string, category?: string): string =>
   path.join(process.cwd(), NOTES_DIR(owner), category || UNCATEGORIZED);
@@ -101,6 +102,10 @@ const _editNote = async (
       shownCategory,
     );
 
+    if (isMoving && isReservedCategory(destination.category)) {
+      return { error: await reservedRefusal(destination.category) };
+    }
+
     if (isMoving) {
       const verdict = await bouncer(
         target,
@@ -127,18 +132,18 @@ const _editNote = async (
     const sanitizedContent = sanitizeMarkdown(content);
     const { metadata: incomingMeta, contentWithoutMetadata } =
       stripYaml(sanitizedContent);
-    const convertedContent = isEncrypted(contentWithoutMetadata)
-      ? contentWithoutMetadata
-      : refreshWikilinks(
-          await tidyItemLinks(contentWithoutMetadata, note.owner || actingUsername),
-          note.uuid,
+    const body = contentWithoutMetadata.trim();
+    const convertedContent = isEncrypted(body)
+      ? body
+      : await tidyItemLinks(
+          await rehomeRefs(note.uuid!, actingUsername, body),
+          note.owner || actingUsername,
         );
 
     const encryptionMethod =
       detectEncryptionMethod(convertedContent) || undefined;
 
-    const extractedTags = extractHashtagsFromContent(convertedContent);
-    const sortedTags = Array.from(new Set(extractedTags)).sort();
+    const mergedTags = mergeTags(note.tags, note.content || "", convertedContent);
 
     const updatedDoc = {
       ...note,
@@ -149,7 +154,7 @@ const _editNote = async (
       updatedAt: new Date().toISOString(),
       encrypted: isEncrypted(convertedContent),
       encryptionMethod,
-      tags: sortedTags.length > 0 ? sortedTags : undefined,
+      tags: mergedTags.length > 0 ? mergedTags : undefined,
       extraMetadata: keptMeta(note.extraMetadata, strayMeta(incomingMeta)),
     };
 
@@ -244,7 +249,7 @@ const _editNote = async (
       );
     }
 
-    if (!updatedDoc.encrypted) {
+    if (!updatedDoc.encrypted && !autosaveNotes) {
       await logContentEvent(
         "note_updated",
         "note",
@@ -339,6 +344,7 @@ const _dropNote = async (
     const filePath = path.join(ownerDir, homeCategory, `${note.id}.md`);
 
     await serverDeleteFile(filePath);
+    await sweepOrphans([note.uuid!]);
 
     if (!note.encrypted) {
       const deleteRelativePath = path.join(homeCategory, `${note.id}.md`);

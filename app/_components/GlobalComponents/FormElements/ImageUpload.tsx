@@ -11,6 +11,7 @@ import { uploadAppIcon } from "@/app/_server/actions/config";
 import { AppSettings } from "@/app/_types";
 import { Logo } from "../Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
+import { isAttachmentError } from "@/app/_consts/attachments";
 
 interface ImageUploadProps {
   label: string;
@@ -156,13 +157,20 @@ export const ImageUpload: FC<ImageUploadProps> = ({
           message: `${label} has been updated.`,
         });
       } else {
-        throw new Error(result.error || "An unknown error occurred.");
+        showToast({
+          type: "error",
+          title: t("common.uploadFailed"),
+          message: isAttachmentError(result.error)
+            ? t(result.error)
+            : result.error || t("common.uploadFailedRetry"),
+        });
       }
     } catch (error) {
+      console.error("Error uploading image:", error);
       showToast({
         type: "error",
-        title: "Upload Failed",
-        message: error instanceof Error ? error.message : String(error),
+        title: t("common.uploadFailed"),
+        message: t("common.uploadFailedRetry"),
       });
     } finally {
       setIsUploading(false);
@@ -184,7 +192,7 @@ export const ImageUpload: FC<ImageUploadProps> = ({
       <p className="text-md lg:text-xs text-muted-foreground">{description}</p>
       <div
         className={`relative border-2 border-dashed rounded-jotty p-4 transition-colors ${disabled
-            ? "border-muted-foreground/15 bg-muted/30 cursor-not-allowed"
+            ? "border-muted-foreground/[0.15] bg-muted/30 cursor-not-allowed"
             : dragOver
               ? "border-primary bg-primary/5"
               : "border-muted-foreground/25 hover:border-muted-foreground/50"

@@ -27,9 +27,10 @@ import {
   Clock01Icon,
   GitCompareIcon,
   Copy02Icon,
-  PinIcon,
-  PinOffIcon,
+  SourceCodeIcon,
+  LicenseDraftIcon,
 } from "hugeicons-react";
+import { PinStateIcon } from "@/app/_components/GlobalComponents/Cards/Parts/PinToggle";
 import { Note, Category } from "@/app/_types";
 import { NoteEditorViewModel } from "@/app/_types";
 import { useEffect, useState } from "react";
@@ -37,7 +38,8 @@ import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/Dropd
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useRouter } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { toggleArchive, togglePin } from "@/app/_server/actions/dashboard";
+import { toggleArchive } from "@/app/_server/actions/dashboard";
+import { usePinToggle } from "@/app/_hooks/usePinToggle";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { copyTextToClipboard, isPinnedEntry } from "@/app/_utils/global-utils";
 import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
@@ -55,8 +57,11 @@ import {
   isEncrypted,
 } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
+import { AutosaveStatus } from "./AutosaveStatus";
 import { NoteHistoryModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/NoteHistoryModal";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useTemplateMaker } from "@/app/_hooks/useTemplates";
+import { isTemplateCategory } from "@/app/_utils/template-utils";
 import {
   QuickBarPortal,
   QuickBarSlots,
@@ -69,8 +74,10 @@ interface NoteEditorHeaderProps {
   isOwner: boolean;
   onBack: () => void;
   onClone?: () => void;
-  showTOC: boolean;
-  setShowTOC: (show: boolean) => void;
+  showPanel: boolean;
+  onTogglePanel: () => void;
+  onOpenSheet: () => void;
+  onEditFrontmatter: () => void;
   viewModel: NoteEditorViewModel;
   onOpenDecryptModal?: React.MutableRefObject<(() => void) | null>;
   onOpenViewModal?: React.MutableRefObject<(() => void) | null>;
@@ -83,8 +90,10 @@ export const NoteEditorHeader = ({
   onBack,
   onClone,
   viewModel,
-  showTOC,
-  setShowTOC,
+  showPanel,
+  onTogglePanel,
+  onOpenSheet,
+  onEditFrontmatter,
   onOpenDecryptModal,
   onOpenViewModal,
 }: NoteEditorHeaderProps) => {
@@ -102,7 +111,9 @@ export const NoteEditorHeader = ({
     handleDelete,
     isPrinting,
     isEditingEncrypted,
+    autosaveState,
   } = viewModel;
+  const cancelLabel = autosaveState ? t("common.close") : t("common.cancel");
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
   const [showEncryptionModal, setShowEncryptionModal] = useState(false);
@@ -113,11 +124,13 @@ export const NoteEditorHeader = ({
     useState(false);
   const [copied, setCopied] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [isTogglingPin, setIsTogglingPin] = useState(false);
+  const { toggle: togglePin } = usePinToggle(ItemTypes.NOTE);
   const { user, setUser, appSettings } = useAppMode();
   const router = useRouter();
   const { permissions } = usePermissions();
   const { showToast } = useToast();
+  const { copyToTemplates } = useTemplateMaker();
+  const isTemplate = isTemplateCategory(note?.category);
 
   useEffect(() => {
     setHasPromptedForDecryption(false);
@@ -159,6 +172,7 @@ export const NoteEditorHeader = ({
   const handleArchive = async () => {
     const result = await toggleArchive(note, Modes.NOTES);
     if (result.success) {
+      onBack();
       router.refresh();
     }
   };
@@ -167,33 +181,18 @@ export const NoteEditorHeader = ({
     user?.pinnedNotes?.some((entry) => isPinnedEntry(entry, note?.uuid))
   );
 
-  const handlePinToggle = async () => {
+  const handlePinToggle = () => {
     const uuid = note?.uuid;
-    if (!uuid || isTogglingPin) return;
-
-    setIsTogglingPin(true);
-    try {
-      const result = await togglePin(uuid, ItemTypes.NOTE);
-      if (result.success) {
-        if (user) {
-          const pinned = user.pinnedNotes || [];
-          setUser({
-            ...user,
-            pinnedNotes: isPinned
-              ? pinned.filter((entry) => !isPinnedEntry(entry, uuid))
-              : [...pinned, uuid],
-          });
-        }
-        router.refresh();
-      } else {
-        showToast({ title: result.error || t("common.error"), type: "error" });
-      }
-    } catch (error) {
-      console.error("Failed to toggle note pin:", error);
-      showToast({ title: t("common.error"), type: "error" });
-    } finally {
-      setIsTogglingPin(false);
-    }
+    togglePin(uuid, () => {
+      if (!user || !uuid) return;
+      const pinned = user.pinnedNotes || [];
+      setUser({
+        ...user,
+        pinnedNotes: isPinned
+          ? pinned.filter((entry) => !isPinnedEntry(entry, uuid))
+          : [...pinned, uuid],
+      });
+    });
   };
 
   const handleSaveClick = () => {
@@ -203,7 +202,7 @@ export const NoteEditorHeader = ({
     }
     const cached = viewModel.getCachedPassphrase();
     if (cached) {
-      handleSave(false, cached);
+      handleSave(cached);
       return;
     }
     setEncryptionModalMode("save");
@@ -255,7 +254,7 @@ export const NoteEditorHeader = ({
       if (method === "xchacha" && passphrase) {
         viewModel.cachePassphrase(passphrase, method);
       }
-      handleSave(false, saveParam);
+      handleSave(saveParam);
       setShowEncryptionModal(false);
     }
   };
@@ -336,6 +335,11 @@ export const NoteEditorHeader = ({
                     {note?.encrypted && (
                       <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />
                     )}
+                    {isTemplate && (
+                      <span className="jotty-template-badge text-md lg:text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
+                        {t("templates.badge")}
+                      </span>
+                    )}
                     <SharedFromBadge
                       owner={note?.sharedFrom}
                       permissions={note?.permissions}
@@ -348,7 +352,7 @@ export const NoteEditorHeader = ({
                       }
                     />
                   </div>
-                  {category && category !== t("notes.uncategorized") && (
+                  {category && !isTemplate && category !== t("notes.uncategorized") && (
                     <div className="flex items-center gap-1.5 mt-1 text-md lg:text-sm text-muted-foreground">
                       <Folder02Icon className="h-3 w-3" />
                       <span>{category}</span>
@@ -361,7 +365,7 @@ export const NoteEditorHeader = ({
           <div className="flex items-center gap-2 flex-shrink-0">
             {isEditing ? (
               <>
-                {isOwner && (
+                {isOwner && !isTemplate && (
                   <div className="lg:w-[400px]">
                     <CategoryTreeSelector
                       categories={categories}
@@ -373,19 +377,22 @@ export const NoteEditorHeader = ({
                   </div>
                 )}
 
+                <AutosaveStatus state={autosaveState} />
+
                 <Button
                   variant="outline"
                   className="hidden lg:flex"
                   size="sm"
                   onClick={handleCancel}
+                  disabled={status.isSaving}
                 >
-                  {t("common.cancel")}
+                  {cancelLabel}
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleSaveClick}
                   className="hidden lg:flex"
-                  disabled={status.isSaving || status.isAutoSaving}
+                  disabled={status.isSaving}
                 >
                   {status.isSaving ? (
                     <>
@@ -408,8 +415,9 @@ export const NoteEditorHeader = ({
                     variant="outline"
                     size="icon"
                     onClick={handleCancel}
-                    title={t("common.cancel")}
-                    aria-label={t("common.cancel")}
+                    disabled={status.isSaving}
+                    title={cancelLabel}
+                    aria-label={cancelLabel}
                     className={quickBarButton}
                   >
                     <Cancel01Icon className="h-5 w-5" />
@@ -419,7 +427,7 @@ export const NoteEditorHeader = ({
                     size="icon"
                     onClick={handleSaveClick}
                     className={quickBarButton}
-                    disabled={status.isSaving || status.isAutoSaving}
+                    disabled={status.isSaving}
                     title={status.isSaving ? t("common.saving") : t("common.save")}
                     aria-label={
                       status.isSaving ? t("common.saving") : t("common.save")
@@ -509,17 +517,18 @@ export const NoteEditorHeader = ({
                       </Button>
                     }
                     items={[
-                      {
-                        type: "item" as const,
-                        label: isPinned ? t("common.unpin") : t("common.pin"),
-                        icon: isPinned ? (
-                          <PinOffIcon className="h-4 w-4" />
-                        ) : (
-                          <PinIcon className="h-4 w-4" />
-                        ),
-                        onClick: handlePinToggle,
-                      },
-                      ...(permissions?.isOwner
+                      { type: "heading" as const, label: t("menuGroups.organise") },
+                      ...(!permissions?.isLocked
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: isPinned ? t("common.unpin") : t("common.pin"),
+                            icon: <PinStateIcon isPinned={isPinned} className="h-4 w-4" />,
+                            onClick: handlePinToggle,
+                          },
+                        ]
+                        : []),
+                      ...(permissions?.isOwner && !permissions?.isLocked && !isTemplate
                         ? [
                           {
                             type: "item" as const,
@@ -539,8 +548,52 @@ export const NoteEditorHeader = ({
                           },
                         ]
                         : []),
-                      ...(note?.encrypted
+                      ...(!note?.encrypted && !isTemplate && !permissions?.isLocked
                         ? [
+                          {
+                            type: "item" as const,
+                            label: t("templates.saveAsTemplate"),
+                            icon: <LicenseDraftIcon className="h-4 w-4" />,
+                            onClick: () => copyToTemplates(note.uuid!),
+                          },
+                        ]
+                        : []),
+                      ...(permissions?.canDelete && !isTemplate
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: t("profile.archiveTab"),
+                            icon: <Archive02Icon className="h-4 w-4" />,
+                            onClick: handleArchive,
+                          },
+                        ]
+                        : []),
+                      { type: "divider" as const },
+                      { type: "heading" as const, label: t("menuGroups.view") },
+                      {
+                        type: "item" as const,
+                        label: showPanel ? t("notePanel.hide") : t("notePanel.show"),
+                        icon: <SidebarRightIcon className="h-4 w-4" />,
+                        onClick: onTogglePanel,
+                        className: "hidden lg:flex",
+                      },
+                      {
+                        type: "item" as const,
+                        label: t("notePanel.show"),
+                        icon: <SidebarRightIcon className="h-4 w-4" />,
+                        onClick: onOpenSheet,
+                        className: "lg:!hidden",
+                      },
+                      ...(!note?.encrypted
+                        ? [
+                          {
+                            type: "item" as const,
+                            label: t("common.history"),
+                            icon: <GitCompareIcon className="h-4 w-4" />,
+                            onClick: handleHistoryClick,
+                          },
+                        ]
+                        : [
                           {
                             type: "item" as const,
                             label: !isInViewMode
@@ -560,35 +613,9 @@ export const NoteEditorHeader = ({
                               }
                             },
                           },
-                          ...(!isInViewMode && permissions?.canEdit
-                            ? [
-                              {
-                                type: "item" as const,
-                                label: t("encryption.decrypt"),
-                                icon: <LockKeyIcon className="h-4 w-4" />,
-                                onClick: () => {
-                                  setEncryptionModalMode("decrypt");
-                                  setShowEncryptionModal(true);
-                                },
-                              },
-                            ]
-                            : []),
-                        ]
-                        : [
-                          ...(permissions?.canEdit
-                            ? [
-                              {
-                                type: "item" as const,
-                                label: t("encryption.encryptNote"),
-                                icon: <LockKeyIcon className="h-4 w-4" />,
-                                onClick: () => {
-                                  setEncryptionModalMode("encrypt");
-                                  setShowEncryptionModal(true);
-                                },
-                              },
-                            ]
-                            : []),
                         ]),
+                      { type: "divider" as const },
+                      { type: "heading" as const, label: t("menuGroups.export") },
                       {
                         type: "item" as const,
                         label: t("notes.copyRawContent"),
@@ -613,33 +640,46 @@ export const NoteEditorHeader = ({
                         ),
                         onClick: viewModel.handlePrint,
                       },
-                      ...(!note?.encrypted
+                      { type: "divider" as const },
+                      { type: "heading" as const, label: t("menuGroups.advanced") },
+                      ...(permissions?.canEdit && !permissions?.isLocked
                         ? [
                           {
                             type: "item" as const,
-                            label: t("common.history"),
-                            icon: <GitCompareIcon className="h-4 w-4" />,
-                            onClick: handleHistoryClick,
+                            label: t("frontmatter.edit"),
+                            icon: <SourceCodeIcon className="h-4 w-4" />,
+                            onClick: onEditFrontmatter,
                           },
                         ]
                         : []),
-                      {
-                        type: "item" as const,
-                        label: t("notes.tableOfContents"),
-                        icon: <SidebarRightIcon className="h-4 w-4" />,
-                        onClick: () => setShowTOC(!showTOC),
-                        className: "hidden lg:flex",
-                      },
-                      ...(permissions?.canDelete
-                        ? [
-                          {
-                            type: "item" as const,
-                            label: t("profile.archiveTab"),
-                            icon: <Archive02Icon className="h-4 w-4" />,
-                            onClick: handleArchive,
-                          },
-                        ]
-                        : []),
+                      ...(note?.encrypted
+                        ? !isInViewMode && permissions?.canEdit
+                          ? [
+                            {
+                              type: "item" as const,
+                              label: t("encryption.decrypt"),
+                              icon: <LockKeyIcon className="h-4 w-4" />,
+                              onClick: () => {
+                                setEncryptionModalMode("decrypt");
+                                setShowEncryptionModal(true);
+                              },
+                            },
+                          ]
+                          : []
+                        : permissions?.canEdit && !isTemplate
+                          ? [
+                            {
+                              type: "item" as const,
+                              label: t("encryption.encryptNote"),
+                              icon: <LockKeyIcon className="h-4 w-4" />,
+                              onClick: () => {
+                                setEncryptionModalMode("encrypt");
+                                setShowEncryptionModal(true);
+                              },
+                            },
+                          ]
+                          : []),
+                      { type: "divider" as const },
                       ...(canDelete
                         ? [
                           {

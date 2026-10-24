@@ -1,8 +1,24 @@
 export const RELATIONS_DB_NAME = ".relations.db";
-export const RELATIONS_SCHEMA_VERSION = 6;
+export const RELATIONS_SCHEMA_VERSION = 9;
 export const LEGACY_LINK_PREFIX = "/jotty/";
 export const WIKILINK_REGEX =
   /\[\[([^\[\]|#^\n]+)(?:[#^][^\[\]|\n]*)?(?:\|([^\[\]\n]*))?\]\]/g;
+export const UNSAFE_WIKI_TEXT = /[\[\]|#^\n]/;
+export const MARKDOWN_EXT = ".md";
+export const CHECKLIST_PIPE = /∣/g;
+export const WIKI_EMBED_MARK = "!";
+
+export enum AliasKeys {
+  ALIASES = "aliases",
+  ALIAS = "alias",
+}
+
+export enum WikiRanks {
+  TITLE = 0,
+  FILENAME = 1,
+  PATH = 2,
+  ALIAS = 3,
+}
 
 export enum LinkKinds {
   LINK = "link",
@@ -22,6 +38,23 @@ export enum RelationsStatus {
   BUILDING = "building",
   READY = "ready",
 }
+
+export enum ShiftKinds {
+  RECONCILE = "reconcile",
+  REFRESH = "refresh",
+  OWNER = "owner",
+  TREE = "tree",
+}
+
+export enum ShiftNotes {
+  DONE = "done",
+  FAILED = "failed",
+  RELINK = "relink",
+}
+
+export const RELATIONS_ACTOR = "system";
+export const RECONCILE_EVERY_MS = 60_000;
+export const STALE_READ_RETRIES = 3;
 
 export enum BrainNodeKinds {
   NOTE = "note",

@@ -21,7 +21,7 @@ import type {
   RelatedItem,
 } from "@/app/_types/relations";
 import { titleKey } from "./parser";
-import { ensureRelations } from "./indexer";
+import { ensureRelations } from "./night-shift";
 import { relationsDb } from "./store";
 import { suggestEdges } from "./suggestions";
 
@@ -33,6 +33,7 @@ export interface VisibleItem {
   owner?: string;
   checklistType?: string;
   tags: string[];
+  encrypted?: boolean;
 }
 
 interface LinkRow {
@@ -76,6 +77,7 @@ export const visibleItems = async (username: string): Promise<Map<string, Visibl
       category: note.category || UNCATEGORIZED,
       owner: note.owner,
       tags: note.tags || [],
+      ...(note.encrypted && { encrypted: true }),
     }),
   );
 

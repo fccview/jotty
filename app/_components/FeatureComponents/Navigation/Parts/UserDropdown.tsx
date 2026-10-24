@@ -8,6 +8,10 @@ import {
   ArrowDown01Icon,
   LaptopPhoneSyncIcon,
   TranslateIcon,
+  Archive02Icon,
+  LicenseDraftIcon,
+  AiBrain04Icon,
+  Attachment01Icon,
 } from "hugeicons-react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useRouter } from "next/navigation";
@@ -19,6 +23,17 @@ import { LanguageSubmenu } from "./LanguageSubmenu";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { AboutModal } from "@/app/_components/GlobalComponents/Modals/AboutModal";
 import { JottyIcon } from "@/app/_components/GlobalComponents/Layout/CustomIcons/JottyIcon";
+import { cn } from "@/app/_utils/global-utils";
+import { ARCHIVE_PATH } from "@/app/_consts/files";
+import { TEMPLATES_PATH } from "@/app/_consts/templates";
+import { BRAIN_PATH } from "@/app/_consts/relations";
+import { ATTACHMENTS_PATH } from "@/app/_consts/attachments";
+import {
+  MENU_CLASS,
+  MENU_DIVIDER_CLASS,
+  MENU_ITEM_CLASS,
+  MENU_ITEM_DANGER_CLASS,
+} from "@/app/_consts/styling";
 
 interface UserDropdownProps {
   username: string;
@@ -96,6 +111,33 @@ export const UserDropdown = ({
     {
       type: "divider" as const,
     },
+    {
+      label: t("templates.title"),
+      icon: <LicenseDraftIcon className="h-4 w-4" />,
+      onClick: () => checkNavigation(() => router.push(TEMPLATES_PATH)),
+    },
+    {
+      label: t("profile.archiveTab"),
+      icon: <Archive02Icon className="h-4 w-4" />,
+      onClick: () => checkNavigation(() => router.push(ARCHIVE_PATH)),
+    },
+    ...(appSettings?.editor?.enableBilateralLinks === false
+      ? []
+      : [
+          {
+            label: t("brain.title"),
+            icon: <AiBrain04Icon className="h-4 w-4" />,
+            onClick: () => checkNavigation(() => router.push(BRAIN_PATH)),
+          },
+        ]),
+    {
+      label: t("attachments.title"),
+      icon: <Attachment01Icon className="h-4 w-4" />,
+      onClick: () => checkNavigation(() => router.push(ATTACHMENTS_PATH)),
+    },
+    {
+      type: "divider" as const,
+    },
     ...(appSettings?.hideLanguageSelector === "yes"
       ? []
       : [
@@ -158,10 +200,10 @@ export const UserDropdown = ({
         </div>
 
         {isDropdownOpen && !showLanguageSubmenu && (
-          <div className="absolute right-0 top-full mt-1 w-56 bg-background border border-border rounded-jotty shadow-lg z-50 py-1">
+          <div className={cn("absolute right-0 top-full mt-1 w-56 z-50 flex flex-col gap-px p-1", MENU_CLASS)}>
             {dropdownItems.map((item, index) => {
               if (item.type === "divider") {
-                return <div key={index} className="h-px bg-border my-1" />;
+                return <div key={index} className={MENU_DIVIDER_CLASS} />;
               }
 
               return (
@@ -175,11 +217,12 @@ export const UserDropdown = ({
                       setIsDropdownOpen(false);
                     }
                   }}
-                  className={`group jotty-user-menu-dropdown-item w-full flex items-center gap-3 px-3 py-2 text-md lg:text-sm transition-colors text-left hover:bg-accent hover:text-accent-foreground ${
-                    item.variant === "destructive"
-                      ? "text-destructive hover:text-destructive-foreground hover:bg-destructive"
-                      : ""
-                  } ${item.className || ""}`}
+                  className={cn(
+                    "group jotty-user-menu-dropdown-item",
+                    MENU_ITEM_CLASS,
+                    item.variant === "destructive" && MENU_ITEM_DANGER_CLASS,
+                    item.className,
+                  )}
                 >
                   {item.icon && (
                     <span className="flex-shrink-0 w-4 h-4">{item.icon}</span>

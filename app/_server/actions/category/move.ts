@@ -17,7 +17,7 @@ import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
 import { freeFilename } from "@/app/_utils/filename-utils";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { skippedDirs } from "@/app/_consts/files";
 import {
   catUuid,
   dirItemUuids,
@@ -27,20 +27,21 @@ import { mountsFor, userDirFor } from "@/app/_server/actions/share/mounts";
 import {
   invalidateCached,
   metaCacheKey,
+  summaryCacheKey,
 } from "@/app/_server/actions/lib/metadata-cache";
-import { targetDir, bouncer, shownAs } from "@/app/_server/actions/share/target";
+import { targetDir, bouncer, shownAs, reservedRefusal } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { SharedMount } from "@/app/_types/sharing";
 import { PermissionTypes } from "@/app/_types/enums";
 import { orderByUuids } from "@/app/_utils/order-utils";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const _seededOrder = async (
   dirPath: string,
   mountUuids: string[] = [],
   allowArchived: boolean = false,
 ): Promise<{ categories: string[]; items: string[] }> => {
-  const excluded = allowArchived
-    ? EXCLUDED_DIRS
-    : [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const excluded = skippedDirs(allowArchived);
 
   const [order, presentItems, presentCats] = await Promise.all([
     readOrderFile(dirPath),
@@ -69,6 +70,7 @@ const forgetLists = (mode: Modes, owners: string[]): void => {
   Array.from(new Set(owners)).forEach((owner) => {
     const dir = path.join(process.cwd(), userDirFor(mode, owner));
     invalidateCached(metaCacheKey(mode, dir));
+    invalidateCached(summaryCacheKey(mode, dir));
   });
 };
 
@@ -318,6 +320,10 @@ export const moveNode = async (formData: FormData) => {
       return { error: "Shared folders stay at the top level" };
     }
 
+    if (isReservedCategory(destParentPath)) {
+      return { error: await reservedRefusal(destParentPath) };
+    }
+
     const isSameParent = activeParentPath === destParentPath;
 
     if (isSameParent && overType === "category") {
@@ -385,10 +391,13 @@ export const moveNode = async (formData: FormData) => {
       const oldPath = path.join(oldParentDir, fileName);
       const newPath = path.join(newParentDir, landingName);
 
-      await serverRenamePath(oldPath, newPath);
-
       if (activeType === "item") {
-        await _restamp(newPath, destLoc.owner, destLoc.category);
+        await runQueued(itemLane(mode, activeKey), async () => {
+          await serverRenamePath(oldPath, newPath);
+          await _restamp(newPath, destLoc.owner, destLoc.category);
+        });
+      } else {
+        await serverRenamePath(oldPath, newPath);
       }
 
       const oldOrder = await _seededOrder(oldParentDir, rootUuids);

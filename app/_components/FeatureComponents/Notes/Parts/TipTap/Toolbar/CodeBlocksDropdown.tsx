@@ -7,7 +7,7 @@ import { codeblockLangs } from "@/app/_utils/code-block-utils";
 import { useState, useMemo } from "react";
 import { ToolbarDropdown } from "../Toolbar/ToolbarDropdown";
 import { useTranslations } from "next-intl";
-import { insertCodeBlock } from "@/app/_utils/markdown-editor-utils";
+import { insertCodeBlock, runMarkdownEdit } from "@/app/_utils/markdown-editor-utils";
 
 interface CodeBlockDropdownProps {
   editor: Editor | null;
@@ -15,7 +15,7 @@ interface CodeBlockDropdownProps {
   onMarkdownChange?: (content: string) => void;
 }
 
-export const CodeBlockDropdown = ({
+export const CodeBlockMenu = ({
   editor,
   isMarkdownMode = false,
   onMarkdownChange,
@@ -40,36 +40,15 @@ export const CodeBlockDropdown = ({
 
   const setCodeBlock = (language: string) => {
     if (isMarkdownMode && onMarkdownChange) {
-      const textarea = document.getElementById(
-        "markdown-editor-textarea"
-      ) as HTMLTextAreaElement;
-      if (textarea) {
-        const newContent = insertCodeBlock(textarea, language);
-        onMarkdownChange(newContent);
-      }
+      runMarkdownEdit((textarea) => insertCodeBlock(textarea, language), onMarkdownChange);
     } else {
       editor.chain().focus().toggleCodeBlock({ language }).run();
     }
     setSearchTerm("");
   };
 
-  const isCodeBlockActive = editor && editor.isActive("codeBlock");
-
-  const trigger = (
-    <Button
-      variant={isCodeBlockActive ? "secondary" : "ghost"}
-      size="sm"
-      onMouseDown={(e) => e.preventDefault()}
-      className="flex items-center gap-1"
-      title={t("editor.code")}
-    >
-      <SourceCodeIcon className="h-4 w-4" />
-      <ArrowDown01Icon className="h-3 w-3" />
-    </Button>
-  );
-
   return (
-    <ToolbarDropdown trigger={trigger} direction="right">
+    <>
       <div className="p-2 border-b border-border">
         <div className="relative">
           <Search01Icon className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -105,6 +84,33 @@ export const CodeBlockDropdown = ({
           </div>
         )}
       </div>
+    </>
+  );
+};
+
+export const CodeBlockDropdown = (props: CodeBlockDropdownProps) => {
+  const t = useTranslations();
+  const { editor } = props;
+  if (!editor) return null;
+
+  const isCodeBlockActive = editor && editor.isActive("codeBlock");
+
+  const trigger = (
+    <Button
+      variant={isCodeBlockActive ? "secondary" : "ghost"}
+      size="sm"
+      onMouseDown={(e) => e.preventDefault()}
+      className="flex items-center gap-1"
+      title={t("editor.code")}
+    >
+      <SourceCodeIcon className="h-4 w-4" />
+      <ArrowDown01Icon className="h-3 w-3" />
+    </Button>
+  );
+
+  return (
+    <ToolbarDropdown trigger={trigger} direction="right">
+      <CodeBlockMenu {...props} />
     </ToolbarDropdown>
   );
 };

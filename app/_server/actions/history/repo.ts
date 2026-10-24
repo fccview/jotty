@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import simpleGit, { SimpleGit } from "simple-git";
+import { simpleGit, SimpleGit } from "simple-git";
 import { lock } from "proper-lockfile";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
 import { getSettings } from "@/app/_server/actions/config";
@@ -26,7 +26,7 @@ export interface HistoryResult<T> {
   error?: string;
 }
 
-export type HistoryAction = "create" | "update" | "rename" | "move" | "delete";
+export type HistoryAction = "create" | "update" | "rename" | "move" | "delete" | "attachments";
 
 const LEGACY_LOCK_FILE = ".historylock";
 const LOCKS_DIR = ".locks";
@@ -111,6 +111,7 @@ const gatekeeper = async <T>(
     const release = await lock(lockPath, {
       stale: LOCK_STALE_MS,
       retries: LOCK_RETRIES,
+      onCompromised: (error) => console.error("Lost the history lock while holding it:", error),
     });
 
     try {
@@ -145,6 +146,8 @@ const _formatCommitMessage = (
       return `[move] ${noteTitle}: ${metadata?.oldCategory} -> ${metadata?.newCategory}`;
     case "delete":
       return `[delete] ${noteTitle}`;
+    case "attachments":
+      return `[attachments] ${noteTitle}`;
     default:
       return `[change] ${noteTitle}`;
   }

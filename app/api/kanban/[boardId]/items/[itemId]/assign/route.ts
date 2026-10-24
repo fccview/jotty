@@ -3,7 +3,7 @@ import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
 import { BOARD_REFUSED, cardAssignBody, cardParams, cardChangedSchema } from "@/app/_schemas/api/kanban";
-import { boardFor, cardChanged } from "@/app/_utils/kanban/api-board";
+import { cardFor, cardChanged } from "@/app/_utils/kanban/api-board";
 import { PermissionTypes } from "@/app/_types/enums";
 
 export const dynamic = "force-dynamic";
@@ -28,12 +28,12 @@ export const PUT = defineRoute(
     },
   },
   async ({ request, user, params, body }) => {
-    const { board, refused } = await boardFor(request, params.boardId, user.username, { permission: PermissionTypes.EDIT, itemId: params.itemId });
+    const { board, card, refused } = await cardFor(request, params.boardId, user.username, params.itemId, PermissionTypes.EDIT);
     if (refused) return refused;
 
-    const result = await assignItem(user, board.uuid, params.itemId, body.assignee || "");
+    const result = await assignItem(user, board.uuid, card.id, body.assignee || "");
     if (result.error) return refuse(result.error, 400);
 
-    return cardChanged(result.data, params.itemId);
+    return cardChanged(result.data, card.id);
   },
 );

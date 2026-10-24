@@ -66,6 +66,11 @@ const NEVER_AN_ACTION = [
   "commitNote",
   "commitCategoryRename",
   "scanReminders",
+  "grantItem",
+  "revokeItem",
+  "gandalf",
+  "writeShares",
+  "announceShare",
 ];
 
 const PUBLIC_ACTIONS: Record<string, string> = {

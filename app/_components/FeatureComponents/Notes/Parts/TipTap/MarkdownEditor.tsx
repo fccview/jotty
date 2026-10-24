@@ -45,7 +45,7 @@ export const MarkdownEditor = ({
           showLineNumbers={showLineNumbers}
         />
       )}
-      <div className="flex-1 lg:p-4 overflow-y-auto jotty-scrollable-content h-full">
+      <div className="flex flex-col flex-1 lg:p-4 overflow-y-auto jotty-scrollable-content h-full">
         <SyntaxHighlightedEditor
           content={content}
           onChange={handleValueChange}

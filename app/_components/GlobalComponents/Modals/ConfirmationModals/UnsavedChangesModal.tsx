@@ -47,20 +47,14 @@ export const UnsavedChangesModal = ({
         </Button>
         <Button
           variant="outline"
-          onClick={() => {
-            onDiscard();
-            onClose();
-          }}
+          onClick={onDiscard}
           className="flex-1"
         >
           {t("common.discard")}
         </Button>
         <Button
           variant="default"
-          onClick={() => {
-            onSave();
-            onClose();
-          }}
+          onClick={onSave}
           className="flex-1"
         >
           <FloppyDiskIcon className="h-4 w-4 mr-2" />

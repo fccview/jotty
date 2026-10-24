@@ -1,43 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link04Icon } from "hugeicons-react";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { useRelations } from "@/app/_providers/RelationsProvider";
-import { useToast } from "@/app/_providers/ToastProvider";
-import { linkMention } from "@/app/_server/actions/relations";
-import type { MentionedIn } from "@/app/_types/relations";
+import { useMentionLink } from "@/app/_hooks/useMentionLink";
 
 export const MentionedInSection = () => {
   const router = useRouter();
   const t = useTranslations();
-  const { showToast } = useToast();
   const { uuid: targetUuid, mentions } = useRelations();
-  const [linking, setLinking] = useState<string | null>(null);
+  const { linking, link } = useMentionLink(targetUuid);
 
   if (!targetUuid || mentions.length === 0) return null;
-
-  const link = async (source: MentionedIn) => {
-    setLinking(source.uuid);
-    try {
-      const result = await linkMention(source.uuid, targetUuid);
-      if (!result.success) {
-        showToast({ type: "error", title: t("common.error"), message: t("relations.linkFailed") });
-        return;
-      }
-      showToast({
-        type: "success",
-        title: t("common.success"),
-        message: t("relations.linked", { title: source.title }),
-      });
-      router.refresh();
-    } finally {
-      setLinking(null);
-    }
-  };
 
   return (
     <div className="mt-8 space-y-4">

@@ -7,7 +7,7 @@ import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdow
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { AppMode, Category } from "@/app/_types";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { RESERVED_DIRS } from "@/app/_consts/files";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
 
@@ -31,7 +31,7 @@ export const CreateCategoryModal = ({
   const [parentCategory, setParentCategory] = useState(initialParent);
   const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
-  const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const notAllowedNames = RESERVED_DIRS;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

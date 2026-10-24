@@ -12,6 +12,7 @@ import { itemLinksTo, retargetLinks, unescapeLabel, type ItemLink } from "@/app/
 import { extractYamlMetadata, generateUuid, splitFrontmatter } from "@/app/_utils/yaml-metadata-utils";
 import { boxedShell } from "@/app/_utils/shell-utils";
 import { findClashes, itemRoots, shownPath, type ClashFile, type ItemRoot } from "./scan";
+import { carryAttachments } from "@/app/_server/actions/attachments/lifecycle";
 
 export const NO_CLASH = "No duplicate for that uuid";
 export const NOT_CLAIMANT = "That path does not hold the duplicated uuid";
@@ -56,7 +57,7 @@ const _rekey = async (owner: string, file: ClashFile, uuid: string): Promise<Rek
     const { prefix, body } = splitFrontmatter(await fs.readFile(found.filePath, "utf-8"));
     const swapped = prefix.replace(_uuidLine(uuid), `$1${fresh}$2`);
     if (swapped === prefix) return null;
-    await serverWriteFile(found.filePath, swapped + body);
+    await serverWriteFile(found.filePath, swapped + (await carryAttachments(uuid, fresh, body)));
     return { path: file.path, uuid: fresh, title: file.title };
   });
 };
