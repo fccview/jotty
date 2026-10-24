@@ -1,15 +1,7 @@
-import { useSettings } from "@/app/_utils/settings-store";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 
-export const useShowEmojis = (): boolean => {
-  const { user } = useAppMode();
-  const { showEmojis: sessionShowEmojis } = useSettings();
-
-  if (sessionShowEmojis !== null) {
-    return sessionShowEmojis;
-  }
-
-  return user?.showChecklistEmojis
-    ? user.showChecklistEmojis === "enable"
-    : true;
+export const useShowEmojis = (ownerChoice?: boolean): boolean => {
+  const showEmojis = useQuickValue(QuickSettingId.SHOW_EMOJIS);
+  return ownerChoice ?? showEmojis;
 };

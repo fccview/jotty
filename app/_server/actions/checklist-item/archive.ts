@@ -6,9 +6,7 @@ import {
   serverWriteFile,
   ensureDir,
 } from "@/app/_server/actions/file";
-import {
-  getListById,
-} from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
 import { Checklist, Result } from "@/app/_types";
@@ -20,8 +18,9 @@ import {
 import { canReach } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
-export const archiveItem = async (
+const _archiveItem = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
@@ -103,7 +102,7 @@ export const archiveItem = async (
   }
 };
 
-export const unarchiveItem = async (
+const _unarchiveItem = async (
   formData: FormData
 ): Promise<Result<Checklist>> => {
   try {
@@ -188,3 +187,13 @@ export const unarchiveItem = async (
     return { success: false, error: "Failed to unarchive item" };
   }
 };
+
+export const archiveItem = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _archiveItem(formData),
+  );
+
+export const unarchiveItem = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _unarchiveItem(formData),
+  );

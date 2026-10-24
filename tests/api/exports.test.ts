@@ -8,6 +8,7 @@ import {
   mockExportWholeDataFolder,
   mockGetExportProgress,
   mockGetAppSettings,
+  mockExportableUser,
   resetApiMocks,
   createMockRequest,
   getResponseJson,
@@ -156,13 +157,9 @@ describe("Exports API", () => {
   })
 
   describe("POST /api/exports (all_users_data)", () => {
-    it("should export all users data for admin", async () => {
+    it("keeps it behind a browser session even for an admin key", async () => {
       mockAuthenticateApiKey.mockResolvedValue(adminUser)
       mockGetAppSettings.mockResolvedValue(mockAppSettings)
-      mockExportAllUsersData.mockResolvedValue({
-        success: true,
-        downloadUrl: "/api/exports/all_users_data_123.zip",
-      })
 
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "all_users_data",
@@ -170,9 +167,9 @@ describe("Exports API", () => {
       const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
-      expect(response.status).toBe(200)
-      expect(data.success).toBe(true)
-      expect(data.downloadUrl).toBeDefined()
+      expect(response.status).toBe(403)
+      expect(data.error).toContain("admin page")
+      expect(mockExportAllUsersData).not.toHaveBeenCalled()
     })
 
     it("should return 403 for non-admin users", async () => {
@@ -203,13 +200,9 @@ describe("Exports API", () => {
   })
 
   describe("POST /api/exports (whole_data_folder)", () => {
-    it("should export whole data folder for admin", async () => {
+    it("keeps it behind a browser session even for an admin key", async () => {
       mockAuthenticateApiKey.mockResolvedValue(adminUser)
       mockGetAppSettings.mockResolvedValue(mockAppSettings)
-      mockExportWholeDataFolder.mockResolvedValue({
-        success: true,
-        downloadUrl: "/api/exports/whole_data_folder_123.zip",
-      })
 
       const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
         type: "whole_data_folder",
@@ -217,9 +210,9 @@ describe("Exports API", () => {
       const response = await POST(request, { params: Promise.resolve({}) })
       const data = await getResponseJson(response)
 
-      expect(response.status).toBe(200)
-      expect(data.success).toBe(true)
-      expect(data.downloadUrl).toBeDefined()
+      expect(response.status).toBe(403)
+      expect(data.error).toContain("admin page")
+      expect(mockExportWholeDataFolder).not.toHaveBeenCalled()
     })
 
     it("should return 403 for non-admin users", async () => {
@@ -297,7 +290,7 @@ describe("Exports API", () => {
 
   describe("GET /api/exports (progress)", () => {
     it("should return export progress", async () => {
-      mockGetExportProgress.mockResolvedValue({
+      mockGetExportProgress.mockReturnValue({
         progress: 50,
         message: "Processing files...",
       })
@@ -319,6 +312,51 @@ describe("Exports API", () => {
 
       expect(response.status).toBe(401)
       expect(data.error).toBe("Unauthorized")
+    })
+  })
+
+  describe("admin content access turned off", () => {
+    const locked = { success: true, data: { adminContentAccess: "no" } }
+
+    it("refuses an admin key the all content export", async () => {
+      mockAuthenticateApiKey.mockResolvedValue(adminUser)
+      mockGetAppSettings.mockResolvedValue(locked)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/exports", { type: "all_checklists_notes" })
+      const response = await POST(request, { params: Promise.resolve({}) })
+
+      expect(response.status).toBe(403)
+      expect(mockExportAllChecklistsNotes).not.toHaveBeenCalled()
+    })
+
+    it("refuses a username that does not exist or escapes the export folder", async () => {
+      mockAuthenticateApiKey.mockResolvedValue(adminUser)
+      mockGetAppSettings.mockResolvedValue(mockAppSettings)
+      mockExportableUser.mockResolvedValue(false)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
+        type: "user_checklists_notes",
+        username: "../../users",
+      })
+      const response = await POST(request, { params: Promise.resolve({}) })
+
+      expect(response.status).toBe(400)
+      expect(mockExportableUser).toHaveBeenCalledWith("../../users")
+      expect(mockExportUserChecklistsNotes).not.toHaveBeenCalled()
+    })
+
+    it("refuses an admin key somebody else's export", async () => {
+      mockAuthenticateApiKey.mockResolvedValue(adminUser)
+      mockGetAppSettings.mockResolvedValue(locked)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/exports", {
+        type: "user_checklists_notes",
+        username: "someoneelse",
+      })
+      const response = await POST(request, { params: Promise.resolve({}) })
+
+      expect(response.status).toBe(403)
+      expect(mockExportUserChecklistsNotes).not.toHaveBeenCalled()
     })
   })
 })

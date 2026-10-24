@@ -4,6 +4,7 @@ import { TaskStatus } from "@/app/_types/enums";
 export interface ApiItem {
   id: string;
   index: number;
+  itemIndex: string;
   text: string;
   completed: boolean;
   status?: string;
@@ -22,14 +23,20 @@ export interface ApiItem {
   children?: ApiItem[];
 }
 
+const _joinIndex = (parent: string | undefined, index: number) =>
+  parent === undefined ? String(index) : `${parent}.${index}`;
+
 export const toApiItem = (
   item: Item,
   index: number,
   isKanban: boolean,
+  parent?: string,
 ): ApiItem => {
+  const itemIndex = _joinIndex(parent, index);
   const apiItem: ApiItem = {
     id: item.id,
     index,
+    itemIndex,
     text: item.text,
     completed: item.completed,
   };
@@ -57,7 +64,7 @@ export const toApiItem = (
 
   if (item.children && item.children.length > 0) {
     apiItem.children = item.children.map((child, childIndex) =>
-      toApiItem(child, childIndex, isKanban),
+      toApiItem(child, childIndex, isKanban, itemIndex),
     );
   }
 

@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, memo, useState, useRef, useEffect } from "react";
+import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
+import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
 import { useDropList } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanCard } from "./KanbanCard";
 import { cn } from "@/app/_utils/global-utils";
-import { TaskStatus } from "@/app/_types/enums";
+import { statusColor as columnColor } from "@/app/_consts/kanban";
 import { useTranslations } from "next-intl";
 import { TaskDaily01Icon, Add01Icon, Archive02Icon } from "hugeicons-react";
 import { Input } from "../../GlobalComponents/FormElements/Input";
@@ -42,12 +44,14 @@ const InlineAddInput = ({
 }: InlineAddInputProps) => {
   const [text, setText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const linkSuggestions = useItemLinkSuggestions(text, setText, inputRef);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (linkSuggestions.handleKeyDown(e)) return;
     if (e.key === "Enter") {
       e.preventDefault();
       if (text.trim()) onSubmit(text.trim());
@@ -58,18 +62,22 @@ const InlineAddInput = ({
   };
 
   return (
-    <Input
-      id="inline-add-input"
-      type="text"
-      value={text}
-      onChange={(e) => setText(e.target.value)}
-      onKeyDown={handleKeyDown}
-      onBlur={() => {
-        if (!text.trim()) onCancel();
-      }}
-      placeholder={placeholder}
-      disabled={isLoading}
-    />
+    <>
+      <Input
+        id="inline-add-input"
+        ref={inputRef}
+        type="text"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={() => {
+          if (!text.trim()) onCancel();
+        }}
+        placeholder={placeholder}
+        disabled={isLoading}
+      />
+      <ItemLinkPopup suggestions={linkSuggestions} />
+    </>
   );
 };
 
@@ -98,17 +106,7 @@ const KanbanColumnComponent = ({
   const currentStatus = statuses.find((s) => s.id === status);
   const isAutoComplete = currentStatus?.autoComplete === true;
 
-  const defaultColors: Record<string, string> = useMemo(
-    () => ({
-      [TaskStatus.TODO]: "#6b7280",
-      [TaskStatus.IN_PROGRESS]: "#3b82f6",
-      [TaskStatus.COMPLETED]: "#10b981",
-      [TaskStatus.PAUSED]: "#f59e0b",
-    }),
-    [],
-  );
-
-  const color = statusColor || defaultColors[status] || "#6b7280";
+  const color = columnColor({ id: status, color: statusColor });
 
   const { borderColor, bgColor } = useMemo(() => {
     const _hexToRgb = (hex: string) => {

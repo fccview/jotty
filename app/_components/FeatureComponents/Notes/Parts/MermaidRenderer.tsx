@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import mermaid from "mermaid";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useThemeTone } from "@/app/_hooks/useThemeTone";
+import { mermaidErrorText, renderMermaid } from "@/app/_utils/mermaid-utils";
 
 interface MermaidRendererProps {
   code: string;
@@ -10,113 +11,51 @@ interface MermaidRendererProps {
   forceLightMode?: boolean;
 }
 
-const _getCSSVariable = (variable: string, forceLight: boolean): string => {
-  if (forceLight || typeof window === "undefined") return "";
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue(variable)
-    .trim();
-  if (value && /^\d+\s+\d+\s+\d+$/.test(value)) {
-    return `rgb(${value.replace(/\s+/g, ", ")})`;
-  }
-  return value;
-};
-
-const initializeMermaidTheme = (forceLight = false) => {
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: "base",
-    securityLevel: "loose",
-    themeVariables: {
-      primaryColor:
-        _getCSSVariable("--primary", forceLight) || "rgb(139, 59, 208)",
-      primaryTextColor:
-        _getCSSVariable("--primary-foreground", forceLight) ||
-        "rgb(255, 255, 255)",
-      primaryBorderColor:
-        _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-      lineColor:
-        _getCSSVariable("--primary", forceLight) || "rgb(139, 59, 208)",
-      secondaryColor:
-        _getCSSVariable("--secondary", forceLight) || "rgb(243, 240, 249)",
-      tertiaryColor:
-        _getCSSVariable("--muted", forceLight) || "rgb(243, 240, 249)",
-      background:
-        _getCSSVariable("--background", forceLight) || "rgb(255, 255, 255)",
-      mainBkg:
-        _getCSSVariable("--background", forceLight) || "rgb(255, 255, 255)",
-      secondBkg: _getCSSVariable("--muted", forceLight) || "rgb(243, 240, 249)",
-      tertiaryBkg:
-        _getCSSVariable("--accent", forceLight) || "rgb(243, 240, 249)",
-      textColor:
-        _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-      border1: _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-      border2: _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-      nodeBorder:
-        _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-      clusterBkg:
-        _getCSSVariable("--muted", forceLight) || "rgb(243, 240, 249)",
-      clusterBorder:
-        _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-      defaultLinkColor:
-        _getCSSVariable("--primary", forceLight) || "rgb(139, 59, 208)",
-      titleColor:
-        _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-      edgeLabelBackground:
-        _getCSSVariable("--background", forceLight) || "rgb(255, 255, 255)",
-      nodeTextColor:
-        _getCSSVariable("--foreground", forceLight) || "rgb(20, 20, 20)",
-    },
-  });
-};
-
-if (typeof window !== "undefined") {
-  initializeMermaidTheme();
+interface MermaidOutput {
+  svg: string;
+  error: string | null;
 }
 
-const normalizeDiagramType = (code: string): string =>
-  code.replace(/^(\s*)sankey(\s)/m, "$1sankey-beta$2");
+const EMPTY_OUTPUT: MermaidOutput = { svg: "", error: null };
 
-export const MermaidRenderer = ({
-  code,
-  className = "",
-  forceLightMode = false,
-}: MermaidRendererProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<string | null>(null);
+const bodyTracking = () =>
+  typeof window === "undefined" ? undefined : getComputedStyle(document.body).letterSpacing;
+
+export const MermaidRenderer = ({ code, className = "", forceLightMode = false }: MermaidRendererProps) => {
   const t = useTranslations();
+  const { key: themeKey } = useThemeTone();
+  const [output, setOutput] = useState<MermaidOutput>(EMPTY_OUTPUT);
+  const [tracking, setTracking] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const renderDiagram = async () => {
-      if (!containerRef.current || !code) return;
-
-      try {
-        initializeMermaidTheme(forceLightMode);
-
-        setError(null);
-        const id = `mermaid-view-${Math.random().toString(36).substring(2, 11)}`;
-        const { svg } = await mermaid.render(id, normalizeDiagramType(code));
-        if (containerRef.current) {
-          containerRef.current.innerHTML = svg;
-        }
-      } catch (err: any) {
-        setError(err.message || "Invalid Mermaid syntax");
-        if (containerRef.current) {
-          containerRef.current.innerHTML = "";
-        }
-      }
+    if (!code.trim()) {
+      setOutput(EMPTY_OUTPUT);
+      return;
+    }
+    let cancelled = false;
+    renderMermaid(code, forceLightMode)
+      .then((svg) => {
+        if (cancelled) return;
+        setTracking(bodyTracking());
+        setOutput({ svg, error: null });
+      })
+      .catch((error) => {
+        console.warn(`Mermaid diagram did not render: ${mermaidErrorText(error)}`);
+        if (!cancelled) setOutput({ svg: "", error: mermaidErrorText(error) });
+      });
+    return () => {
+      cancelled = true;
     };
+  }, [code, forceLightMode, themeKey]);
 
-    renderDiagram();
-  }, [code, forceLightMode]);
-
-  if (error) {
+  if (output.error !== null) {
     return (
-      <div
-        className={`border border-destructive rounded p-4 my-4 ${className}`}
-      >
+      <div role="alert" className={`border border-destructive rounded-jotty bg-destructive/10 p-4 my-4 ${className}`}>
         <div className="text-destructive text-sm">
           <div className="font-semibold mb-1">{t("notes.mermaidError")}</div>
-          <div className="font-mono text-xs">{error}</div>
+          <pre className="font-mono text-xs whitespace-pre-wrap m-0 p-0 bg-transparent text-destructive">
+            {output.error}
+          </pre>
         </div>
       </div>
     );
@@ -124,8 +63,9 @@ export const MermaidRenderer = ({
 
   return (
     <div
-      ref={containerRef}
-      className={`flex justify-center items-center my-4 ${className}`}
+      className={`mermaid-diagram flex justify-center items-center my-4 min-h-[2rem] [&_svg]:max-w-full [&_svg]:h-auto ${className}`}
+      style={{ letterSpacing: tracking }}
+      dangerouslySetInnerHTML={{ __html: output.svg }}
     />
   );
 };

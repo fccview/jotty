@@ -28,7 +28,7 @@ vi.mock("@/app/_server/actions/share/queries", () => ({
   canReach: (...args: any[]) => mockCanReach(...args),
 }));
 
-vi.mock("@/app/_server/actions/checklist", () => ({
+vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getListById: (...args: any[]) => mockGetListById(...args),
 }));
 

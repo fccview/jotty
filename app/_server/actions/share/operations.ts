@@ -1,43 +1,43 @@
 "use server";
 
 import path from "path";
-import { revalidateTag } from "next/cache";
-import { Modes, ItemTypes, NotificationTargets } from "@/app/_types/enums";
+import { Modes, NotificationTargets } from "@/app/_types/enums";
 import { Result, SharingPermissions } from "@/app/_types/core";
-import { PUBLIC_USER, SHARED_WITH_KEY } from "@/app/_consts/sharing";
-import { NOTES_DIR, CHECKLISTS_DIR } from "@/app/_consts/files";
+import {
+  DETACH_LOSSY,
+  NO_SHARED_PARENT,
+  PUBLIC_USER,
+  SHARED_WITH_KEY,
+} from "@/app/_consts/sharing";
 import { logAudit } from "@/app/_server/actions/log";
-import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { serverReadFile, serverWriteFile } from "@/app/_server/actions/file";
 import {
   extractYamlMetadata,
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
-import { toSharedWith } from "@/app/_utils/sharing-utils";
-import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { getTranslations } from "next-intl/server";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
-import {
-  getUserByNoteUuid,
-  getUserByChecklistUuid,
-  getUsername,
-  isAdmin,
-} from "@/app/_server/actions/users";
-import { readCatInfo, writeCatInfo, catDirByUuid } from "./category-info";
-import { dropMounts } from "./mounts";
+import { getCurrentUser, getUsername } from "@/app/_server/actions/users";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
+import { catDirByUuid, mutateCatInfo } from "./category-info";
 import { resolveAccess, catAccess } from "./access";
-
-const READ_ONLY: SharingPermissions = {
-  canRead: true,
-  canEdit: false,
-  canDelete: false,
-};
-
-const _modeTag = (mode: Modes): string =>
-  mode === Modes.CHECKLISTS ? "layout-checklists" : "layout-notes";
-
-const _userDir = (mode: Modes, username: string): string =>
-  mode === Modes.CHECKLISTS ? CHECKLISTS_DIR(username) : NOTES_DIR(username);
+import {
+  Grants,
+  READ_ONLY,
+  announceShare,
+  gandalf,
+  grantItem,
+  isChecklistMode,
+  itemTypeOf,
+  itemPathOf,
+  lockRefusal,
+  lossyOnItem,
+  ownerOf,
+  revokeItem,
+  unwelcome,
+  userDirOf,
+  writeShares,
+} from "./grants";
 
 const _catDir = async (
   mode: Modes,
@@ -46,109 +46,16 @@ const _catDir = async (
 ): Promise<string | null> => {
   if (!categoryUuid) return null;
 
-  const baseDir = path.join(process.cwd(), _userDir(mode, owner));
+  const baseDir = path.join(process.cwd(), userDirOf(mode, owner));
   return catDirByUuid(baseDir, categoryUuid);
 };
 
-const _ownerOf = async (
-  mode: Modes,
-  uuid: string,
-): Promise<string | null> => {
-  const result =
-    mode === Modes.CHECKLISTS
-      ? await getUserByChecklistUuid(uuid)
-      : await getUserByNoteUuid(uuid);
-
-  return result.success && result.data ? result.data.username : null;
-};
-
-const _itemPath = async (
-  mode: Modes,
-  uuid: string,
-  owner: string,
-): Promise<string | null> => {
-  const absDir = path.join(process.cwd(), _userDir(mode, owner));
-  const found = await grepFindFileByUuid(absDir, uuid);
-
-  return found ? found.filePath : null;
-};
-
-/**
- * Every sharing write is owner-only. Server Actions are a public endpoint, so
- * the owner a caller claims (or the receiver it names) can never be trusted.
- */
-const _gandalf = async (owner: string): Promise<string | null> => {
-  const caller = await getUsername();
-
-  if (!caller) return "Not authenticated";
-  if (caller === owner) return null;
-  if (await isAdmin()) return null;
-
-  await logAudit({
-    level: "WARNING",
-    action: "item_shared",
-    category: "sharing",
-    success: false,
-    metadata: { caller, owner, reason: "not the owner" },
-  });
-
-  return "You shall not pass";
-};
-
-const _notify = async (
-  mode: Modes,
-  uuid: string,
-  affected: string[],
-): Promise<void> => {
-  dropMounts(mode);
-  revalidateTag(_modeTag(mode), { expire: 0 });
-
-  await Promise.all(
-    affected.map((username) =>
-      broadcast({
-        type: "sharing",
-        action: "updated",
-        entityId: uuid,
-        username,
-      }),
-    ),
-  );
-};
-
-const ITEM_TARGET: Record<Modes.CHECKLISTS | Modes.NOTES, NotificationTargets> = {
-  [Modes.CHECKLISTS]: NotificationTargets.CHECKLIST,
-  [Modes.NOTES]: NotificationTargets.NOTE,
-};
+const _gandalf = async (owner: string): Promise<string | null> =>
+  gandalf(owner, await getCurrentUser());
 
 const FOLDER_TARGET: Record<Modes.CHECKLISTS | Modes.NOTES, NotificationTargets> = {
   [Modes.CHECKLISTS]: NotificationTargets.CHECKLIST_CATEGORY,
   [Modes.NOTES]: NotificationTargets.NOTE_CATEGORY,
-};
-
-const _isChecklist = (mode: Modes): boolean => mode === Modes.CHECKLISTS;
-
-const _tell = async (
-  mode: Modes,
-  uuid: string,
-  sharer: string,
-  receiver: string,
-): Promise<void> => {
-  if (receiver === PUBLIC_USER || receiver === sharer) return;
-
-  try {
-    const t = await getTranslations();
-    const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
-    const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
-
-    await notifyUser(receiver, {
-      type: "sharing",
-      title: t("notifications.sharingTitle", { user: sharer, type: label }),
-      message: t("notifications.sharingMessage", { type: label }),
-      data: { itemId: uuid, itemType: ITEM_TARGET[kind] },
-    });
-  } catch (error) {
-    console.error(`Failed to notify ${receiver} about ${uuid}:`, error);
-  }
 };
 
 const _tellFolder = async (
@@ -162,8 +69,8 @@ const _tellFolder = async (
 
   try {
     const t = await getTranslations();
-    const kind = _isChecklist(mode) ? Modes.CHECKLISTS : Modes.NOTES;
-    const label = t(_isChecklist(mode) ? "common.checklist" : "common.note");
+    const kind = isChecklistMode(mode) ? Modes.CHECKLISTS : Modes.NOTES;
+    const label = t(isChecklistMode(mode) ? "common.checklist" : "common.note");
 
     await notifyUser(receiver, {
       type: "sharing",
@@ -182,167 +89,97 @@ const _tellFolder = async (
   }
 };
 
-const _writeShares = async (
-  filePath: string,
-  users: Record<string, SharingPermissions>,
-): Promise<boolean> => {
-  try {
-    const content = await serverReadFile(filePath);
-    if (!content) return false;
-
-    const updated = updateYamlMetadata(content, {
-      [SHARED_WITH_KEY]: toSharedWith(users),
-    });
-
-    await serverWriteFile(filePath, updated);
-    return true;
-  } catch (error) {
-    console.error(`Failed to write shares for ${filePath}:`, error);
-    return false;
-  }
-};
-
 export const shareItem = async (
   mode: Modes,
   uuid: string,
   receiver: string,
   permissions: SharingPermissions = READ_ONLY,
-): Promise<Result<null>> => {
+): Promise<Result<Grants>> =>
+  grantItem(await getCurrentUser(), mode, uuid, receiver, permissions);
+
+export const unshareItem = async (
+  mode: Modes,
+  uuid: string,
+  receiver: string,
+): Promise<Result<Grants>> =>
+  revokeItem(await getCurrentUser(), mode, uuid, receiver);
+
+const _detach = async (
+  mode: Modes,
+  uuid: string,
+): Promise<Result<Grants>> => {
   try {
-    const owner = await _ownerOf(mode, uuid);
+    const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
+
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
 
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };
 
-    const filePath = await _itemPath(mode, uuid, owner);
+    const filePath = await itemPathOf(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
 
     const access = await resolveAccess(mode, filePath);
-    const current = access && !access.inherited ? access.users : {};
+    if (!access) return { success: false, error: "Item not found" };
+    if (!access.inherited || !access.viaCategory) {
+      return { success: true, data: access.users };
+    }
 
-    const written = await _writeShares(filePath, {
-      ...current,
-      [receiver]: permissions,
-    });
+    if (lossyOnItem(access.users)) {
+      return { success: false, error: DETACH_LOSSY };
+    }
 
-    if (!written) return { success: false, error: "Failed to share item" };
+    const written = await writeShares(filePath, access.users);
+    if (!written) return { success: false, error: "Failed to update sharing" };
 
     await logAudit({
       level: "INFO",
       action: "item_shared",
       category: "sharing",
       success: true,
-      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+      resourceType: itemTypeOf(mode),
       resourceId: uuid,
-      metadata: { receiver, permissions },
+      metadata: { detachedFrom: access.viaCategory },
     });
 
-    await _notify(mode, uuid, [owner, receiver]);
-    await _tell(mode, uuid, owner, receiver);
+    await announceShare(mode, uuid, [owner]);
 
-    return { success: true, data: null };
+    return { success: true, data: access.users };
   } catch (error) {
-    console.error("Error in shareItem:", error);
-    return { success: false, error: "Failed to share item" };
-  }
-};
-
-export const unshareItem = async (
-  mode: Modes,
-  uuid: string,
-  receiver: string,
-): Promise<Result<null>> => {
-  try {
-    const owner = await _ownerOf(mode, uuid);
-    if (!owner) return { success: false, error: "Item not found" };
-
-    const refusal = await _gandalf(owner);
-    if (refusal) return { success: false, error: refusal };
-
-    const filePath = await _itemPath(mode, uuid, owner);
-    if (!filePath) return { success: false, error: "Item not found" };
-
-    const access = await resolveAccess(mode, filePath);
-    if (!access) return { success: false, error: "Item not found" };
-
-    const next = { ...access.users };
-    delete next[receiver];
-
-    const written = await _writeShares(filePath, next);
-    if (!written) return { success: false, error: "Failed to unshare item" };
-
-    await logAudit({
-      level: "INFO",
-      action: "item_unshared",
-      category: "sharing",
-      success: true,
-      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
-      resourceId: uuid,
-      metadata: { receiver, wasInherited: access.inherited },
-    });
-
-    await _notify(mode, uuid, [owner, receiver]);
-
-    return { success: true, data: null };
-  } catch (error) {
-    console.error("Error in unshareItem:", error);
-    return { success: false, error: "Failed to unshare item" };
-  }
-};
-
-export const optOutItem = async (
-  mode: Modes,
-  uuid: string,
-): Promise<Result<null>> => {
-  try {
-    const owner = await _ownerOf(mode, uuid);
-    if (!owner) return { success: false, error: "Item not found" };
-
-    const refusal = await _gandalf(owner);
-    if (refusal) return { success: false, error: refusal };
-
-    const filePath = await _itemPath(mode, uuid, owner);
-    if (!filePath) return { success: false, error: "Item not found" };
-
-    const access = await resolveAccess(mode, filePath);
-    const affected = access ? Object.keys(access.users) : [];
-
-    const written = await _writeShares(filePath, {});
-    if (!written) return { success: false, error: "Failed to update sharing" };
-
-    await logAudit({
-      level: "INFO",
-      action: "item_unshared",
-      category: "sharing",
-      success: true,
-      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
-      resourceId: uuid,
-      metadata: { optedOut: true },
-    });
-
-    await _notify(mode, uuid, [owner, ...affected]);
-
-    return { success: true, data: null };
-  } catch (error) {
-    console.error("Error in optOutItem:", error);
+    console.error("Error in detachItem:", error);
     return { success: false, error: "Failed to update sharing" };
   }
 };
 
-export const inheritItem = async (
+export const detachItem = async (
+  mode: Modes,
+  uuid: string,
+): Promise<Result<Grants>> =>
+  runQueued(itemLane(mode, uuid), () => _detach(mode, uuid));
+
+const _inherit = async (
   mode: Modes,
   uuid: string,
 ): Promise<Result<null>> => {
   try {
-    const owner = await _ownerOf(mode, uuid);
+    const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
+
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
 
     const refusal = await _gandalf(owner);
     if (refusal) return { success: false, error: refusal };
 
-    const filePath = await _itemPath(mode, uuid, owner);
+    const filePath = await itemPathOf(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
+
+    const parent = await catAccess(mode, path.resolve(path.dirname(filePath)));
+    if (!parent?.viaCategory) return { success: false, error: NO_SHARED_PARENT };
+
+    const before = await resolveAccess(mode, filePath);
 
     const content = await serverReadFile(filePath);
     if (!content) return { success: false, error: "Item not found" };
@@ -355,7 +192,22 @@ export const inheritItem = async (
       updateYamlMetadata(contentWithoutMetadata, metadata, false),
     );
 
-    await _notify(mode, uuid, [owner]);
+    await logAudit({
+      level: "INFO",
+      action: "item_shared",
+      category: "sharing",
+      success: true,
+      resourceType: itemTypeOf(mode),
+      resourceId: uuid,
+      metadata: { inheritedFrom: parent.viaCategory },
+    });
+
+    const affected = [
+      ...Object.keys(before?.users || {}),
+      ...Object.keys(parent.users),
+    ].filter((username) => username !== PUBLIC_USER);
+
+    await announceShare(mode, uuid, Array.from(new Set([owner, ...affected])));
 
     return { success: true, data: null };
   } catch (error) {
@@ -363,6 +215,12 @@ export const inheritItem = async (
     return { success: false, error: "Failed to update sharing" };
   }
 };
+
+export const inheritItem = async (
+  mode: Modes,
+  uuid: string,
+): Promise<Result<null>> =>
+  runQueued(itemLane(mode, uuid), () => _inherit(mode, uuid));
 
 export const shareFolder = async (
   mode: Modes,
@@ -378,14 +236,17 @@ export const shareFolder = async (
     const dir = await _catDir(mode, owner, categoryUuid);
     if (!dir) return { success: false, error: "Category not found" };
 
-    const info = await readCatInfo(dir);
-    const users = { ...(info.sharing?.users || {}), [receiver]: permissions };
+    const turnedAway = await unwelcome(owner, receiver, permissions);
+    if (turnedAway) return { success: false, error: turnedAway };
 
-    const written = await writeCatInfo(dir, {
+    const written = await mutateCatInfo(dir, (info) => ({
       ...info,
       uuid: categoryUuid,
-      sharing: { users, inherit: info.sharing?.inherit !== false },
-    });
+      sharing: {
+        users: { ...(info.sharing?.users || {}), [receiver]: permissions },
+        inherit: info.sharing?.inherit !== false,
+      },
+    }));
 
     if (!written) return { success: false, error: "Failed to share folder" };
 
@@ -394,16 +255,16 @@ export const shareFolder = async (
       action: "item_shared",
       category: "sharing",
       success: true,
-      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+      resourceType: itemTypeOf(mode),
       resourceId: categoryUuid,
       resourceTitle: path.relative(
-        path.join(process.cwd(), _userDir(mode, owner)),
+        path.join(process.cwd(), userDirOf(mode, owner)),
         dir,
       ),
       metadata: { receiver, permissions, scope: "category" },
     });
 
-    await _notify(mode, categoryUuid, [owner, receiver]);
+    await announceShare(mode, categoryUuid, [owner, receiver]);
     await _tellFolder(
       mode,
       categoryUuid,
@@ -433,13 +294,10 @@ export const unshareFolder = async (
 
     if (!dir) return { success: false, error: "Category not found" };
 
-    const info = await readCatInfo(dir);
-    const users = { ...(info.sharing?.users || {}) };
-    delete users[receiver];
-
-    const written = await writeCatInfo(dir, {
-      ...info,
-      sharing: { users, inherit: info.sharing?.inherit !== false },
+    const written = await mutateCatInfo(dir, (info) => {
+      const users = { ...(info.sharing?.users || {}) };
+      delete users[receiver];
+      return { ...info, sharing: { users, inherit: info.sharing?.inherit !== false } };
     });
 
     if (!written) return { success: false, error: "Failed to unshare folder" };
@@ -449,12 +307,12 @@ export const unshareFolder = async (
       action: "item_unshared",
       category: "sharing",
       success: true,
-      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+      resourceType: itemTypeOf(mode),
       resourceId: categoryUuid,
       metadata: { receiver, scope: "category" },
     });
 
-    await _notify(mode, categoryUuid, [owner, receiver]);
+    await announceShare(mode, categoryUuid, [owner, receiver]);
 
     return { success: true, data: null };
   } catch (error) {
@@ -476,17 +334,15 @@ export const setFolderInherit = async (
     const dir = await _catDir(mode, owner, categoryUuid);
     if (!dir) return { success: false, error: "Category not found" };
 
-    const info = await readCatInfo(dir);
-
-    const written = await writeCatInfo(dir, {
+    const written = await mutateCatInfo(dir, (info) => ({
       ...info,
       uuid: categoryUuid,
       sharing: { users: info.sharing?.users || {}, inherit },
-    });
+    }));
 
     if (!written) return { success: false, error: "Failed to update folder" };
 
-    await _notify(mode, categoryUuid, [owner]);
+    await announceShare(mode, categoryUuid, [owner]);
 
     return { success: true, data: null };
   } catch (error) {
@@ -499,7 +355,7 @@ export const setItemPublic = async (
   mode: Modes,
   uuid: string,
   isPublic: boolean,
-): Promise<Result<null>> =>
+): Promise<Result<Grants>> =>
   isPublic
     ? shareItem(mode, uuid, PUBLIC_USER, READ_ONLY)
     : unshareItem(mode, uuid, PUBLIC_USER);
@@ -533,7 +389,7 @@ export const setFolderPublic = async (
  * an explicit grant is edited in place, an inherited one is materialised at this
  * level (minus the caller) so everybody else keeps exactly what they had.
  */
-export const leaveItem = async (
+const _leave = async (
   mode: Modes,
   uuid: string,
 ): Promise<Result<null>> => {
@@ -541,13 +397,16 @@ export const leaveItem = async (
     const caller = await getUsername();
     if (!caller) return { success: false, error: "Not authenticated" };
 
-    const owner = await _ownerOf(mode, uuid);
+    const owner = await ownerOf(mode, uuid);
     if (!owner) return { success: false, error: "Item not found" };
+
+    const locked = await lockRefusal(mode, uuid);
+    if (locked) return { success: false, error: locked };
     if (owner === caller) {
       return { success: false, error: "You own this item" };
     }
 
-    const filePath = await _itemPath(mode, uuid, owner);
+    const filePath = await itemPathOf(mode, uuid, owner);
     if (!filePath) return { success: false, error: "Item not found" };
 
     const access = await resolveAccess(mode, filePath);
@@ -557,8 +416,11 @@ export const leaveItem = async (
 
     const next = { ...access.users };
     delete next[caller];
+    if (access.inherited && lossyOnItem(next)) {
+      return { success: false, error: DETACH_LOSSY };
+    }
 
-    const written = await _writeShares(filePath, next);
+    const written = await writeShares(filePath, next);
     if (!written) return { success: false, error: "Failed to leave share" };
 
     await logAudit({
@@ -566,12 +428,12 @@ export const leaveItem = async (
       action: "item_unshared",
       category: "sharing",
       success: true,
-      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+      resourceType: itemTypeOf(mode),
       resourceId: uuid,
       metadata: { receiver: caller, left: true, wasInherited: access.inherited },
     });
 
-    await _notify(mode, uuid, [owner, caller]);
+    await announceShare(mode, uuid, [owner, caller]);
 
     return { success: true, data: null };
   } catch (error) {
@@ -579,6 +441,12 @@ export const leaveItem = async (
     return { success: false, error: "Failed to leave share" };
   }
 };
+
+export const leaveItem = async (
+  mode: Modes,
+  uuid: string,
+): Promise<Result<null>> =>
+  runQueued(itemLane(mode, uuid), () => _leave(mode, uuid));
 
 export const leaveFolder = async (
   mode: Modes,
@@ -596,30 +464,36 @@ export const leaveFolder = async (
 
     if (!dir) return { success: false, error: "Category not found" };
 
-    const access = await catAccess(mode, dir);
-    if (!access?.users[caller]) {
-      return { success: false, error: "Not shared with you" };
-    }
+    let isInherited = false;
+    let sharedWithCaller = true;
 
-    const info = await readCatInfo(dir);
-    const fromAbove = await catAccess(mode, path.dirname(dir));
-    const isInherited = Boolean(fromAbove?.users[caller]);
+    const written = await mutateCatInfo(dir, async (info) => {
+      const access = await catAccess(mode, dir);
+      if (!access?.users[caller]) {
+        sharedWithCaller = false;
+        return null;
+      }
 
-    const users = isInherited
-      ? { ...access.users }
-      : { ...(info.sharing?.users || {}) };
+      const fromAbove = await catAccess(mode, path.dirname(dir));
+      isInherited = Boolean(fromAbove?.users[caller]);
 
-    delete users[caller];
-
-    const written = await writeCatInfo(dir, {
-      ...info,
-      uuid: info.uuid || categoryUuid,
-      sharing: {
-        users,
-        inherit: isInherited ? false : info.sharing?.inherit !== false,
-      },
+      const users = isInherited
+        ? { ...access.users }
+        : { ...(info.sharing?.users || {}) };
+      delete users[caller];
+      return {
+        ...info,
+        uuid: info.uuid || categoryUuid,
+        sharing: {
+          users,
+          inherit: isInherited ? false : info.sharing?.inherit !== false,
+        },
+      };
     });
 
+    if (!sharedWithCaller) {
+      return { success: false, error: "Not shared with you" };
+    }
     if (!written) return { success: false, error: "Failed to leave share" };
 
     await logAudit({
@@ -627,12 +501,12 @@ export const leaveFolder = async (
       action: "item_unshared",
       category: "sharing",
       success: true,
-      resourceType: mode === Modes.CHECKLISTS ? ItemTypes.CHECKLIST : ItemTypes.NOTE,
+      resourceType: itemTypeOf(mode),
       resourceId: categoryUuid,
       metadata: { receiver: caller, left: true, scope: "category", isInherited },
     });
 
-    await _notify(mode, categoryUuid, [owner, caller]);
+    await announceShare(mode, categoryUuid, [owner, caller]);
 
     return { success: true, data: null };
   } catch (error) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { plainItemText } from "@/app/_utils/item-href-utils";
 import { useDragItem } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
@@ -26,7 +27,9 @@ import { CircleIcon, Notification03Icon, UserIcon } from "hugeicons-react";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
 import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
+import { AgentChip } from "./AgentChip";
 import { TimeEntriesModal } from "./TimeEntriesModal";
+import { FALLBACK_STATUS_COLOR } from "@/app/_consts/kanban";
 
 interface KanbanCardProps {
   checklist: Checklist;
@@ -137,7 +140,7 @@ const KanbanCardComponent = ({
                 >
                   <span
                     className="h-3 w-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: status.color || "#6b7280" }}
+                    style={{ backgroundColor: status.color || FALLBACK_STATUS_COLOR }}
                   />
                   <span className="text-sm">{status.name}</span>
                 </button>
@@ -172,7 +175,7 @@ const KanbanCardComponent = ({
           style={style}
           {...handleProps}
           tabIndex={0}
-          aria-label={item.text}
+          aria-label={plainItemText(item.text)}
           onDoubleClick={() => onOpenDetail(item)}
           className={cn(
             "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing min-w-0",
@@ -247,6 +250,14 @@ const KanbanCardComponent = ({
                   {item.assignee}
                 </span>
               )}
+
+              {item.agent && (
+                <AgentChip
+                  agentId={item.agent}
+                  checklist={checklist}
+                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground"
+                />
+              )}
             </div>
 
             {!hideTimeTrackingOnCards && (
@@ -306,7 +317,7 @@ const KanbanCardComponent = ({
           </div>
         </div>
       </div>
-      <kanbanItemHook.DeleteModal />
+      {kanbanItemHook.deleteModal}
     </>
   );
 };

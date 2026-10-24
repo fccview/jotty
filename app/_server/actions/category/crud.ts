@@ -5,6 +5,7 @@ import path from "path";
 import {
   ensureDir,
   serverDeleteDir,
+  serverRenamePath,
   getUserModeDir,
 } from "@/app/_server/actions/file";
 import fs from "fs/promises";
@@ -17,9 +18,14 @@ import {
   targetDir,
   bouncer,
   refusalMessage,
+  reservedRefusal,
 } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { catUuid } from "@/app/_server/actions/share/category-info";
 import { PermissionTypes } from "@/app/_types/enums";
+import { failedWith } from "@/app/_server/actions/lib/read-only-message";
+import { grepItemUuids } from "@/app/_utils/grep-utils";
+import { sweepOrphans } from "@/app/_server/actions/attachments/lifecycle";
 
 const _mountTarget = async (mode: Modes, category: string) => {
   const username = await getUsername();
@@ -34,6 +40,11 @@ export const createCategory = async (formData: FormData) => {
     const name = formData.get("name") as string;
     const parent = formData.get("parent") as string;
     const mode = formData.get("mode") as Modes;
+    const requested = parent ? `${parent}/${name}` : name;
+
+    if (isReservedCategory(requested)) {
+      return { error: await reservedRefusal(requested) };
+    }
 
     const mountParent = await _mountTarget(mode, parent);
 
@@ -145,7 +156,7 @@ export const createCategory = async (formData: FormData) => {
       errorMessage: "Failed to create category",
       metadata: { categoryName: name },
     });
-    return { error: "Failed to create category" };
+    return { error: await failedWith(error, "Failed to create category") };
   }
 };
 
@@ -181,7 +192,9 @@ export const deleteCategory = async (formData: FormData) => {
     }
 
     const categoryDir = path.join(userDir, categoryPath);
+    const doomed = await grepItemUuids(categoryDir);
     await serverDeleteDir(categoryDir);
+    await sweepOrphans(doomed);
 
     await logAudit({
       level: "INFO",
@@ -223,7 +236,7 @@ export const deleteCategory = async (formData: FormData) => {
       errorMessage: "Failed to delete category",
       metadata: { categoryPath },
     });
-    return { error: "Failed to delete category" };
+    return { error: await failedWith(error, "Failed to delete category") };
   }
 };
 
@@ -276,6 +289,10 @@ export const renameCategory = async (formData: FormData) => {
     pathParts[pathParts.length - 1] = newName;
     const newPath = pathParts.join("/");
 
+    if (isReservedCategory(newPath)) {
+      return { error: await reservedRefusal(newPath) };
+    }
+
     if (!isPathSafe(userDir, newPath)) {
       await logAudit({
         level: "WARNING",
@@ -324,12 +341,12 @@ export const renameCategory = async (formData: FormData) => {
       return { error: "Category with new name already exists" };
     }
 
-    await fs.rename(oldCategoryDir, newCategoryDir);
+    await serverRenamePath(oldCategoryDir, newCategoryDir);
 
     const username = await getUsername();
     if (mode === Modes.NOTES && username) {
       const { commitCategoryRename } =
-        await import("@/app/_server/actions/history");
+        await import("@/app/_server/actions/history/repo");
       await commitCategoryRename(username, oldPath, newPath);
     }
 
@@ -373,6 +390,6 @@ export const renameCategory = async (formData: FormData) => {
       errorMessage: "Failed to rename category",
       metadata: { oldPath },
     });
-    return { error: "Failed to rename category" };
+    return { error: await failedWith(error, "Failed to rename category") };
   }
 };

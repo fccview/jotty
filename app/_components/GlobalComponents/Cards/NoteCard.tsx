@@ -1,32 +1,31 @@
 "use client";
 
-import {
-  Clock01Icon,
-  TextNumberSignIcon,
-  PinIcon,
-  PinOffIcon,
-  LockKeyIcon,
-} from "hugeicons-react";
+import { TextNumberSignIcon } from "hugeicons-react";
 import { Note } from "@/app/_types";
-import { formatRelativeTime } from "@/app/_utils/date-utils";
+import { Modes } from "@/app/_types/enums";
+import { formatShortTime } from "@/app/_utils/date-utils";
 import { useMemo } from "react";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { UnifiedMarkdownRenderer } from "../../FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { parseNoteContent } from "@/app/_utils/client-parser-utils";
-import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { noteDisplayOf } from "@/app/_utils/note-display-utils";
+import { categoryTrail } from "@/app/_utils/category-path-utils";
+import { cn } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
+import { useCompactNumber } from "@/app/_hooks/useCompactNumber";
+import { PinToggle } from "./Parts/PinToggle";
+import { SealedPanel } from "./Parts/SealedPanel";
+import { ItemShareMark } from "./Parts/ItemShareMark";
+import { useCardClick } from "@/app/_hooks/useCardClick";
+
+const CARD_TAG_LIMIT = 2;
 
 interface NoteCardProps {
   note: Note;
   onSelect: (note: Note) => void;
   isPinned?: boolean;
   onTogglePin?: (note: Note) => void;
-  isDraggable?: boolean;
   fullScrollableContent?: boolean;
-  sharer?: string;
-  fixedWidth?: number;
 }
 
 export const NoteCard = ({
@@ -34,191 +33,91 @@ export const NoteCard = ({
   onSelect,
   isPinned = false,
   onTogglePin,
-  isDraggable = false,
   fullScrollableContent = false,
-  sharer,
-  fixedWidth,
 }: NoteCardProps) => {
   const t = useTranslations();
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: note.uuid,
-    disabled: !isDraggable,
-  });
-
-  const { showMarkdownPreview } = useSettings();
-
-  const parsedData = useMemo(() => {
-    if (!note) {
-      return null;
-    }
-
-    if ("rawContent" in note) {
-      return parseNoteContent((note as any).rawContent, note.id);
-    }
-    return null;
-  }, [note]);
-
-  const displayTitle = parsedData?.title || note?.title;
-  const displayContent = parsedData?.content || note?.content || "";
-  const isEncrypted = parsedData?.encrypted ?? note?.encrypted ?? false;
-
-  const { previewText, wordCount } = useMemo(() => {
-    const content = displayContent;
-    const plainText = content
-      .replace(/!\[.*?\]\(.*?\)/g, "")
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-      .replace(/[#*_`~>]/g, "")
-      .replace(/\s{2,}/g, " ")
-      .trim();
-
-    const words = plainText.split(/\s+/).filter(Boolean);
-
-    return {
-      previewText: fullScrollableContent
-        ? content
-        : plainText.length > 550
-          ? plainText.substring(0, 550) + "..."
-          : plainText,
-      wordCount: words.length,
-    };
-  }, [displayContent, fullScrollableContent]);
-
-  const categoryName = useMemo(() => {
-    return note?.category ? note?.category.split("/").pop() : null;
-  }, [note?.category]);
-
-  if (!note) {
-    return null;
-  }
-
-  const style = isDragging
-    ? { opacity: 0.4 }
-    : {
-        transform: CSS.Transform.toString(transform),
-        transition,
-      };
-
-  const cardStyle = {
-    ...style,
-    ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
-    ...(fixedWidth
-      ? { width: fixedWidth, minWidth: fixedWidth, maxWidth: fixedWidth }
-      : {}),
-  };
+  const compact = useCompactNumber();
+  const showMarkdownPreview = useQuickValue(QuickSettingId.CARD_PREVIEW);
+  const { title, content, isEncrypted, hasBody, stats } = useMemo(() => noteDisplayOf(note), [note]);
+  const isRich = hasBody && (showMarkdownPreview || fullScrollableContent);
+  const handleClick = useCardClick(note, onSelect);
 
   return (
-    <div
-      ref={setNodeRef}
-      style={cardStyle}
-      {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className={`jotty-note-card bg-card border border-border rounded-jotty hover:shadow-md transition-shadow duration-200 hover:border-primary/50 group flex flex-col overflow-hidden h-fit ${
-        isDragging ? "border-primary/30" : ""
-      }`}
+    <article
+      onClick={handleClick}
+      className="jotty-note-card group cursor-pointer bg-card border border-border rounded-jotty overflow-hidden transition-colors duration-200 hover:border-primary/50 flex flex-col [overflow-wrap:anywhere]"
     >
-      <div className="p-4 pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div
-            className="jotty-note-card-title flex-1 min-w-0 cursor-pointer"
-            onClick={() => onSelect(note)}
-            onPointerDown={(e) => isDraggable && e.stopPropagation()}
-            onMouseDown={(e) => isDraggable && e.stopPropagation()}
-          >
-            <div className="flex items-start gap-2">
-              {isEncrypted && (
-                <LockKeyIcon className="h-4 w-4 mt-1 text-primary flex-shrink-0" />
-              )}
-              <h3 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-                {displayTitle}
-              </h3>
-            </div>
-          </div>
+      <div className="flex items-center justify-between gap-2 pl-4 pr-2 pt-3 min-h-7">
+        <span className="font-mono text-[11px] text-muted-foreground truncate">
+          {categoryTrail(note.category, t("notes.uncategorized"))}
+        </span>
+        <span className="flex items-center gap-0.5 shrink-0">
           {onTogglePin && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onTogglePin(note);
-              }}
-              className={`${
-                isPinned ? "opacity-100" : "opacity-100 lg:opacity-0"
-              } group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-jotty flex-shrink-0`}
-              aria-label={isPinned ? t("common.unpin") : t("common.pin")}
-            >
-              {isPinned ? (
-                <PinOffIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
-              ) : (
-                <PinIcon className="h-4 w-4 text-muted-foreground hover:text-primary" />
-              )}
-            </button>
+            <PinToggle
+              isPinned={isPinned}
+              onToggle={() => onTogglePin(note)}
+              className="p-1"
+            />
           )}
-        </div>
+          <span className="font-mono text-[11px] text-muted-foreground pr-2">
+            {formatShortTime(note.updatedAt, t)}
+          </span>
+        </span>
       </div>
 
-      <div className="px-4 pb-4 flex-1">
-        <div
-          className={`jotty-note-card-content relative max-h-72 ${fullScrollableContent ? "overflow-y-auto" : "overflow-y-hidden"}`}
-        >
-          {isEncrypted ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-md lg:text-sm text-muted-foreground italic">
-                {t("encryption.thisNoteIsEncrypted")}
-              </p>
-            </div>
-          ) : showMarkdownPreview ? (
-            <div className="text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none">
-              <div
-                className={`${
-                  fullScrollableContent
-                    ? "max-h-[200px] overflow-y-auto"
-                    : "line-clamp-4"
-                } [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>h4]:!text-sm [&>h5]:!text-sm [&>h6]:!text-sm [&>p]:!text-sm [&>ul]:!text-sm [&>ol]:!text-sm [&>li]:!text-sm [&>blockquote]:!text-sm [&>code]:!text-xs [&>pre]:!text-xs [&>pre]:!p-2 [&>img]:!max-h-32 [&>img]:!object-cover [&>img]:!rounded`}
-              >
-                <UnifiedMarkdownRenderer content={displayContent} />
-              </div>
-            </div>
-          ) : (
-            <p className="text-md lg:text-sm text-muted-foreground line-clamp-4 leading-relaxed">
-              {previewText}
+      <button
+        type="button"
+        onClick={() => onSelect(note)}
+        className={cn(
+          "jotty-note-card-title block w-full text-left px-4 pt-0.5",
+          isRich && !isEncrypted ? "pb-0" : "pb-3",
+        )}
+      >
+        <h3 className="font-semibold text-base leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-3">
+          {title}
+        </h3>
+        {isEncrypted ? (
+          <div className="mt-3">
+            <SealedPanel />
+          </div>
+        ) : (
+          !isRich && (
+            <p className="jotty-note-card-content mt-2 text-md lg:text-sm text-muted-foreground leading-relaxed line-clamp-3">
+              {stats.excerpt}
             </p>
-          )}
+          )
+        )}
+      </button>
+      {isRich && !isEncrypted && (
+        <div className="jotty-note-card-content mx-4 mt-2 mb-3 max-h-[200px] overflow-y-auto overscroll-contain text-md lg:text-sm text-muted-foreground prose prose-sm max-w-none [&>*]:!my-1 [&>h1]:!text-sm [&>h2]:!text-sm [&>h3]:!text-sm [&>p]:!text-sm [&>pre]:!text-xs [&>img]:!max-h-32">
+          <UnifiedMarkdownRenderer content={content} />
         </div>
-      </div>
+      )}
 
-      <div className="px-4 py-3 bg-muted/30 border-t border-border/50">
-        <div className="jotty-note-card-footer flex items-center justify-between text-sm lg:text-xs text-muted-foreground">
-          <div className="flex items-center flex-wrap gap-2 min-w-0">
-            {sharer && (
-              <div className="flex items-center gap-1 min-w-0">
-                <UserAvatar username={sharer} size="xs" />
-                <span className="text-md lg:text-xs text-muted-foreground truncate">
-                  {t("common.sharedBy", { sharer })}
-                </span>
-              </div>
-            )}
-            {categoryName && (
-              <span className="bg-primary/10 text-primary px-2 py-1 rounded-jotty font-medium truncate max-w-[10rem]">
-                {categoryName}
+      <div className="jotty-note-card-footer px-4 pb-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 min-w-0">
+          {!isEncrypted &&
+            (note.tags || []).slice(0, CARD_TAG_LIMIT).map((tag) => (
+              <span key={tag} className="font-mono text-primary truncate">
+                #{tag}
               </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
+            ))}
+        </span>
+        <span className="flex items-center gap-2 shrink-0">
+          <ItemShareMark item={note} mode={Modes.NOTES} />
+          {isEncrypted ? (
+            <span>{t("encryption.encrypted")}</span>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+              title={t("notes.wordCount", { count: stats.wordCount })}
+            >
               <TextNumberSignIcon className="h-3 w-3" />
-              <span>{wordCount}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock01Icon className="h-3 w-3" />
-              <span>{formatRelativeTime(note.updatedAt, t)}</span>
-            </div>
-          </div>
-        </div>
+              {compact(stats.wordCount)}
+            </span>
+          )}
+        </span>
       </div>
-    </div>
+    </article>
   );
 };

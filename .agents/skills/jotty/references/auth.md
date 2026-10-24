@@ -32,7 +32,7 @@ OIDC redirect URI has to match the IdP exactly, scheme included.
 
 ## API keys
 
-`authenticateApiKey` in `actions/api`. Header `x-api-key`. Keys are hashed at rest. Generating a new one is an audit event. See [api.md](api.md).
+`authenticateApiKey` in `actions/api`. Header `x-api-key`. Keys are stored in plain text in `users.json` on purpose, so users can see theirs again in Profile. Generate them with `crypto.randomBytes` and compare them timing-safe, never with `===`. Never log one. See [api.md](api.md).
 
 ## Sanitising
 

@@ -1,19 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
-import { withApiAuth } from "@/app/_utils/api-utils";
+import { NextResponse } from "next/server";
+import { findUserRecord } from "@/app/_server/actions/users/records";
+import { defineRoute } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS } from "@/app/_schemas/api/common";
+import { currentUserSchema } from "@/app/_schemas/api/users";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
-  return withApiAuth(request, async (user) => {
-    try {
-      const { passwordHash, apiKey, ...safeUserData } = user;
-      return NextResponse.json({ user: safeUserData });
-    } catch (error) {
-      console.error("Error fetching user info:", error);
-      return NextResponse.json(
-        { error: "Internal Server Error" },
-        { status: 500 }
-      );
-    }
-  });
-}
+export const GET = defineRoute(
+  {
+    id: "getCurrentUser",
+    method: HttpMethod.GET,
+    path: "/user",
+    tag: ApiTag.USERS,
+    summary: "Get the API key owner",
+    description: "Your own profile and preferences. Password hash, API key and MFA secrets are never included.",
+    responses: {
+      200: { description: "Your profile", schema: currentUserSchema },
+      401: ERRORS[401],
+      500: ERRORS[500],
+    },
+  },
+  async ({ user }) => {
+    const record = await findUserRecord(user.username);
+    return NextResponse.json({ user: { ...user, lastLogin: record?.lastLogin } });
+  },
+);

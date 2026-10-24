@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
+import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Item, Checklist } from "@/app/_types";
 import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/NestedChecklistItem";
@@ -32,6 +34,8 @@ export const KanbanCardDetailSubtasks = ({
 }: KanbanCardDetailSubtasksProps) => {
   const t = useTranslations();
   const [newSubtaskText, setNewSubtaskText] = useState("");
+  const subtaskInputRef = useRef<HTMLInputElement>(null);
+  const subtaskLinks = useItemLinkSuggestions(newSubtaskText, setNewSubtaskText, subtaskInputRef);
 
   const handleAdd = () => {
     if (!newSubtaskText.trim()) return;
@@ -101,18 +105,21 @@ export const KanbanCardDetailSubtasks = ({
       {canEdit && (
         <div className="flex gap-2">
           <input
+            ref={subtaskInputRef}
             type="text"
             value={newSubtaskText}
             onChange={(e) => setNewSubtaskText(e.target.value)}
             placeholder={t("checklists.addSubtask")}
             className="flex-1 px-3 py-2 text-sm bg-background border border-input rounded-jotty focus:outline-none focus:border-ring transition-all"
             onKeyDown={(e) => {
+              if (subtaskLinks.handleKeyDown(e)) return;
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleAdd();
               }
             }}
           />
+          <ItemLinkPopup suggestions={subtaskLinks} />
           <Button
             onClick={handleAdd}
             disabled={!newSubtaskText.trim()}

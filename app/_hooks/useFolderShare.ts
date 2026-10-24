@@ -8,7 +8,7 @@ import {
   unshareFolder,
   setFolderPublic,
 } from "@/app/_server/actions/share/operations";
-import { folderShares } from "@/app/_server/actions/share/queries";
+import { folderShares } from "@/app/_server/actions/share/lookups";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 const READ_ONLY: SharingPermissions = {
@@ -117,24 +117,37 @@ export const useFolderShare = ({
   const togglePublic = () =>
     runAction(() => setFolderPublic(mode, owner, categoryUuid, !isPublic));
 
-  const filteredUsers = useMemo(
+  const people = useMemo(
     () =>
-      (usersPublicData || []).filter(
-        (entry) =>
-          entry.username &&
-          entry.username !== owner &&
-          entry.username.toLowerCase().includes(searchQuery.toLowerCase()),
+      (usersPublicData || []).flatMap(({ username, avatarUrl }) =>
+        username && username !== owner ? [{ username, avatarUrl }] : [],
       ),
-    [usersPublicData, owner, searchQuery],
+    [usersPublicData, owner],
+  );
+
+  const sharees = useMemo(
+    () => people.filter(({ username }) => grants[username]),
+    [people, grants],
+  );
+
+  const candidates = useMemo(
+    () =>
+      people.filter(
+        ({ username }) =>
+          !grants[username] &&
+          username.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+    [people, grants, searchQuery],
   );
 
   return {
     ...status,
     grants,
+    sharees,
     isPublic,
     searchQuery,
     setSearchQuery,
-    filteredUsers,
+    candidates,
     toggleUser,
     setPerms,
     togglePublic,

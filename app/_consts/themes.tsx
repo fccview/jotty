@@ -18,6 +18,13 @@ import {
   Tree07Icon,
   LaptopProgrammingIcon,
 } from "hugeicons-react";
+import { BORDER_RADIUS_VAR, NOTE_FONT_SIZE_VAR } from "@/app/_consts/styling";
+import {
+  QuickSettingId,
+  SETTINGS_STORAGE_KEY,
+  SETTINGS_STORE_VERSION,
+  SYSTEM_THEME,
+} from "@/app/_consts/quick-settings";
 
 import {
   loadCustomThemes,
@@ -196,26 +203,38 @@ export const themeInitScript = (customThemesData?: string) => `
     const isRwMarkable = document.documentElement.getAttribute('data-rwmarkable') === 'true';
     const userPreferredTheme = document.documentElement.getAttribute('data-user-theme') || '';
 
-    const settings = localStorage.getItem('checklist-settings');
-    let localStorageTheme = 'system';
+    const settings = localStorage.getItem('${SETTINGS_STORAGE_KEY}');
+    let localStorageTheme = '';
 
     if (settings) {
       const parsed = JSON.parse(settings);
-      localStorageTheme = parsed.state?.theme || 'system';
+      const isLegacy = !(parsed.version >= ${SETTINGS_STORE_VERSION});
+      const local = (isLegacy ? parsed.state : parsed.state?.overrides) || {};
 
-      const radius = parsed.state?.borderRadius;
+      if (typeof local['${QuickSettingId.THEME}'] === 'string') {
+        localStorageTheme = local['${QuickSettingId.THEME}'];
+      }
+      if (isLegacy && localStorageTheme === '${SYSTEM_THEME}') {
+        localStorageTheme = '';
+      }
+
+      const radius = local['${QuickSettingId.BORDER_RADIUS}'];
       if (typeof radius === 'number' && isFinite(radius)) {
-        document.documentElement.style.setProperty('--jotty-radius', radius + 'rem');
+        document.documentElement.style.setProperty('${BORDER_RADIUS_VAR}', radius + 'rem');
+      }
+
+      const noteFontSize = local['${QuickSettingId.NOTE_FONT_SIZE}'];
+      if (typeof noteFontSize === 'number' && isFinite(noteFontSize)) {
+        document.documentElement.style.setProperty('${NOTE_FONT_SIZE_VAR}', noteFontSize + 'px');
       }
     }
 
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const chosenTheme = localStorageTheme || userPreferredTheme || '${SYSTEM_THEME}';
     let resolvedTheme;
 
-    if (localStorageTheme && localStorageTheme !== 'system') {
-      resolvedTheme = localStorageTheme;
-    } else if (userPreferredTheme && userPreferredTheme !== 'system') {
-      resolvedTheme = userPreferredTheme;
+    if (chosenTheme !== '${SYSTEM_THEME}') {
+      resolvedTheme = chosenTheme;
     } else {
       if (isRwMarkable) {
         resolvedTheme = isDark ? 'rwmarkable-dark' : 'rwmarkable-light';

@@ -11,12 +11,16 @@ import {
   LetterSpacingIcon,
   SquareArrowDown02Icon,
   ArrowDown01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
   MoreHorizontalIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ToolbarDropdown } from "./ToolbarDropdown";
+import { OverflowTool } from "./toolbarTools";
+import { cn } from "@/app/_utils/global-utils";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
-import { useEffect, useMemo, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from 'next-intl';
 import { PromptModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/PromptModal";
 import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
@@ -28,7 +32,11 @@ interface ExtraItemsDropdownProps {
   onFileModalOpen: () => void;
   onTableModalOpen: () => void;
   onImageSizeModalOpen: (url: string) => void;
+  overflowTools?: OverflowTool[];
 }
+
+const menuRow =
+  "w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm";
 
 export const ExtraItemsDropdown = ({
   editor,
@@ -37,27 +45,35 @@ export const ExtraItemsDropdown = ({
   onFileModalOpen,
   onTableModalOpen,
   onImageSizeModalOpen,
+  overflowTools = [],
 }: ExtraItemsDropdownProps) => {
   const t = useTranslations();
   const [isMac, setIsMac] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showAbbreviationModal, setShowAbbreviationModal] = useState(false);
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const submenuTool = overflowTools.find((tool) => tool.key === openSubmenu);
+  const hiddenCount = overflowTools.length;
+
+  const resetSubmenu = useCallback((isOpen: boolean) => {
+    if (!isOpen) setOpenSubmenu(null);
+  }, []);
+
+  const pickOverflowTool = (tool: OverflowTool, e: MouseEvent) => {
+    if (!tool.menu) {
+      tool.onSelect?.();
+      return;
+    }
+    e.stopPropagation();
+    setOpenSubmenu(tool.key);
+  };
 
   useEffect(() => {
     setIsMac(/(Mac|iPhone|iPod|iPad)/i.test(navigator.platform));
   }, []);
 
-  const getMarkdownTextarea = (): HTMLTextAreaElement | null => {
-    return document.getElementById("markdown-editor-textarea") as HTMLTextAreaElement;
-  };
-
-  const handleMarkdownInsert = (fn: (textarea: HTMLTextAreaElement) => string) => {
-    const textarea = getMarkdownTextarea();
-    if (textarea && onMarkdownChange) {
-      const newContent = fn(textarea);
-      onMarkdownChange(newContent);
-    }
-  };
+  const handleMarkdownInsert = (fn: (textarea: HTMLTextAreaElement) => string) =>
+    MarkdownUtils.runMarkdownEdit(fn, onMarkdownChange);
 
   const addImage = () => {
     setShowImageModal(true);
@@ -134,11 +150,12 @@ export const ExtraItemsDropdown = ({
           if (isMarkdownMode) {
             handleMarkdownInsert(MarkdownUtils.insertHighlight);
           } else {
-            editor.chain().focus().toggleMark("mark").run();
+            editor.chain().focus().toggleHighlight().run();
           }
         },
-        isActive: editor && editor.isActive("mark"),
+        isActive: editor && editor.isActive("highlight"),
         shortcut: { code: "KeyH", modKey: true, shiftKey: true },
+        textareaOwnsKey: true,
       },
       {
         icon: <TextSubscriptIcon className="h-4 w-4" />,
@@ -186,11 +203,13 @@ export const ExtraItemsDropdown = ({
 
   const shortcuts = useMemo(
     () =>
-      items.map((item) => ({
-        ...item.shortcut,
-        handler: item.command,
-      })),
-    [items]
+      items
+        .filter((item) => !(isMarkdownMode && item.textareaOwnsKey))
+        .map((item) => ({
+          ...item.shortcut,
+          handler: item.command,
+        })),
+    [items, isMarkdownMode]
   );
 
   useShortcuts(shortcuts);
@@ -214,36 +233,72 @@ export const ExtraItemsDropdown = ({
       variant="ghost"
       size="sm"
       onMouseDown={(e) => e.preventDefault()}
-      className="flex items-center gap-1"
+      className="relative flex items-center gap-1"
+      title={hiddenCount ? t("editor.moreToolsCount", { count: hiddenCount }) : t("editor.moreTools")}
+      aria-label={hiddenCount ? t("editor.moreToolsCount", { count: hiddenCount }) : t("editor.moreTools")}
     >
       <MoreHorizontalIcon className="h-4 w-4" />
       <ArrowDown01Icon className="h-3 w-3" />
+      {hiddenCount > 0 && (
+        <span className="absolute -top-1 -right-1 min-w-[1rem] h-4 px-1 rounded-jotty bg-primary text-primary-foreground text-[10px] font-bold leading-4">
+          {hiddenCount}
+        </span>
+      )}
     </Button>
   );
 
   return (
     <>
-      <ToolbarDropdown trigger={trigger} direction="right">
-        <div className="flex flex-col py-1 overflow-y-auto">
-          {items.map((item, index) => (
+      <ToolbarDropdown trigger={trigger} direction="right" onOpenChange={resetSubmenu}>
+        {submenuTool ? (
+          <>
             <button
-              key={index}
-              className={`w-full flex items-center justify-between gap-4 px-3 py-2 text-left hover:bg-accent text-md lg:text-sm ${item.isActive ? "bg-accent" : ""
-                }`}
-              onClick={item.command}
+              className={cn(menuRow, "border-b border-border font-medium")}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenSubmenu(null);
+              }}
             >
-              <div className="flex items-center gap-2">
-                {item.icon}
-                <span>{item.label}</span>
-              </div>
-              {item.shortcut && (
-                <span className="text-md lg:text-xs text-muted-foreground">
-                  {getShortcutDisplay(item.shortcut)}
-                </span>
-              )}
+              <ArrowLeft01Icon className="h-4 w-4" />
+              <span>{submenuTool.label}</span>
             </button>
-          ))}
-        </div>
+            <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">{submenuTool.menu}</div>
+          </>
+        ) : (
+          <div className="flex flex-col py-1 overflow-y-auto">
+            {overflowTools.map((tool) => (
+              <button
+                key={tool.key}
+                className={cn(menuRow, tool.isActive && "bg-accent")}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={(e) => pickOverflowTool(tool, e)}
+              >
+                {tool.icon}
+                <span className="flex-1">{tool.label}</span>
+                {tool.menu && <ArrowRight01Icon className="h-3 w-3 text-muted-foreground" />}
+              </button>
+            ))}
+            {hiddenCount > 0 && <div className="my-1 border-t border-border" />}
+            {items.map((item, index) => (
+              <button
+                key={index}
+                className={cn(menuRow, "justify-between gap-4", item.isActive && "bg-accent")}
+                onClick={item.command}
+              >
+                <div className="flex items-center gap-2">
+                  {item.icon}
+                  <span>{item.label}</span>
+                </div>
+                {item.shortcut && (
+                  <span className="text-md lg:text-xs text-muted-foreground">
+                    {getShortcutDisplay(item.shortcut)}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </ToolbarDropdown>
 
       <PromptModal

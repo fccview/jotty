@@ -2,9 +2,10 @@ import { Note } from "./note";
 import { Checklist } from "./checklist";
 import { User, SanitisedUser } from "./user";
 import { AppSettings } from "./config";
-import { LinkIndex } from "./links";
 import { AllSharedItems, UserSharedItems } from "./sharing";
 import { TagsIndex } from "./tags";
+import { SidebarSnapshots } from "./sidebar";
+import { LibraryStats } from "./catalog";
 
 export type AppMode = "checklists" | "notes" | "tags";
 
@@ -18,8 +19,8 @@ export interface AppModeContextType {
   setMode: (mode: AppMode) => void;
   selectedNote: string | null;
   setSelectedNote: (id: string | null) => void;
-  selectedFilter: { type: 'category' | 'tag'; value: string } | null;
-  setSelectedFilter: (filter: { type: 'category' | 'tag'; value: string } | null) => void;
+  selectedFilter: ContentFilter | null;
+  setSelectedFilter: (filter: ContentFilter | null) => void;
   isInitialized: boolean;
   isDemoMode: boolean;
   isRwMarkable: boolean;
@@ -28,9 +29,8 @@ export interface AppModeContextType {
   appVersion: string;
   appSettings: AppSettings | null;
   usersPublicData: Partial<User>[];
-  linkIndex: LinkIndex | null;
-  notes: Partial<Note>[];
-  checklists: Partial<Checklist>[];
+  library: LibraryStats;
+  sidebar: SidebarSnapshots;
   allSharedItems: AllSharedItems | null;
   userSharedItems: UserSharedItems | null;
   globalSharing: any;

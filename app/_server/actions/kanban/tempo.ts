@@ -2,7 +2,7 @@
 
 import { Item, TimeEntry } from "@/app/_types";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { getFormData } from "@/app/_utils/global-utils";

@@ -1,6 +1,7 @@
 import React, { ChangeEvent, forwardRef, useState } from "react";
 import { Label } from "./label";
 import { ViewIcon, ViewOffSlashIcon } from "hugeicons-react";
+import { useTranslations } from "next-intl";
 
 interface InputProps {
   id: string;
@@ -58,6 +59,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
+    const t = useTranslations("common");
     const [showPassword, setShowPassword] = useState(false);
     const isPasswordType = type === "password";
     const inputType = isPasswordType && showPassword ? "text" : type;
@@ -88,15 +90,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             inputMode={inputMode}
             pattern={pattern}
             {...props}
-            className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-md lg:text-sm focus:outline-none focus:ring-none ${isPasswordType ? "pr-11" : ""} ${className}`}
+            className={`w-full px-4 py-2.5 bg-background border border-input rounded-jotty text-md lg:text-sm transition-colors focus:outline-none focus:ring-none focus:border-primary/60 disabled:cursor-not-allowed disabled:opacity-60 ${isPasswordType ? "pr-11" : ""} ${className ?? ""}`}
           />
           {isPasswordType && !hideEye && (
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50"
               tabIndex={-1}
               disabled={disabled}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+              aria-pressed={showPassword}
             >
               {showPassword ? (
                 <ViewOffSlashIcon className="h-4 w-4" />

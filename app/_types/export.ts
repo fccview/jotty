@@ -9,8 +9,11 @@ export interface ExportResult {
   error?: string;
 }
 
-export type ExportType =
-  | "all_checklists_notes"
-  | "user_checklists_notes"
-  | "all_users_data"
-  | "whole_data_folder";
+export enum ExportKind {
+  ALL_CONTENT = "all_checklists_notes",
+  USER_CONTENT = "user_checklists_notes",
+  ALL_USERS = "all_users_data",
+  WHOLE_DATA = "whole_data_folder",
+}
+
+export type ExportType = `${ExportKind}`;

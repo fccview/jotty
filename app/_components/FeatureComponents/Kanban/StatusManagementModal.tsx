@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Add01Icon, Delete03Icon, DragDropVerticalIcon } from "hugeicons-react";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { KanbanStatus } from "@/app/_types";
@@ -23,17 +23,10 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { TaskStatus } from "@/app/_types/enums";
+import { DEFAULT_STATUS_COLORS, statusColor } from "@/app/_consts/kanban";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 import { Toggle } from "@/app/_components/GlobalComponents/FormElements/Toggle";
-
-const defaultStatusColors: Record<string, string> = {
-  [TaskStatus.TODO]: "#6b7280",
-  [TaskStatus.IN_PROGRESS]: "#3b82f6",
-  [TaskStatus.COMPLETED]: "#10b981",
-  [TaskStatus.PAUSED]: "#f59e0b",
-};
 
 interface SortableStatusItemProps {
   status: KanbanStatus;
@@ -97,7 +90,7 @@ const SortableStatusItem = ({
 
         <input
           type="color"
-          value={status.color || defaultStatusColors[status.id] || "#6b7280"}
+          value={statusColor(status)}
           onChange={(e) => onUpdateColor(status.id, e.target.value)}
           className="w-10 h-10 border border-input rounded-jotty cursor-pointer shrink-0"
           title={t("checklists.statusColor")}
@@ -149,7 +142,7 @@ export const StatusManagementModal = ({
   const [statuses, setStatuses] = useState<KanbanStatus[]>(
     currentStatuses.map((s) => ({
       ...s,
-      color: s.color || defaultStatusColors[s.id],
+      color: s.color || DEFAULT_STATUS_COLORS[s.id],
     }))
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -254,7 +247,16 @@ export const StatusManagementModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={t("tasks.manageStatuses")}
-      className="lg:max-w-3xl"
+      variant={ModalVariant.PANEL}
+      width={ModalWidth.WIDE}
+      footer={() => (
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={handleClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button onClick={handleSave}>{t("common.saveChanges")}</Button>
+        </div>
+      )}
     >
       <div className="space-y-4">
         <p className="text-md lg:text-sm text-muted-foreground">
@@ -270,7 +272,7 @@ export const StatusManagementModal = ({
             items={statuses.map((s) => s.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+            <div className="space-y-2">
               {statuses.map((status) => (
                 <SortableStatusItem
                   key={status.id}
@@ -290,13 +292,6 @@ export const StatusManagementModal = ({
           <Add01Icon className="h-4 w-4 mr-2" />
           {t("tasks.addStatus")}
         </Button>
-
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={handleClose}>
-            {t("common.cancel")}
-          </Button>
-          <Button onClick={handleSave}>{t("common.saveChanges")}</Button>
-        </div>
       </div>
 
       <ConfirmModal

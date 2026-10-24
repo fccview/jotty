@@ -2,7 +2,8 @@ import { useCallback, useRef, useEffect } from "react";
 import { useSidebarStore } from "@/app/_utils/sidebar-store";
 
 export const useResizing = () => {
-  const { sidebarWidth, setSidebarWidth } = useSidebarStore();
+  const sidebarWidth = useSidebarStore((state) => state.sidebarWidth);
+  const setSidebarWidth = useSidebarStore((state) => state.setSidebarWidth);
   const isResizing = useRef(false);
   const sidebarWidthRef = useRef(sidebarWidth);
 

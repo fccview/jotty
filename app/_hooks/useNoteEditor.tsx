@@ -1,25 +1,27 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  convertMarkdownToHtml,
-  convertHtmlToMarkdownUnified,
-  processMarkdownContent,
-} from "@/app/_utils/markdown-utils";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
 import { useNavigationGuard } from "@/app/_providers/NavigationGuardProvider";
 import { deleteNote, updateNote } from "@/app/_server/actions/note";
 import { encryptNoteContent } from "@/app/_server/actions/pgp";
 import { encryptXChaCha } from "@/app/_server/actions/xchacha";
-import { logContentEvent, logAudit } from "@/app/_server/actions/log";
+import { logClientAudit } from "@/app/_server/actions/log/client";
 import { itemHref, publicHref } from "@/app/_utils/global-utils";
 import { Note } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { ItemTypes } from "@/app/_types/enums";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { isEncrypted } from "@/app/_utils/encryption-utils";
+import { withAdoptedAttachments } from "@/app/_utils/adopt-legacy";
+import { discardDraft, markSaved } from "@/app/_hooks/useLiveSession";
+import { SaveState } from "@/app/_utils/autosave-utils";
+import { useAutosave } from "@/app/_hooks/useAutosave";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface UseNoteEditorProps {
@@ -39,40 +41,24 @@ export const useNoteEditor = ({
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAppMode();
+  const { permissions } = usePermissions();
   const { showToast } = useToast();
   const isMinimalMode = useMinimalMode();
   const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
   const [title, setTitle] = useState(note.title);
   const [category, setCategory] = useState(note.category || "Uncategorized");
-  const [editorContent, setEditorContent] = useState(() => {
-    const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-    if (note.encrypted) {
-      return contentWithoutMetadata;
-    }
-    if (isMinimalMode) {
-      return contentWithoutMetadata;
-    }
-    if (defaultEditorIsMarkdown) {
-      return contentWithoutMetadata;
-    }
-    return convertMarkdownToHtml(contentWithoutMetadata);
-  });
+  const [editorContent, setEditorContent] = useState(
+    () => extractYamlMetadata(note.content || "").contentWithoutMetadata,
+  );
   const [isMarkdownMode, setIsMarkdownMode] = useState(
     isMinimalMode || defaultEditorIsMarkdown
   );
   const [isPrinting, setIsPrinting] = useState(false);
   const notesDefaultMode = user?.notesDefaultMode || "view";
 
-  const [isEditing, setIsEditing] = useState(() => {
-    if (note.encrypted) return false;
-    const editor = searchParams?.get("editor");
-
-    return notesDefaultMode === "edit" || editor === "true" ? true : false;
-  });
-  const [status, setStatus] = useState({
-    isSaving: false,
-    isAutoSaving: false,
-  });
+  const [isEditing, setIsEditing] = useState(
+    () => !note.encrypted && searchParams?.get("editor") === "true"
+  );
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -109,43 +95,68 @@ export const useNoteEditor = ({
     };
   }, [clearPassphraseCache]);
 
-  const { autosaveNotes } = useSettings();
+  const autosaveNotes = useQuickValue(QuickSettingId.AUTOSAVE);
   const {
     registerNavigationGuard,
     unregisterNavigationGuard,
     executePendingNavigation,
+    clearPendingNavigation,
     setHasUnsavedChanges: setProviderUnsaved,
   } = useNavigationGuard();
-  const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const executePendingRef = useRef(executePendingNavigation);
+  executePendingRef.current = executePendingNavigation;
+  const [isSaving, setIsSaving] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
 
-  const derivedMarkdownContent = useMemo(
-    () =>
-      isMarkdownMode
-        ? processMarkdownContent(editorContent)
-        : convertHtmlToMarkdownUnified(editorContent, user?.tableSyntax),
-    [editorContent, isMarkdownMode, user?.tableSyntax]
+  const derivedMarkdownContent = editorContent;
+  const isEditMode = notesDefaultMode === "edit" || isEditing;
+  const canAutosave =
+    Boolean(autosaveNotes) &&
+    isEditMode &&
+    Boolean(permissions?.canEdit) &&
+    !note.encrypted &&
+    !isEditingEncrypted;
+
+  const autosaveContent = useCallback(
+    async (content: string) => {
+      const formData = new FormData();
+      formData.append("title", note.title);
+      formData.append("content", content);
+      formData.append("category", note.category || "Uncategorized");
+      formData.append("user", note.owner || user?.username || "");
+      formData.append("uuid", note.uuid || "");
+
+      const result = await updateNote(formData, true);
+      if (!result.success) {
+        console.error("[note] autosave failed:", result.error);
+        return false;
+      }
+      if (note.uuid) markSaved(note.uuid, content);
+      return true;
+    },
+    [note.title, note.category, note.owner, note.uuid, user?.username],
   );
 
+  const autosave = useAutosave({ enabled: canAutosave, save: autosaveContent });
+
+  const shownNote = useRef(note);
+
   useEffect(() => {
+    const previous = shownNote.current;
+    shownNote.current = note;
+    const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
+
+    if (previous !== note && extractYamlMetadata(previous.content || "").contentWithoutMetadata === contentWithoutMetadata) {
+      if (previous.title !== note.title) setTitle(note.title);
+      if (previous.category !== note.category) setCategory(note.category || "Uncategorized");
+      return;
+    }
+
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     setContentIsDirty(false);
-
-    const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-
-    if (note.encrypted) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else if (isMinimalMode) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else if (defaultEditorIsMarkdown) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else {
-      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
-      setIsMarkdownMode(false);
-    }
+    setEditorContent(contentWithoutMetadata);
+    setIsMarkdownMode(Boolean(note.encrypted) || isMinimalMode || defaultEditorIsMarkdown);
 
     if (searchParams?.get("editor") !== "true") {
       setIsEditing(false);
@@ -153,10 +164,18 @@ export const useNoteEditor = ({
     }
   }, [note, isMinimalMode, defaultEditorIsMarkdown]);
 
+  const isEditorVisible =
+    (notesDefaultMode === "edit" ||
+      searchParams?.get("editor") === "true" ||
+      isEditing) &&
+    Boolean(permissions?.canEdit) &&
+    (!note.encrypted || isEditingEncrypted) &&
+    !isEncrypted(editorContent || "");
+
   const editorActivity = useEditorActivityStore();
 
   useEffect(() => {
-    if (isEditing) {
+    if (isEditorVisible) {
       editorActivity.register("note-editor");
     } else {
       editorActivity.unregister("note-editor");
@@ -164,34 +183,47 @@ export const useNoteEditor = ({
     return () => {
       editorActivity.unregister("note-editor");
     };
-  }, [isEditing]);
+  }, [isEditorVisible]);
+
+  const titleChanged = title !== note.title;
+  const categoryChanged = category !== (note.category || "Uncategorized");
+  const contentUnsaved = canAutosave ? autosave.hasUnsaved : contentIsDirty;
 
   useEffect(() => {
-    if (notesDefaultMode !== "edit" && !isEditing) {
+    if (!isEditMode) {
+      setHasUnsavedChanges(false);
       setProviderUnsaved(false);
       return;
     }
-    const titleChanged = title !== note.title;
-    const categoryChanged = category !== (note.category || "Uncategorized");
-    const dirty = contentIsDirty || titleChanged || categoryChanged;
+    const dirty = contentUnsaved || titleChanged || categoryChanged;
     setHasUnsavedChanges(dirty);
     setProviderUnsaved(dirty);
-  }, [contentIsDirty, title, category, note, isEditing]);
+  }, [contentUnsaved, titleChanged, categoryChanged, isEditMode]);
+
+  const finishEditing = useCallback(
+    (saved: Note) => {
+      onUpdate(saved);
+      setIsEditing(false);
+      setIsEditingEncrypted(false);
+      setContentIsDirty(false);
+      setProviderUnsaved(false);
+      router.push(itemHref(ItemTypes.NOTE, note.uuid!), { scroll: false });
+    },
+    [onUpdate, router, note.uuid],
+  );
 
   const handleSave = useCallback(
-    async (autosaveNotes = false, passphrase?: string) => {
+    async (passphrase?: string) => {
       const effectivePassphrase =
         passphrase ?? decryptedPassphraseRef.current ?? undefined;
       if (isEditingEncrypted && !effectivePassphrase) {
         console.error("Cannot save encrypted note without passphrase");
-        return;
+        return false;
       }
       passphrase = effectivePassphrase;
 
-      const useAutosave = autosaveNotes ? true : false;
-      if (!useAutosave) {
-        setStatus((prev) => ({ ...prev, isSaving: true }));
-      }
+      setIsSaving(true);
+      if (canAutosave) await autosave.flush();
 
       const { contentWithoutMetadata: cleanContent } = extractYamlMetadata(
         derivedMarkdownContent
@@ -202,7 +234,10 @@ export const useNoteEditor = ({
       if (isEditingEncrypted && passphrase && note.encryptionMethod) {
         try {
           const encryptFormData = new FormData();
-          encryptFormData.append("content", cleanContent);
+          encryptFormData.append(
+            "content",
+            await withAdoptedAttachments(note.uuid!, cleanContent),
+          );
           encryptFormData.append("skipAuditLog", "true");
 
           if (note.encryptionMethod === "pgp") {
@@ -216,7 +251,7 @@ export const useNoteEditor = ({
                 encryptFormData.append("signingPassphrase", signingData.signingPassphrase);
               }
             } catch (parseError) {
-              await logAudit({
+              await logClientAudit({
                 level: "DEBUG",
                 action: "note_saved_encrypted",
                 category: "note",
@@ -229,7 +264,6 @@ export const useNoteEditor = ({
             if (encryptResult.success && encryptResult.data) {
               contentToSave = encryptResult.data.encryptedContent;
             } else {
-              setStatus((prev) => ({ ...prev, isSaving: false }));
               throw new Error(encryptResult.error || "Encryption failed");
             }
           } else if (note.encryptionMethod === "xchacha") {
@@ -238,135 +272,148 @@ export const useNoteEditor = ({
             if (encryptResult.success && encryptResult.data) {
               contentToSave = encryptResult.data.encryptedContent;
             } else {
-              setStatus((prev) => ({ ...prev, isSaving: false }));
               throw new Error(encryptResult.error || "Encryption failed");
             }
           }
 
-          await logContentEvent(
-            "note_saved_encrypted",
-            "note",
-            note.uuid!,
-            title,
-            true,
-            { encryptionMethod: note.encryptionMethod }
-          );
+          await logClientAudit({
+            level: "INFO",
+            action: "note_saved_encrypted",
+            category: "note",
+            resourceType: "note",
+            resourceId: note.uuid!,
+            resourceTitle: title,
+            success: true,
+            metadata: { encryptionMethod: note.encryptionMethod },
+          });
         } catch (error) {
           console.error("Error encrypting note:", error);
-          setStatus((prev) => ({ ...prev, isSaving: false }));
-          return;
+          setIsSaving(false);
+          return false;
         }
       }
 
       const formData = new FormData();
-      formData.append("title", useAutosave ? note.title : title);
+      formData.append("title", title);
       formData.append("content", contentToSave);
-      formData.append(
-        "category",
-        useAutosave ? note.category || "Uncategorized" : category
-      );
+      formData.append("category", category);
       formData.append("user", note.owner || user?.username || "");
       formData.append("uuid", note.uuid || "");
 
-      const result = await updateNote(formData, useAutosave);
+      const result = await updateNote(formData);
+      setIsSaving(false);
 
-      if (useAutosave && result.success && result.data) {
-        return;
-      } else {
-        setStatus((prev) => ({ ...prev, isSaving: false }));
+      if (!result.success || !result.data) {
+        showToast({
+          type: "error",
+          title: t("common.error"),
+          message: result.error || t("common.error"),
+        });
+        return false;
       }
 
-      if (result.success && result.data) {
-        onUpdate(result.data);
-        setIsEditing(false);
-        setIsEditingEncrypted(false);
-        setContentIsDirty(false);
-        setProviderUnsaved(false);
-
-        router.push(itemHref(ItemTypes.NOTE, note.uuid!));
+      if (isEditingEncrypted && note.uuid) {
+        discardDraft(note.uuid);
+      } else if (note.uuid) {
+        markSaved(note.uuid, cleanContent);
       }
+      finishEditing(result.data);
+      return true;
     },
     [
       note.uuid,
+      note.owner,
       note.encryptionMethod,
       title,
       derivedMarkdownContent,
       category,
-      onUpdate,
-      router,
       isEditingEncrypted,
+      canAutosave,
+      autosave.flush,
+      finishEditing,
+      showToast,
+      user?.username,
+      t,
     ]
   );
 
   useEffect(() => {
-    if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
-    const isEditMode = notesDefaultMode === "edit" || isEditing;
-
-    if (
-      user?.notesAutoSaveInterval !== 0 &&
-      autosaveNotes &&
-      isEditMode &&
-      hasUnsavedChanges &&
-      !isEditingEncrypted
-    ) {
-      autosaveTimeoutRef.current = setTimeout(() => {
-        setStatus((prev) => ({ ...prev, isAutoSaving: true }));
-        const isAutosave = autosaveNotes ? true : false;
-        handleSave(isAutosave).finally(() => {
-          setStatus((prev) => ({ ...prev, isAutoSaving: false }));
-          setHasUnsavedChanges(false);
-          setContentIsDirty(false);
-        });
-      }, user?.notesAutoSaveInterval || 5000);
-    }
-    return () => {
-      if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
-    };
-  }, [
-    autosaveNotes,
-    isEditing,
-    hasUnsavedChanges,
-    handleSave,
-    user?.notesDefaultMode,
-    isEditingEncrypted,
-  ]);
-
-  useEffect(() => {
     const guard = () => {
-      if (hasUnsavedChanges) {
-        setShowUnsavedChangesModal(true);
+      if (!hasUnsavedChanges) return true;
+      if (canAutosave && !titleChanged && !categoryChanged) {
+        autosave.flush().then((saved) => {
+          if (saved) executePendingRef.current();
+          else setShowUnsavedChangesModal(true);
+        });
         return false;
       }
-      return true;
+      setShowUnsavedChangesModal(true);
+      return false;
     };
     registerNavigationGuard(guard);
     return () => unregisterNavigationGuard();
-  }, [hasUnsavedChanges, registerNavigationGuard, unregisterNavigationGuard]);
+  }, [
+    hasUnsavedChanges,
+    canAutosave,
+    titleChanged,
+    categoryChanged,
+    autosave.flush,
+    registerNavigationGuard,
+    unregisterNavigationGuard,
+  ]);
 
   const handleEditorContentChange = (content: string, isMarkdown: boolean, isDirty: boolean) => {
     setEditorContent(content);
     setIsMarkdownMode(isMarkdown);
-    setContentIsDirty(isDirty);
+    if (!isDirty) return;
+    setContentIsDirty(true);
+    autosave.push(extractYamlMetadata(content).contentWithoutMetadata);
   };
 
+  const handleRemoteContentChange = (content: string, isMarkdown: boolean) => {
+    setEditorContent(content);
+    setIsMarkdownMode(isMarkdown);
+  };
+
+  const settle = useCallback(async () => {
+    if (canAutosave && !titleChanged && !categoryChanged) return autosave.flush();
+    return !hasUnsavedChanges;
+  }, [canAutosave, titleChanged, categoryChanged, hasUnsavedChanges, autosave.flush]);
+
   const handleEdit = () => setIsEditing(true);
-  const handleCancel = () => {
+
+  const discardChanges = () => {
+    if (note.uuid) discardDraft(note.uuid);
+    autosave.reset();
+    setEditorKey((key) => key + 1);
+    if (searchParams?.get("editor") === "true" && note.uuid) {
+      router.replace(itemHref(ItemTypes.NOTE, note.uuid), { scroll: false });
+    }
     setIsEditing(false);
     setTitle(note.title);
     setCategory(note.category || "Uncategorized");
     setContentIsDirty(false);
     setProviderUnsaved(false);
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
-    if (isMinimalMode) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else if (defaultEditorIsMarkdown) {
-      setEditorContent(contentWithoutMetadata);
-      setIsMarkdownMode(true);
-    } else {
-      setEditorContent(convertMarkdownToHtml(contentWithoutMetadata));
-      setIsMarkdownMode(false);
+    setEditorContent(contentWithoutMetadata);
+    setIsMarkdownMode(isMinimalMode || defaultEditorIsMarkdown);
+  };
+
+  const handleCancel = () => {
+    if (!canAutosave) {
+      if (!hasUnsavedChanges) {
+        discardChanges();
+        return;
+      }
+      clearPendingNavigation();
+      setShowUnsavedChangesModal(true);
+      return;
     }
+    if (contentIsDirty || titleChanged || categoryChanged) {
+      handleSave();
+      return;
+    }
+    setIsEditing(false);
   };
 
   const confirmDelete = async () => {
@@ -390,9 +437,19 @@ export const useNoteEditor = ({
     setShowDeleteModal(false);
   };
 
-  const handleUnsavedChangesSave = () =>
-    handleSave().then(() => executePendingNavigation());
-  const handleUnsavedChangesDiscard = () => executePendingNavigation();
+  const handleUnsavedChangesSave = async () => {
+    setShowUnsavedChangesModal(false);
+    if (await handleSave()) executePendingNavigation();
+  };
+  const handleUnsavedChangesDiscard = () => {
+    setShowUnsavedChangesModal(false);
+    discardChanges();
+    executePendingNavigation();
+  };
+  const handleUnsavedChangesKeep = () => {
+    clearPendingNavigation();
+    setShowUnsavedChangesModal(false);
+  };
 
   const handleEditEncrypted = useCallback(
     (passphrase: string, method: string, decryptedContent: string) => {
@@ -475,19 +532,25 @@ export const useNoteEditor = ({
     setEditorContent,
     isEditing,
     setIsEditing,
-    isEditMode: notesDefaultMode === "edit" || isEditing,
-    status,
+    isEditMode,
+    isEditorVisible,
+    editorKey,
+    status: { isSaving, isAutoSaving: autosave.state === SaveState.SAVING },
+    autosaveState: canAutosave ? autosave.state : null,
     hasUnsavedChanges,
+    settle,
     handleEdit,
     handleCancel,
     handleSave,
     handleDelete: () => setShowDeleteModal(true),
     handleEditorContentChange,
+    handleRemoteContentChange,
     derivedMarkdownContent,
     showUnsavedChangesModal,
     setShowUnsavedChangesModal,
     handleUnsavedChangesSave,
     handleUnsavedChangesDiscard,
+    handleUnsavedChangesKeep,
     isMarkdownMode,
     setIsMarkdownMode,
     handlePrint,
@@ -499,7 +562,7 @@ export const useNoteEditor = ({
     clearPassphraseCache,
     getCachedPassphrase,
     getCachedMethod,
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

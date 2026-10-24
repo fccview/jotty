@@ -10,11 +10,20 @@ import fs from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { Modes } from "@/app/_types/enums";
+import { atomicWrite, withCreatedAt } from "@/app/_server/actions/file/atomic";
+import { isItemFile } from "@/app/_server/actions/relations/paths";
+import { isReadOnlyError } from "@/app/_server/actions/lib/read-only";
 
 export interface OrderData {
   categories?: string[];
   items?: string[];
 }
+
+const CORE_FILE_SEEDS: Record<string, string> = {
+  [USERS_FILE]: "[]",
+  [SESSIONS_FILE]: "{}",
+  [SESSION_DATA_FILE]: "{}",
+};
 
 export const getEnvOrFile = async (
   envVar: string,
@@ -36,17 +45,10 @@ export const ensureCorDirsAndFiles = async (): Promise<{
   success: boolean;
   error?: string;
 }> => {
-  const coreDirAndFiles = {
-    dirs: [USERS_DIR],
-    files: [USERS_FILE, SESSIONS_FILE, SESSION_DATA_FILE],
-  };
-
   try {
-    for (const dir of coreDirAndFiles.dirs) {
-      await ensureDir(path.join(process.cwd(), dir));
-    }
-    for (const file of coreDirAndFiles.files) {
-      await ensureFile(path.join(process.cwd(), file));
+    await ensureDir(path.join(process.cwd(), USERS_DIR));
+    for (const [file, initial] of Object.entries(CORE_FILE_SEEDS)) {
+      await ensureFile(path.join(process.cwd(), file), initial);
     }
     return { success: true };
   } catch (error) {
@@ -55,19 +57,20 @@ export const ensureCorDirsAndFiles = async (): Promise<{
   }
 };
 
-export const ensureDir = async (dir: string) => {
+export const ensureDir = async (dir: string): Promise<boolean> => {
   try {
     await fs.access(dir);
+    return false;
   } catch {
-    await fs.mkdir(dir, { recursive: true });
+    return (await fs.mkdir(dir, { recursive: true })) !== undefined;
   }
 };
 
-export const ensureFile = async (filePath: string) => {
+export const ensureFile = async (filePath: string, initial = "") => {
   try {
     await fs.access(filePath);
   } catch {
-    await fs.writeFile(filePath, "", "utf-8");
+    await fs.writeFile(filePath, initial, "utf-8");
   }
 };
 
@@ -115,10 +118,14 @@ export const readFile = async (filePath: string): Promise<string> => {
 
 const getCwd = (): Promise<string> => Promise.resolve(process.cwd());
 
+const KNOWN_MODES = new Set<string>(Object.values(Modes));
+
 export const getUserModeDir = async (
   mode: Modes,
   username?: string,
 ): Promise<string> => {
+  if (!KNOWN_MODES.has(mode)) throw new Error(`Unknown mode: ${mode}`);
+
   const base = await getCwd();
   if (username) {
     return path.join(base, DATA_DIR, mode, username);
@@ -140,15 +147,45 @@ export const serverReadFile = async (
   }
 };
 
+export const serverReadExisting = async (filePath: string): Promise<string | null> => {
+  try {
+    return await fs.readFile(filePath, "utf-8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") {
+      console.error("Could not read item file:", filePath, error);
+    }
+    return null;
+  }
+};
+
+const _tracking = () => import("@/app/_server/actions/relations/tracking");
+
 export const serverWriteFile = async (filePath: string, content: string) => {
   await ensureDir(path.dirname(filePath));
-  await fs.writeFile(filePath, content, "utf-8");
+
+  if (!isItemFile(filePath)) {
+    await atomicWrite(filePath, content);
+    return;
+  }
+
+  const stamped = await withCreatedAt(filePath, content);
+  await atomicWrite(filePath, stamped);
+  await (await _tracking()).trackItemWrite(filePath, stamped);
+};
+
+export const serverRenamePath = async (from: string, to: string) => {
+  await ensureDir(path.dirname(to));
+  await fs.rename(from, to);
+  await (await _tracking()).trackMove(from, to);
 };
 
 export const serverDeleteFile = async (filePath: string) => {
   try {
     await fs.unlink(filePath);
+    await (await _tracking()).trackItemDelete(filePath);
   } catch (error) {
+    if (isReadOnlyError(error)) throw error;
+
     const { logAudit } = await import("@/app/_server/actions/log");
     await logAudit({
       level: "DEBUG",
@@ -194,7 +231,10 @@ export const listMdFilesUnderPath = async (
 export const serverDeleteDir = async (dirPath: string) => {
   try {
     await fs.rm(dirPath, { recursive: true });
+    await (await _tracking()).trackTreeDelete(dirPath);
   } catch (error) {
+    if (isReadOnlyError(error)) throw error;
+
     const { logAudit } = await import("@/app/_server/actions/log");
     await logAudit({
       level: "DEBUG",
@@ -226,6 +266,8 @@ const STAT_BATCH_SIZE = 4000;
 export interface FileStatsEntry {
   birthtime: Date;
   mtime: Date;
+  size?: number;
+  ctime?: Date;
 }
 
 export const getAllFileStats = async (
@@ -268,7 +310,7 @@ export const getAllFileStats = async (
                 s.birthtime.getTime() === 0 ? s.mtime : s.birthtime;
               return {
                 filePath,
-                entry: { birthtime, mtime: s.mtime },
+                entry: { birthtime, mtime: s.mtime, size: s.size, ctime: s.ctime },
               };
             } catch {
               return null;

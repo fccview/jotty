@@ -21,6 +21,7 @@ const mockCatAccess = vi.fn()
 vi.mock('@/app/_server/actions/file', () => ({
   ensureDir: (...args: any[]) => mockEnsureDir(...args),
   serverDeleteDir: (...args: any[]) => mockServerDeleteDir(...args),
+  serverRenamePath: (from: string, to: string) => mockFs.rename(from, to),
   getUserModeDir: (...args: any[]) => mockGetUserModeDir(...args),
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
   writeOrderFile: (...args: any[]) => mockWriteOrderFile(...args),

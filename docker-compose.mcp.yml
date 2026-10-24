@@ -1,0 +1,38 @@
+services:
+  jotty:
+    image: ghcr.io/fccview/jotty:latest
+    container_name: jotty
+    user: "1000:1000"
+    ports:
+      - "1122:3000"
+    volumes:
+      - ./data:/app/data:rw
+      - ./config:/app/config:rw
+      - ./cache:/app/.next/cache:rw
+    networks: [jotty-net]
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+
+  jotty-mcp:
+    image: ghcr.io/fccview/jotty-mcp:latest
+    container_name: jotty-mcp
+    depends_on:
+      - jotty
+    ports:
+      - "1133:3001"
+    networks: [jotty-net]
+    restart: unless-stopped
+    environment:
+      JOTTY_URL: "http://jotty:3000"
+      JOTTY_MCP_TRANSPORT: "http"
+      JOTTY_MCP_PORT: "3001"
+      JOTTY_MCP_AUTH_TOKEN: "changeme"
+      JOTTY_MCP_ALLOWED_HOSTS: ""
+      JOTTY_MCP_ALLOWED_ORIGINS: ""
+      JOTTY_API_KEY: ""
+      JOTTY_MCP_MAX_TEXT_CHARS: "12000"
+
+networks:
+  jotty-net:
+    driver: bridge

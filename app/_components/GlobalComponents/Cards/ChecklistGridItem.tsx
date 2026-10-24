@@ -1,26 +1,19 @@
 "use client";
 
-import {
-  CheckmarkSquare04Icon,
-  TaskDaily01Icon,
-  PinIcon,
-  PinOffIcon,
-} from "hugeicons-react";
+import { useTranslations } from "next-intl";
 import { Checklist } from "@/app/_types";
-import { isItemCompleted } from "@/app/_utils/checklist-utils";
-import { parseChecklistContent } from "@/app/_utils/client-parser-utils";
-import { useMemo } from "react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { isKanbanType } from "@/app/_types/enums";
+import { ItemTypes } from "@/app/_types/enums";
+import { useListSummary } from "@/app/_hooks/useListCardStats";
+import { categoryLeaf } from "@/app/_utils/category-path-utils";
+import { PinToggle } from "./Parts/PinToggle";
+import { ItemGlyph } from "./Parts/ItemGlyph";
+import { useCardClick } from "@/app/_hooks/useCardClick";
 
 interface ChecklistGridItemProps {
   list: Checklist;
   onSelect: (list: Checklist) => void;
   isPinned?: boolean;
   onTogglePin?: (list: Checklist) => void;
-  sharer?: string;
-  isDraggable?: boolean;
 }
 
 export const ChecklistGridItem = ({
@@ -28,113 +21,40 @@ export const ChecklistGridItem = ({
   onSelect,
   isPinned = false,
   onTogglePin,
-  sharer,
-  isDraggable = false,
 }: ChecklistGridItemProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: list.uuid,
-    disabled: !isDraggable,
-  });
-
-  const parsedData = useMemo(() => {
-    if ("rawContent" in list) {
-      return parseChecklistContent((list as any).rawContent, list.id);
-    }
-    return null;
-  }, [list]);
-
-  const displayTitle = parsedData?.title || list.title;
-  const displayItems = parsedData?.items || list.items;
-
-  const activeItems = displayItems?.filter((item) => !item.isArchived);
-
-  const totalItems = activeItems?.length || 0;
-  const completedItems = activeItems?.filter((item) =>
-    isItemCompleted(item, list.type),
-  ).length;
-  const completionRate =
-    totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-
-  const categoryName = useMemo(() => {
-    return list?.category ? list?.category.split("/").pop() : null;
-  }, [list?.category]);
-
-  const isTask = isKanbanType(list.type);
-
-  const style = isDragging
-    ? { opacity: 0.4 }
-    : {
-        transform: CSS.Transform.toString(transform),
-        transition,
-      };
-
-  const itemStyle = {
-    ...style,
-    ...(isDraggable && !isDragging ? { cursor: "grab" } : {}),
-  };
+  const t = useTranslations();
+  const { total, completed } = useListSummary(list);
+  const handleClick = useCardClick(list, onSelect);
 
   return (
     <div
-      ref={setNodeRef}
-      style={itemStyle}
-      {...(isDraggable ? { ...attributes, ...listeners } : {})}
-      className="group relative"
+      onClick={handleClick}
+      className="jotty-checklist-grid-item group cursor-pointer bg-card border border-border rounded-jotty p-3 hover:border-primary/50 transition-colors h-full flex flex-col"
     >
-      {onTogglePin && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onTogglePin(list);
-          }}
-          className={`absolute -top-1 -right-1 z-10 ${
-            isPinned ? "opacity-100" : "opacity-0"
-          } group-hover:opacity-100 transition-opacity p-1 bg-background rounded-full border border-border`}
-        >
-          {isPinned ? (
-            <PinOffIcon className="h-3 w-3 text-muted-foreground" />
-          ) : (
-            <PinIcon className="h-3 w-3 text-muted-foreground" />
-          )}
-        </button>
-      )}
-
-      <div
-        className="flex flex-col items-center cursor-pointer p-2.5"
+      <div className="flex items-start justify-between gap-1">
+        <ItemGlyph type={ItemTypes.CHECKLIST} listType={list.type} />
+        {onTogglePin && (
+          <PinToggle
+            isPinned={isPinned}
+            onToggle={() => onTogglePin(list)}
+            className="p-1 -mr-1 -mt-1"
+          />
+        )}
+      </div>
+      <button
+        type="button"
         onClick={() => onSelect(list)}
+        className="mt-3 text-left font-medium text-md lg:text-sm leading-snug text-foreground group-hover:text-primary line-clamp-2"
       >
-        <div className="relative mb-2">
-          {isTask ? (
-            <TaskDaily01Icon className="h-16 w-16 text-primary !stroke-1" />
-          ) : (
-            <CheckmarkSquare04Icon className="h-16 w-16 text-primary !stroke-1" />
-          )}
-          <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-semibold">
-            {completionRate}%
-          </div>
-        </div>
-
-        <h3 className="font-medium text-md lg:text-sm text-center text-foreground line-clamp-2 w-full px-1">
-          {displayTitle}
-        </h3>
-
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-          {sharer && <span className="truncate">{sharer}</span>}
-          {!sharer && categoryName && (
-            <span className="truncate">{categoryName}</span>
-          )}
-          {!sharer && !categoryName && (
-            <span>
-              {completedItems}/{totalItems}
-            </span>
-          )}
-        </div>
+        {list.title}
+      </button>
+      <div className="mt-auto pt-2 flex items-center justify-between gap-2 font-mono text-[11px] text-muted-foreground">
+        <span className="truncate">
+          {categoryLeaf(list.category, t("notes.uncategorized"))}
+        </span>
+        <span className="text-foreground">
+          {completed}/{total}
+        </span>
       </div>
     </div>
   );

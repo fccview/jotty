@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, memo } from "react";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { TimeEntry, Checklist } from "@/app/_types";
 import { Delete03Icon, FloppyDiskIcon, Cancel01Icon } from "hugeicons-react";
@@ -134,7 +134,8 @@ const TimeEntriesModalComponent = ({
         isOpen={isOpen}
         onClose={onClose}
         title={t("kanban.timeEntries")}
-        className="lg:!max-w-[600px] lg:!w-full !max-h-[80vh] overflow-y-auto"
+        variant={ModalVariant.PANEL}
+      width={ModalWidth.WIDE}
       >
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm text-muted-foreground border-b border-border pb-3">
@@ -303,9 +304,7 @@ const TimeEntriesModalComponent = ({
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title={t("common.delete")}
-        message={t("common.confirmDeleteItem", {
-          itemTitle: t("common.thisEntry"),
-        })}
+        message={t("common.confirmDeleteEntry")}
         confirmText={t("common.delete")}
         variant="destructive"
       />

@@ -7,13 +7,15 @@ import {
   ReactNode,
   useCallback,
   useMemo,
+  useRef,
+  useTransition,
 } from "react";
 import { useShortcuts } from "@/app/_hooks/useShortcuts";
 import { CreateNoteModal } from "@/app/_components/GlobalComponents/Modals/NotesModal/CreateNoteModal";
 import { CreateListModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/CreateListModal";
 import { CreateCategoryModal } from "@/app/_components/GlobalComponents/Modals/CategoryModals/CreateCategoryModal";
 import { SettingsModal } from "@/app/_components/GlobalComponents/Modals/SettingsModals/Settings";
-import { Category, SanitisedUser, User } from "@/app/_types";
+import { Category, ChecklistType, SanitisedUser, User } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { itemHref } from "@/app/_utils/global-utils";
 import { useRouter } from "next/navigation";
@@ -21,11 +23,19 @@ import { useAppMode } from "./AppModeProvider";
 import { useNavigationGuard } from "./NavigationGuardProvider";
 import { createNote } from "@/app/_server/actions/note";
 import { generateDateTimeTitle } from "../_utils/date-utils";
+import { useTranslations } from "next-intl";
+import { useToast } from "./ToastProvider";
+
+export interface CreatePrefill {
+  title?: string;
+  type?: ChecklistType;
+  templateId?: string;
+}
 
 interface ShortcutContextType {
-  openCreateNoteModal: (initialCategory?: string) => void;
+  openCreateNoteModal: (initialCategory?: string, prefill?: CreatePrefill) => void;
   openCreateCategoryModal: (parentCategory?: string) => void;
-  openCreateChecklistModal: (initialCategory?: string) => void;
+  openCreateChecklistModal: (initialCategory?: string, prefill?: CreatePrefill) => void;
   isSearchOpen: boolean;
   openSearch: () => void;
   closeSearch: () => void;
@@ -53,6 +63,10 @@ export const ShortcutProvider = ({
   const router = useRouter();
   const { mode, setMode } = useAppMode();
   const { checkNavigation } = useNavigationGuard();
+  const { showToast } = useToast();
+  const t = useTranslations();
+  const quickLock = useRef(false);
+  const [isOpeningNote, startOpeningNote] = useTransition();
 
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
@@ -62,39 +76,77 @@ export const ShortcutProvider = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const [initialCategory, setInitialCategory] = useState<string>("");
+  const [prefill, setPrefill] = useState<CreatePrefill>({});
   const [initialParentCategory, setInitialParentCategory] =
     useState<string>("");
 
-  const openCreateNoteModal = useCallback(
-    async (category?: string) => {
-      if (user?.quickCreateNotes === "enable") {
-        const title = generateDateTimeTitle();
-        const defaultCategory =
-          category || user?.quickCreateNotesCategory || "";
+  const quickCreate = useCallback(
+    async (category?: string, title?: string) => {
+      if (quickLock.current || isOpeningNote) return;
+      quickLock.current = true;
 
+      try {
         const formData = new FormData();
-        formData.append("title", title);
-        formData.append("category", defaultCategory);
-        formData.append("content", "");
+        formData.append("title", title || generateDateTimeTitle());
+        formData.append(
+          "category",
+          category || user?.quickCreateNotesCategory || ""
+        );
+        formData.append("rawContent", "");
 
         const result = await createNote(formData);
 
-        if (result.success && result.data?.uuid) {
-          router.push(`${itemHref(ItemTypes.NOTE, result.data.uuid)}?editor=true`);
-          router.refresh();
+        if (!result.success || !result.data?.uuid) {
+          console.warn("Quick create refused:", result.error);
+          showToast({
+            type: "error",
+            title: t("common.error"),
+            message: result.error || t("notes.createNoteFailed"),
+          });
+          return;
         }
-      } else {
-        setInitialCategory(category || "");
-        setShowCreateNoteModal(true);
+
+        const href = itemHref(ItemTypes.NOTE, result.data.uuid);
+        startOpeningNote(() => {
+          router.push(`${href}?editor=true`);
+          router.refresh();
+        });
+      } catch (error) {
+        console.error("Quick create failed:", error);
+        showToast({
+          type: "error",
+          title: t("common.error"),
+          message: t("notes.createNoteFailed"),
+        });
+      } finally {
+        quickLock.current = false;
       }
     },
-    [user?.quickCreateNotes, user?.quickCreateNotesCategory, router]
+    [user?.quickCreateNotesCategory, isOpeningNote, router, showToast, t]
   );
 
-  const openCreateChecklistModal = useCallback((category?: string) => {
-    setInitialCategory(category || "");
-    setShowCreateChecklistModal(true);
-  }, []);
+  const openCreateNoteModal = useCallback(
+    (category?: string, nextPrefill: CreatePrefill = {}) => {
+      if (user?.quickCreateNotes === "enable" && !nextPrefill.templateId) {
+        checkNavigation(() => quickCreate(category, nextPrefill.title));
+        return;
+      }
+
+      setInitialCategory(category || "");
+      setPrefill(nextPrefill);
+      setShowCreateNoteModal(true);
+    },
+    [user?.quickCreateNotes, checkNavigation, quickCreate]
+  );
+
+  const openCreateChecklistModal = useCallback(
+    (category?: string, nextPrefill: CreatePrefill = {}) => {
+      setInitialCategory(category || "");
+      setPrefill(nextPrefill);
+      setShowCreateChecklistModal(true);
+    },
+    []
+  );
 
   const openCreateCategoryModal = useCallback((parentCategory?: string) => {
     setInitialParentCategory(parentCategory || "");
@@ -112,14 +164,14 @@ export const ShortcutProvider = ({
   const shortcuts = useMemo(
     () => [
       {
-        code: "ArrowLeft01Icon",
+        code: "ArrowLeft",
         modKey: true,
         altKey: true,
         shiftKey: true,
         handler: () =>
           checkNavigation(() => {
             setMode(Modes.CHECKLISTS);
-            router.push("/");
+            router.push(`/?mode=${Modes.CHECKLISTS}`);
           }),
       },
       {
@@ -130,7 +182,7 @@ export const ShortcutProvider = ({
         handler: () =>
           checkNavigation(() => {
             setMode(Modes.NOTES);
-            router.push("/");
+            router.push(`/?mode=${Modes.NOTES}`);
           }),
       },
       {
@@ -236,6 +288,8 @@ export const ShortcutProvider = ({
           }}
           categories={noteCategories}
           initialCategory={initialCategory}
+          initialTitle={prefill.title}
+          initialTemplate={prefill.templateId}
         />
       )}
       {showCreateChecklistModal && (
@@ -250,6 +304,8 @@ export const ShortcutProvider = ({
           }}
           categories={checklistCategories}
           initialCategory={initialCategory}
+          initialTitle={prefill.title}
+          initialType={prefill.type}
         />
       )}
       {showCreateCategoryModal && (

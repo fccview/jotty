@@ -9,7 +9,7 @@ import {
   createFormData,
 } from '../setup'
 
-vi.mock('@/app/_server/actions/session', () => ({
+vi.mock('@/app/_server/actions/session/store', () => ({
   createSession: vi.fn().mockResolvedValue(undefined),
   readSessionData: vi.fn().mockResolvedValue({}),
   readSessions: vi.fn().mockResolvedValue({}),
@@ -30,6 +30,9 @@ vi.mock('@/app/_server/actions/log', () => ({
 
 vi.mock('@/app/_server/actions/users', () => ({
   getUsername: vi.fn().mockResolvedValue('testuser'),
+}))
+
+vi.mock('@/app/_server/actions/users/ensure-user', () => ({
   ensureUser: vi.fn().mockResolvedValue(undefined),
 }))
 
@@ -39,8 +42,8 @@ vi.mock('@/app/_server/actions/auth/ldap', () => ({
 
 import { register, login, logout } from '@/app/_server/actions/auth'
 import { readJsonFile, writeJsonFile } from '@/app/_server/actions/file'
-import { readSessions, createSession } from '@/app/_server/actions/session'
-import { ensureUser } from '@/app/_server/actions/users'
+import { readSessions, createSession } from '@/app/_server/actions/session/store'
+import { ensureUser } from '@/app/_server/actions/users/ensure-user'
 import { ldapLogin } from '@/app/_server/actions/auth/ldap'
 
 const mockReadJsonFile = readJsonFile as ReturnType<typeof vi.fn>

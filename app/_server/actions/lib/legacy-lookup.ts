@@ -76,24 +76,13 @@ const _uuidFor = async (filePath: string): Promise<string | null> => {
     return existing;
   }
 
-  const { extractYamlMetadata, generateUuid, updateYamlMetadata } =
-    await import("@/app/_utils/yaml-metadata-utils");
   const { logAudit } = await import("@/app/_server/actions/log");
-  const { singleFlight } = await import("@/app/_server/actions/lib/concurrency");
+  const { stampUuid } = await import("@/app/_server/actions/lib/stamp-uuid");
 
   try {
-    return await singleFlight(`stamp:${filePath}`, async () => {
-      const content = await fs.readFile(filePath, "utf-8");
-      const { metadata } = extractYamlMetadata(content);
-
-      if (typeof metadata.uuid === "string" && metadata.uuid) {
-        return metadata.uuid;
-      }
-
-      const stamped = generateUuid();
-      await fs.writeFile(filePath, updateYamlMetadata(content, { uuid: stamped }), "utf-8");
-      return stamped;
-    });
+    const stamped = await stampUuid(filePath);
+    if (stamped) return stamped;
+    throw new Error("uuid stamp refused");
   } catch (error) {
     await logAudit({
       level: "WARNING",

@@ -1,8 +1,8 @@
 "use server";
 
 import { Checklist, Note, ItemType } from "@/app/_types";
-import { getUserChecklists } from "@/app/_server/actions/checklist";
-import { getUserNotes } from "@/app/_server/actions/note";
+import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
+import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { getCurrentUser } from "@/app/_server/actions/users";
 import { ItemTypes } from "@/app/_types/enums";

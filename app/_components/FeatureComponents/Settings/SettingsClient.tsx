@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { Layout } from "@/app/_components/GlobalComponents/Layout/Layout";
 import { Category, SanitisedUser } from "@/app/_types";
 import { useShortcut } from "@/app/_providers/ShortcutsProvider";
@@ -16,6 +17,7 @@ export const SettingsClient = ({
     user,
     children,
 }: SettingsClientProps) => {
+  const locale = useLocale();
     const { openSettings, openCreateCategoryModal } = useShortcut();
 
     return (
@@ -26,9 +28,9 @@ export const SettingsClient = ({
             onOpenCategoryModal={openCreateCategoryModal}
             user={user}
         >
-            <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={user?.preferredLocale || "en"} />
+            <MobileHeader user={user} onOpenSettings={openSettings} currentLocale={locale} />
             
-            <div className="w-full px-4 py-6 h-full overflow-y-auto jotty-scrollable-content">
+            <div className="w-full px-4 py-6 h-full overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter">
                 {children}
             </div>
         </Layout>

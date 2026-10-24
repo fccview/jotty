@@ -3,8 +3,8 @@
 import { AppNotification, AppNotificationData } from "@/app/_types";
 import { Modes, NotificationTargets } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getListById } from "@/app/_server/actions/checklist";
-import { getNoteById } from "@/app/_server/actions/note";
+import { getListById } from "@/app/_server/actions/checklist/queries";
+import { getNoteById } from "@/app/_server/actions/note/queries";
 import { mountsFor } from "@/app/_server/actions/share/mounts";
 import { notifyUser, readNotificationsForUser, writeNotificationsForUser } from "./internal";
 

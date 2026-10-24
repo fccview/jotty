@@ -1,113 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  getCurrentUser,
-  canAccessAllContent,
-} from "@/app/_server/actions/users";
-import path from "path";
-import fs from "fs/promises";
-import { NOTES_FOLDER } from "@/app/_consts/notes";
-import { isEnvEnabled } from "@/app/_utils/env-utils";
-import { sharedFrom } from "@/app/_server/actions/share/queries";
-import { resolvePath } from "@/app/_utils/path-utils";
+import { NextRequest } from "next/server";
+import { AttachmentKinds } from "@/app/_consts/attachments";
+import { serveLegacy, type LegacyParams } from "@/app/_server/actions/attachments/legacy";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(
+/**
+ * @deprecated Pre-v3 attachment URL. Once the attachments migration has run
+ * only the owner and admins can fetch it, everyone else goes through
+ * /api/attachment/<itemUuid>/<name>.
+ */
+export const GET = async (
   request: NextRequest,
-  props: { params: Promise<{ username: string; filename: string }> },
-) {
-  const params = await props.params;
-  try {
-    const user = await getCurrentUser();
-    if (!user && !isEnvEnabled(process.env.SERVE_PUBLIC_VIDEOS)) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const { username } = params;
-    const filename = decodeURIComponent(params.filename);
-
-    if (
-      filename.includes("..") ||
-      filename.includes("/") ||
-      filename.includes("\\")
-    ) {
-      return new NextResponse("Invalid filename", { status: 400 });
-    }
-
-    if (user && username !== user.username) {
-      const hasAdminAccess = await canAccessAllContent();
-      const hasSharedAccess = await sharedFrom(
-        username,
-        user.username,
-      );
-
-      if (!hasAdminAccess && !hasSharedAccess) {
-        return new NextResponse("Forbidden", { status: 403 });
-      }
-    }
-
-    const baseDir = path.resolve(
-      process.cwd(),
-      "data",
-      NOTES_FOLDER,
-      username,
-      "videos",
-    );
-    const resolved = resolvePath(baseDir, filename);
-    if (!resolved.ok) {
-      return new NextResponse("Invalid filename", { status: 400 });
-    }
-
-    try {
-      const fileBuffer = await fs.readFile(resolved.absolutePath);
-      const fileStats = await fs.stat(resolved.absolutePath);
-
-      const response = new NextResponse(fileBuffer);
-      response.headers.set("Content-Type", "video/mp4");
-      response.headers.set("Content-Length", fileStats.size.toString());
-      response.headers.set("Accept-Ranges", "bytes");
-      response.headers.set(
-        "Cache-Control",
-        "private, no-cache, no-store, max-age=0, must-revalidate",
-      );
-
-      const range = request.headers.get("range");
-      if (range) {
-        const fileSize = fileStats.size;
-        const [start, end] = range.replace(/bytes=/, "").split("-");
-        const startByte = parseInt(start, 10);
-        const endByte = end ? parseInt(end, 10) : fileSize - 1;
-
-        if (startByte >= fileSize || endByte >= fileSize) {
-          return new NextResponse("Range Not Satisfiable", {
-            status: 416,
-            headers: {
-              "Content-Range": `bytes */${fileSize}`,
-            },
-          });
-        }
-
-        const chunkSize = endByte - startByte + 1;
-        const fileChunk = fileBuffer.slice(startByte, endByte + 1);
-
-        return new NextResponse(fileChunk, {
-          status: 206,
-          headers: {
-            "Content-Range": `bytes ${startByte}-${endByte}/${fileSize}`,
-            "Content-Length": chunkSize.toString(),
-            "Accept-Ranges": "bytes",
-            "Content-Type": "video/mp4",
-          },
-        });
-      }
-
-      return response;
-    } catch (error) {
-      console.error("Error reading video file:", error);
-      return new NextResponse("File not found", { status: 404 });
-    }
-  } catch (error) {
-    console.error("Error in video API route:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-}
+  props: { params: Promise<LegacyParams> },
+) => serveLegacy(request, AttachmentKinds.VIDEO, await props.params);

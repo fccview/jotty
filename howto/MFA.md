@@ -1,68 +1,57 @@
-# Multi-Factor Authentication (MFA)
+# Multi-factor authentication (MFA)
 
-MFA adds an extra layer of security to your account by requiring both your password and a time-based one-time password (TOTP) from your authenticator app.
-
-## What is MFA?
-
-Multi-Factor Authentication (2FA/MFA) requires two pieces of information to log in:
-1. **Something you know**: Your password
-2. **Something you have**: Your phone with an authenticator app
-
-Even if someone steals your password, they can't access your account without your authenticator app.
+With MFA on, logging in takes your password plus a time-based one-time password (TOTP) from an authenticator app. Somebody who steals your password still can't get in without your phone.
 
 ## Enable MFA
 
-Navigate to **Profile → User Info**:
+Go to **Profile -> User Info**:
 
 1. Click **Enable MFA**
 2. Scan the QR code with your authenticator app (Google Authenticator, Authy, 1Password, etc.)
 3. Enter the 6-digit code from your app
-4. **CRITICAL**: Save your recovery code in a secure location (password vault)
-5. MFA is now active
+4. **Save your recovery code in your password vault.**
+5. MFA is on
 
-## Recovery Code
+## Recovery code
 
-When enabling MFA, you receive a single recovery code. This code is for **administrator use only** to disable MFA if you lose access to your authenticator.
+> [!IMPORTANT]
+> Enabling MFA gives you a single recovery code. It's for admins only. If you lose your authenticator, an admin uses it to turn your MFA off.
 
-**Important:**
-- Store the recovery code in your password vault
-- The recovery code can be used multiple times
-- Only administrators can use it to disable your MFA
-- You cannot use it yourself to log in
+- Keep it in your password vault
+- It works more than once
+- Only admins can use it to disable your MFA
+- You can't log in with it yourself
 
-## Regenerate Recovery Code
+## Regenerate recovery code
 
-To generate a new recovery code:
-
-1. Go to **Profile → User Info**
+1. Go to **Profile -> User Info**
 2. Click **Regenerate Recovery Code**
 3. Enter your current MFA code to confirm
-4. Save the new code immediately
+4. Save the new code straight away
 
-**Warning:** This invalidates your previous recovery code.
+The old recovery code stops working.
 
 ## Disable MFA
 
-1. Go to **Profile → User Info**
+1. Go to **Profile -> User Info**
 2. Click **Disable MFA**
 3. Enter your current MFA code to confirm
-4. MFA is now disabled
+4. MFA is off
 
-## Supported Authenticator Apps
+## Supported authenticator apps
 
-Any TOTP-compatible authenticator app works:
+Any app that does RFC 6238 TOTP works, for example:
 
-- **Google Authenticator** (iOS, Android)
-- **Authy** (iOS, Android, Desktop)
-- **1Password** (Cross-platform)
-- **Bitwarden** (Cross-platform)
-- **Microsoft Authenticator** (iOS, Android)
-- **Any RFC 6238 TOTP app**
+- Google Authenticator (iOS, Android)
+- Authy (iOS, Android, desktop)
+- 1Password (cross-platform)
+- Bitwarden (cross-platform)
+- Microsoft Authenticator (iOS, Android)
 
-## Lost Access to Authenticator?
+## Lost your authenticator?
 
-If you lose your phone or authenticator app, contact your administrator. They can use your recovery code to disable MFA, allowing you to:
+Ask your admin. They use your recovery code to turn MFA off, and then you can:
 
 1. Log in with just your password
-2. Re-enable MFA with a new QR code
-3. Get a new recovery code
+2. Turn MFA back on with a new QR code
+3. Save the new recovery code that comes with it

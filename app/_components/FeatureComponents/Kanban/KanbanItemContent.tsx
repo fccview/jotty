@@ -1,5 +1,6 @@
 "use client";
 
+import { plainItemText } from "@/app/_utils/item-href-utils";
 import { memo, type JSX } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
@@ -9,6 +10,7 @@ import { TaskStatusLabels } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
+import { ChecklistItemText } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistItemText";
 
 interface KanbanItemContentProps {
   item: Item;
@@ -52,7 +54,7 @@ const KanbanItemContentComponent = ({
   formatDateTimeString,
 }: KanbanItemContentProps) => {
   const { permissions } = usePermissions();
-  const { user } = useAppMode();
+  const { user, tagsEnabled } = useAppMode();
   const t = useTranslations();
   const hideStatus = user?.hideStatusOnCards === "enable";
 
@@ -94,12 +96,12 @@ const KanbanItemContentComponent = ({
           ) : (
             <p
               className="text-md lg:text-sm font-medium text-foreground leading-tight truncate cursor-pointer"
-              title={item.text}
+              title={plainItemText(item.text)}
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => onShowSubtaskModal()}
               onClick={(e) => onShowSubtaskModal()}
             >
-              {item.text}
+              <ChecklistItemText text={item.text} tagsEnabled={tagsEnabled} compact />
             </p>
           )}
         </div>

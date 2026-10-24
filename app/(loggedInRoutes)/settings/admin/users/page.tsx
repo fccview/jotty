@@ -1,6 +1,6 @@
 import { AdminUsersClient } from "@/app/_components/FeatureComponents/Admin/Parts/AdminUsersClient";
-import { getAllLists } from "@/app/_server/actions/checklist";
-import { getAllNotes } from "@/app/_server/actions/note";
+import { getAllLists } from "@/app/_server/actions/checklist/queries";
+import { getAllNotes } from "@/app/_server/actions/note/queries";
 import { isAdmin, getUsername, getUsersForAdmin } from "@/app/_server/actions/users";
 import { notFound } from "next/navigation";
 

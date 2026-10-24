@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
-import { uploadFile } from "@/app/_server/actions/upload";
+import { useTranslations } from "next-intl";
+import { uploadFile } from "@/app/_server/actions/attachments";
+import type { FileItem } from "@/app/_types";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
+import { useAttachmentError } from "@/app/_hooks/useAttachmentError";
 
 interface UploadState {
   isUploading: boolean;
@@ -11,10 +14,12 @@ interface UploadState {
 
 interface UploadCallbacks {
   onImageUpload: (url: string) => void;
-  onFileUpload: (data: any) => void;
+  onFileUpload: (data: FileItem) => void;
 }
 
-export const useFileUpload = (maxFileSize?: number) => {
+export const useFileUpload = (maxFileSize?: number, itemUuid?: string) => {
+  const t = useTranslations();
+  const explain = useAttachmentError();
   const [state, setState] = useState<UploadState>({
     isUploading: false,
     uploadError: null,
@@ -33,7 +38,7 @@ export const useFileUpload = (maxFileSize?: number) => {
       if (file.size > limit) {
         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
         const maxSizeMB = (limit / (1024 * 1024)).toFixed(0);
-        const errorMessage = `File is too large. Maximum size is ${maxSizeMB}MB. Your file is ${fileSizeMB}MB.`;
+        const errorMessage = t("common.fileTooLarge", { maxSizeMB, fileSizeMB });
 
         if (showProgress) {
           setState({
@@ -66,6 +71,7 @@ export const useFileUpload = (maxFileSize?: number) => {
       try {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("itemUuid", itemUuid || "");
         const result = await uploadFile(formData);
 
         if (result.success && result.data) {
@@ -89,7 +95,7 @@ export const useFileUpload = (maxFileSize?: number) => {
           if (showProgress) {
             setState({
               isUploading: false,
-              uploadError: result.error || "Upload failed",
+              uploadError: explain(result.error, "common.uploadFailed"),
               fileSizeError: null,
               uploadingFileName: null,
             });
@@ -102,14 +108,14 @@ export const useFileUpload = (maxFileSize?: number) => {
         if (showProgress) {
           setState({
             isUploading: false,
-            uploadError: "Upload failed. Please try again.",
+            uploadError: t("common.uploadFailedRetry"),
             fileSizeError: null,
             uploadingFileName: null,
           });
         }
       }
     },
-    [maxFileSize]
+    [maxFileSize, itemUuid, t, explain]
   );
 
   const resetErrors = useCallback(() => {

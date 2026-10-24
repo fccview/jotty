@@ -116,4 +116,18 @@ describe("checklist frontmatter round-trip", () => {
     expect(list.sharedWith).toBeUndefined();
     expect(listToMarkdown(list)).not.toContain("sharedWith");
   });
+
+  it("keeps a multi-line description on one item line", () => {
+    const list = parseMarkdown(SHARED_BOARD, "shared-board", "Uncategorized", "fccview");
+    list.items[0].description = "first line\r\n\n- a | b";
+
+    const markdown = listToMarkdown(list);
+    const itemLines = markdown.split("\n").filter((line) => line.startsWith("- ["));
+
+    expect(itemLines).toHaveLength(1);
+
+    const reparsed = parseMarkdown(markdown, "shared-board", "Uncategorized", "fccview");
+    expect(reparsed.items[0].id).toBe("card-1");
+    expect(reparsed.items[0].description).toBe("first line\\n\\n- a | b");
+  });
 });

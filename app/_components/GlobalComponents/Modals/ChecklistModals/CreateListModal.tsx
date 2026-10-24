@@ -9,7 +9,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { CategoryInput } from "@/app/_components/GlobalComponents/FormElements/CategoryInput";
 import { ChecklistTypeSelector } from "../../../FeatureComponents/Checklists/Parts/ChecklistTypeSelector";
 import { Modes } from "@/app/_types/enums";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { RESERVED_DIRS } from "@/app/_consts/files";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
 
@@ -18,6 +18,8 @@ interface CreateListModalProps {
   onCreated: (checklist?: Checklist) => void;
   categories: Category[];
   initialCategory?: string;
+  initialTitle?: string;
+  initialType?: ChecklistType;
 }
 
 export const CreateListModal = ({
@@ -25,16 +27,18 @@ export const CreateListModal = ({
   onCreated,
   categories,
   initialCategory = "",
+  initialTitle = "",
+  initialType = "simple",
 }: CreateListModalProps) => {
   const t = useTranslations();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle);
   const [category, setCategory] = useState(initialCategory);
   const [newCategory, setNewCategory] = useState("");
   const [showNewCategory, setShowNewCategory] = useState(false);
-  const [type, setType] = useState<ChecklistType>("simple");
+  const [type, setType] = useState<ChecklistType>(initialType);
   const [isLoading, setIsLoading] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const notAllowedNames = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const notAllowedNames = RESERVED_DIRS;
 
   useEffect(() => {
     titleInputRef.current?.focus();

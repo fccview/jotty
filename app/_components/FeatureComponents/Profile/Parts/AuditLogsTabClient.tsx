@@ -8,7 +8,8 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Download01Icon, ArrowLeft01Icon, ArrowRight01Icon, AlertCircleIcon } from "hugeicons-react";
 import { Logo } from "@/app/_components/GlobalComponents/Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
-import { getAuditLogs, exportAuditLogs, cleanupOldLogs } from "@/app/_server/actions/log";
+import { getAuditLogs, exportAuditLogs } from "@/app/_server/actions/log/readers";
+import { cleanupOldLogs } from "@/app/_server/actions/log/cleanup";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 

@@ -1,18 +1,24 @@
 import React from "react";
 import Editor from "react-simple-code-editor";
 import { prism } from "@/app/_utils/prism-utils";
+import { useAppMode } from "@/app/_providers/AppModeProvider";
+import { usePrismTheme } from "@/app/_hooks/usePrismThemes";
 
 interface CssEditorProps {
   value: string;
   onChange: (value: string) => void;
+  language?: string;
 }
 
-export const CssEditor = ({ value, onChange }: CssEditorProps) => {
+export const CssEditor = ({ value, onChange, language = "css" }: CssEditorProps) => {
+  const { user } = useAppMode();
+  usePrismTheme(user?.markdownTheme || "prism");
+
   const highlight = (code: string) => {
     if (!code) return code;
 
     try {
-      return prism.highlight("css", code);
+      return prism.highlight(language, code);
     } catch (e) {
       console.error(e);
       return code;

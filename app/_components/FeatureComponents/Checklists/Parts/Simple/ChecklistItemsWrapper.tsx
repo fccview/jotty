@@ -13,6 +13,7 @@ interface checklistItemsWrapperProps {
   isLoading: boolean;
   isCompleted?: boolean;
   onClearAll?: () => void;
+  actions?: React.ReactNode;
 }
 
 export const ChecklistItemsWrapper = ({
@@ -23,6 +24,7 @@ export const ChecklistItemsWrapper = ({
   isLoading,
   isCompleted = false,
   onClearAll,
+  actions,
 }: checklistItemsWrapperProps) => {
   const t = useTranslations();
   const { permissions } = usePermissions();
@@ -67,6 +69,7 @@ export const ChecklistItemsWrapper = ({
           </h3>
           {permissions?.canEdit && count > 0 && (
             <div className="flex items-center gap-2">
+              {actions}
               {onClearAll && (
                 <button
                   onClick={handleClearAllClick}

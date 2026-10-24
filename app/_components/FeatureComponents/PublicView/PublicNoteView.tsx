@@ -14,6 +14,7 @@ import { XChaChaEncryptionModal } from "@/app/_components/GlobalComponents/Modal
 import { detectEncryptionMethod } from "@/app/_utils/encryption-utils";
 import { useTranslations } from "next-intl";
 import { PublicUser } from "@/app/_utils/user-sanitize-utils";
+import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
 
 interface PublicNoteViewProps {
   note: Note;
@@ -106,6 +107,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
           ) : (
             <UnifiedMarkdownRenderer
               content={decryptedContent || note.content}
+              className={NOTE_PROSE_CLASS}
             />
           )}
         </div>
@@ -140,7 +142,7 @@ export const PublicNoteView = ({ note, user }: PublicNoteViewProps) => {
 
         <div className="mt-12 pt-8 border-t border-border text-center no-print">
           <p className="text-md lg:text-sm text-muted-foreground">
-            This note is shared publicly by {note.owner}
+            {t("notes.sharedPubliclyBy", { owner: note.owner ?? "" })}
           </p>
         </div>
       </div>

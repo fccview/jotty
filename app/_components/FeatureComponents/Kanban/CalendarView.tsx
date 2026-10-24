@@ -1,5 +1,6 @@
 "use client";
 
+import { plainItemText } from "@/app/_utils/item-href-utils";
 import { KeyboardEvent } from "react";
 import { Checklist, Item } from "@/app/_types";
 import { useCalendarView } from "@/app/_hooks/kanban/useCalendarView";
@@ -203,7 +204,7 @@ export const CalendarView = ({ checklist, onItemClick }: CalendarViewProps) => {
                 onClick={() => onItemClick?.(item)}
                 className="text-xs px-2 py-1 rounded-jotty border border-border bg-muted/30 text-foreground cursor-pointer hover:bg-muted/50 transition-colors"
               >
-                {item.text}
+                {plainItemText(item.text)}
               </div>
             ))}
           </div>

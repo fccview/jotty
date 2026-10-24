@@ -8,7 +8,7 @@ const maxBodySize = "1gb";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  serverExternalPackages: ["ws", "libsodium-wrappers-sumo"],
+  serverExternalPackages: ["ws", "libsodium-wrappers-sumo", "yjs", "y-protocols", "lib0"],
   experimental: {
     // https://nextjs.org/docs/app/api-reference/config/next-config-js/serverActions
     serverActions: {
@@ -22,6 +22,8 @@ const nextConfig = {
     unoptimized: true,
   },
   async headers() {
+    if (process.env.NODE_ENV !== "production") return [];
+
     return [
       {
         source: "/:all*(svg|jpg|jpeg|png|gif|ico|webp|avif|woff|woff2|css|js)",

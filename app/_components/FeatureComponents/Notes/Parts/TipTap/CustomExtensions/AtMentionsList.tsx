@@ -16,6 +16,10 @@ import {
 import { ItemType } from "@/app/_types";
 import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import {
+  MENTION_SEARCH_DEBOUNCE_MS,
+  findMentionables,
+} from "@/app/_utils/mention-lookup";
 
 interface AtMentionItem {
   title: string;
@@ -27,21 +31,41 @@ interface AtMentionItem {
 interface AtMentionsListProps {
   items: AtMentionItem[];
   command: (item: AtMentionItem) => void;
+  loading?: boolean;
 }
 
 export const AtMentionsList = forwardRef<
   { onKeyDown: (event: KeyboardEvent) => boolean; focusSearch: () => void },
   AtMentionsListProps
->(({ items, command }, ref) => {
+>(({ items, command, loading }, ref) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations();
 
-  const filteredItems = items.filter(
+  const [found, setFound] = useState<{ query: string; items: AtMentionItem[] } | null>(null);
+  const needle = searchQuery.trim().toLowerCase();
+  const searching = Boolean(needle) && found?.query !== needle;
+
+  useEffect(() => {
+    if (!needle) return;
+    let live = true;
+    const timer = setTimeout(() => {
+      findMentionables(needle).then((hits) => {
+        if (live) setFound({ query: needle, items: hits });
+      });
+    }, MENTION_SEARCH_DEBOUNCE_MS);
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
+  }, [needle]);
+
+  const pool = needle && found?.query === needle ? found.items : items;
+  const filteredItems = pool.filter(
     (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      item.title.toLowerCase().includes(needle) ||
+      item.category?.toLowerCase().includes(needle)
   );
 
   const notes = filteredItems.filter((item) => item.type === ItemTypes.NOTE);
@@ -182,7 +206,7 @@ export const AtMentionsList = forwardRef<
           </>
         ) : (
           <div className="px-3 py-6 text-center text-md lg:text-sm text-muted-foreground">
-            {t("notes.noResultsFound")}
+            {loading || searching ? t("common.searching") : t("notes.noResultsFound")}
           </div>
         )}
       </div>

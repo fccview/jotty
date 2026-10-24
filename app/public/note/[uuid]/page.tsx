@@ -1,5 +1,5 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getNoteById } from "@/app/_server/actions/note";
+import { getNoteById } from "@/app/_server/actions/note/queries";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/PublicNoteView";
 import { getCurrentUser } from "@/app/_server/actions/users";
@@ -12,7 +12,7 @@ import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
-import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { isLegacyUrl } from "@/app/_consts/attachments";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface PublicNotePageProps {
@@ -60,7 +60,7 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
   const userRecord = await findUserRecord(note.owner!);
   const user = sanitizeUserForPublic(
     userRecord,
-    !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
+    !isLegacyUrl(userRecord?.avatarUrl),
   );
 
   const isPubliclyShared = await isPublicItem(note.uuid!, ItemTypes.NOTE);

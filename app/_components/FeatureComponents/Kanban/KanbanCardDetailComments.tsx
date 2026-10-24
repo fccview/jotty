@@ -31,6 +31,7 @@ interface KanbanCardDetailCommentsProps {
   canEdit: boolean;
   currentUsername: string;
   availableUsers: { username: string; avatarUrl?: string }[];
+  onCountChange?: (count: number) => void;
 }
 
 const MAX_DEPTH = 4;
@@ -288,6 +289,7 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
   canEdit,
   currentUsername,
   availableUsers,
+  onCountChange,
 }) => {
   const t = useTranslations();
   const { formatDateTimeString } = usePreferredDateTime();
@@ -322,6 +324,10 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
   useEffect(() => {
     _loadComments();
   }, [_loadComments]);
+
+  useEffect(() => {
+    onCountChange?.(comments.length);
+  }, [comments.length, onCountChange]);
 
   useEffect(() => {
     if (!uuid) return;
@@ -473,7 +479,7 @@ export const KanbanCardDetailComments: React.FC<KanbanCardDetailCommentsProps> =
           {t("comments.noComments")}
         </div>
       ) : (
-        <div className="space-y-3 max-h-80 overflow-y-auto mb-3 pr-1">
+        <div className="space-y-3 mb-3 pr-1 lg:max-h-80 lg:overflow-y-auto">
           {topLevelComments.map((comment) => (
             <CommentThread
               key={comment.id}

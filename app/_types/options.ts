@@ -1,4 +1,5 @@
 import { ContentFilter } from "./context";
+import type { Note } from "./note";
 
 export interface GetNotesOptions {
   username?: string;
@@ -12,6 +13,10 @@ export interface GetNotesOptions {
   offset?: number;
   pinnedPaths?: string[];
   preserveOrder?: boolean;
+  summarize?: boolean;
+  bodiesFor?: (notes: Note[]) => string[];
+  keepSources?: boolean;
+  verify?: boolean;
 }
 
 export interface GetChecklistsOptions {
@@ -25,4 +30,6 @@ export interface GetChecklistsOptions {
   offset?: number;
   pinnedPaths?: string[];
   preserveOrder?: boolean;
+  countOpenItems?: boolean;
+  summarize?: boolean;
 }

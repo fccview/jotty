@@ -1,5 +1,5 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
@@ -13,7 +13,7 @@ import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
-import { isEnvEnabled } from "@/app/_utils/env-utils";
+import { isLegacyUrl } from "@/app/_consts/attachments";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface PublicChecklistPageProps {
@@ -65,8 +65,9 @@ export default async function PublicChecklistPage(
   const userRecord = await findUserRecord(checklist.owner!);
   const user = sanitizeUserForPublic(
     userRecord,
-    !!isEnvEnabled(process.env.SERVE_PUBLIC_IMAGES),
+    !isLegacyUrl(userRecord?.avatarUrl),
   );
+  const ownerShowsEmojis = userRecord?.showChecklistEmojis !== "disable";
 
   const isPubliclyShared = await isPublicItem(
     checklist.uuid!,
@@ -90,7 +91,11 @@ export default async function PublicChecklistPage(
     return (
       <MetadataProvider metadata={metadata}>
         <PermissionsProvider item={checklist}>
-          <PublicChecklistView checklist={checklist} user={user} />
+          <PublicChecklistView
+            checklist={checklist}
+            user={user}
+            ownerShowsEmojis={ownerShowsEmojis}
+          />
         </PermissionsProvider>
       </MetadataProvider>
     );

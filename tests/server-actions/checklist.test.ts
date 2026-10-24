@@ -16,9 +16,6 @@ const mockReadOrderFile = vi.fn();
 const mockGetCurrentUser = vi.fn();
 const mockCheckUserPermission = vi.fn();
 const mockLogContentEvent = vi.fn();
-const mockParseInternalLinks = vi.fn();
-const mockUpdateIndexForItem = vi.fn();
-const mockRemoveItemFromIndex = vi.fn();
 
 vi.mock("@/app/_server/actions/file", () => ({
   getUserModeDir: (...args: any[]) => mockGetUserModeDir(...args),
@@ -27,6 +24,7 @@ vi.mock("@/app/_server/actions/file", () => ({
   serverDeleteFile: (...args: any[]) => mockServerDeleteFile(...args),
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: any[]) => (await mockServerReadFile(...args)) ?? null,
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
   readJsonFile: vi.fn().mockResolvedValue([]),
 }));
@@ -47,15 +45,6 @@ vi.mock("@/app/_server/actions/sharing", () => ({
 
 vi.mock("@/app/_server/actions/log", () => ({
   logContentEvent: (...args: any[]) => mockLogContentEvent(...args),
-}));
-
-vi.mock("@/app/_server/actions/link", () => ({
-  parseInternalLinks: (...args: any[]) => mockParseInternalLinks(...args),
-  updateIndexForItem: (...args: any[]) => mockUpdateIndexForItem(...args),
-  removeItemFromIndex: (...args: any[]) => mockRemoveItemFromIndex(...args),
-  rebuildLinkIndex: vi.fn().mockResolvedValue(undefined),
-  rebuildLinkIndexInternal: vi.fn().mockResolvedValue(undefined),
-  updateItemCategory: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/app/_utils/checklist-utils", () => ({
@@ -109,9 +98,6 @@ describe("Checklist Actions", () => {
     });
     mockCheckUserPermission.mockResolvedValue(true);
     mockLogContentEvent.mockResolvedValue(undefined);
-    mockParseInternalLinks.mockResolvedValue([]);
-    mockUpdateIndexForItem.mockResolvedValue(undefined);
-    mockRemoveItemFromIndex.mockResolvedValue(undefined);
   });
 
   describe("createList", () => {
@@ -175,18 +161,6 @@ describe("Checklist Actions", () => {
         true,
         expect.objectContaining({ category: "TestCategory" }),
       );
-    });
-
-    it("should update link index after creation", async () => {
-      const formData = createFormData({
-        title: "Linked List",
-        category: "TestCategory",
-        type: "simple",
-      });
-
-      await createList(formData);
-
-      expect(mockUpdateIndexForItem).toHaveBeenCalled();
     });
 
     it("should handle creation errors gracefully", async () => {

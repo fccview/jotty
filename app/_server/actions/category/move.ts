@@ -6,16 +6,18 @@ import {
   ensureDir,
   getUserModeDir,
   readOrderFile,
+  serverRenamePath,
+  serverWriteFile,
   writeOrderFile,
 } from "@/app/_server/actions/file";
 import fs from "fs/promises";
 import { Modes } from "@/app/_types/enums";
 import { getUsername } from "@/app/_server/actions/users";
-import { rebuildLinkIndexInternal } from "@/app/_server/actions/link";
 import { logAudit } from "@/app/_server/actions/log";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { isPathSafe } from "@/app/_utils/path-utils";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { freeFilename } from "@/app/_utils/filename-utils";
+import { skippedDirs } from "@/app/_consts/files";
 import {
   catUuid,
   dirItemUuids,
@@ -25,20 +27,21 @@ import { mountsFor, userDirFor } from "@/app/_server/actions/share/mounts";
 import {
   invalidateCached,
   metaCacheKey,
+  summaryCacheKey,
 } from "@/app/_server/actions/lib/metadata-cache";
-import { targetDir, bouncer, shownAs } from "@/app/_server/actions/share/target";
+import { targetDir, bouncer, shownAs, reservedRefusal } from "@/app/_server/actions/share/target";
+import { isReservedCategory } from "@/app/_utils/category-path-utils";
 import { SharedMount } from "@/app/_types/sharing";
 import { PermissionTypes } from "@/app/_types/enums";
 import { orderByUuids } from "@/app/_utils/order-utils";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const _seededOrder = async (
   dirPath: string,
   mountUuids: string[] = [],
   allowArchived: boolean = false,
 ): Promise<{ categories: string[]; items: string[] }> => {
-  const excluded = allowArchived
-    ? EXCLUDED_DIRS
-    : [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const excluded = skippedDirs(allowArchived);
 
   const [order, presentItems, presentCats] = await Promise.all([
     readOrderFile(dirPath),
@@ -67,6 +70,7 @@ const forgetLists = (mode: Modes, owners: string[]): void => {
   Array.from(new Set(owners)).forEach((owner) => {
     const dir = path.join(process.cwd(), userDirFor(mode, owner));
     invalidateCached(metaCacheKey(mode, dir));
+    invalidateCached(summaryCacheKey(mode, dir));
   });
 };
 
@@ -119,10 +123,9 @@ const _restamp = async (
     );
     const content = await fs.readFile(filePath, "utf-8");
 
-    await fs.writeFile(
+    await serverWriteFile(
       filePath,
       updateYamlMetadata(content, { owner, category }),
-      "utf-8",
     );
   } catch (error) {
     console.error(`Failed to restamp ${filePath}:`, error);
@@ -317,6 +320,10 @@ export const moveNode = async (formData: FormData) => {
       return { error: "Shared folders stay at the top level" };
     }
 
+    if (isReservedCategory(destParentPath)) {
+      return { error: await reservedRefusal(destParentPath) };
+    }
+
     const isSameParent = activeParentPath === destParentPath;
 
     if (isSameParent && overType === "category") {
@@ -379,13 +386,18 @@ export const moveNode = async (formData: FormData) => {
       await ensureDir(newParentDir);
 
       const fileName = activeType === "item" ? `${activeName}.md` : activeName;
+      const landingName =
+        activeType === "item" ? await freeFilename(newParentDir, activeName) : activeName;
       const oldPath = path.join(oldParentDir, fileName);
-      const newPath = path.join(newParentDir, fileName);
-
-      await fs.rename(oldPath, newPath);
+      const newPath = path.join(newParentDir, landingName);
 
       if (activeType === "item") {
-        await _restamp(newPath, destLoc.owner, destLoc.category);
+        await runQueued(itemLane(mode, activeKey), async () => {
+          await serverRenamePath(oldPath, newPath);
+          await _restamp(newPath, destLoc.owner, destLoc.category);
+        });
+      } else {
+        await serverRenamePath(oldPath, newPath);
       }
 
       const oldOrder = await _seededOrder(oldParentDir, rootUuids);
@@ -407,14 +419,14 @@ export const moveNode = async (formData: FormData) => {
 
       if (activeType === "item" && mode === Modes.NOTES) {
         try {
-          const { commitNote } = await import("@/app/_server/actions/history");
+          const { commitNote } = await import("@/app/_server/actions/history/repo");
           const fileContent = await fs.readFile(newPath, "utf-8");
           const titleMatch = fileContent.match(/^title:\s*(.+)$/m);
           const title = titleMatch ? titleMatch[1] : activeName;
 
           await commitNote(
             destLoc.owner,
-            path.join(destLoc.category || "Uncategorized", `${activeName}.md`),
+            path.join(destLoc.category || "Uncategorized", landingName),
             "move",
             title,
             {
@@ -429,16 +441,6 @@ export const moveNode = async (formData: FormData) => {
         } catch (error) {
           console.warn("Failed to commit note move to git history:", error);
         }
-      }
-
-      try {
-        await rebuildLinkIndexInternal(sourceLoc.owner);
-
-        if (destLoc.owner !== sourceLoc.owner) {
-          await rebuildLinkIndexInternal(destLoc.owner);
-        }
-      } catch (error) {
-        console.warn("Failed to update link index:", error);
       }
     }
 

@@ -1,62 +1,60 @@
 # Translations
 
-Jotty uses [next-intl](https://next-intl-docs.vercel.app/) for internationalization, providing a pretty flexible translation system.
+Jotty uses [next-intl](https://next-intl-docs.vercel.app/) for translations. The language files live in `app/_translations/`, one JSON file per language, with English as the complete one.
 
-## How Translation Works
+## How Jotty picks a language
 
-### Translation System
+1. The language the user chose in their own settings.
+2. Otherwise, the `DEFAULT_LOCALE` environment variable. This is also what guests see on the login page before anyone has logged in.
+3. Otherwise, `en`.
 
-1. **Locale Detection**: The application determines the language in the following order: User's personally selected locale (in their user settings), the `DEFAULT_LOCALE` environment variable, and finally defaulting to `en` if neither are set. This ensures that guest users (e.g., on the login page) see the application in your preferred default language before they log in.
-2. **Translation Loading**: The corresponding JSON file is loaded from `app/_translations/`
-3. **Custom Overrides**: If a custom translation file is added in your `config/` directory and specified using the `CUSTOM_TRANSLATION_FILE` environment variable, it will be used instead of the default translations, allowing you to override specific strings. This should allow users who are not comfortable in making pull requests to still be able to have Jotty in their native language.
+Jotty loads the matching file from `app/_translations/`. Any key missing from it falls back to English, so a half-finished translation still works.
 
-## Creating Custom Translations
+If you set `CUSTOM_TRANSLATION_FILE`, Jotty then applies that file from your `config/` directory on top. Only the keys in your file change. This is for people who want Jotty in their language, or want to reword a few strings, without opening a pull request.
 
-### Option 1: Local Custom Translation File
+## Custom translations
 
-You can create a custom translation file to override or extend the default translations without modifying the core files:
+### Option 1: a local custom translation file
 
-1. **Create a custom translation file** in the `config/` directory (e.g., `config/custom-translations.json`)
+1. Create a JSON file in the `config/` directory, for example `config/custom-translations.json`.
 
-2. **Copy the structure** from the base translation file you want to customize:
-   - View the [English translation file](https://github.com/fccview/jotty/blob/main/app/_translations/en.json) for the complete structure
-   - You only need to include the keys you want to override, not the entire file
+2. Copy in the keys you want to change, using the same structure as the base file:
+   - The [English translation file](https://github.com/fccview/jotty/blob/main/app/_translations/en.json) has every key
+   - You only need the keys you want to override, not the whole file
 
-3. **Enable your custom translations** by setting the environment variable:
+3. Point Jotty at it with the environment variable:
    ```bash
    CUSTOM_TRANSLATION_FILE=custom-translations.json
    ```
 
-4. **Restart the application** for changes to take effect
+4. Restart Jotty so it picks up the variable.
 
-### Option 2: Create a New Language
+### Option 2: a new language
 
-To add a completely new language to the application:
-
-1. **Copy the English translation file**:
+1. Copy the English file:
    ```bash
    cp app/_translations/en.json app/_translations/[language-code].json
    ```
-   Replace `[language-code]` with the appropriate ISO 639-1 language code (e.g., `fr` for French, `de` for German, `es` for Spanish)
+   Replace `[language-code]` with the ISO 639-1 code for the language, e.g. `fr` for French, `de` for German, `es` for Spanish.
 
-2. **Translate all strings** in the new file to your target language, make sure to keep the variable placeholders in english (e.g., `{count}`)
+2. Translate the strings. Leave the placeholders in curly braces as they are, in English (e.g. `{count}`).
 
-3. **Create a pull request** with your new translation file
+3. Open a pull request with the new file.
 
-## Contributing Translations
+## Contributing translations
 
-We welcome and encourage community translations! If you've translated the application into a new language, please consider contributing it back to the project.
+If you've translated Jotty into a new language, or filled in gaps in an existing one, please send it back as a pull request. We already ship Klingon and pirate, so no language is too silly.
 
-## Translation File Structure
+## Translation file structure
 
-The translation files are organized into logical sections:
+The files are split into sections by feature:
 
-- `common` - Shared UI elements (buttons, labels, etc.)
-- `auth` - Authentication and login
-- `notes` - Notes feature
-- `checklists` - Checklists feature
-- `tasks` - Task management
-- `profile` - User profile and settings
-- And so on...
+- `common` - shared UI bits like buttons and labels
+- `auth` - authentication and login
+- `notes` - notes
+- `checklists` - checklists
+- `tasks` - task management
+- `profile` - user profile and settings
+- and so on
 
-Please use common sense when creating new strings if you plan on creating new features.
+If you're adding strings for a new feature, put them in the section for that feature and name the keys so the next person can find them.

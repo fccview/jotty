@@ -253,15 +253,9 @@ export const EditorSettingsTab = () => {
               <label htmlFor="enableBilateralLinks" className="space-y-1 cursor-pointer">
                 <div className="text-md lg:text-sm font-medium">
                   {t("admin.bilateralLinks")}
-                  <span className="ml-1 text-sm lg:text-xs text-muted-foreground">
-                    {t("admin.experimental")}
-                  </span>
                 </div>
                 <p className="text-md lg:text-xs text-muted-foreground">
                   {t("admin.bilateralLinksDescription")}
-                  <span className="mt-1 block text-sm lg:text-xs italic text-muted-foreground">
-                    {t("admin.bilateralLinksWarning")}
-                  </span>
                 </p>
               </label>
               <Toggle

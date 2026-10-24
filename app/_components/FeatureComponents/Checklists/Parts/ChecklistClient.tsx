@@ -1,5 +1,6 @@
 "use client";
 
+import { LockedItemNotice } from "@/app/_components/GlobalComponents/Feedback/LockedItemNotice";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
@@ -21,6 +22,7 @@ import { toggleArchive } from "@/app/_server/actions/dashboard";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
+import { useReturnPath } from "@/app/_hooks/useReturnPath";
 
 interface ChecklistClientProps {
   checklist: Checklist;
@@ -48,6 +50,7 @@ export const ChecklistClient = ({
     useState<string>("");
   const { openCreateChecklistModal, openCreateCategoryModal, openSettings } =
     useShortcut();
+  const returnPath = useReturnPath(`/?mode=${Modes.CHECKLISTS}`);
   const prevChecklistId = useRef(checklist.id);
   const prevUpdatedAt = useRef(checklist.updatedAt);
 
@@ -68,13 +71,14 @@ export const ChecklistClient = ({
 
   const handleBack = () => {
     checkNavigation(() => {
-      router.push("/?mode=checklists");
+      router.push(returnPath);
     });
   };
 
   const handleArchive = async () => {
     const result = await toggleArchive(localChecklist, Modes.CHECKLISTS);
     if (result.success) {
+      handleBack();
       router.refresh();
     }
   };
@@ -106,7 +110,7 @@ export const ChecklistClient = ({
 
   const handleDelete = (deletedId: string) => {
     checkNavigation(() => {
-      router.push("/?mode=checklists");
+      router.push(returnPath);
     });
   };
 
@@ -115,7 +119,7 @@ export const ChecklistClient = ({
     getNewType,
     handleConfirmConversion,
     sensors,
-    DeleteModal,
+    deleteModal,
   } = useChecklist({
     list: localChecklist,
     onUpdate: handleUpdate,
@@ -163,6 +167,11 @@ export const ChecklistClient = ({
       user={user}
       extraClasses="jotty-checklist-page"
     >
+      <LockedItemNotice
+        uuid={localChecklist.uuid}
+        itemType={ItemTypes.CHECKLIST}
+        lockReason={localChecklist.lockReason}
+      />
       {renderContent()}
 
       {showShareModal && (
@@ -239,7 +248,7 @@ export const ChecklistClient = ({
         />
       )}
 
-      <DeleteModal />
+      {deleteModal}
       {showCloneModal && (
         <CloneCategoryModal
           isOpen={showCloneModal}

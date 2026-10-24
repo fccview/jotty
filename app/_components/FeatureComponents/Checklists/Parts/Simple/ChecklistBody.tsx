@@ -11,9 +11,9 @@ import { NestedChecklistItem } from "@/app/_components/FeatureComponents/Checkli
 import VirtualizedChecklistItems from "./VirtualizedChecklistItems";
 import { Checklist, Item } from "@/app/_types";
 import { DropIndicator } from "./DropIndicator";
-import { ItemTypes, TaskStatusLabels } from "@/app/_types/enums";
+import { ItemSort, ItemTypes, SortDirection, TaskStatusLabels } from "@/app/_types/enums";
+import { ChecklistSortMenu } from "./ChecklistSortMenu";
 import { useMemo, useState } from "react";
-import { getReferences } from "@/app/_utils/indexes-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { ReferencedBySection } from "@/app/_components/FeatureComponents/Notes/Parts/ReferencedBySection";
 import { useTranslations } from "next-intl";
@@ -29,6 +29,10 @@ interface ChecklistBodyProps {
   handleAddSubItem: (parentId: string, text: string) => void;
   handleBulkToggle: (completed: boolean) => void;
   handleClearAll: (type: "completed" | "incomplete") => void;
+  handleSort: (sort: ItemSort, direction?: SortDirection) => void;
+  handleUndoSort: () => void;
+  canUndoSort: boolean;
+  isSyncing: boolean;
   handleDragEnd: (event: DragEndEvent) => void;
   sensors: any;
   isLoading: boolean;
@@ -45,29 +49,22 @@ export const ChecklistBody = ({
   handleAddSubItem,
   handleBulkToggle,
   handleClearAll,
+  handleSort,
+  handleUndoSort,
+  canUndoSort,
+  isSyncing,
   handleDragEnd,
   sensors,
   isLoading,
   isDeletingItem,
 }: ChecklistBodyProps) => {
   const t = useTranslations();
-  const { linkIndex, notes, checklists, appSettings } = useAppMode();
   const { isDragging, setIsDragging } = useUIStore();
   const [activeItem, setActiveItem] = useState<Item | null>(null);
   const [overItem, setOverItem] = useState<{
     id: string;
     position: "before" | "after";
   } | null>(null);
-
-  const referencingItems = useMemo(() => {
-    return getReferences(
-      linkIndex,
-      localList.uuid,
-      ItemTypes.CHECKLIST,
-      notes,
-      checklists
-    );
-  }, [linkIndex, localList.uuid, notes, checklists]);
 
   const onDragStart = (event: DragStartEvent) => {
     const findItem = (items: Item[], id: string): Item | undefined => {
@@ -115,6 +112,15 @@ export const ChecklistBody = ({
     });
   };
 
+  const sortMenu = (
+    <ChecklistSortMenu
+      onSort={handleSort}
+      onUndo={handleUndoSort}
+      canUndo={canUndoSort}
+      disabled={isLoading || isSyncing}
+    />
+  );
+
   if (localList.items.length === 0) {
     return (
       <>
@@ -127,12 +133,7 @@ export const ChecklistBody = ({
           </p>
         </div>
 
-        {referencingItems.length > 0 &&
-          appSettings?.editor?.enableBilateralLinks && (
-            <div className="p-4">
-              <ReferencedBySection referencingItems={referencingItems} />
-            </div>
-          )}
+        <ReferencedBySection className="p-4" />
       </>
     );
   }
@@ -142,7 +143,7 @@ export const ChecklistBody = ({
       {localList.items.length > 0 && (
         <ChecklistProgress checklist={localList} />
       )}
-      <div className="flex-1 overflow-y-auto jotty-scrollable-content p-4">
+      <div className="flex-1 overflow-y-auto jotty-scrollable-content jotty-quick-nav-gutter p-4">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -151,13 +152,14 @@ export const ChecklistBody = ({
           onDragCancel={onDragCancel}
           onDragOver={onDragOver}
         >
-          <div className="w-full min-h-[200px] space-y-4 overflow-hidden checklist-todo-container">
+          <div className="w-full min-h-[200px] space-y-4 overflow-x-clip checklist-todo-container">
             {incompleteItems.length > 0 && (
               <ChecklistItemsWrapper
                 title={TaskStatusLabels.TODO}
                 count={incompleteItems.length}
                 onBulkToggle={() => handleBulkToggle(true)}
                 onClearAll={() => handleClearAll("incomplete")}
+                actions={sortMenu}
                 isLoading={isLoading}
               >
                 {incompleteItems.length >= 50 ? (
@@ -225,6 +227,7 @@ export const ChecklistBody = ({
                 count={completedItems.length}
                 onBulkToggle={() => handleBulkToggle(false)}
                 onClearAll={() => handleClearAll("completed")}
+                actions={incompleteItems.length === 0 && sortMenu}
                 isLoading={isLoading}
                 isCompleted
               >
@@ -293,10 +296,7 @@ export const ChecklistBody = ({
           </div>
         </DndContext>
 
-        {referencingItems.length > 0 &&
-          appSettings?.editor?.enableBilateralLinks && (
-            <ReferencedBySection referencingItems={referencingItems} />
-          )}
+        <ReferencedBySection />
       </div>
     </>
   );

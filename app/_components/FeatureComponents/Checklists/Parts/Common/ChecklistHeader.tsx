@@ -13,7 +13,9 @@ import {
   Archive02Icon,
   Copy01Icon,
   Copy02Icon,
+  SourceCodeIcon,
 } from "hugeicons-react";
+import { BrainButton } from "@/app/_components/FeatureComponents/Brain/Parts/BrainButton";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { Checklist } from "@/app/_types";
 import { useChecklist } from "../../../../../_hooks/useChecklist";
@@ -22,10 +24,11 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { shareGrants, sharingInfo } from "@/app/_utils/sharing-utils";
 import { ShareBadges } from "@/app/_components/GlobalComponents/Indicators/ShareBadges";
 import { SharedFromBadge } from "@/app/_components/GlobalComponents/Indicators/SharedFromBadge";
-import { ChecklistsTypes, Modes } from "@/app/_types/enums";
+import { ChecklistsTypes, ItemTypes, Modes } from "@/app/_types/enums";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useState } from "react";
 import { SharedWithModal } from "@/app/_components/GlobalComponents/Modals/SharingModals/SharedWithModal";
+import { FrontmatterModal } from "@/app/_components/GlobalComponents/Modals/FrontmatterModal";
 import { useMetadata } from "@/app/_providers/MetadataProvider";
 import { useTranslations } from "next-intl";
 
@@ -60,6 +63,7 @@ export const ChecklistHeader = ({
   const { globalSharing } = useAppMode();
   const { permissions } = usePermissions();
   const [showSharedWithModal, setShowSharedWithModal] = useState(false);
+  const [showFrontmatterModal, setShowFrontmatterModal] = useState(false);
 
   const itemDetails = sharingInfo(globalSharing, metadata.uuid || "");
   const isShared = itemDetails.exists && itemDetails.sharedWith.length > 0;
@@ -147,11 +151,14 @@ export const ChecklistHeader = ({
             )}
           </div>
 
+          <BrainButton uuid={checklist.uuid} className="h-10 w-10" />
+
           {(permissions?.canEdit || permissions?.canDelete) && (
             <div
               className={`${permissions?.canEdit &&
                 !permissions?.canDelete &&
                 !permissions?.isOwner &&
+                permissions?.isLocked &&
                 "lg:hidden"
                 }`}
             >
@@ -163,24 +170,25 @@ export const ChecklistHeader = ({
                   </Button>
                 }
                 items={[
-                  ...(onConvertType && permissions?.canEdit
+                  { type: "heading" as const, label: t("menuGroups.organise") },
+                  ...(onEdit && permissions?.canEdit
                     ? [
                       {
                         type: "item" as const,
-                        label:
-                          checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK
-                            ? t("checklists.convertToSimpleChecklist")
-                            : t("checklists.convertToKanbanBoard"),
-                        icon:
-                          checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK ? (
-                            <CheckmarkSquare04Icon className="h-4 w-4" />
-                          ) : (
-                            <TaskDaily01Icon className="h-4 w-4" />
-                          ),
-                        onClick: () => {
-                          onConvertType();
-                        },
+                        label: t("editor.edit"),
+                        icon: <PencilEdit02Icon className="h-4 w-4" />,
+                        onClick: onEdit,
                         className: "lg:!hidden",
+                      },
+                    ]
+                    : []),
+                  ...(onShare && permissions?.isOwner && !permissions?.isLocked
+                    ? [
+                      {
+                        type: "item" as const,
+                        label: t("sharing.share"),
+                        icon: <Share08Icon className="h-4 w-4" />,
+                        onClick: onShare,
                       },
                     ]
                     : []),
@@ -204,27 +212,40 @@ export const ChecklistHeader = ({
                       },
                     ]
                     : []),
-                  ...(onShare && permissions?.isOwner
+                  { type: "divider" as const },
+                  { type: "heading" as const, label: t("menuGroups.advanced") },
+                  ...(onConvertType && permissions?.canEdit
                     ? [
                       {
                         type: "item" as const,
-                        label: t("sharing.share"),
-                        icon: <Share08Icon className="h-4 w-4" />,
-                        onClick: onShare,
-                      },
-                    ]
-                    : []),
-                  ...(onEdit && permissions?.canEdit
-                    ? [
-                      {
-                        type: "item" as const,
-                        label: t("editor.edit"),
-                        icon: <PencilEdit02Icon className="h-4 w-4" />,
-                        onClick: onEdit,
+                        label:
+                          checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK
+                            ? t("checklists.convertToSimpleChecklist")
+                            : t("checklists.convertToKanbanBoard"),
+                        icon:
+                          checklist.type === ChecklistsTypes.KANBAN || checklist.type === ChecklistsTypes.TASK ? (
+                            <CheckmarkSquare04Icon className="h-4 w-4" />
+                          ) : (
+                            <TaskDaily01Icon className="h-4 w-4" />
+                          ),
+                        onClick: () => {
+                          onConvertType();
+                        },
                         className: "lg:!hidden",
                       },
                     ]
                     : []),
+                  ...(permissions?.canEdit && !permissions?.isLocked
+                    ? [
+                      {
+                        type: "item" as const,
+                        label: t("frontmatter.edit"),
+                        icon: <SourceCodeIcon className="h-4 w-4" />,
+                        onClick: () => setShowFrontmatterModal(true),
+                      },
+                    ]
+                    : []),
+                  { type: "divider" as const },
                   ...(onDelete && permissions?.canDelete
                     ? [
                       {
@@ -248,6 +269,14 @@ export const ChecklistHeader = ({
         isOpen={showSharedWithModal}
         onClose={() => setShowSharedWithModal(false)}
       />
+
+      {showFrontmatterModal && checklist.uuid && (
+        <FrontmatterModal
+          uuid={checklist.uuid}
+          itemType={ItemTypes.CHECKLIST}
+          onClose={() => setShowFrontmatterModal(false)}
+        />
+      )}
     </div>
   );
 };

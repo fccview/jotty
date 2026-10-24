@@ -1,22 +1,14 @@
 import { getTranslations } from "next-intl/server";
 import { SessionsTabClient } from "@/app/_components/FeatureComponents/Profile/Parts/SessionsTabClient";
-import { getCurrentUser } from "@/app/_server/actions/users";
-import { getSessionsForUser, getSessionId } from "@/app/_server/actions/session";
+import { getMySessions } from "@/app/_server/actions/session";
 
 export default async function SessionsPage() {
     const t = await getTranslations();
-    const currentUser = await getCurrentUser();
-    const sessionId = await getSessionId();
+    const sessions = await getMySessions();
 
-    if (!currentUser) {
+    if (!sessions) {
         return <div>{t('errors.unauthorized')}</div>;
     }
-
-    const sessionsData = await getSessionsForUser(currentUser.username);
-    const sessions = sessionsData?.map((session) => ({
-        ...session,
-        isCurrent: session.id === sessionId,
-    })) || [];
 
     return <SessionsTabClient initialSessions={sessions} />;
 }

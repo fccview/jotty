@@ -8,12 +8,19 @@ import {
 import { isAdmin as checkIsAdmin } from "@/app/_server/actions/users";
 import { AdminRequiredView } from "@/app/_components/FeatureComponents/Migration/Parts/MIgrationAdminRequired";
 import { ShareMigrationView } from "./Parts/ShareMigrationView";
+import { AttachmentMigrationView } from "./Parts/AttachmentMigrationView";
+import { MigrationSteps } from "@/app/_consts/attachment-migration";
+import { SHARING_SCHEMA_VERSION } from "@/app/_consts/files";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { useTranslations } from "next-intl";
 
 const LoadingView = () => <Loading />;
 
-export const MigrationPage = () => {
+interface MigrationPageProps {
+  step: MigrationSteps;
+}
+
+export const MigrationPage = ({ step }: MigrationPageProps) => {
   const t = useTranslations();
   const [isMigrating, setIsMigrating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +73,10 @@ export const MigrationPage = () => {
     setError(null);
 
     try {
-      const result = await forceUnblock(migrationResult?.residue || []);
+      const result = await forceUnblock(
+        migrationResult?.residue || [],
+        SHARING_SCHEMA_VERSION,
+      );
 
       if (!result.success) {
         throw new Error(result.error || t("migration.overrideFailed"));
@@ -83,7 +93,8 @@ export const MigrationPage = () => {
   };
 
   if (isLoading) return <LoadingView />;
-  if (isAdmin === false) return <AdminRequiredView />;
+  if (isAdmin === false) return <AdminRequiredView step={step} />;
+  if (step === MigrationSteps.ATTACHMENTS) return <AttachmentMigrationView />;
 
   return (
     <ShareMigrationView

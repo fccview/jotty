@@ -3,7 +3,7 @@
 import { Checklist, TimeEntry } from "@/app/_types";
 import { ItemTypes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { getFormData } from "@/app/_utils/global-utils";
 import { updateItem, findItem } from "@/app/_utils/item-tree-utils";
@@ -15,6 +15,7 @@ import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { Modes } from "@/app/_types/enums";
 import { revalidatePath } from "next/cache";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
 const _getFilePath = async (list: Checklist): Promise<string> => {
   const categoryDir = list.category || UNCATEGORIZED;
@@ -46,7 +47,7 @@ async function _saveAndBroadcast(list: Checklist, username: string) {
   } catch { }
 }
 
-export const editTimeEntry = async (formData: FormData) => {
+const _editTimeEntry = async (formData: FormData) => {
   try {
     const { uuid, itemId, entryId } = getFormData(formData, [
       "uuid", "itemId", "entryId",
@@ -100,7 +101,7 @@ export const editTimeEntry = async (formData: FormData) => {
   }
 };
 
-export const deleteTimeEntry = async (formData: FormData) => {
+const _deleteTimeEntry = async (formData: FormData) => {
   try {
     const { uuid, itemId, entryId } = getFormData(formData, [
       "uuid", "itemId", "entryId",
@@ -139,3 +140,13 @@ export const deleteTimeEntry = async (formData: FormData) => {
     return { error: "Failed to delete time entry" };
   }
 };
+
+export const editTimeEntry = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _editTimeEntry(formData),
+  );
+
+export const deleteTimeEntry = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _deleteTimeEntry(formData),
+  );

@@ -16,8 +16,8 @@ import {
 } from "hugeicons-react";
 import { useTranslations } from "next-intl";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
-
-export type CalloutType = "info" | "warning" | "success" | "danger";
+import { CalloutType } from "@/app/_consts/callouts";
+import { MENU_ITEM_ACTIVE_CLASS } from "@/app/_consts/styling";
 
 const CalloutIcons: Record<CalloutType, typeof Idea01Icon> = {
   info: Idea01Icon,
@@ -50,35 +50,33 @@ const CalloutNodeView: FC<CalloutNodeViewComponentProps> = ({
         label: t(`editor.callout${type.charAt(0).toUpperCase() + type.slice(1)}`),
         icon: <TypeIcon className={`h-4 w-4 callout-icon-${type}`} />,
         onClick: () => updateAttributes({ type }),
-        className: type === calloutType ? "bg-muted" : "",
+        className: type === calloutType ? MENU_ITEM_ACTIVE_CLASS : "",
       };
     }
   );
 
   return (
     <NodeViewWrapper
-      className={`callout callout-${calloutType} my-4`}
+      className={`callout callout-${calloutType}`}
       data-type="callout"
       data-callout-type={calloutType}
     >
-      <div className="flex gap-3">
-        <div className="flex-shrink-0 select-none pt-0.5">
+      <div className="callout-wrapper">
+        <div className="flex-none select-none">
           <DropdownMenu
             trigger={
               <div
-                className={`callout-icon-button p-1 rounded-jotty hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer callout-icon-${calloutType}`}
+                className={`callout-icon callout-icon-button callout-icon-${calloutType}`}
                 title={t("editor.changeCalloutType")}
               >
-                <IconComponent className="h-5 w-5" />
+                <IconComponent />
               </div>
             }
             items={dropdownItems}
             align="left"
           />
         </div>
-        <div className="flex-1 min-w-0">
-          <NodeViewContent className="callout-content" />
-        </div>
+        <NodeViewContent className="callout-content" />
       </div>
     </NodeViewWrapper>
   );

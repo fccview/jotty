@@ -223,13 +223,27 @@ describe("File Actions", () => {
       mockFs.mkdir.mockResolvedValue(undefined);
       mockFs.writeFile.mockResolvedValue(undefined);
 
+      mockFs.rename.mockResolvedValue(undefined);
+
       await serverWriteFile("/path/to/file.txt", "content");
 
-      expect(mockFs.writeFile).toHaveBeenCalledWith(
-        "/path/to/file.txt",
-        "content",
-        "utf-8",
-      );
+      const [tmpPath, written, encoding] = mockFs.writeFile.mock.calls[0];
+      expect(tmpPath).toMatch(/^\/path\/to\/\.file\.txt\..+\.tmp$/);
+      expect(written).toBe("content");
+      expect(encoding).toBe("utf-8");
+      expect(mockFs.rename).toHaveBeenCalledWith(tmpPath, "/path/to/file.txt");
+    });
+
+    it("should clean up the temp file and rethrow when the rename fails", async () => {
+      mockFs.access.mockResolvedValue(undefined);
+      mockFs.writeFile.mockResolvedValue(undefined);
+      mockFs.rename.mockRejectedValue(new Error("EXDEV"));
+      mockFs.unlink.mockResolvedValue(undefined);
+
+      await expect(serverWriteFile("/path/to/file.txt", "content")).rejects.toThrow("EXDEV");
+
+      const [tmpPath] = mockFs.writeFile.mock.calls[0];
+      expect(mockFs.unlink).toHaveBeenCalledWith(tmpPath);
     });
   });
 

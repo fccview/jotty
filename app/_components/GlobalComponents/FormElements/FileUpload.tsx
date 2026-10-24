@@ -5,12 +5,12 @@ import {
   AlertCircleIcon,
 } from "hugeicons-react";
 import { formatFileSize } from "@/app/_utils/file-icon-utils";
-import { Orbit01Icon } from "hugeicons-react";
 import { Logo } from "../Layout/Logo/Logo";
 import { useTranslations } from "next-intl";
+import type { FileTab } from "@/app/_hooks/useFileManager";
 
 interface FileUploadProps {
-  activeTab: "images" | "videos" | "files";
+  activeTab: FileTab;
   selectedFile: File | null;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onUpload: () => void;
@@ -50,8 +50,8 @@ export const FileUpload = ({
           onClick={() => document.getElementById("file-upload")?.click()}
           className="w-full sm:w-auto"
         >
-          <Upload01Icon className="h-4 w-4 mr-2" /> Choose{" "}
-          {activeTab === "images" ? t("editor.image") : t("editor.file")}
+          <Upload01Icon className="h-4 w-4 mr-2" />
+          {t(`attachments.choose.${activeTab}`)}
         </Button>
         {selectedFile && (
           <div className="flex flex-col gap-3 flex-1">
@@ -79,7 +79,7 @@ export const FileUpload = ({
             {isUploading && (
               <div className="w-full text-center">
                 <div className="text-md lg:text-sm text-muted-foreground">
-                  Uploading file...
+                  {t("common.uploading")}
                 </div>
               </div>
             )}

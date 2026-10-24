@@ -1,5 +1,4 @@
-"use server";
-
+import { newestFirst } from "@/app/_utils/order-utils";
 import path from "path";
 import fs from "fs/promises";
 import { Note, User, GetNotesOptions } from "@/app/_types";
@@ -7,15 +6,34 @@ import { NOTES_DIR, USERS_FILE } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { getCurrentUser } from "@/app/_server/actions/users";
-import { getUserModeDir, ensureDir } from "@/app/_server/actions/file";
+import { getUserModeDir, ensureDir, serverReadExisting } from "@/app/_server/actions/file";
+import { uuidOf } from "@/app/_server/actions/lib/read-only";
+import { lockOf } from "@/app/_server/actions/lib/unstamped";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { parseNoteContent } from "@/app/_utils/client-parser-utils";
-import { toIso } from "@/app/_utils/yaml-metadata-utils";
-import { readNotesRecursively } from "./readers";
+import {
+  createdAtOf,
+  extractYamlMetadata,
+  toIso,
+} from "@/app/_utils/yaml-metadata-utils";
+import {
+  patchNoteListing,
+  readNotesRecursively,
+  verifyNoteSummaries,
+  type ListedNote,
+  type NoteReadOptions,
+} from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
 import { isDebugFlag } from "@/app/_utils/env-utils";
-import { getOrCompute, metaCacheKey } from "@/app/_server/actions/lib/metadata-cache";
+import {
+  getOrCompute,
+  metaCacheKey,
+  summaryCacheKey,
+} from "@/app/_server/actions/lib/metadata-cache";
+import { unlistedNote, withBody } from "./bodies";
+import { dropClashes } from "@/app/_server/actions/lib/uuid-keeper";
+import { pinsFirst } from "@/app/_utils/pin-utils";
 
 export const getAllNotes = async (allowArchived?: boolean) => {
   try {
@@ -27,13 +45,7 @@ export const getAllNotes = async (allowArchived?: boolean) => {
       const userDir = NOTES_DIR(user.username);
 
       try {
-        const userDocs = await readNotesRecursively(
-          userDir,
-          "",
-          user.username,
-          allowArchived,
-          false,
-        );
+        const userDocs = await readNotesRecursively(userDir, user.username, { allowArchived });
         allDocs.push(...userDocs);
       } catch (error) {
         continue;
@@ -52,7 +64,6 @@ export const getNoteById = async (
   username?: string,
 ): Promise<Note | undefined> => {
   const { grepFindFileByUuid } = await import("@/app/_utils/grep-utils");
-  const { serverReadFile } = await import("@/app/_server/actions/file");
 
   if (!username) {
     const { getUserByNoteUuid } = await import("@/app/_server/actions/users");
@@ -111,19 +122,21 @@ export const getNoteById = async (
     return undefined;
   }
 
-  const rawContent = await serverReadFile(filePath);
-  if (!rawContent) return undefined;
+  const rawContent = await serverReadExisting(filePath);
+  if (rawContent === null) return undefined;
+  const lockReason = await lockOf(filePath).catch(() => null);
 
   const stats = await fs.stat(filePath);
   const parsedData = parseNoteContent(rawContent, noteId);
 
   return {
     id: noteId,
-    uuid: parsedData.uuid || uuid,
+    uuid: uuidOf(parsedData.uuid) || uuid,
+    ...(lockReason && { lockReason }),
     title: parsedData.title,
     content: parsedData.content,
     category: noteCategory,
-    createdAt: toIso(stats.birthtime),
+    createdAt: createdAtOf(extractYamlMetadata(rawContent).metadata, stats.birthtime),
     updatedAt: toIso(stats.mtime),
     owner: ownerUsername,
     isShared,
@@ -139,6 +152,18 @@ export const getNoteById = async (
   };
 };
 
+const _withBodies = async (
+  notes: ListedNote[],
+  bodiesFor?: (notes: Note[]) => string[],
+  keepSources = false,
+): Promise<Note[]> => {
+  const wanted = new Set(bodiesFor ? bodiesFor(notes) : []);
+  const filled = await Promise.all(
+    notes.map((note) => (wanted.has(note.uuid) ? withBody(note) : note)),
+  );
+  return keepSources ? filled : filled.map(unlistedNote);
+};
+
 export const getUserNotes = async (options: GetNotesOptions = {}) => {
   const {
     username,
@@ -152,6 +177,10 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     offset,
     pinnedPaths,
     preserveOrder = false,
+    summarize = false,
+    bodiesFor,
+    keepSources = false,
+    verify = false,
   } = options;
 
   try {
@@ -177,39 +206,41 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     const layoutTiming = metadataOnly;
     const t1 = layoutTiming ? performance.now() : 0;
 
-    const canCache = metadataOnly && !allowArchived && !isRaw && !excerptLength;
+    const isSummary = summarize && !metadataOnly && !isRaw && !excerptLength;
+    const canCache = (metadataOnly || isSummary) && !allowArchived && !isRaw && !excerptLength;
+    const cacheKeyOf = isSummary ? summaryCacheKey : metaCacheKey;
 
     const ownCacheKey = canCache
-      ? metaCacheKey(Modes.NOTES, resolvedDir)
+      ? cacheKeyOf(Modes.NOTES, resolvedDir)
       : null;
 
-    const cached: Note[] = ownCacheKey
-      ? await getOrCompute(ownCacheKey, resolvedDir, () =>
-        readNotesRecursively(
-          resolvedDir,
-          "",
-          currentUser.username,
-          allowArchived,
-          isRaw,
-          metadataOnly,
-          excerptLength,
-          undefined,
-          undefined,
-        ),
-      )
-      : await readNotesRecursively(
-        resolvedDir,
-        "",
-        currentUser.username,
-        allowArchived,
-        isRaw,
-        metadataOnly,
-        excerptLength,
-        undefined,
-        undefined,
-      );
+    const readOptions: NoteReadOptions = {
+      allowArchived,
+      isRaw,
+      metadataOnly,
+      excerptLength,
+      summarize: isSummary,
+    };
+    const readOwn = () => readNotesRecursively(resolvedDir, currentUser.username, readOptions);
 
-    const notes: Note[] = [...cached];
+    const verified = new Set<string>();
+    const checked = async (key: string, dir: string) => {
+      if (!verify || !isSummary || verified.has(key)) return;
+      verified.add(key);
+      await verifyNoteSummaries(key, dir);
+    };
+
+    if (ownCacheKey) await checked(ownCacheKey, resolvedDir);
+    const cached: ListedNote[] = ownCacheKey
+      ? await getOrCompute(
+          ownCacheKey,
+          resolvedDir,
+          readOwn,
+          patchNoteListing(resolvedDir, currentUser.username, readOptions),
+        )
+      : await readOwn();
+
+    const notes: ListedNote[] = dropClashes(cached, resolvedDir);
 
     if (layoutTiming && isDebugFlag("crud")) {
       console.warn(
@@ -234,30 +265,19 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
           ? ownerDir
           : path.join(process.cwd(), ownerDir);
         const ownerCacheKey = canCache
-          ? metaCacheKey(Modes.NOTES, ownerAbsDir)
+          ? cacheKeyOf(Modes.NOTES, ownerAbsDir)
           : null;
 
+        const readOwner = () => readNotesRecursively(ownerDir, mount.owner, readOptions);
+        if (ownerCacheKey) await checked(ownerCacheKey, ownerAbsDir);
         const ownerNotes = ownerCacheKey
-          ? await getOrCompute(ownerCacheKey, ownerAbsDir, () =>
-            readNotesRecursively(
-              ownerDir,
-              "",
-              mount.owner,
-              allowArchived,
-              isRaw,
-              metadataOnly,
-              excerptLength,
-            ),
-          )
-          : await readNotesRecursively(
-            ownerDir,
-            "",
-            mount.owner,
-            allowArchived,
-            isRaw,
-            metadataOnly,
-            excerptLength,
-          );
+          ? await getOrCompute(
+              ownerCacheKey,
+              ownerAbsDir,
+              readOwner,
+              patchNoteListing(ownerAbsDir, mount.owner, readOptions),
+            )
+          : await readOwner();
 
         const shared = await mountedItems(
           Modes.NOTES,
@@ -276,7 +296,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       }
     }
 
-    let filteredNotes = notes;
+    let filteredNotes: Note[] = notes;
     if (filter) {
       if (filter.type === "category") {
         filteredNotes = notes.filter((note: any) => {
@@ -298,10 +318,7 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     }
 
     if (!preserveOrder) {
-      filteredNotes.sort(
-        (a: any, b: any) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-      );
+      filteredNotes.sort(newestFirst);
     }
 
     const offsetNum = typeof offset === "number" && offset >= 0 ? offset : 0;
@@ -312,26 +329,15 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
       limit &&
       limit > 0
     ) {
-      const pathMatches = (note: { uuid?: string }, p: string) => {
-        const u = note.uuid;
-        return p === u || p.split("/").pop() === u;
-      };
-      const pinned: typeof filteredNotes = [];
-      for (const p of pinnedPaths) {
-        const found = filteredNotes.find((n: { uuid?: string }) =>
-          pathMatches(n, p),
-        );
-        if (found) pinned.push(found);
-      }
-      const rest = filteredNotes.filter(
-        (n: { category?: string; uuid?: string; id: string }) =>
-          !pinnedPaths.some((p) => pathMatches(n, p)),
-      );
-      filteredNotes = [...pinned, ...rest].slice(0, limit);
+      filteredNotes = pinsFirst(filteredNotes, pinnedPaths, limit);
     } else if (limit && limit > 0) {
       filteredNotes = filteredNotes.slice(offsetNum, offsetNum + limit);
     } else if (offsetNum > 0) {
       filteredNotes = filteredNotes.slice(offsetNum);
+    }
+
+    if (isSummary) {
+      filteredNotes = await _withBodies(filteredNotes, bodiesFor, keepSources);
     }
 
     if (projection && projection.length > 0) {
@@ -352,16 +358,4 @@ export const getUserNotes = async (options: GetNotesOptions = {}) => {
     console.error("Error in getNotesUnified:", error);
     return { success: false, error: "Failed to fetch notes" };
   }
-};
-
-export const getNotesForDisplay = async (
-  filter?: { type: "category" | "tag"; value: string } | null,
-  limit: number = 20,
-  offset: number = 0,
-) => {
-  return getUserNotes({
-    filter: filter || undefined,
-    limit,
-    offset: filter ? offset : undefined,
-  });
 };

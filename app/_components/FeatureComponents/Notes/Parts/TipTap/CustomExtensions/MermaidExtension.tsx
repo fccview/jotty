@@ -1,181 +1,70 @@
 "use client";
 
 import { Node, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import { NodeViewWrapper } from "@tiptap/react";
-import { useEffect, useRef, useState } from "react";
-import mermaid from "mermaid";
+import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { MermaidRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/MermaidRenderer";
+import { MermaidEditorModal } from "@/app/_components/FeatureComponents/Notes/Parts/Diagrams/MermaidEditorModal";
+import { DiagramToolbar, DiagramToolButton } from "@/app/_components/FeatureComponents/Notes/Parts/Diagrams/DiagramFrame";
+import { useReturnFocus } from "@/app/_components/FeatureComponents/Notes/Parts/Diagrams/useReturnFocus";
 
-const getCSSVariable = (variable: string): string => {
-  if (typeof window === "undefined") return "";
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue(variable)
-    .trim();
-  if (value && /^\d+\s+\d+\s+\d+$/.test(value)) {
-    return `rgb(${value.replace(/\s+/g, ", ")})`;
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    mermaid: {
+      setMermaid: (content: string) => ReturnType;
+    };
   }
-  return value;
-};
-
-const initializeMermaidTheme = () => {
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: "base",
-    securityLevel: "loose",
-    themeVariables: {
-      primaryColor: getCSSVariable("--primary") || "rgb(139, 59, 208)",
-      primaryTextColor:
-        getCSSVariable("--primary-foreground") || "rgb(255, 255, 255)",
-      primaryBorderColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-      lineColor: getCSSVariable("--primary") || "rgb(139, 59, 208)",
-      secondaryColor: getCSSVariable("--secondary") || "rgb(243, 240, 249)",
-      tertiaryColor: getCSSVariable("--muted") || "rgb(243, 240, 249)",
-      background: getCSSVariable("--background") || "rgb(255, 255, 255)",
-      mainBkg: getCSSVariable("--background") || "rgb(255, 255, 255)",
-      secondBkg: getCSSVariable("--muted") || "rgb(243, 240, 249)",
-      tertiaryBkg: getCSSVariable("--accent") || "rgb(243, 240, 249)",
-      textColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-      border1: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-      border2: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-      nodeBorder: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-      clusterBkg: getCSSVariable("--muted") || "rgb(243, 240, 249)",
-      clusterBorder: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-      defaultLinkColor: getCSSVariable("--primary") || "rgb(139, 59, 208)",
-      titleColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-      edgeLabelBackground:
-        getCSSVariable("--background") || "rgb(255, 255, 255)",
-      nodeTextColor: getCSSVariable("--foreground") || "rgb(20, 20, 20)",
-    },
-  });
-};
-
-if (typeof window !== "undefined") {
-  initializeMermaidTheme();
 }
 
-const normalizeDiagramType = (code: string): string =>
-  code.replace(/^(\s*)sankey(\s)/m, "$1sankey-beta$2");
-
-export const MermaidNodeView = ({
-  node,
-  updateAttributes,
-  deleteNode,
-}: any) => {
+export const MermaidNodeView = ({ node, editor, getPos, updateAttributes, deleteNode }: NodeViewProps) => {
   const t = useTranslations();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(node.attrs.content || "");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const returnFocus = useReturnFocus(editor, getPos);
+  const content = String(node.attrs.content || "");
 
-  useEffect(() => {
-    const renderDiagram = async () => {
-      if (!containerRef.current || !node.attrs.content || isEditing) return;
-
-      try {
-        initializeMermaidTheme();
-
-        setError(null);
-        const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
-        const { svg } = await mermaid.render(id, normalizeDiagramType(node.attrs.content));
-        if (containerRef.current) {
-          containerRef.current.innerHTML = svg;
-        }
-      } catch (err: any) {
-        setError(err.message || "Invalid Mermaid syntax");
-        if (containerRef.current) {
-          containerRef.current.innerHTML = "";
-        }
-      }
-    };
-
-    renderDiagram();
-  }, [node.attrs.content, isEditing]);
-
-  const handleSave = () => {
-    updateAttributes({ content: editContent });
+  const closeEditor = () => {
     setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditContent(node.attrs.content || "");
-    setIsEditing(false);
-  };
-
-  const handleDelete = () => {
-    setShowDeleteModal(true);
-  };
-
-  const confirmDelete = () => {
-    deleteNode();
-    setShowDeleteModal(false);
+    returnFocus();
   };
 
   return (
     <NodeViewWrapper className="mermaid-node-wrapper">
       <div className="mermaid-diagram-container relative group border border-border rounded-jotty p-4 my-4 bg-background">
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 flex gap-1">
-          <button
-            onClick={() => setIsEditing(true)}
-            className="px-2 py-1 bg-muted text-foreground rounded text-sm lg:text-xs hover:bg-muted/80"
-            title={t("editor.editDiagram")}
-          >{t('common.edit')}</button>
-          <button
-            onClick={handleDelete}
-            className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-sm lg:text-xs hover:bg-destructive/90"
-            title={t("editor.deleteDiagram")}
-          >{t('common.delete')}</button>
-        </div>
-        {error ? (
-          <div className="text-destructive text-md lg:text-sm p-3 bg-destructive/10 rounded border border-destructive">
-            <div className="font-semibold mb-1">{t("notes.mermaidError")}</div>
-            <div className="font-mono text-xs">{error}</div>
-          </div>
+        {editor.isEditable && (
+          <DiagramToolbar>
+            <DiagramToolButton label={t("editor.editDiagram")} onClick={() => setIsEditing(true)}>
+              {t("common.edit")}
+            </DiagramToolButton>
+            <DiagramToolButton label={t("editor.deleteDiagram")} onClick={() => setShowDeleteModal(true)} destructive>
+              {t("common.delete")}
+            </DiagramToolButton>
+          </DiagramToolbar>
+        )}
+        {content.trim() ? (
+          <MermaidRenderer code={content} className="my-0" />
         ) : (
-          <div
-            ref={containerRef}
-            className="mermaid-diagram flex justify-center items-center"
-          />
+          <p className="text-center text-muted-foreground">{t("editor.enterMermaidCode")}</p>
         )}
       </div>
-      <Modal
-        isOpen={isEditing}
-        onClose={handleCancel}
-        title={t("editor.editDiagram")}
-      >
-        <div className="space-y-4">
-          <textarea
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            className="w-full min-h-[240px] p-3 border border-border rounded font-mono text-sm bg-muted"
-            placeholder={t("editor.enterMermaidCode")}
-            autoFocus
-          />
-          <div className="flex justify-between gap-2">
-            <Button variant="destructive" size="sm" onClick={handleDelete}>
-              {t('common.delete')}
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCancel}>
-                {t('common.cancel')}
-              </Button>
-              <Button onClick={handleSave}>
-                {t('common.save')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+      {isEditing && (
+        <MermaidEditorModal
+          content={content}
+          onSave={(next) => updateAttributes({ content: next })}
+          onClose={closeEditor}
+        />
+      )}
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        onConfirm={confirmDelete}
+        onConfirm={() => {
+          setShowDeleteModal(false);
+          deleteNode();
+        }}
         title={t("common.delete")}
-        message={t("common.confirmDeleteItem", { itemTitle: t('editor.mermaidDiagram') })}
+        message={t("common.confirmDeleteItem", { itemTitle: t("editor.mermaidDiagram") })}
         confirmText={t("common.delete")}
         variant="destructive"
       />
@@ -193,8 +82,7 @@ export const MermaidExtension = Node.create({
     return {
       content: {
         default: "",
-        parseHTML: (element) =>
-          element.getAttribute("data-mermaid-content") || "",
+        parseHTML: (element) => element.getAttribute("data-mermaid-content") || "",
         renderHTML: (attributes) => {
           if (!attributes.content) return {};
           return {
@@ -210,8 +98,7 @@ export const MermaidExtension = Node.create({
       {
         tag: "div[data-mermaid]",
         getAttrs: (element) => ({
-          content:
-            (element as HTMLElement).getAttribute("data-mermaid-content") || "",
+          content: element.getAttribute("data-mermaid-content") || "",
         }),
       },
     ];
@@ -232,17 +119,15 @@ export const MermaidExtension = Node.create({
     return ReactNodeViewRenderer(MermaidNodeView);
   },
 
-  /** @ts-ignore */
   addCommands() {
     return {
       setMermaid:
         (content: string) =>
-        ({ commands }: any) => {
-          return commands.insertContent({
+        ({ commands }) =>
+          commands.insertContent({
             type: this.name,
             attrs: { content },
-          });
-        },
+          }),
     };
   },
 });

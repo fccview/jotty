@@ -1,39 +1,71 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
-  getFiles,
+  attachTo,
+  deleteAttachment,
+  listAttachments,
   uploadFile,
-  deleteFile,
-  FileItem,
-} from "@/app/_server/actions/upload";
+} from "@/app/_server/actions/attachments";
+import type { FileItem } from "@/app/_types";
 import { MAX_FILE_SIZE } from "@/app/_consts/files";
+import { AttachmentKinds } from "@/app/_consts/attachments";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
+import { useWebSocket } from "@/app/_providers/WebSocketProvider";
+import { useAttachmentError } from "@/app/_hooks/useAttachmentError";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
-export const useFileManager = () => {
+export type FileTab = "images" | "videos" | "files";
+
+const TAB_KINDS: Record<FileTab, AttachmentKinds> = {
+  images: AttachmentKinds.IMAGE,
+  videos: AttachmentKinds.VIDEO,
+  files: AttachmentKinds.FILE,
+};
+
+export const useFileManager = (itemUuid?: string) => {
   const t = useTranslations();
+  const explain = useAttachmentError();
   const { appSettings } = useAppMode();
   const { showToast } = useToast();
+  const { subscribe } = useWebSocket();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [fileSizeError, setFileSizeError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [activeTab, setActiveTab] = useState<"images" | "videos" | "files">("images");
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState<{ name: string; type: "image" | "video" | "file" } | null>(null);
+  const [activeTab, setActiveTab] = useState<FileTab>("images");
+  const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
 
   const loadFiles = useCallback(async () => {
+    if (!itemUuid) {
+      setFiles([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const result = await getFiles();
-      if (result.success && result.data) setFiles(result.data);
+      const result = await listAttachments(itemUuid);
+      setFiles(result.success && result.data ? result.data : []);
+      if (!result.success) console.warn("Could not list attachments:", result.error);
+    } catch (error) {
+      console.error("Error listing attachments:", error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [itemUuid]);
+
+  useEffect(
+    () =>
+      subscribe((event) => {
+        if (event.type === "attachments" && itemUuid && event.entityId === itemUuid.toLowerCase()) {
+          void loadFiles();
+        }
+      }),
+    [subscribe, itemUuid, loadFiles],
+  );
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,12 +77,13 @@ export const useFileManager = () => {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !itemUuid) return;
 
-    if (selectedFile.size > (appSettings?.maximumFileSize || MAX_FILE_SIZE)) {
+    const limit = appSettings?.maximumFileSize || MAX_FILE_SIZE;
+    if (selectedFile.size > limit) {
       const fileSizeMB = (selectedFile.size / (1024 * 1024)).toFixed(1);
-      const maxSizeMB = ((appSettings?.maximumFileSize || MAX_FILE_SIZE) / (1024 * 1024)).toFixed(0);
-      setFileSizeError(t('common.fileTooLarge', { maxSizeMB, fileSizeMB }));
+      const maxSizeMB = (limit / (1024 * 1024)).toFixed(0);
+      setFileSizeError(t("common.fileTooLarge", { maxSizeMB, fileSizeMB }));
       return;
     }
 
@@ -59,7 +92,8 @@ export const useFileManager = () => {
     setFileSizeError(null);
 
     const formData = new FormData();
-    formData.append("file", selectedFile as Blob);
+    formData.append("file", selectedFile);
+    formData.append("itemUuid", itemUuid);
 
     try {
       const result = await uploadFile(formData);
@@ -67,55 +101,52 @@ export const useFileManager = () => {
         setSelectedFile(null);
         await loadFiles();
       } else {
-        setUploadError(result.error || t('common.uploadFailed'));
+        setUploadError(explain(result.error, "common.uploadFailed"));
       }
     } catch (error) {
-      setUploadError(t('common.uploadFailedRetry'));
+      console.error("Error uploading attachment:", error);
+      setUploadError(t("common.uploadFailedRetry"));
     } finally {
       setIsUploading(false);
-      setTimeout(() => {
-        setUploadError(null);
-      }, 2000);
+      setTimeout(() => setUploadError(null), 2000);
     }
   };
 
-  const handleDeleteFile = (
-    fileName: string,
-    fileType: "image" | "video" | "file"
-  ) => {
-    setFileToDelete({ name: fileName, type: fileType });
-    setShowDeleteModal(true);
+  const attachExisting = async (file: FileItem): Promise<FileItem | null> => {
+    if (!itemUuid || !file.itemUuid) return null;
+
+    try {
+      const result = await attachTo(itemUuid, file.itemUuid, file.fileName);
+      if (result.success && result.data) return result.data;
+      showToast({ type: "error", title: explain(result.error, "attachments.attachFailed") });
+    } catch (error) {
+      console.error("Error attaching file:", error);
+      showToast({ type: "error", title: t("attachments.attachFailed") });
+    }
+    return null;
   };
 
   const confirmDelete = async () => {
-    if (!fileToDelete) return;
+    if (!fileToDelete?.itemUuid) return;
 
-    const formData = new FormData();
-    formData.append("fileName", fileToDelete.name);
-    formData.append("fileType", fileToDelete.type);
-    const result = await deleteFile(formData);
-
-    if (result.success) {
-      await loadFiles();
-    } else {
-      showToast({
-        type: "error",
-        title: result.error || t('common.failedToDeleteFile'),
-      });
+    try {
+      const result = await deleteAttachment(fileToDelete.itemUuid, fileToDelete.fileName);
+      if (result.success) {
+        await loadFiles();
+      } else {
+        showToast({ type: "error", title: explain(result.error, "common.failedToDeleteFile") });
+      }
+    } catch (error) {
+      console.error("Error deleting attachment:", error);
+      showToast({ type: "error", title: t("common.failedToDeleteFile") });
     }
 
-    setShowDeleteModal(false);
     setFileToDelete(null);
   };
 
   const filteredFiles = useMemo(
-    () =>
-      files.filter((file) => {
-        if (activeTab === "images") return file.type === "image";
-        if (activeTab === "videos") return file.type === "video";
-        return file.type === "file";
-      }),
-    [files, activeTab]
+    () => files.filter((file) => file.type === TAB_KINDS[activeTab]),
+    [files, activeTab],
   );
 
   return {
@@ -131,18 +162,16 @@ export const useFileManager = () => {
     loadFiles,
     handleFileSelect,
     handleUpload,
-    handleDeleteFile,
+    attachExisting,
+    handleDeleteFile: setFileToDelete,
     filteredFiles,
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setFileToDelete(null);
-        }}
+        isOpen={fileToDelete !== null}
+        onClose={() => setFileToDelete(null)}
         onConfirm={confirmDelete}
         title={t("common.delete")}
-        message={t("common.confirmDeleteItem", { itemTitle: fileToDelete?.name || "" })}
+        message={t("attachments.confirmDelete", { name: fileToDelete?.name || "" })}
         confirmText={t("common.delete")}
         variant="destructive"
       />

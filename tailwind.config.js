@@ -7,6 +7,8 @@ module.exports = {
     ],
     theme: {
         extend: {
+            minWidth: ({ theme }) => theme('spacing'),
+            maxWidth: ({ theme }) => theme('spacing'),
             colors: {
                 background: 'rgb(var(--background) / <alpha-value>)',
                 'background-secondary': 'rgb(var(--background-secondary) / <alpha-value>)',
@@ -25,6 +27,7 @@ module.exports = {
                 'accent-foreground': 'rgb(var(--accent-foreground) / <alpha-value>)',
                 destructive: 'rgb(var(--destructive) / <alpha-value>)',
                 'destructive-foreground': 'rgb(var(--destructive-foreground) / <alpha-value>)',
+                warning: 'rgb(var(--warning, 217 119 6) / <alpha-value>)',
                 border: 'rgb(var(--border) / <alpha-value>)',
                 input: 'rgb(var(--input) / <alpha-value>)',
                 ring: 'rgb(var(--ring) / <alpha-value>)',

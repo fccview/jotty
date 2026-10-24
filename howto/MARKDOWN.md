@@ -1,14 +1,12 @@
-# Markdown Guide
+# Markdown guide
 
-This guide covers all supported syntax for creating rich content in your notes. The editor uses an extended version of GitHub Flavored Markdown (GFM) that includes standard syntax as well as several custom HTML tags for advanced formatting.
+Everything you can write in a note. The editor speaks GitHub Flavored Markdown (GFM), plus a handful of HTML tags for the things Markdown can't do on its own.
 
 ---
 
 ## Standard Markdown
 
-These are the foundational elements for formatting your text.
-
-### Text Formatting
+### Text formatting
 
 <table style="min-width: 75px;">
    <colgroup>
@@ -91,7 +89,7 @@ These are the foundational elements for formatting your text.
             <p><code>![Alt Text](image_url)</code></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p>An image will be displayed</p>
+            <p>Shows the image</p>
          </td>
       </tr>
       <tr>
@@ -107,13 +105,13 @@ These are the foundational elements for formatting your text.
       </tr>
       <tr>
          <td colspan="1" rowspan="1">
-            <p>Horizontal Rule</p>
+            <p>Horizontal rule</p>
          </td>
          <td colspan="1" rowspan="1">
             <p><code>---</code></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p>A horizontal line will appear</p>
+            <p>A horizontal line</p>
          </td>
       </tr>
    </tbody>
@@ -131,7 +129,7 @@ These are the foundational elements for formatting your text.
 
 ### Lists
 
-**Unordered List**
+**Unordered list**
 
 ```markdown
 - Item 1
@@ -139,7 +137,7 @@ These are the foundational elements for formatting your text.
   - Nested Item
 ```
 
-**Ordered List**
+**Ordered list**
 
 ```markdown
 1. First Item
@@ -149,11 +147,11 @@ These are the foundational elements for formatting your text.
 
 ---
 
-## Advanced Elements
+## More elements
 
-### Task Lists
+### Task lists
 
-You can create checklists with interactive checkboxes directly in the editor.
+Checkboxes you can tick straight from the editor.
 
 ```markdown
 - [x] Completed task
@@ -162,7 +160,7 @@ You can create checklists with interactive checkboxes directly in the editor.
 
 ### Tables
 
-Create tables using standard Markdown pipe syntax or raw HTML.
+Use Markdown pipe syntax or plain HTML.
 
 ```markdown
 | Feature       | Status    |
@@ -171,9 +169,9 @@ Create tables using standard Markdown pipe syntax or raw HTML.
 | Keyboard Keys | Supported |
 ```
 
-### Code Blocks
+### Code blocks
 
-Wrap your code in triple backticks. You can specify a language for syntax highlighting.
+Wrap code in triple backticks. Put a language name after the opening backticks to get syntax highlighting.
 
 ````markdown
 javascript
@@ -185,24 +183,33 @@ function helloWorld() {
 
 ### Callouts
 
-Callouts are styled blocks that help highlight important information. They use the GitHub/Obsidian-style syntax and come in four types:
+Callouts are coloured boxes for things you don't want skimmed past. They use the GitHub and Obsidian syntax, and there are four styles. Jotty also reads GitHub's names for them, so a note copied from a README keeps its callouts.
+
+| Style   | Jotty name   | GitHub name     |
+| ------- | ------------ | --------------- |
+| Info    | `[!INFO]`    | `[!NOTE]`       |
+| Success | `[!SUCCESS]` | `[!TIP]`        |
+| Warning | `[!WARNING]` | `[!IMPORTANT]`  |
+| Danger  | `[!DANGER]`  | `[!CAUTION]`    |
 
 ```markdown
-You can use !INFO, !WARNING, !SUCCESS, !DANGER.
-
 > [!INFO]
 > This is an informational callout for general tips and notes.
 
+> [!CAUTION]
+> This one renders as a danger callout, here and on GitHub.
 ```
 
-> [!INFO]
-> In the visual editor, you can insert callouts using the `/callout` slash command and change the type by clicking the icon.
+Saving a note from the rich text editor writes the Jotty name, so a `[!NOTE]` comes back as `[!INFO]`.
+
+> [!TIP]
+> In the rich text editor, type `/callout` to insert one. Click its icon to change the type.
 
 ---
 
-## Custom HTML Tags
+## Custom HTML tags
 
-For more advanced formatting, you can use the following HTML tags directly in the editor. They will persist when switching between editor modes and will render correctly in the final view.
+You can type these HTML tags straight into a note. They survive switching between the rich text editor and the Markdown editor, and they render in the note view.
 
 <table style="min-width: 75px;">
    <colgroup>
@@ -219,12 +226,12 @@ For more advanced formatting, you can use the following HTML tags directly in th
             <p><strong>Description</strong></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p><strong>Syntax &amp; Example</strong></p>
+            <p><strong>Syntax &amp; example</strong></p>
          </td>
       </tr>
       <tr>
          <td colspan="1" rowspan="1">
-            <p><strong>Keyboard Key</strong></p>
+            <p><strong>Keyboard key</strong></p>
          </td>
          <td colspan="1" rowspan="1">
             <p><kbd class="bg-muted px-2 py-1 text-xs rounded-jotty border border-border shadow-border shadow-sm">Enter</kbd></p>
@@ -279,7 +286,7 @@ For more advanced formatting, you can use the following HTML tags directly in th
       </tr>
       <tr>
          <td colspan="1" rowspan="1">
-            <p><strong>Collapsible Section</strong></p>
+            <p><strong>Collapsible section</strong></p>
          </td>
          <td colspan="1" rowspan="1">
             <details>
@@ -307,10 +314,10 @@ For more advanced formatting, you can use the following HTML tags directly in th
       </tr>
       <tr>
          <td colspan="1" rowspan="1">
-            <p><strong>File Attachment</strong></p>
+            <p><strong>File attachment</strong></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p>Creates a special link formatted as a downloadable file.</p>
+            <p>A link that shows as a downloadable file.</p>
          </td>
          <td colspan="1" rowspan="1">
             <p><code>[📎 report.pdf](/path/to/file)</code></p>
@@ -321,7 +328,7 @@ For more advanced formatting, you can use the following HTML tags directly in th
             <p><strong>Video</strong></p>
          </td>
          <td colspan="1" rowspan="1">
-            <p>Adds an embedded video to the note.</p>
+            <p>Embeds the video in the note.</p>
          </td>
          <td colspan="1" rowspan="1">
             <p><code>[🎥 video.mp4](/path/to/video)</code></p>

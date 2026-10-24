@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import { Result } from "@/app/_types";
 import { SharingPermissions } from "@/app/_types/core";
 import { Modes } from "@/app/_types/enums";
-import { DATA_DIR, ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { DATA_DIR, RESERVED_DIRS } from "@/app/_consts/files";
 import {
   CATEGORY_INFO_FILE,
   LEGACY_ORDER_FILE,
@@ -13,11 +13,14 @@ import {
   SHARED_WITH_KEY,
 } from "@/app/_consts/sharing";
 import { toSharedWith } from "@/app/_utils/sharing-utils";
+import { updateYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { serverWriteFile } from "@/app/_server/actions/file";
+import { stampUuid } from "@/app/_server/actions/lib/stamp-uuid";
 import {
-  extractYamlMetadata,
-  generateUuid,
-  updateYamlMetadata,
-} from "@/app/_utils/yaml-metadata-utils";
+  isReadOnlyError,
+  isWritable,
+  warnReadOnly,
+} from "@/app/_server/actions/lib/read-only";
 import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
 import { isAdmin } from "@/app/_server/actions/users";
 import { needsMigration } from "@/app/_server/actions/lib/migration-check";
@@ -61,7 +64,7 @@ const _userDirs = async (mode: Modes): Promise<string[]> => {
 };
 
 const _subDirs = async (dirPath: string): Promise<string[]> => {
-  const excluded = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
+  const excluded = RESERVED_DIRS;
 
   try {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
@@ -100,22 +103,7 @@ const _mdNames = async (dirPath: string): Promise<string[]> => {
 
 const _stampItems = async (dirPath: string): Promise<void> => {
   for (const name of await _mdNames(dirPath)) {
-    const filePath = path.join(dirPath, name);
-
-    try {
-      const content = await fs.readFile(filePath, "utf-8");
-      const { metadata } = extractYamlMetadata(content);
-
-      if (metadata.uuid) continue;
-
-      await fs.writeFile(
-        filePath,
-        updateYamlMetadata(content, { uuid: generateUuid() }),
-        "utf-8",
-      );
-    } catch (error) {
-      console.error(`Failed to stamp uuid on ${filePath}:`, error);
-    }
+    await stampUuid(path.join(dirPath, name));
   }
 };
 
@@ -211,11 +199,21 @@ const _stampTree = async (
   isRoot: boolean,
   log: MigrationLog,
 ): Promise<void> => {
+  const subDirs = await _subDirs(dirPath);
+
+  if (!(await isWritable(dirPath))) {
+    warnReadOnly(dirPath);
+    log.changes.push(`Left read-only folder ${path.basename(dirPath)} untouched`);
+
+    for (const subDir of subDirs) {
+      await _stampTree(subDir, false, log);
+    }
+    return;
+  }
+
   if (!isRoot) {
     await catUuid(dirPath);
   }
-
-  const subDirs = await _subDirs(dirPath);
 
   for (const subDir of subDirs) {
     await catUuid(subDir);
@@ -268,11 +266,15 @@ const _applyShares = async (
   users: Record<string, SharingPermissions>,
 ): Promise<void> => {
   const content = await fs.readFile(filePath, "utf-8");
+  if (!content.trim()) {
+    throw new Error(`Refusing to write shares onto an empty read: ${filePath}`);
+  }
+
   const updated = updateYamlMetadata(content, {
     [SHARED_WITH_KEY]: toSharedWith(users),
   });
 
-  await fs.writeFile(filePath, updated, "utf-8");
+  await serverWriteFile(filePath, updated);
 };
 
 const _migrateShares = async (
@@ -311,6 +313,12 @@ const _migrateShares = async (
         `Moved sharing into ${path.basename(filePath)} (${Object.keys(users).join(", ")})`,
       );
     } catch (error) {
+      if (isReadOnlyError(error)) {
+        warnReadOnly(path.dirname(filePath));
+        log.changes.push(`Skipped sharing on read-only ${path.basename(filePath)}`);
+        continue;
+      }
+
       failures += 1;
       console.error(`Failed to migrate shares for ${filePath}:`, error);
     }

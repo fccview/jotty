@@ -4,7 +4,7 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "es6",
+      "es2022",
       "webworker"
     ],
     "allowJs": true,
@@ -39,6 +39,7 @@
   ],
   "exclude": [
     "node_modules",
-    "public/sw.js"
+    "public/sw.js",
+    "mcp-server"
   ]
 }

@@ -36,6 +36,21 @@ export const getColumnItems = (
   });
 };
 
+export const boardColumns = (
+  checklist: Pick<Checklist, "items" | "statuses">,
+): { status: KanbanStatus; items: Item[] }[] => {
+  const statuses = checklist.statuses?.length
+    ? checklist.statuses
+    : DEFAULT_KANBAN_STATUSES;
+
+  return [...statuses]
+    .sort((a, b) => a.order - b.order)
+    .map((status) => ({
+      status,
+      items: getColumnItems(checklist.items, status.id, statuses),
+    }));
+};
+
 export const visToColIndex = (
   visibleItems: Item[],
   columnItems: Item[],
@@ -109,3 +124,24 @@ export const applyDrop = (
 
   return { ...checklist, items: _renumber(reordered), updatedAt: now };
 };
+
+export const boardTrackedSeconds = (items: Item[]): number =>
+  items.reduce(
+    (total, item) =>
+      total +
+      (item.timeEntries || []).reduce(
+        (sum, entry) => sum + (entry.duration || 0),
+        0,
+      ),
+    0,
+  );
+
+export const boardAssignees = (items: Item[]): string[] =>
+  Array.from(
+    new Set(
+      items
+        .filter((item) => !item.isArchived)
+        .map((item) => item.assignee)
+        .filter((assignee): assignee is string => Boolean(assignee)),
+    ),
+  );

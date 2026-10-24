@@ -5,6 +5,8 @@ import { FileRenameMode } from "@/app/_types";
 
 const invalidFilenameChars = /[<>:"/\\|?*\x00-\x1F]/g;
 const leadingTrailingJunk = /^[. ]+|[. ]+$/g;
+const pathBreakers = /[/\\\x00]/g;
+const leadingDots = /^\.+/;
 
 export const sanitizeFilename = (title: string, mode: FileRenameMode = "none"): string => {
   if (!title) return "";
@@ -29,7 +31,7 @@ export const sanitizeFilename = (title: string, mode: FileRenameMode = "none"): 
         .trim();
 
     case "none":
-      return title;
+      return title.replace(pathBreakers, "").replace(leadingDots, "");
 
     default:
       return title
@@ -69,4 +71,19 @@ export const generateUniqueFilename = async (
   }
 
   return filename;
+};
+
+export const freeFilename = async (
+  directory: string,
+  id: string,
+  extension: string = ".md"
+): Promise<string> => {
+  for (let counter = 0; ; counter++) {
+    const filename = counter ? `${id}-${counter}${extension}` : `${id}${extension}`;
+    try {
+      await fs.access(path.join(directory, filename));
+    } catch {
+      return filename;
+    }
+  }
 };

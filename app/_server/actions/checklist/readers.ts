@@ -1,11 +1,7 @@
-"use server";
-
 import path from "path";
 import fs from "fs/promises";
-import { promisify } from "util";
-import { exec } from "child_process";
 import { Checklist } from "@/app/_types";
-import { ARCHIVED_DIR_NAME, EXCLUDED_DIRS } from "@/app/_consts/files";
+import { skippedDirs } from "@/app/_consts/files";
 import {
   serverReadDir,
   serverReadFile,
@@ -14,163 +10,178 @@ import {
 } from "@/app/_server/actions/file";
 import { parseMarkdown } from "@/app/_utils/checklist-utils";
 import {
+  createdAtOf,
   extractYamlMetadata,
-  generateUuid,
   toIso,
-  updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
-import { grepExtractFrontmatter } from "@/app/_utils/grep-utils";
 import type { FileStatsEntry } from "@/app/_server/actions/file";
 import { dirUuids } from "@/app/_server/actions/share/category-info";
 import { orderByUuids } from "@/app/_utils/order-utils";
 import { getChecklistType } from "./parsers";
-import { isDebugFlag } from "@/app/_utils/env-utils";
 import { isKanbanType } from "@/app/_types/enums";
-import { singleFlight } from "@/app/_server/actions/lib/concurrency";
+import { claimOf, claimUuid, lacksUuid } from "@/app/_server/actions/lib/stamp-uuid";
+import { pathUuid } from "@/app/_server/actions/lib/read-only";
+import { titleFromFile } from "@/app/_server/actions/lib/file-title";
+import { fillFrontmatters, frontmatterOf } from "@/app/_server/actions/lib/frontmatter-memo";
+import { isRecurringList, summarizeList } from "@/app/_utils/browse/list-summary-utils";
+import { FileStamp, summaryMemo } from "@/app/_server/actions/lib/summary-memo";
+import { listingStats } from "@/app/_server/actions/lib/listing-stats";
+import { listingPatcher } from "@/app/_server/actions/lib/listing-patch";
 
-const execAsync = promisify(exec);
-
-const debugCrud = isDebugFlag("crud");
-
-const _stampUuid = async (filePath: string): Promise<string | undefined> =>
-  singleFlight(`stamp:${filePath}`, async () => {
-    try {
-      const content = await serverReadFile(filePath);
-      if (!content) return undefined;
-
-      const { metadata } = extractYamlMetadata(content);
-      if (typeof metadata.uuid === "string" && metadata.uuid) {
-        return metadata.uuid;
-      }
-
-      const uuid = generateUuid();
-      await serverWriteFile(filePath, updateYamlMetadata(content, { uuid }));
-      return uuid;
-    } catch (error) {
-      console.warn("Failed to stamp UUID on checklist:", filePath, error);
-      return undefined;
-    }
-  });
 
 export type ChecklistReadResult =
   | Partial<Checklist>
   | Checklist
   | (Checklist & { rawContent: string });
 
+declare global {
+  var __jottyListSummaryMemo: ReturnType<typeof summaryMemo<ChecklistReadResult>> | undefined;
+}
+
+const memo = (globalThis.__jottyListSummaryMemo ??= summaryMemo<ChecklistReadResult>());
+
+const summed = (list: Checklist): Checklist =>
+  isRecurringList(list) ? list : { ...list, items: [], summary: summarizeList(list) };
+
+const kept = (filePath: string, stats: FileStamp, list: Checklist): ChecklistReadResult =>
+  list.summary ? memo.remember(filePath, stats, list) : list;
+
+export interface ListReadOptions {
+  basePath?: string;
+  allowArchived?: boolean;
+  isRaw?: boolean;
+  metadataOnly?: boolean;
+  metadataCache?: Map<string, Record<string, unknown>>;
+  statsCache?: Map<string, FileStatsEntry>;
+  summarize?: boolean;
+}
+
+export interface KnownListFile {
+  stats?: FileStatsEntry;
+  metadata?: Record<string, unknown>;
+}
+
+export const readListEntry = async (
+  filePath: string,
+  categoryPath: string,
+  owner: string,
+  options: ListReadOptions = {},
+  known: KnownListFile = {},
+): Promise<ChecklistReadResult | null> => {
+  const { isRaw = false, metadataOnly = false, summarize = false } = options;
+  const fileName = path.basename(filePath);
+  const id = path.basename(fileName, ".md");
+  try {
+    const stats = known.stats ?? (await fs.stat(filePath));
+
+    if (metadataOnly) {
+      const metadata =
+        known.metadata ?? (await frontmatterOf(filePath, stats));
+      const tags = Array.isArray(metadata?.tags)
+        ? (metadata.tags as string[])
+        : [];
+      const claim = await claimOf(metadata?.uuid, filePath);
+      if (!claim) {
+        console.warn("Skipping checklist without a resolvable uuid:", filePath);
+        return null;
+      }
+      return {
+        id,
+        uuid: claim.uuid,
+        ...(claim.refusal && { lockReason: claim.refusal }),
+        title: await titleFromFile(metadata, filePath, id),
+        type: isKanbanType(metadata?.checklistType as string)
+          ? "kanban"
+          : "simple",
+        category: categoryPath,
+        items: [],
+        createdAt: createdAtOf(metadata, stats.birthtime),
+        updatedAt: toIso(stats.mtime),
+        owner,
+        isShared: false,
+        sharedWith: metadata?.sharedWith as string | string[] | undefined,
+        tags,
+      };
+    }
+    const remembered =
+      summarize && !isRaw ? memo.recall(filePath, stats) : undefined;
+    if (remembered) return remembered;
+    const content = await serverReadFile(filePath);
+    if (isRaw) {
+      const { metadata } = extractYamlMetadata(content);
+      const type = getChecklistType(content);
+      const claim = await claimOf(metadata.uuid, filePath);
+      return {
+        id,
+        title: id,
+        uuid: claim?.uuid || pathUuid(filePath),
+        ...(claim?.refusal && { lockReason: claim.refusal }),
+        type,
+        category: categoryPath,
+        items: [],
+        createdAt: createdAtOf(metadata, stats.birthtime),
+        updatedAt: toIso(stats.mtime),
+        owner,
+        isShared: false,
+        sharedWith: metadata.sharedWith as string | string[] | undefined,
+        rawContent: content,
+      };
+    }
+    const list = parseMarkdown(
+      content,
+      id,
+      categoryPath,
+      owner,
+      false,
+      {
+        birthtime: new Date(toIso(stats.birthtime)),
+        mtime: new Date(toIso(stats.mtime)),
+      },
+      fileName,
+    );
+    if (!lacksUuid(content)) {
+      return summarize ? kept(filePath, stats, summed(list)) : list;
+    }
+    const claim = await claimUuid(filePath);
+    const claimed = {
+      ...list,
+      uuid: claim?.uuid || pathUuid(filePath),
+      ...(claim?.refusal && { lockReason: claim.refusal }),
+    };
+    return summarize ? summed(claimed) : claimed;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") console.error("Could not read checklist:", filePath, error);
+    return null;
+  }
+};
+
 export const readListsRecursively = async (
   dir: string,
-  basePath: string = "",
   owner: string,
-  allowArchived?: boolean,
-  isRaw: boolean = false,
-  metadataOnly: boolean = false,
-  metadataCache?: Map<string, Record<string, unknown>>,
-  statsCache?: Map<string, FileStatsEntry>,
+  options: ListReadOptions = {},
 ): Promise<ChecklistReadResult[]> => {
+  const {
+    basePath = "",
+    allowArchived,
+    isRaw = false,
+    metadataOnly = false,
+    summarize = false,
+  } = options;
+  let { metadataCache, statsCache } = options;
   if (basePath === "") {
     statsCache = statsCache ?? new Map();
     metadataCache = metadataCache ?? new Map();
     try {
-      const excludeStr = allowArchived
-        ? ""
-        : `-not -path "*/${ARCHIVED_DIR_NAME}/*"`;
-      const statsCmd = `find "${dir}" -name "*.md" ${excludeStr} -printf "%p|%W@|%T@\\n"`;
-      const metaCmd = `grep -rE "^(title|uuid|tags|checklistType):|^[[:space:]]+- |^---$" "${dir}"`;
-      const [statsOut, metaOut] = await Promise.all([
-        execAsync(statsCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
-        execAsync(metaCmd, { maxBuffer: 10 * 1024 * 1024 }).catch(() => ({
-          stdout: "",
-        })),
-      ]);
-      statsOut.stdout.split("\n").forEach((line) => {
-        const [p, b, m] = line.split("|");
-        if (p && b && m)
-          statsCache!.set(p, {
-            birthtime: new Date(parseFloat(b) * 1000),
-            mtime: new Date(parseFloat(m) * 1000),
-          });
-      });
-      const metaLines = metaOut.stdout.split("\n").filter(Boolean);
-      if (debugCrud && metaLines.length) {
-        console.warn(
-          "[tags grep] sample (first 40 lines):",
-          metaLines.slice(0, 40),
-        );
-      }
-      const inFrontmatter = new Map<string, boolean>();
-      let inTagsFile = "";
-      for (const line of metaLines) {
-        const colonIdx = line.indexOf(":");
-        if (colonIdx === -1) continue;
-        const filePath = line.slice(0, colonIdx);
-        const rest = line.slice(colonIdx + 1);
-        if (rest.trim() === "---") {
-          inFrontmatter.set(filePath, !inFrontmatter.get(filePath));
-          if (debugCrud)
-            console.warn(
-              "[tags grep] --- seen, filePath:",
-              filePath,
-              "inFrontmatter:",
-              inFrontmatter.get(filePath),
-            );
-          continue;
-        }
-        if (!inFrontmatter.get(filePath)) continue;
-        if (/^\s+-\s/.test(rest)) {
-          if (inTagsFile === filePath) {
-            const tag = rest.replace(/^\s+-\s+/, "").trim();
-            if (tag) {
-              if (debugCrud)
-                console.warn(
-                  "[tags grep] adding tag:",
-                  JSON.stringify(tag.slice(0, 50)),
-                  "filePath:",
-                  filePath,
-                );
-              if (!metadataCache!.has(filePath))
-                metadataCache!.set(filePath, {});
-              const entry = metadataCache!.get(filePath)!;
-              if (!Array.isArray(entry.tags)) entry.tags = [];
-              (entry.tags as string[]).push(tag);
-            }
-          }
-          continue;
-        }
-        inTagsFile = "";
-        const innerColon = rest.indexOf(":");
-        if (innerColon === -1) continue;
-        const key = rest.slice(0, innerColon);
-        const val = rest.slice(innerColon + 1);
-        if (!metadataCache!.has(filePath)) metadataCache!.set(filePath, {});
-        const entry = metadataCache!.get(filePath)!;
-        if (key === "tags") {
-          const trimmed = val.trim();
-          if (trimmed === "") {
-            entry.tags = [];
-            inTagsFile = filePath;
-          } else {
-            entry.tags = trimmed
-              .replace(/^\[|\]$/g, "")
-              .split(",")
-              .map((t: string) => t.trim())
-              .filter(Boolean);
-          }
-        } else {
-          entry[key] = val.trim().replace(/^["']|["']$/g, "");
-        }
-      }
+      const found = await listingStats(dir, allowArchived);
+      found.forEach((stat, filePath) => statsCache!.set(filePath, stat));
+      await fillFrontmatters(statsCache!, metadataCache!);
     } catch (e) {
       console.warn("Optimization failed, falling back to standard mode", e);
     }
   }
 
   const entries = await serverReadDir(dir);
-  let excludedDirs = EXCLUDED_DIRS;
-  if (!allowArchived) {
-    excludedDirs = [...EXCLUDED_DIRS, ARCHIVED_DIR_NAME];
-  }
+  const excludedDirs = skippedDirs(allowArchived);
   const order = await readOrderFile(dir);
   const dirNames = entries
     .filter((e) => e.isDirectory() && !excludedDirs.includes(e.name))
@@ -197,105 +208,22 @@ export const readListsRecursively = async (
       .map((f) => path.basename(f.name, ".md"))
       .sort((a, b) => a.localeCompare(b));
 
-    const filePromises = orderedIds.map(
-      async (id): Promise<ChecklistReadResult | null> => {
-        const fileName = `${id}.md`;
-        const filePath = path.join(categoryDir, fileName);
-        try {
-          const cachedStats = statsCache?.get(filePath);
-          const stats = cachedStats
-            ? {
-                birthtime: cachedStats.birthtime,
-                mtime: cachedStats.mtime,
-              }
-            : await fs.stat(filePath);
-
-          if (metadataOnly) {
-            const metadata =
-              metadataCache?.get(filePath) ??
-              (await grepExtractFrontmatter(filePath));
-            const tags = Array.isArray(metadata?.tags)
-              ? (metadata.tags as string[])
-              : [];
-            return {
-              id,
-              uuid:
-                typeof metadata?.uuid === "string"
-                  ? metadata.uuid
-                  : await _stampUuid(filePath),
-              title: typeof metadata?.title === "string" ? metadata.title : id,
-              type: isKanbanType(metadata?.checklistType as string)
-                ? "kanban"
-                : "simple",
-              category: categoryPath,
-              items: [],
-              createdAt: toIso(stats.birthtime),
-              updatedAt: toIso(stats.mtime),
-              owner,
-              isShared: false,
-              sharedWith: metadata?.sharedWith as string | string[] | undefined,
-              tags,
-            };
-          }
-          const content = await serverReadFile(filePath);
-          if (isRaw) {
-            const { metadata } = extractYamlMetadata(content);
-            const type = getChecklistType(content);
-            let uuid = metadata.uuid;
-            if (!uuid) {
-              uuid = generateUuid();
-              try {
-                const updatedContent = updateYamlMetadata(content, { uuid });
-                await serverWriteFile(filePath, updatedContent);
-              } catch (error) {
-                console.warn("Failed to save UUID to checklist file:", error);
-              }
-            }
-            return {
-              id,
-              title: id,
-              uuid,
-              type,
-              category: categoryPath,
-              items: [],
-              createdAt: toIso(stats.birthtime),
-              updatedAt: toIso(stats.mtime),
-              owner,
-              isShared: false,
-              sharedWith: metadata.sharedWith as string | string[] | undefined,
-              rawContent: content,
-            };
-          }
-          return parseMarkdown(
-            content,
-            id,
-            categoryPath,
-            owner,
-            false,
-            {
-              birthtime: new Date(toIso(stats.birthtime)),
-              mtime: new Date(toIso(stats.mtime)),
-            },
-            fileName,
-          );
-        } catch {
-          return null;
-        }
-      },
-    );
+    const filePromises = orderedIds.map((id) => {
+      const filePath = path.join(categoryDir, `${id}.md`);
+      return readListEntry(filePath, categoryPath, owner, options, {
+        stats: statsCache?.get(filePath),
+        metadata: metadataCache?.get(filePath),
+      });
+    });
 
     const [currentFiles, subLists] = await Promise.all([
       Promise.all(filePromises),
-      readListsRecursively(
-        categoryDir,
-        categoryPath,
-        owner,
-        allowArchived,
-        isRaw,
-        metadataOnly,
+      readListsRecursively(categoryDir, owner, {
+        ...options,
+        basePath: categoryPath,
         metadataCache,
         statsCache,
-      ),
+      }),
     ]);
     return [
       ...orderByUuids(
@@ -310,3 +238,8 @@ export const readListsRecursively = async (
   const results = await Promise.all(categoryPromises);
   return results.flat();
 };
+
+export const patchListListing = (dir: string, owner: string, options: ListReadOptions = {}) =>
+  listingPatcher<ChecklistReadResult>(dir, skippedDirs(options.allowArchived), (filePath, category) =>
+    readListEntry(filePath, category, owner, options),
+  );

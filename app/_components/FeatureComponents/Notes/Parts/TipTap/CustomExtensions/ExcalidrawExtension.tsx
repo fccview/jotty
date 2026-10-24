@@ -1,225 +1,107 @@
 "use client";
 
 import { Node, mergeAttributes } from "@tiptap/core";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import { NodeViewWrapper } from "@tiptap/react";
-import { useState, useEffect } from "react";
+import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Sun03Icon, GibbousMoonIcon } from "hugeicons-react";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { DiagramFrame, DiagramToolButton } from "@/app/_components/FeatureComponents/Notes/Parts/Diagrams/DiagramFrame";
+import {
+  ExcalidrawEditorModal,
+  type ExcalidrawSave,
+} from "@/app/_components/FeatureComponents/Notes/Parts/Diagrams/ExcalidrawEditorModal";
+import { useReturnFocus } from "@/app/_components/FeatureComponents/Notes/Parts/Diagrams/useReturnFocus";
+import { DiagramTheme, toDiagramTheme } from "@/app/_utils/markdown/diagram-comment";
 
-const Excalidraw = dynamic(
-  async () => (await import("@excalidraw/excalidraw")).Excalidraw,
-  { ssr: false }
-);
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    excalidraw: {
+      insertExcalidraw: () => ReturnType;
+    };
+  }
+}
 
-export const ExcalidrawNodeView = ({
-  node,
-  updateAttributes,
-  deleteNode,
-}: any) => {
+export const ExcalidrawNodeView = ({ node, editor, getPos, updateAttributes, deleteNode }: NodeViewProps) => {
   const t = useTranslations();
-  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
-  const [excalidrawAPI, setExcalidrawAPI] = useState<any>(null);
-  const [initialData, setInitialData] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const themeMode = node.attrs.themeMode || "light";
+  const returnFocus = useReturnFocus(editor, getPos);
+  const themeMode = toDiagramTheme(node.attrs.themeMode);
+  const diagramData: string | null = node.attrs.diagramData || null;
+  const svgData: string | null = node.attrs.svgData || null;
+  const isBlank = !diagramData && !svgData;
 
-  useEffect(() => {
-    if (!isEditing) return;
-    const id = "excalidraw-lazy-css";
-    if (document.getElementById(id)) return;
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = "/themes/excalidraw/excalidraw.css";
-    document.head.appendChild(link);
-  }, [isEditing]);
-
-  useEffect(() => {
-    if (node.attrs.diagramData) {
-      try {
-        const parsed = JSON.parse(node.attrs.diagramData);
-        setInitialData({
-          elements: parsed.elements || [],
-          appState: {
-            ...parsed.appState,
-            zoom: { value: 0.5 },
-          },
-          files: parsed.files || null,
-        });
-      } catch (e) {
-        setInitialData({ elements: [], appState: {}, files: null });
-      }
-    } else {
-      setInitialData({ elements: [], appState: {}, files: null });
-    }
-  }, [node]);
-
-  const handleSave = async () => {
-    if (excalidrawAPI) {
-      const elements = excalidrawAPI.getSceneElements();
-      const appState = excalidrawAPI.getAppState();
-      const files = excalidrawAPI.getFiles();
-
-      const sceneData = {
-        elements,
-        appState: {
-          viewBackgroundColor: appState.viewBackgroundColor,
-          currentItemStrokeColor: appState.currentItemStrokeColor,
-          currentItemBackgroundColor: appState.currentItemBackgroundColor,
-          currentItemFillStyle: appState.currentItemFillStyle,
-          currentItemStrokeWidth: appState.currentItemStrokeWidth,
-          currentItemRoughness: appState.currentItemRoughness,
-          currentItemOpacity: appState.currentItemOpacity,
-          gridSize: appState.gridSize,
-          zoom: appState.zoom,
-          scrollX: appState.scrollX,
-          scrollY: appState.scrollY,
-        },
-        files: files || null,
-      };
-
-      try {
-        const { exportToSvg } = await import("@excalidraw/excalidraw");
-        const svg = await exportToSvg({
-          elements,
-          appState,
-          files,
-          exportPadding: 20,
-        });
-        svg.removeAttribute("width");
-        svg.removeAttribute("height");
-        svg.setAttribute("style", "max-width: 100%; height: auto;");
-        const svgString = svg.outerHTML;
-
-        updateAttributes({
-          diagramData: JSON.stringify(sceneData),
-          svgData: svgString,
-        });
-      } catch (error) {
-        console.error("Failed to export Excalidraw diagram:", error);
-      } finally {
-        setIsEditing(false);
-      }
+  const save = (attrs: ExcalidrawSave) => {
+    try {
+      updateAttributes(attrs);
+    } catch (error) {
+      console.error("Failed to update Excalidraw diagram:", error);
     }
   };
 
-  const handleClose = () => {
-    if (excalidrawAPI) {
-      handleSave();
-    } else {
-      setIsEditing(false);
-    }
+  const closeEditor = () => {
+    setIsEditing(false);
+    returnFocus();
   };
 
-  const handleDelete = () => {
-    setShowDeleteModal(true);
-  };
+  const toggleTheme = () =>
+    updateAttributes({ themeMode: themeMode === DiagramTheme.Dark ? DiagramTheme.Light : DiagramTheme.Dark });
 
-  const confirmDelete = () => {
-    deleteNode();
-    setShowDeleteModal(false);
-  };
+  const actions = editor.isEditable && !isBlank && (
+    <>
+      <DiagramToolButton label={t("editor.editDiagram")} onClick={() => setIsEditing(true)}>
+        {t("common.edit")}
+      </DiagramToolButton>
+      <DiagramToolButton label={t("editor.deleteDiagram")} onClick={() => setShowDeleteModal(true)} destructive>
+        {t("common.delete")}
+      </DiagramToolButton>
+    </>
+  );
 
-  const toggleTheme = () => {
-    updateAttributes({
-      themeMode: themeMode === "light" ? "dark" : "light",
-    });
-  };
-
-  const hasData = node.attrs.diagramData &&
-    node.attrs.diagramData !== "null" &&
-    node.attrs.diagramData !== JSON.stringify({ elements: [], appState: {}, files: null });
+  const placeholder = isBlank ? (
+    <div className="flex flex-wrap justify-center gap-2 py-8">
+      <button
+        type="button"
+        onClick={() => setIsEditing(true)}
+        disabled={!editor.isEditable}
+        className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+      >
+        {t("editor.createExcalidrawDiagram")}
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowDeleteModal(true)}
+        disabled={!editor.isEditable}
+        className="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
+      >
+        {t("common.delete")}
+      </button>
+    </div>
+  ) : (
+    <p className="text-center text-muted-foreground">{t("notes.excalidrawNoPreview")}</p>
+  );
 
   return (
     <NodeViewWrapper className="excalidraw-node-wrapper">
-      <Modal
-        isOpen={isEditing && !!initialData}
-        onClose={handleClose}
-        title={
-          <div className="flex items-center gap-2">
-            {t("editor.editDiagram")}
-            <Button size="sm" onClick={handleSave}>{t('common.save')}</Button>
-          </div>
-        }
-        size="fullscreen"
-      >
-        <Excalidraw
-          excalidrawAPI={(api: any) => setExcalidrawAPI(api)}
-          initialData={initialData}
-        />
-      </Modal>
-
-      <div className="excalidraw-diagram-container relative group border border-border rounded-jotty p-4 my-4 bg-background">
-        {hasData ? (
-          <>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 flex gap-1 z-10">
-              <button
-                onClick={toggleTheme}
-                className="px-2 py-1 bg-muted text-foreground rounded text-sm lg:text-xs hover:bg-muted/80"
-                title={`Switch to ${themeMode === "light" ? "dark" : "light"} mode`}
-              >
-                {themeMode === "light" ? (
-                  <GibbousMoonIcon className="h-3 w-3" />
-                ) : (
-                  <Sun03Icon className="h-3 w-3" />
-                )}
-              </button>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-2 py-1 bg-muted text-foreground rounded text-sm lg:text-xs hover:bg-muted/80"
-                title={t("editor.editDiagram")}
-              >
-                {t('common.edit')}
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-2 py-1 bg-destructive text-destructive-foreground rounded text-sm lg:text-xs hover:bg-destructive/90"
-                title={t("editor.deleteDiagram")}
-              >
-                {t('common.delete')}
-              </button>
-            </div>
-            <div
-              className="flex justify-center items-center"
-              style={{
-                filter:
-                  themeMode === "dark"
-                    ? "invert(0.92) contrast(0.85) brightness(1.1) saturate(1.2)"
-                    : "none",
-              }}
-              dangerouslySetInnerHTML={{ __html: node.attrs.svgData || "" }}
-            />
-          </>
-        ) : (
-          <div className="text-center py-12">
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
-            >
-              {t("editor.createExcalidrawDiagram")}
-            </button>
-            <button
-              onClick={handleDelete}
-              className="ml-2 px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90"
-            >
-              {t('common.delete')}
-            </button>
-          </div>
-        )}
-      </div>
+      <DiagramFrame
+        svg={svgData}
+        alt={t("editor.excalidrawDiagram")}
+        themeMode={themeMode}
+        onToggleTheme={toggleTheme}
+        placeholder={placeholder}
+        actions={actions}
+        className="excalidraw-diagram-container"
+      />
+      {isEditing && <ExcalidrawEditorModal diagramData={diagramData} onSave={save} onClose={closeEditor} />}
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
-        onConfirm={confirmDelete}
+        onConfirm={() => {
+          setShowDeleteModal(false);
+          deleteNode();
+        }}
         title={t("common.delete")}
-        message={t("common.confirmDeleteItem", { itemTitle: t('editor.excalidrawDiagram') })}
+        message={t("common.confirmDeleteItem", { itemTitle: t("editor.excalidrawDiagram") })}
         confirmText={t("common.delete")}
         variant="destructive"
       />
@@ -275,12 +157,9 @@ export const ExcalidrawExtension = Node.create({
       {
         tag: "div[data-excalidraw]",
         getAttrs: (element) => ({
-          diagramData:
-            (element as HTMLElement).getAttribute("data-excalidraw-data") || null,
-          svgData:
-            (element as HTMLElement).getAttribute("data-excalidraw-svg") || null,
-          themeMode:
-            (element as HTMLElement).getAttribute("data-excalidraw-theme") || "light",
+          diagramData: element.getAttribute("data-excalidraw-data") || null,
+          svgData: element.getAttribute("data-excalidraw-svg") || null,
+          themeMode: toDiagramTheme(element.getAttribute("data-excalidraw-theme")),
         }),
       },
     ];
@@ -306,17 +185,15 @@ export const ExcalidrawExtension = Node.create({
     });
   },
 
-  /** @ts-ignore */
   addCommands() {
     return {
       insertExcalidraw:
         () =>
-          ({ commands }: any) => {
-            return commands.insertContent({
-              type: this.name,
-              attrs: { diagramData: null },
-            });
-          },
+        ({ commands }) =>
+          commands.insertContent({
+            type: this.name,
+            attrs: { diagramData: null, svgData: null },
+          }),
     };
   },
 });

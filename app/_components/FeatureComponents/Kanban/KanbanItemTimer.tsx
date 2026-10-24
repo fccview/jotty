@@ -8,6 +8,7 @@ import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useTranslations } from "next-intl";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 interface KanbanItemTimerProps {
   totalTime: number;
@@ -108,7 +109,7 @@ const KanbanItemTimerComponent = ({
       {showTimeDropdown && (
         <div
           ref={dropdownRef}
-          className="absolute bottom-full mb-1 right-0 z-50 bg-background border border-border rounded-jotty shadow-lg p-2 min-w-[160px]"
+          className={`absolute bottom-full mb-1 right-0 z-50 p-2 min-w-[160px] ${MENU_CLASS}`}
           onPointerDown={(e) => e.stopPropagation()}
         >
           <div className="text-xs font-medium text-muted-foreground mb-1.5">{t("checklists.addTime")}</div>

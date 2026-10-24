@@ -27,6 +27,7 @@ export const MfaRegenerateRecoveryCodeModal = ({
     const [step, setStep] = useState<1 | 2>(1);
     const [recoveryCode, setRecoveryCode] = useState("");
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const [attempt, setAttempt] = useState(0);
 
     const handleCodeComplete = async (code: string) => {
         setIsRegenerating(true);
@@ -42,6 +43,7 @@ export const MfaRegenerateRecoveryCodeModal = ({
                     message: t("mfa.recoveryCodeRegeneratedSuccess"),
                 });
             } else {
+                setAttempt((current) => current + 1);
                 showToast({
                     type: "error",
                     title: t("common.error"),
@@ -49,6 +51,8 @@ export const MfaRegenerateRecoveryCodeModal = ({
                 });
             }
         } catch (error) {
+            console.error("Recovery code regeneration failed:", error);
+            setAttempt((current) => current + 1);
             showToast({
                 type: "error",
                 title: t("common.error"),
@@ -115,6 +119,7 @@ export const MfaRegenerateRecoveryCodeModal = ({
                             {t("mfa.enterCode")}
                         </label>
                         <CodeInput
+                            key={attempt}
                             length={6}
                             onComplete={handleCodeComplete}
                             disabled={isRegenerating}

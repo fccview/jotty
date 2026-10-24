@@ -6,7 +6,14 @@ type Shortcut = {
   shiftKey?: boolean;
   altKey?: boolean;
   modKey?: boolean;
+  skipInEditable?: boolean;
 };
+
+const EDITABLE_TAGS = ["INPUT", "TEXTAREA", "SELECT"];
+
+const isEditableTarget = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || EDITABLE_TAGS.includes(target.tagName));
 
 export const useShortcuts = (shortcuts: Shortcut[]) => {
   useEffect(() => {
@@ -26,6 +33,9 @@ export const useShortcuts = (shortcuts: Shortcut[]) => {
           return false;
         }
         if (s.code !== event.code) {
+          return false;
+        }
+        if (s.skipInEditable && isEditableTarget(event.target)) {
           return false;
         }
 

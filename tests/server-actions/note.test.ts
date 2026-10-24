@@ -12,9 +12,7 @@ const mockGetCurrentUser = vi.fn();
 const mockGetUsername = vi.fn();
 const mockCanReach = vi.fn();
 const mockLogContentEvent = vi.fn();
-const mockParseInternalLinks = vi.fn();
-const mockUpdateIndexForItem = vi.fn();
-const mockRemoveItemFromIndex = vi.fn();
+const mockTidyItemLinks = vi.fn();
 const mockCommitNote = vi.fn();
 const mockGetSettings = vi.fn();
 const mockExtractHashtagsFromContent = vi.fn();
@@ -43,6 +41,7 @@ vi.mock("@/app/_server/actions/file", () => ({
   serverDeleteFile: (...args: any[]) => mockServerDeleteFile(...args),
   serverReadDir: (...args: any[]) => mockServerReadDir(...args),
   serverReadFile: (...args: any[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: any[]) => (await mockServerReadFile(...args)) ?? null,
   readOrderFile: (...args: any[]) => mockReadOrderFile(...args),
   readJsonFile: vi.fn().mockResolvedValue([]),
 }));
@@ -72,15 +71,12 @@ vi.mock("@/app/_server/actions/log", () => ({
   logContentEvent: (...args: any[]) => mockLogContentEvent(...args),
 }));
 
-vi.mock("@/app/_server/actions/link", () => ({
-  parseInternalLinks: (...args: any[]) => mockParseInternalLinks(...args),
-  updateIndexForItem: (...args: any[]) => mockUpdateIndexForItem(...args),
-  removeItemFromIndex: (...args: any[]) => mockRemoveItemFromIndex(...args),
-  rebuildLinkIndex: vi.fn().mockResolvedValue(undefined),
-  rebuildLinkIndexInternal: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/app/_server/actions/relations/tidy", () => ({
+  tidyItemLinks: (...args: any[]) => mockTidyItemLinks(...args),
+  refreshWikilinks: (markdown: string) => markdown,
 }));
 
-vi.mock("@/app/_server/actions/history", () => ({
+vi.mock("@/app/_server/actions/history/repo", () => ({
   commitNote: (...args: any[]) => mockCommitNote(...args),
 }));
 
@@ -94,6 +90,7 @@ vi.mock("@/app/_utils/filename-utils", () => ({
 }));
 
 vi.mock("@/app/_utils/yaml-metadata-utils", () => ({
+  OwnedMetaKeys: { CREATED_AT: "createdAt" },
   generateUuid: vi.fn().mockReturnValue("test-uuid-123"),
   generateYamlFrontmatter: (...args: any[]) =>
     mockGenerateYamlFrontmatter(...args),
@@ -110,10 +107,18 @@ vi.mock("@/app/_utils/markdown-utils", () => ({
   sanitizeMarkdown: vi.fn().mockImplementation((content) => content),
 }));
 
-vi.mock("@/app/_utils/tag-utils", () => ({
-  extractHashtagsFromContent: (...args: any[]) =>
-    mockExtractHashtagsFromContent(...args),
-}));
+vi.mock("@/app/_utils/tag-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/app/_utils/tag-utils")>();
+  const extract = (...args: any[]) => mockExtractHashtagsFromContent(...args);
+  return {
+    ...actual,
+    extractHashtagsFromContent: extract,
+    mergeTags: (stored: unknown, before: string, after: string) => {
+      const was = new Set(extract(before));
+      return actual.tagList([...actual.tagList(stored).filter((tag) => !was.has(tag)), ...extract(after)]);
+    },
+  };
+});
 
 vi.mock("@/app/_utils/encryption-utils", () => ({
   isEncrypted: vi.fn().mockReturnValue(false),
@@ -197,9 +202,7 @@ describe("Note Actions", () => {
       },
     );
     mockLogContentEvent.mockResolvedValue(undefined);
-    mockParseInternalLinks.mockResolvedValue([]);
-    mockUpdateIndexForItem.mockResolvedValue(undefined);
-    mockRemoveItemFromIndex.mockResolvedValue(undefined);
+    mockTidyItemLinks.mockImplementation(async (content: string) => content);
     mockCommitNote.mockResolvedValue(undefined);
     mockGetSettings.mockResolvedValue({});
     mockExtractHashtagsFromContent.mockReturnValue([]);
@@ -268,16 +271,36 @@ describe("Note Actions", () => {
       );
     });
 
-    it("should update link index after creation", async () => {
+    it("should canonicalise internal links before saving", async () => {
       const formData = createFormData({
         title: "Linked Note",
         category: "TestCategory",
-        rawContent: "Content with [[link]]",
+      rawContent: "See [Old](/jotty/3f2a1b4c-1111-4222-8333-944455556666)",
       });
+
+      mockTidyItemLinks.mockResolvedValueOnce("tidied body");
 
       await createNote(formData);
 
-      expect(mockUpdateIndexForItem).toHaveBeenCalled();
+      expect(mockTidyItemLinks).toHaveBeenCalledWith(expect.any(String), "testuser");
+      expect(mockServerWriteFile).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining("tidied body"),
+      );
+    });
+
+    it("should return the body exactly as it is written to disk", async () => {
+      mockExtractYamlMetadata.mockReturnValue({
+        metadata: {},
+        contentWithoutMetadata: "\n\n\nhello\n",
+      });
+
+      const result = await createNote(
+        createFormData({ title: "Blank lead", category: "TestCategory", rawContent: "\n\n\nhello\n" }),
+      );
+
+      expect(result.data?.content).toBe("hello");
+      expect(mockServerWriteFile.mock.calls[0][1]).toMatch(/---\nhello$/);
     });
 
     it("should commit note to history", async () => {
@@ -309,6 +332,28 @@ describe("Note Actions", () => {
       const result = await createNote(formData);
 
       expect(result.error).toBe("Failed to create note");
+    });
+
+    it("should refuse a category that escapes the owner's folder instead of filing it at the root", async () => {
+      mockTargetDir.mockResolvedValue({
+        dir: "/data/notes/testuser",
+        owner: "testuser",
+        category: "",
+        isMount: false,
+        isImplicit: false,
+      });
+
+      const formData = createFormData({
+        title: "Escapee",
+        category: "../elsewhere",
+        rawContent: "Content",
+      });
+
+      const result = await createNote(formData);
+
+      expect(result.success).toBeUndefined();
+      expect(result.error).toBeTruthy();
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
     });
 
     it("should refuse forged formData identity when there is no session", async () => {
@@ -617,6 +662,26 @@ describe("Note Actions", () => {
 
         mockExtractTitle.mockReturnValue("Test Note");
       };
+
+      it("should return the body exactly as it is written to disk", async () => {
+        setupUpdateNoteMocks();
+        mockExtractYamlMetadata.mockReturnValue({
+          metadata: {},
+          contentWithoutMetadata: "\n\n\nhello\n",
+        });
+
+        const result = await updateNote(
+          createFormData({
+            uuid: "test-uuid-123",
+            title: "Test Note",
+            content: "\n\n\nhello\n",
+            category: "TestCategory",
+          }),
+        );
+
+        expect(result.data?.content).toBe("hello");
+        expect(mockServerWriteFile.mock.calls[0][1]).toMatch(/---\nhello$/);
+      });
 
       it("should extract tags from updated content", async () => {
         setupUpdateNoteMocks();

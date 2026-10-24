@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Checklist, User } from "@/app/_types";
 import { PublicChecklistHeader } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistHeader";
 import { PublicChecklistBody } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistBody";
@@ -9,12 +10,15 @@ import { PublicUser } from "@/app/_utils/user-sanitize-utils";
 interface PublicChecklistViewProps {
   checklist: Checklist;
   user: PublicUser | null;
+  ownerShowsEmojis: boolean;
 }
 
 export const PublicChecklistView = ({
   checklist,
   user,
+  ownerShowsEmojis,
 }: PublicChecklistViewProps) => {
+  const t = useTranslations();
   const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
@@ -34,12 +38,15 @@ export const PublicChecklistView = ({
         />
 
         <main className="space-y-6">
-          <PublicChecklistBody checklist={checklist} />
+          <PublicChecklistBody
+            checklist={checklist}
+            ownerShowsEmojis={ownerShowsEmojis}
+          />
         </main>
 
         <footer className="mt-12 pt-8 border-t border-border text-center">
           <p className="text-md lg:text-sm text-muted-foreground">
-            This checklist is shared publicly by {checklist.owner}
+            {t("checklists.sharedPubliclyBy", { owner: checklist.owner ?? "" })}
           </p>
         </footer>
       </div>

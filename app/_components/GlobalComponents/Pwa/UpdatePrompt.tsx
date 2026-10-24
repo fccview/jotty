@@ -5,9 +5,8 @@ import { MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useGitHubRelease } from "@/app/_hooks/useGitHubRelease";
 import { readPackageVersion } from "@/app/_server/actions/config";
-import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
-import { convertMarkdownToHtml } from "@/app/_utils/markdown-utils";
 import { useTranslations } from "next-intl";
 
 export const UpdatePrompt = () => {
@@ -104,14 +103,15 @@ export const UpdatePrompt = () => {
         isOpen={showReleaseNotesModal}
         onClose={handleCloseModal}
         title={`Release Notes v${latestVersion}`}
-        className="lg:max-h-[80vh] lg:!max-w-[80vw] lg:!w-[80vw]"
+        variant={ModalVariant.WORKSPACE}
+        width={ModalWidth.XWIDE}
       >
         <div className="flex flex-col h-full max-h-[calc(80vh-10rem)]">
           <div className="flex-1 overflow-y-auto">
             <div className="prose prose-sm max-w-none dark:prose-invert">
               {releaseNotes && (
                 <UnifiedMarkdownRenderer
-                  content={convertMarkdownToHtml(releaseNotes)}
+                  content={releaseNotes}
                 />
               )}
             </div>

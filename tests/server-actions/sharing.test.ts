@@ -24,12 +24,17 @@ const mockOwnerOfList = vi.fn();
 vi.mock("@/app/_server/actions/share/category-info", () => ({
   readCatInfo: (...args: unknown[]) => mockReadCatInfo(...args),
   writeCatInfo: (...args: unknown[]) => mockWriteCatInfo(...args),
+  mutateCatInfo: async (dir: string, mutate: (info: unknown) => unknown) => {
+    const next = await mutate(await mockReadCatInfo(dir));
+    return next ? mockWriteCatInfo(dir, next) : false;
+  },
   catDirByUuid: (...args: unknown[]) => mockCatDirByUuid(...args),
   catUuid: (...args: unknown[]) => mockCatUuid(...args),
 }));
 
 vi.mock("@/app/_server/actions/file", () => ({
   serverReadFile: (...args: unknown[]) => mockServerReadFile(...args),
+  serverReadExisting: async (...args: unknown[]) => (await mockServerReadFile(...args)) ?? null,
   serverWriteFile: (...args: unknown[]) => mockServerWriteFile(...args),
 }));
 
@@ -57,11 +62,19 @@ vi.mock("@/app/_utils/grep-utils", () => ({
   grepListAllFiles: (...args: unknown[]) => mockGrepListAllFiles(...args),
 }));
 
+vi.mock("@/app/_server/actions/users/records", () => ({
+  findUserRecord: async (username: string) => ({ username }),
+}));
+
 vi.mock("@/app/_server/actions/users", () => ({
   isAdmin: (...args: unknown[]) => mockIsAdmin(...args),
   canAccessAllContent: (...args: unknown[]) =>
     mockCanAccessAllContent(...args),
   getUsername: (...args: unknown[]) => mockGetUsername(...args),
+  getCurrentUser: async () => {
+    const username = await mockGetUsername();
+    return username ? { username, isAdmin: Boolean(await mockIsAdmin()) } : null;
+  },
   getUserByNoteUuid: (...args: unknown[]) => mockOwnerOfNote(...args),
   getUserByChecklistUuid: (...args: unknown[]) => mockOwnerOfList(...args),
 }));

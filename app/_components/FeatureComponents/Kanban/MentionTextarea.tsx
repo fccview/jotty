@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/app/_utils/global-utils";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { useTranslations } from "next-intl";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 export interface MentionUser {
   username: string;
@@ -181,7 +182,7 @@ export const MentionTextarea = React.forwardRef<
           rows={rows}
         />
         {showDropdown && filteredUsers.length > 0 && (
-          <div className="absolute z-50 bottom-full mb-1 left-0 bg-card border border-border rounded-jotty shadow-lg p-1.5 min-w-56 max-h-48 overflow-y-auto">
+          <div className={`absolute z-50 bottom-full mb-1 left-0 p-1.5 min-w-56 max-h-48 overflow-y-auto ${MENU_CLASS}`}>
             {filteredUsers.map((user, index) => (
               <button
                 key={user.username}
@@ -208,7 +209,7 @@ export const MentionTextarea = React.forwardRef<
           </div>
         )}
         {showDropdown && filteredUsers.length === 0 && mentionQuery && (
-          <div className="absolute z-50 bottom-full mb-1 left-0 bg-card border border-border rounded-jotty shadow-lg p-3 min-w-56">
+          <div className={`absolute z-50 bottom-full mb-1 left-0 p-3 min-w-56 ${MENU_CLASS}`}>
             <p className="text-xs text-muted-foreground text-center">
               {t("comments.noUsersFound")}
             </p>

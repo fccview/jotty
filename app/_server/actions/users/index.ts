@@ -1,7 +1,5 @@
 export type { UserUpdatePayload } from "./crud";
 
-export { ensureUser } from "./ensure-user";
-
 export {
   createUser,
   deleteUser,
@@ -24,5 +22,3 @@ export {
 export { isAuthenticated, isAdmin, canAccessAllContent } from "./auth";
 
 export { updateUserSettings } from "./settings";
-
-export { getUserIndex, getUserByItemUuid } from "./helpers";

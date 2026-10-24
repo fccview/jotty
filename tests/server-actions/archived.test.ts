@@ -9,11 +9,11 @@ vi.mock("@/app/_server/actions/users", () => ({
   getCurrentUser: (...args: any[]) => mockGetCurrentUser(...args),
 }));
 
-vi.mock("@/app/_server/actions/checklist", () => ({
+vi.mock("@/app/_server/actions/checklist/queries", () => ({
   getUserChecklists: (...args: any[]) => mockGetUserChecklists(...args),
 }));
 
-vi.mock("@/app/_server/actions/note", () => ({
+vi.mock("@/app/_server/actions/note/queries", () => ({
   getUserNotes: (...args: any[]) => mockGetUserNotes(...args),
 }));
 

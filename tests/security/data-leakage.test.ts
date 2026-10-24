@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import path from 'path'
 import { resetAllMocks, createFormData } from '../setup'
 
 const mockReadJsonFile = vi.fn()
@@ -21,7 +22,7 @@ vi.mock('@/app/_server/actions/file', () => ({
   ensureDir: vi.fn(),
 }))
 
-vi.mock('@/app/_server/actions/session', () => ({
+vi.mock('@/app/_server/actions/session/store', () => ({
   getSessionId: () => mockGetSessionId(),
   readSessions: () => mockReadSessions(),
   removeAllSessionsForUser: vi.fn(),
@@ -213,6 +214,8 @@ describe('Security: Data Leakage Prevention', () => {
 
   describe('Sensitive Field Filtering', () => {
     it('user list should only contain safe fields', async () => {
+      mockGetSessionId.mockResolvedValue('sid')
+      mockReadSessions.mockResolvedValue({ sid: 'user1' })
       mockReadJsonFile.mockResolvedValue([
         {
           username: 'user1',
@@ -309,7 +312,9 @@ describe('Security: Data Leakage Prevention', () => {
 
     it('owner lookup by item uuid should only return public fields', async () => {
       mockReadJsonFile.mockResolvedValue([victimRecord])
-      mockGrepFindFileByUuid.mockResolvedValue({ filePath: '/data/victim/note.md' })
+      mockGrepFindFileByUuid.mockResolvedValue({
+        filePath: path.join(process.cwd(), 'data', 'notes', 'victim', 'note.md'),
+      })
 
       const { getUserByNoteUuid } = await import('@/app/_server/actions/users')
 
@@ -334,11 +339,6 @@ describe('Security: Data Leakage Prevention', () => {
         { username: 'realuser', passwordHash: 'hash', isAdmin: false },
       ])
 
-      vi.mock('proper-lockfile', () => ({
-        lock: vi.fn().mockResolvedValue(undefined),
-        unlock: vi.fn().mockResolvedValue(undefined),
-      }))
-
       const { login } = await import('@/app/_server/actions/auth')
 
       const formDataExisting = createFormData({
@@ -354,8 +354,8 @@ describe('Security: Data Leakage Prevention', () => {
       const resultExisting = await login(formDataExisting)
       const resultNonExisting = await login(formDataNonExisting)
 
-      expect(resultExisting.error).toBe('Invalid username or password')
-      expect(resultNonExisting.error).toBe('Invalid username or password')
+      expect(resultExisting?.error).toBe('Invalid username or password')
+      expect(resultNonExisting?.error).toBe('Invalid username or password')
     })
   })
 })

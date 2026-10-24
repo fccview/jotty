@@ -11,6 +11,7 @@ import {
 import { getCurrentUser, isAdmin } from "@/app/_server/actions/users";
 import { readJsonFile } from "@/app/_server/actions/file";
 import { getDailyLogPath, getDateRange } from "./helpers";
+import { DAY_MS, LOG_MAX_RANGE_DAYS, LOG_WINDOW_DAYS } from "@/app/_consts/logs";
 
 export const getAuditLogs = async (
   filters: AuditLogFilters = {}
@@ -25,9 +26,11 @@ export const getAuditLogs = async (
   let allLogs: AuditLogEntry[] = [];
 
   const endDate = filters.endDate ? new Date(filters.endDate) : new Date();
-  const startDate = filters.startDate
+  const earliest = new Date(endDate.getTime() - LOG_MAX_RANGE_DAYS * DAY_MS);
+  const requested = filters.startDate
     ? new Date(filters.startDate)
-    : new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+    : new Date(endDate.getTime() - LOG_WINDOW_DAYS * DAY_MS);
+  const startDate = requested < earliest ? earliest : requested;
 
   const dates = await getDateRange(startDate, endDate);
 

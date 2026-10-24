@@ -7,6 +7,13 @@
  */
 
 import { vi, beforeAll, afterAll } from "vitest";
+import os from "os";
+import path from "path";
+
+process.env.JOTTY_RELATIONS_DB = path.join(
+  os.tmpdir(),
+  `jotty-relations-test-${process.pid}.db`,
+);
 
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
@@ -46,7 +53,11 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
 }));
 
+const _missingFile = () =>
+  Promise.reject(Object.assign(new Error("ENOENT: no such file"), { code: "ENOENT" }));
+
 export const mockFs = {
+  open: vi.fn(_missingFile),
   readFile: vi.fn(),
   writeFile: vi.fn(),
   mkdir: vi.fn(),
@@ -179,14 +190,8 @@ vi.mock("unist-util-visit", () => ({
 
 vi.mock("@/app/_utils/markdown-utils", () => ({
   sanitizeMarkdown: vi.fn().mockImplementation((content: string) => content),
-  convertMarkdownToHtml: vi
-    .fn()
-    .mockImplementation((content: string) => content),
-  createTurndownService: vi.fn().mockReturnValue({
-    turndown: vi.fn().mockImplementation((html: string) => html),
-  }),
+  defangHtml: vi.fn().mockImplementation((content: string) => content),
   extractHeadings: vi.fn().mockReturnValue([]),
-  htmlToMarkdown: vi.fn().mockImplementation((html: string) => html),
 }));
 
 vi.mock("@/app/_utils/checklist-utils", () => ({
@@ -196,9 +201,7 @@ vi.mock("@/app/_utils/checklist-utils", () => ({
     title: "Test",
     items: [],
   }),
-  isItemCompleted: vi.fn().mockReturnValue(false),
   formatTime: vi.fn().mockReturnValue("0s"),
-  getCompletionRate: vi.fn().mockReturnValue(0),
 }));
 
 export const mockLock = vi.fn().mockResolvedValue(undefined);
@@ -225,6 +228,8 @@ export function resetAllMocks() {
   mockFs.rename.mockReset();
   mockFs.rm.mockReset();
   mockFs.unlink.mockReset();
+  mockFs.open.mockReset();
+  mockFs.open.mockImplementation(_missingFile);
   mockLock.mockReset();
   mockUnlock.mockReset();
 }

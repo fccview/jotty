@@ -33,6 +33,9 @@ interface SidebarState {
 
   scrollTop: number;
   setScrollTop: (scrollTop: number) => void;
+
+  search: string | null;
+  setSearch: (search: string | null) => void;
 }
 
 const migrateOldLocalStorage = (): Partial<SidebarState> => {
@@ -182,11 +185,14 @@ export const useSidebarStore = create<SidebarState>()(
 
       scrollTop: 0,
       setScrollTop: (scrollTop) => set({ scrollTop }),
+
+      search: null,
+      setSearch: (search) => set({ search }),
     }),
     {
       name: "sidebar-state",
       partialize: (state) => {
-        const { scrollTop, mode, ...rest } = state;
+        const { scrollTop, mode, search, ...rest } = state;
         return rest;
       },
       onRehydrateStorage: () => (state) => {

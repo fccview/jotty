@@ -1,6 +1,8 @@
 import { HOWTO_DIR } from "@/app/_consts/files";
 import path from "path";
 
+export const API_GUIDE_ID = "api";
+
 export interface HowtoGuide {
   id: string;
   name: string;
@@ -25,11 +27,39 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.markdownGuide",
   },
   {
-    id: "api",
+    id: "brain",
+    name: t("help.brain"),
+    filename: "BRAIN.md",
+    icon: "brain",
+    translationKey: "help.brain",
+  },
+  {
+    id: "templates",
+    name: t("help.templates"),
+    filename: "TEMPLATES.md",
+    icon: "template",
+    translationKey: "help.templates",
+  },
+  {
+    id: "sharing",
+    name: t("help.sharing"),
+    filename: "SHARING.md",
+    icon: "share",
+    translationKey: "help.sharing",
+  },
+  {
+    id: API_GUIDE_ID,
     name: t("common.api"),
     filename: "API.md",
     icon: "code",
     translationKey: "common.api",
+  },
+  {
+    id: "mcp",
+    name: t("help.mcp"),
+    filename: "MCP.md",
+    icon: "robot",
+    translationKey: "help.mcp",
   },
   {
     id: "customisations",
@@ -40,17 +70,10 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
   },
   {
     id: "docker",
-    name: t("help.docker"),
+    name: t("help.selfHosting"),
     filename: "DOCKER.md",
     icon: "laptop",
-    translationKey: "help.docker",
-  },
-  {
-    id: "unraid",
-    name: t("help.unraid"),
-    filename: "UNRAID.md",
-    icon: "rain",
-    translationKey: "help.unraid",
+    translationKey: "help.selfHosting",
   },
   {
     id: "env-variables",
@@ -58,13 +81,6 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     filename: "ENV-VARIABLES.md",
     icon: "key",
     translationKey: "help.envVariables",
-  },
-  {
-    id: "pwa",
-    name: t("help.pwa"),
-    filename: "PWA.md",
-    icon: "smartphone",
-    translationKey: "help.pwa",
   },
   {
     id: "encryption",
@@ -88,18 +104,18 @@ export const getHowtoGuides = (t: any): HowtoGuide[] => [
     translationKey: "help.sso",
   },
   {
+    id: "ldap",
+    name: t("help.ldap"),
+    filename: "LDAP.md",
+    icon: "users",
+    translationKey: "help.ldap",
+  },
+  {
     id: "translations",
     name: t("help.translations"),
     filename: "TRANSLATIONS.md",
     icon: "translation",
     translationKey: "help.translations",
-  },
-  {
-    id: "patches",
-    name: t("help.patches"),
-    filename: "PATCHES.md",
-    icon: "patch",
-    translationKey: "help.patches",
   },
 ];
 

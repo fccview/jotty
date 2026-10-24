@@ -3,6 +3,7 @@
 import _sodium from "libsodium-wrappers-sumo";
 import { Result } from "@/app/_types";
 import { logAudit } from "@/app/_server/actions/log";
+import { getCurrentUser } from "@/app/_server/actions/users";
 
 let sodium: any;
 const getSodium = async () => {
@@ -13,10 +14,36 @@ const getSodium = async () => {
   return sodium;
 };
 
+const KIB = 1024;
+const ARGON_DEFAULT = { t: 2, m: 64 * KIB, p: 1 };
+const ARGON_LIMITS = { minT: 1, maxT: 4, minM: 8 * KIB, maxM: 256 * KIB, p: 1 };
+
+interface ArgonCost {
+  opslimit: number;
+  memlimit: number;
+}
+
+const _inRange = (value: unknown, min: number, max: number): value is number =>
+  Number.isInteger(value) && (value as number) >= min && (value as number) <= max;
+
+const _argonCost = (pkg: { t?: unknown; m?: unknown; p?: unknown }): ArgonCost | null => {
+  const t = pkg.t ?? ARGON_DEFAULT.t;
+  const m = pkg.m ?? ARGON_DEFAULT.m;
+  const p = pkg.p ?? ARGON_DEFAULT.p;
+
+  if (!_inRange(t, ARGON_LIMITS.minT, ARGON_LIMITS.maxT)) return null;
+  if (!_inRange(m, ARGON_LIMITS.minM, ARGON_LIMITS.maxM)) return null;
+  if (p !== ARGON_LIMITS.p) return null;
+
+  return { opslimit: t, memlimit: m * KIB };
+};
+
 export const encryptXChaCha = async (
   formData: FormData
 ): Promise<Result<{ encryptedContent: string }>> => {
   try {
+    if (!(await getCurrentUser())) return { success: false, error: "Not authenticated" };
+
     const sod = await getSodium();
     const content = formData.get("content") as string;
     const passphrase = formData.get("passphrase") as string;
@@ -84,6 +111,8 @@ export const decryptXChaCha = async (
   formData: FormData
 ): Promise<Result<{ decryptedContent: string }>> => {
   try {
+    if (!(await getCurrentUser())) return { success: false, error: "Not authenticated" };
+
     const sod = await getSodium();
     const encryptedString = formData.get("encryptedContent") as string;
     const passphrase = formData.get("passphrase") as string;
@@ -101,6 +130,16 @@ export const decryptXChaCha = async (
       return { success: false, error: "Algorithm mismatch" };
     }
 
+    const cost = _argonCost(pkg);
+    if (!cost) {
+      console.warn("XChaCha decryption refused unsupported Argon2 settings:", {
+        t: pkg.t,
+        m: pkg.m,
+        p: pkg.p,
+      });
+      return { success: false, error: "Invalid encrypted format" };
+    }
+
     const salt = sod.from_hex(pkg.salt);
     const nonce = sod.from_hex(pkg.nonce);
     const ciphertext = sod.from_hex(pkg.data);
@@ -109,8 +148,8 @@ export const decryptXChaCha = async (
       sod.crypto_aead_xchacha20poly1305_ietf_KEYBYTES,
       passphrase,
       salt,
-      sod.crypto_pwhash_OPSLIMIT_INTERACTIVE,
-      sod.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+      cost.opslimit,
+      cost.memlimit,
       sod.crypto_pwhash_ALG_DEFAULT
     );
 

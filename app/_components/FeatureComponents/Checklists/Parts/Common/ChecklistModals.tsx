@@ -5,7 +5,7 @@ import { Checklist, ChecklistType } from "@/app/_types";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import type { JSX } from "react";
+import type { ReactNode } from "react";
 
 interface ChecklistModalsProps {
   localList: Checklist;
@@ -19,7 +19,7 @@ interface ChecklistModalsProps {
   getNewType: (type: ChecklistType) => ChecklistType;
   handleBulkPaste: (itemsText: string) => void;
   isLoading: boolean;
-  DeleteModal: () => JSX.Element;
+  deleteModal: ReactNode;
 }
 
 export const ChecklistModals = ({
@@ -34,7 +34,7 @@ export const ChecklistModals = ({
   setShowBulkPasteModal,
   handleBulkPaste,
   isLoading,
-  DeleteModal,
+  deleteModal,
 }: ChecklistModalsProps) => {
   const router = useRouter();
   const t = useTranslations();
@@ -71,7 +71,7 @@ export const ChecklistModals = ({
           isLoading={isLoading}
         />
       )}
-      <DeleteModal />
+      {deleteModal}
     </>
   );
 };

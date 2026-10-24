@@ -9,8 +9,6 @@ import { useTranslations } from "next-intl";
 import {
     UserIcon,
     Tv02Icon,
-    Archive02Icon,
-    SharedWifiIcon,
     LockKeyIcon,
     Settings01Icon,
     Activity03Icon,
@@ -75,22 +73,6 @@ export const SettingsSidebar = ({ isOpen, onClose, isAdmin }: SettingsSidebarPro
             icon: TeachingIcon,
             path: "/settings/user-audit-logs",
         },
-        {
-            id: "archive",
-            label: t("profile.archiveTab"),
-            icon: Archive02Icon,
-            path: "/settings/archive",
-        },
-        ...(appSettings?.editor?.enableBilateralLinks
-            ? [
-                {
-                    id: "connections",
-                    label: t("profile.connectionsTab"),
-                    icon: SharedWifiIcon,
-                    path: "/settings/connections",
-                },
-            ]
-            : []),
         {
             id: "encryption",
             label: t("profile.encryptionTab"),

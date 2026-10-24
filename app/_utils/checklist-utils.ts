@@ -13,19 +13,14 @@ import {
   generateYamlFrontmatter,
   generateUuid,
   strayMeta,
+  createdAtOf,
+  OwnedMetaKeys,
+  BoardMetaKeys,
+  LIST_META_KEYS,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
-
-export const isItemCompleted = (item: Item, checklistType: string): boolean => {
-  if (
-    checklistType === ChecklistsTypes.KANBAN ||
-    checklistType === ChecklistsTypes.TASK
-  ) {
-    return item.status === TaskStatus.COMPLETED || !!item.completed;
-  }
-  return !!item.completed;
-};
+import { AGENT_SEGMENT } from "@/app/_consts/agents";
 
 export const areAllItemsCompleted = (items: any[]): boolean => {
   if (items.length === 0) return true;
@@ -44,40 +39,8 @@ export const formatTime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
-export const countItems = (
-  items: Item[],
-  checklistType?: string,
-): { total: number; completed: number } =>
-  items.reduce(
-    (acc, item) => {
-      if (item.isArchived) return acc;
-
-      if (item.children && item.children.length > 0) {
-        const childCounts = countItems(item.children, checklistType);
-        return {
-          total: acc.total + childCounts.total,
-          completed: acc.completed + childCounts.completed,
-        };
-      }
-
-      return {
-        total: acc.total + 1,
-        completed: isItemCompleted(item, checklistType || "")
-          ? acc.completed + 1
-          : acc.completed,
-      };
-    },
-    { total: 0, completed: 0 },
-  );
-
-export const getCompletionRate = (
-  items: Item[],
-  checklistType?: string,
-): number => {
-  const { total, completed } = countItems(items, checklistType);
-  if (total === 0) return 0;
-  return Math.round((completed / total) * 100);
-};
+const _flatDescription = (text: string): string =>
+  text.replace(/\r?\n/g, "\\n").replace(/\|/g, "∣");
 
 export const parseMarkdown = (
   content: string,
@@ -90,7 +53,7 @@ export const parseMarkdown = (
 ): Checklist => {
   const { metadata, contentWithoutMetadata } = extractYamlMetadata(content);
 
-  let title = extractTitle(
+  const title = extractTitle(
     content,
     fileName ? path.basename(fileName, ".md") : undefined,
   );
@@ -183,6 +146,7 @@ export const parseMarkdown = (
           let priority: KanbanPriority | undefined;
           let score: number | undefined;
           let assignee: string | undefined;
+          let agent: string | undefined;
           let reminder: KanbanReminder | undefined;
 
           metadata.forEach((meta) => {
@@ -219,6 +183,8 @@ export const parseMarkdown = (
               score = parseInt(meta.substring(6));
             } else if (meta.startsWith("assignee:")) {
               assignee = meta.substring(9);
+            } else if (meta.startsWith(AGENT_SEGMENT)) {
+              agent = meta.substring(AGENT_SEGMENT.length).trim() || undefined;
             } else if (meta.startsWith("reminder:")) {
               try {
                 reminder = JSON.parse(meta.substring(9));
@@ -244,6 +210,7 @@ export const parseMarkdown = (
             ...(priority ? { priority } : {}),
             ...(score !== undefined ? { score } : {}),
             ...(assignee ? { assignee } : {}),
+            ...(agent ? { agent } : {}),
             ...(reminder ? { reminder } : {}),
           };
         } else {
@@ -345,9 +312,7 @@ export const parseMarkdown = (
     type: checklistType,
     category,
     items,
-    createdAt: fileStats
-      ? fileStats.birthtime.toISOString()
-      : new Date().toISOString(),
+    createdAt: createdAtOf(metadata, fileStats?.birthtime ?? new Date()),
     updatedAt: fileStats
       ? fileStats.mtime.toISOString()
       : new Date().toISOString(),
@@ -355,12 +320,18 @@ export const parseMarkdown = (
     isShared,
     ...(statuses && { statuses }),
     ...(tags.length > 0 && { tags }),
+    ...(typeof metadata[BoardMetaKeys.SPEC_NOTE] === "string" && {
+      specNote: metadata[BoardMetaKeys.SPEC_NOTE] as string,
+    }),
     ...(metadata[SHARED_WITH_KEY] !== undefined && {
       sharedWith: metadata[SHARED_WITH_KEY] as string | string[],
     }),
-    extraMetadata: strayMeta(metadata),
+    extraMetadata: strayMeta(metadata, LIST_META_KEYS),
   };
 };
+
+const pipeSafeJson = (value: unknown) =>
+  JSON.stringify(value).replace(/\|/g, "\\u007c");
 
 const generateItemMarkdown = (
   item: Item,
@@ -399,11 +370,14 @@ const generateItemMarkdown = (
       itemMetadata.archivedBy = item.archivedBy;
       itemMetadata.previousStatus = item.previousStatus;
     }
+    if (item.externalId) {
+      itemMetadata.externalId = item.externalId;
+    }
 
     const timeEntries = item.timeEntries;
 
     if (timeEntries && timeEntries.length > 0) {
-      metadata.push(`time:${JSON.stringify(timeEntries)}`);
+      metadata.push(`time:${pipeSafeJson(timeEntries)}`);
     } else {
       metadata.push("time:0");
     }
@@ -421,7 +395,7 @@ const generateItemMarkdown = (
     }
 
     if (item.description) {
-      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+      metadata.push(`description:${_flatDescription(item.description)}`);
     }
 
     if (item.recurrence) {
@@ -441,12 +415,16 @@ const generateItemMarkdown = (
       metadata.push(`assignee:${item.assignee}`);
     }
 
+    if (item.agent) {
+      metadata.push(`${AGENT_SEGMENT}${item.agent}`);
+    }
+
     if (item.reminder) {
-      metadata.push(`reminder:${JSON.stringify(item.reminder)}`);
+      metadata.push(`reminder:${pipeSafeJson(item.reminder)}`);
     }
 
     if (Object.keys(itemMetadata).length > 0) {
-      metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
+      metadata.push(`metadata:${pipeSafeJson(itemMetadata)}`);
     }
 
     itemLine = `${indent}- [${item.completed ? "x" : " "
@@ -497,6 +475,9 @@ const generateItemMarkdown = (
     if (item.assignee) {
       itemMetadata.assignee = item.assignee;
     }
+    if (item.agent) {
+      itemMetadata.agent = item.agent;
+    }
     if (item.reminder) {
       itemMetadata.reminder = item.reminder;
     }
@@ -504,11 +485,11 @@ const generateItemMarkdown = (
     const metadata: string[] = [];
 
     if (item.description) {
-      metadata.push(`description:${item.description.replace(/\|/g, "∣")}`);
+      metadata.push(`description:${_flatDescription(item.description)}`);
     }
 
     if (Object.keys(itemMetadata).length > 0) {
-      metadata.push(`metadata:${JSON.stringify(itemMetadata)}`);
+      metadata.push(`metadata:${pipeSafeJson(itemMetadata)}`);
     }
 
     if (item.recurrence) {
@@ -532,7 +513,10 @@ const generateItemMarkdown = (
 };
 
 export const listToMarkdown = (list: Checklist): string => {
-  const metadata: Record<string, unknown> = { ...(list.extraMetadata || {}) };
+  const metadata: Record<string, unknown> = {
+    ...(list.createdAt && { [OwnedMetaKeys.CREATED_AT]: list.createdAt }),
+    ...(list.extraMetadata || {}),
+  };
   metadata.uuid = list.uuid || generateUuid();
   metadata.title = list.title || "Untitled Checklist";
   if (list.type === ChecklistsTypes.KANBAN) metadata.checklistType = "kanban";
@@ -551,6 +535,10 @@ export const listToMarkdown = (list: Checklist): string => {
 
   if (list.sharedWith !== undefined) {
     metadata[SHARED_WITH_KEY] = list.sharedWith;
+  }
+
+  if (list.specNote) {
+    metadata[BoardMetaKeys.SPEC_NOTE] = list.specNote;
   }
 
   const frontmatter = generateYamlFrontmatter(metadata);

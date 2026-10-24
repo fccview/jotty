@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { useState } from "react";
 import { QuickNav } from "@/app/_components/FeatureComponents/Header/QuickNav";
 import { Sidebar } from "@/app/_components/FeatureComponents/Sidebar/Sidebar";
@@ -11,6 +12,7 @@ import { isMobileDevice } from "@/app/_utils/global-utils";
 import { Loading } from "@/app/_components/GlobalComponents/Layout/Loading";
 import { usePathname } from "next/navigation";
 import { useUIStore } from "@/app/_utils/ui-store";
+import { useTrackReturnPath } from "@/app/_hooks/useReturnPath";
 
 interface LayoutProps {
   categories: Category[];
@@ -42,12 +44,15 @@ export const Layout = ({
   isEditorInEditMode = false,
   extraClasses = "",
 }: LayoutProps) => {
+  const locale = useLocale();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { setMode, isInitialized } = useAppMode();
   const { isDragging } = useUIStore();
   const pathname = usePathname();
 
   const isSettingsPage = pathname?.startsWith("/settings");
+
+  useTrackReturnPath();
 
   useSidebarGesture({
     isOpen: sidebarOpen,
@@ -95,12 +100,12 @@ export const Layout = ({
           onSidebarToggle={() => setSidebarOpen(true)}
           onOpenSettings={onOpenSettings}
           user={user}
-          currentLocale={user?.preferredLocale || "en"}
+          currentLocale={locale}
           onModeChange={setMode}
           isEditorInEditMode={isEditorInEditMode}
         />
 
-        <div className="jotty-layout-content flex-1 overflow-hidden">
+        <div className="jotty-layout-content flex-1 overflow-hidden max-lg:flex max-lg:flex-col">
           {children}
         </div>
       </main>

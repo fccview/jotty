@@ -12,14 +12,26 @@ import { SidebarNavigation } from "./Parts/SidebarNavigation";
 import { CategoryList } from "./Parts/CategoryList";
 import { TagsList } from "./Parts/TagsList";
 import { SidebarActions } from "./Parts/SidebarActions";
-import { ArrowDown01Icon, ArrowRight01Icon } from "hugeicons-react";
+import {
+  ArrowDown01Icon,
+  ArrowRight01Icon,
+  MultiplicationSignIcon,
+  Search01Icon,
+} from "hugeicons-react";
+import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { useSidebarSearch } from "@/app/_hooks/useSidebarSearch";
+import { useSidebarOffline } from "@/app/_hooks/useSidebarOffline";
+import { searchedCategories } from "@/app/_utils/sidebar-tree-utils";
 import { Modes } from "@/app/_types/enums";
 import { SidebarProps, useSidebar } from "@/app/_hooks/useSidebar";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useSidebarStore } from "@/app/_utils/sidebar-store";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+
+const NOTHING_COLLAPSED = new Set<string>();
 
 export const Sidebar = (props: SidebarProps) => {
   const t = useTranslations();
@@ -32,7 +44,10 @@ export const Sidebar = (props: SidebarProps) => {
     user,
   } = props;
 
-  const { checklists, notes, tagsEnabled, tagsIndex } = useAppMode();
+  const { sidebar: snapshots, tagsEnabled, tagsIndex } = useAppMode();
+  const search = useSidebarStore((state) => state.search);
+  const setSearch = useSidebarStore((state) => state.setSearch);
+  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
   const totalTags = Object.keys(tagsIndex).length;
   const searchParams = useSearchParams();
   const { mode, setMode } = useAppMode();
@@ -42,8 +57,10 @@ export const Sidebar = (props: SidebarProps) => {
   const isSomePage = isNotesPage || isChecklistsPage;
 
   const sidebar = useSidebar(props);
+  useSidebarOffline();
 
-  const { mode: storedMode, setMode: setStoredMode } = useSidebarStore();
+  const storedMode = useSidebarStore((state) => state.mode);
+  const setStoredMode = useSidebarStore((state) => state.setMode);
   const searchMode = searchParams?.get("mode") as typeof mode;
   const isLastVisited = user?.landingPage === "last-visited";
 
@@ -76,6 +93,12 @@ export const Sidebar = (props: SidebarProps) => {
   }
 
   const displayMode = sidebar.pendingMode ?? sidebarMode;
+  const snapshot = sidebar.mode === Modes.TAGS ? undefined : snapshots[sidebar.mode];
+  const found = useSidebarSearch(sidebar.mode, search || "", snapshot?.stamp);
+  const shownCategories = useMemo(
+    () => (found ? searchedCategories(categories, found.snapshot.folders, found.folders) : categories),
+    [found, categories],
+  );
 
   useEffect(() => {
     if (mode !== sidebarMode) {
@@ -89,13 +112,6 @@ export const Sidebar = (props: SidebarProps) => {
     }
   }, [sidebarMode]);
 
-  const currentItems =
-    sidebarMode === Modes.TAGS
-      ? []
-      : sidebarMode === Modes.CHECKLISTS
-        ? checklists
-        : notes || [];
-
   if (!sidebar.isInitialized) return null;
 
   return (
@@ -103,6 +119,8 @@ export const Sidebar = (props: SidebarProps) => {
       <SidebarWrapper
         isOpen={isOpen}
         onClose={onClose}
+        scrollRef={setScrollElement}
+        restoreScroll={sidebarMode === Modes.TAGS}
         title={
           sidebarMode !== Modes.TAGS ? (
             <button
@@ -130,14 +148,22 @@ export const Sidebar = (props: SidebarProps) => {
         }
         headerActions={
           sidebarMode !== Modes.TAGS ? (
-            <button
-              onClick={sidebar.handleToggleAllCategories}
-              className="jotty-sidebar-categories-toggle-all text-sm lg:text-xs font-medium text-primary hover:underline focus:outline-none"
-            >
-              {sidebar.areAnyCollapsed
-                ? t("common.expandAll")
-                : t("common.collapseAll")}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSearch(search === null ? "" : null)}
+                className="jotty-sidebar-categories-search text-sm lg:text-xs font-medium text-primary hover:underline focus:outline-none"
+              >
+                {t("common.search")}
+              </button>
+              <button
+                onClick={sidebar.handleToggleAllCategories}
+                className="jotty-sidebar-categories-toggle-all text-sm lg:text-xs font-medium text-primary hover:underline focus:outline-none"
+              >
+                {sidebar.areAnyCollapsed
+                  ? t("common.expandAll")
+                  : t("common.collapseAll")}
+              </button>
+            </div>
           ) : null
         }
         footer={
@@ -163,11 +189,42 @@ export const Sidebar = (props: SidebarProps) => {
           </div>
         ) : (
           <div className="space-y-4">
+            {search !== null && (
+              <div className="jotty-sidebar-search relative">
+                <Search01Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                <Input
+                  id="sidebarSearch"
+                  name="sidebarSearch"
+                  type="text"
+                  value={search}
+                  autoFocus
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setSearch(null);
+                  }}
+                  placeholder={t("common.searchSidebarPlaceholder")}
+                  className="pl-10 pr-10 !space-y-0 [&>label]:hidden"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearch(null)}
+                  className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
+                  aria-label={t("common.clear")}
+                >
+                  <MultiplicationSignIcon className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+            {found && shownCategories.length === 0 && (
+              <p className="px-3 text-md lg:text-sm text-muted-foreground">{t("common.noResults")}</p>
+            )}
             {!sidebar.categoriesSectionCollapsed && (
               <CategoryList
-                categories={categories}
-                items={currentItems as unknown as (Checklist | Note)[]}
-                collapsedCategories={sidebar.collapsedCategoriesForMode}
+                categories={shownCategories}
+                snapshot={found ? found.snapshot : snapshot}
+                scrollElement={scrollElement}
+                collapsedCategories={found ? NOTHING_COLLAPSED : sidebar.collapsedCategoriesForMode}
                 onToggleCategory={sidebar.toggleCategory}
                 onCategorySelect={sidebar.handleCategorySelect}
                 onDeleteCategory={(path: string) =>
@@ -185,6 +242,7 @@ export const Sidebar = (props: SidebarProps) => {
                 onEditItem={(item) => sidebar.openModal("editItem", item)}
                 isItemSelected={sidebar.isItemSelected}
                 mode={sidebar.mode}
+                modeSettled={sidebar.mode === sidebarMode}
                 user={user || undefined}
               />
             )}

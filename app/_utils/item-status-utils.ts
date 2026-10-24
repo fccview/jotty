@@ -1,5 +1,6 @@
 import { Item, KanbanStatus } from "@/app/_types";
 import { updateItem, updateAllChildren } from "@/app/_utils/item-tree-utils";
+import { boardColumns } from "@/app/_consts/kanban";
 
 const _findParent = (items: Item[], childId: string): Item | null => {
   for (const item of items) {
@@ -27,7 +28,7 @@ export const applyStatus = (
       lastModifiedAt: now,
     };
 
-    const targetStatus = statuses?.find((s) => s.id === status);
+    const targetStatus = boardColumns(statuses).find((s) => s.id === status);
     if (targetStatus?.autoComplete) {
       updates.completed = true;
       if (item.children && item.children.length > 0) {
@@ -60,7 +61,7 @@ export const completeParent = (
   const allChildrenCompleted = parent.children.every((c) => c.completed);
   if (!allChildrenCompleted) return items;
 
-  const autoCompleteStatus = statuses?.find((s) => s.autoComplete);
+  const autoCompleteStatus = boardColumns(statuses).find((s) => s.autoComplete);
   if (!autoCompleteStatus) return items;
 
   const alreadyComplete =

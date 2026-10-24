@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { createPortal } from "react-dom";
 import { ArrowDown01Icon, Folder01Icon } from "hugeicons-react";
 import { cn } from "@/app/_utils/global-utils";
@@ -8,9 +15,12 @@ import { Category } from "@/app/_types";
 import { CategoryTreeNode } from "./CategoryTreeNode";
 import { canFill } from "@/app/_utils/sharing-utils";
 import { useTranslations } from "next-intl";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 const DROPDOWN_MAX_HEIGHT = 240;
+const DROPDOWN_MIN_HEIGHT = 120;
 const VIEWPORT_MARGIN = 12;
+const TRIGGER_GAP = 4;
 
 interface CategoryTreeSelectorProps {
   categories: Category[];
@@ -22,11 +32,20 @@ interface CategoryTreeSelectorProps {
 }
 
 interface DropdownBox {
-  top: number;
+  top?: number;
+  bottom?: number;
   left: number;
   width: number;
   maxHeight: number;
 }
+
+const sameBox = (a: DropdownBox | null, b: DropdownBox) =>
+  !!a &&
+  a.top === b.top &&
+  a.bottom === b.bottom &&
+  a.left === b.left &&
+  a.width === b.width &&
+  a.maxHeight === b.maxHeight;
 
 export const CategoryTreeSelector = ({
   categories,
@@ -76,18 +95,34 @@ export const CategoryTreeSelector = ({
     if (!trigger) return;
 
     const rect = trigger.getBoundingClientRect();
-    const below = window.innerHeight - rect.bottom - VIEWPORT_MARGIN;
-    const above = rect.top - VIEWPORT_MARGIN;
-    const dropUp = below < Math.min(DROPDOWN_MAX_HEIGHT, above) && above > below;
+    const needed = Math.min(
+      DROPDOWN_MAX_HEIGHT,
+      dropdownRef.current?.scrollHeight ?? DROPDOWN_MAX_HEIGHT
+    );
+    const below = window.innerHeight - rect.bottom - VIEWPORT_MARGIN - TRIGGER_GAP;
+    const above = rect.top - VIEWPORT_MARGIN - TRIGGER_GAP;
+    const dropUp = below < needed && above > below;
     const room = dropUp ? above : below;
 
-    setBox({
-      top: dropUp ? Math.max(VIEWPORT_MARGIN, rect.top - room - 4) : rect.bottom + 4,
+    const next: DropdownBox = {
+      ...(dropUp
+        ? { bottom: window.innerHeight - rect.top + TRIGGER_GAP }
+        : { top: rect.bottom + TRIGGER_GAP }),
       left: rect.left,
       width: rect.width,
-      maxHeight: Math.max(120, Math.min(DROPDOWN_MAX_HEIGHT, room)),
-    });
+      maxHeight: Math.max(
+        DROPDOWN_MIN_HEIGHT,
+        Math.min(DROPDOWN_MAX_HEIGHT, room)
+      ),
+    };
+    setBox((prev) => (sameBox(prev, next) ? prev : next));
   }, []);
+
+  const hasBox = box !== null;
+
+  useLayoutEffect(() => {
+    if (isOpen && hasBox) measure();
+  }, [isOpen, hasBox, measure]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -148,13 +183,14 @@ export const CategoryTreeSelector = ({
         box
           ? {
             top: box.top,
+            bottom: box.bottom,
             left: box.left,
             width: box.width,
             maxHeight: box.maxHeight,
           }
           : undefined
       }
-      className="jotty-category-tree-selector-dropdown fixed z-[10000] bg-background border border-input rounded-jotty shadow-lg overflow-y-auto"
+      className={`jotty-category-tree-selector-dropdown fixed z-[10000] overflow-y-auto ${MENU_CLASS}`}
     >
       <div className="p-2">
         {rootCategories.length === 0 && (

@@ -1,4 +1,9 @@
 import { ReactNodeViewRenderer } from "@tiptap/react";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+import type { Doc } from "yjs";
+import type { Awareness } from "y-protocols/awareness";
+import { liveCaret, liveSelection, type AvatarOf } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorUtils/liveCaret";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
@@ -21,19 +26,25 @@ import { FileAttachmentExtension } from "@/app/_components/FeatureComponents/Not
 import { CodeBlockNodeView } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockNodeView";
 import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
 import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/KeyboardShortcuts";
-import { OverlayExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
+import { OverlayExtension, type OverlayPosition } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
 import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
 import { TagLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagLink";
 import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
 import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
 import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
+import { DEFAULT_DRAWIO_URL } from "@/app/_consts/diagrams";
 import { CalloutExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
+import { RawBlockExtension, RawInlineExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/RawMarkdownExtension";
+import { AtomGuard } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtomGuard";
+import { MarkdownPaste } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MarkdownPaste";
+import { BoldItalicInput } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/BoldItalicInput";
 import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
 import { getContrastColor } from "@/app/_utils/color-utils";
+import { SOFT_BREAK_ATTR } from "@/app/_utils/markdown/consts";
 
 interface OverlayCallbacks {
-  onImageClick: (position: any) => void;
+  onImageClick: (position: OverlayPosition) => void;
   onTableSelect: (position: any) => void;
   onLinkRequest?: (hasSelection: boolean) => void;
 }
@@ -49,8 +60,6 @@ interface EditorSettings {
 }
 
 interface EditorData {
-  notes?: any[];
-  checklists?: any[];
   username?: string;
   tags?: string[];
 }
@@ -59,7 +68,8 @@ export const createEditorExtensions = (
   callbacks: OverlayCallbacks,
   editorSettings?: EditorSettings,
   editorData?: EditorData,
-  t?: (key: string) => string
+  t?: (key: string) => string,
+  live?: { doc: Doc; awareness: Awareness; avatarOf: AvatarOf } | null,
 ) => {
   const settings = editorSettings || {
     enableSlashCommands: true,
@@ -76,7 +86,13 @@ export const createEditorExtensions = (
       listItem: false,
       bulletList: false,
       hardBreak: false,
+      ...(live && { undoRedo: false as const }),
+      code: {
+        HTMLAttributes: { spellcheck: "false" },
+      },
     }),
+    BoldItalicInput,
+    MarkdownPaste,
     ...generateCustomHtmlExtensions(),
     DetailsExtension,
     CalloutExtension,
@@ -92,6 +108,9 @@ export const createEditorExtensions = (
     Highlight.configure({
       multicolor: true,
     }).extend({
+      addKeyboardShortcuts() {
+        return {};
+      },
       addAttributes() {
         return {
           color: {
@@ -115,9 +134,6 @@ export const createEditorExtensions = (
       },
     }),
     SlashCommands.configure({
-      notes: editorData?.notes || [],
-      checklists: editorData?.checklists || [],
-      username: editorData?.username || "",
       tags: editorData?.tags || [],
       enableBilateralLinks: settings.enableBilateralLinks,
       enableSlashCommands: settings.enableSlashCommands,
@@ -127,7 +143,17 @@ export const createEditorExtensions = (
     InternalLink,
     TagLink,
     TextUnderlineIcon,
-    HardBreak,
+    HardBreak.extend({
+      addAttributes() {
+        return {
+          soft: {
+            default: false,
+            parseHTML: (element) => element.hasAttribute(SOFT_BREAK_ATTR),
+            renderHTML: (attributes) => (attributes.soft ? { [SOFT_BREAK_ATTR]: "" } : {}),
+          },
+        };
+      },
+    }),
     CodeBlock.extend({
       addNodeView() {
         return ReactNodeViewRenderer(CodeBlockNodeView);
@@ -174,10 +200,17 @@ export const createEditorExtensions = (
     }),
     MermaidExtension,
     DrawioExtension.configure({
-      drawioUrl: settings.drawioUrl || "https://embed.diagrams.net",
+      drawioUrl: settings.drawioUrl || DEFAULT_DRAWIO_URL,
       drawioProxyEnabled: settings.drawioProxyEnabled || false,
     }),
     ExcalidrawExtension,
+    RawBlockExtension,
+    RawInlineExtension,
+    AtomGuard.configure({
+      types: [RawBlockExtension, RawInlineExtension, MermaidExtension, DrawioExtension, ExcalidrawExtension].map(
+        (extension) => extension.name,
+      ),
+    }),
     Table.extend({
       content: "tableRow+",
     }).configure({
@@ -219,6 +252,15 @@ export const createEditorExtensions = (
     BulletList.extend({
       content: "listItem+",
     }),
+    ...(live ? [
+      Collaboration.configure({ document: live.doc }),
+      CollaborationCaret.configure({
+        provider: { awareness: live.awareness },
+        user: { name: editorData?.username || "" },
+        render: liveCaret(live.avatarOf),
+        selectionRender: liveSelection,
+      }),
+    ] : []),
   ];
 
   return extensions;

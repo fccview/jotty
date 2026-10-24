@@ -1,0 +1,32 @@
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { registerTools } from "../tools/register.ts";
+import type { ToolContext } from "../tools/context.ts";
+import manifest from "../../package.json" with { type: "json" };
+
+export const SERVER_NAME = "jotty-mcp";
+export const SERVER_VERSION = manifest.version;
+
+export const SERVER_INSTRUCTIONS = [
+  "Tools for a Jotty instance: notes, checklists and Kanban boards, acting as the user who owns the API key.",
+  "Ids are uuids, so list or search first to get one. Checklist items are addressed by tree index, like 0 or 2.1.",
+  "Search ranks the best matches first and finds the words in any order.",
+  "Every tool takes maxChars to raise or lower how much output it returns. get_note reports contentLength and takes offset and limit, so read a long note in slices until nextOffset is gone. get_notes reads several notes by id in one call.",
+  "update_note replaces the whole content, so only send it after reading all of the note. For a small change use patch_note, which swaps one exact piece of text and leaves the rest untouched.",
+  "Tags are #hashtags in the content, and #parent/child nests. list_tags shows them, list_notes filters by tag, tag_note adds or removes them without resending the note.",
+  "Notes link to each other. After finding an item, get_related lists what links to it and what it links to, so you can follow the links and read only what matters. get_brain maps the items around one, or the most linked ones.",
+  "Link items with connect_items only when they relate to each other, and remove a link with disconnect_items. An item with no links is fine, so don't add links just to empty list_orphans.",
+  "A script rewrites any note with managed: true, so edits to it may not last. Write tools say so in a warning.",
+  "jotty_docs lists and reads Jotty's own guides, mcp_docs the ones that ship with this MCP server. Read jotty_docs api before writing a note file or its frontmatter by hand.",
+  "create_board_items adds or updates up to 200 cards in one call. Give each card an externalId, like its issue URL, and sending it again updates that card instead of adding a duplicate. Boards live in checklist categories, and create_board makes a missing category and says so with categoryCreated.",
+  "Boards can coordinate agents that run elsewhere. set_board_spec pins a spec note to a board, assign_agent puts an agent on a card and warns when the spec disagrees, get_task_context returns a card with its slice of the spec, and list_agent_tasks lists the cards agents hold. Jotty stores the plan, assignments and progress but runs nothing. A card id works with or without the board uuid in front, so the spec can use the short form. mcp_docs agents explains the workflow, and mcp_docs tools describes every tool.",
+  "The dedicated tools cover search, links, tags, shares, notes, checklists and boards. Use discover and call_operation for everything else the instance offers.",
+].join(" ");
+
+export const createMcpServer = (ctx: ToolContext): Server => {
+  const server = new Server(
+    { name: SERVER_NAME, version: SERVER_VERSION },
+    { capabilities: { tools: {} }, instructions: SERVER_INSTRUCTIONS },
+  );
+  registerTools(server, ctx);
+  return server;
+};

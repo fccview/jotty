@@ -12,6 +12,7 @@ import { cn, handleScroll } from "@/app/_utils/global-utils";
 import { useTranslations } from "next-intl";
 import { ConnectionIndicator } from "@/app/_components/GlobalComponents/Indicators/ConnectionIndicator";
 import { NotificationBell } from "../../FeatureComponents/Notifications/NotificationBell";
+import { menuCeilingProps } from "@/app/_utils/menu-placement-utils";
 
 interface MobileHeaderProps {
   user: SanitisedUser | null;
@@ -59,7 +60,7 @@ export const MobileHeader = ({
   );
 
   return (
-    <div className={mobileHeaderClasses}>
+    <div className={mobileHeaderClasses} {...menuCeilingProps}>
       <a href="/" className="flex items-center gap-3">
         <div className="relative">
           <DynamicLogo className="h-10 w-10" />

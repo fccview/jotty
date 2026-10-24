@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { readSessions } from "@/app/_server/actions/session";
+import { readSessions } from "@/app/_server/actions/session/store";
 import { getSessionCookieName } from "@/app/_utils/env-utils";
 
 type Session = Record<string, string>;

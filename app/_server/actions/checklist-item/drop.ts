@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import path from "path";
 import { serverWriteFile, ensureDir } from "@/app/_server/actions/file";
-import { getListById } from "@/app/_server/actions/checklist";
+import { getListById } from "@/app/_server/actions/checklist/queries";
 import { getUsername } from "@/app/_server/actions/users";
 import { canReach } from "@/app/_server/actions/share/queries";
 import { diskPath } from "@/app/_server/actions/share/target";
@@ -13,8 +13,9 @@ import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { Checklist, Result } from "@/app/_types";
 import { ItemTypes, PermissionTypes, Modes } from "@/app/_types/enums";
+import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 
-export const dropItem = async (
+const _dropItem = async (
   formData: FormData,
 ): Promise<Result<Checklist>> => {
   try {
@@ -111,3 +112,8 @@ export const dropItem = async (
     return { success: false, error: "Failed to drop item" };
   }
 };
+
+export const dropItem = async (formData: FormData) =>
+  runQueued(itemLane(Modes.CHECKLISTS, formData.get("uuid") as string), () =>
+    _dropItem(formData),
+  );

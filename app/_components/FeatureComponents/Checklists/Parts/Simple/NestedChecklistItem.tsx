@@ -22,9 +22,11 @@ import { useShowEmojis } from "@/app/_hooks/useShowEmojis";
 import { useEmojiCache } from "@/app/_hooks/useEmojiCache";
 import { Checklist, Item } from "@/app/_types";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTagSuggestions } from "@/app/_hooks/useTagSuggestions";
+import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
+import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
+import { ChecklistItemText } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistItemText";
 import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import LastModifiedCreatedInfo from "../Common/LastModifiedCreatedInfo";
 import { RecurrenceIndicator } from "@/app/_components/GlobalComponents/Indicators/RecurrenceIndicator";
@@ -33,6 +35,13 @@ import { useTranslations } from "next-intl";
 import { Droppable } from "./Droppable";
 import { DropIndicator } from "./DropIndicator";
 import { useEditorActivityStore } from "@/app/_utils/editor-activity-store";
+import { useMenuPlacement } from "@/app/_hooks/useMenuPlacement";
+import {
+  MenuAlign,
+  MenuSide,
+  menuPlacementClasses,
+} from "@/app/_utils/menu-placement-utils";
+import { MENU_CLASS } from "@/app/_consts/styling";
 
 interface NestedChecklistItemProps {
   item: Item;
@@ -44,6 +53,7 @@ interface NestedChecklistItemProps {
   onAddSubItem?: (parentId: string, text: string) => void;
   completed?: boolean;
   isPublicView?: boolean;
+  ownerShowsEmojis?: boolean;
   isDeletingItem: boolean;
   isDragDisabled?: boolean;
   isSubtask?: boolean;
@@ -65,6 +75,7 @@ const NestedChecklistItemComponent = ({
   onAddSubItem,
   completed = false,
   isPublicView = false,
+  ownerShowsEmojis,
   isDeletingItem,
   isDragDisabled = false,
   isSubtask = false,
@@ -97,7 +108,7 @@ const NestedChecklistItemComponent = ({
       },
     });
 
-  const showEmojis = useShowEmojis();
+  const showEmojis = useShowEmojis(ownerShowsEmojis);
   const emoji = useEmojiCache(item.text, showEmojis);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(item.text);
@@ -105,12 +116,18 @@ const NestedChecklistItemComponent = ({
   const [showAddSubItem, setShowAddSubItem] = useState(false);
   const [newSubItemText, setNewSubItemText] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [dropdownOpenUpward, setDropdownOpenUpward] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const addSubItemInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const dropdownButtonRef = useRef<HTMLButtonElement>(null);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
+  const dropdownPlacement = useMenuPlacement(
+    isDropdownOpen,
+    dropdownRef,
+    dropdownMenuRef,
+    MenuSide.Down,
+    MenuAlign.End,
+  );
 
   const editorActivity = useEditorActivityStore();
 
@@ -123,6 +140,12 @@ const NestedChecklistItemComponent = ({
     setNewSubItemText,
     addSubItemInputRef,
     { tagsIndex, tagsEnabled: !!tagsEnabled }
+  );
+  const editLinkSuggestions = useItemLinkSuggestions(editText, setEditText, inputRef);
+  const subItemLinkSuggestions = useItemLinkSuggestions(
+    newSubItemText,
+    setNewSubItemText,
+    addSubItemInputRef,
   );
 
   useEffect(() => {
@@ -139,7 +162,7 @@ const NestedChecklistItemComponent = ({
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
       inputRef.current.select();
     }
   }, [isEditing]);
@@ -179,6 +202,7 @@ const NestedChecklistItemComponent = ({
   };
 
   const handleEditKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (editLinkSuggestions.handleKeyDown(e)) return;
     if (
       editTagSuggestions.showTagSuggestions &&
       editTagSuggestions.tagMentionsRef.current
@@ -208,37 +232,7 @@ const NestedChecklistItemComponent = ({
     }
   };
 
-  const handleDropdownToggle = () => {
-    if (!isDropdownOpen && dropdownButtonRef.current) {
-      const rect = dropdownButtonRef.current.getBoundingClientRect();
-
-      let scrollParent: HTMLElement | null =
-        dropdownButtonRef.current.parentElement;
-      while (scrollParent) {
-        if (scrollParent.classList.contains("checklist-todo-container")) {
-          break;
-        }
-        scrollParent = scrollParent.parentElement;
-      }
-
-      let shouldOpenUpward = false;
-
-      if (scrollParent) {
-        const containerRect = scrollParent.getBoundingClientRect();
-        const containerStyle = window.getComputedStyle(scrollParent);
-        const paddingBottom = parseInt(containerStyle.paddingBottom) || 0;
-
-        const actualSpaceBelow =
-          containerRect.bottom - rect.bottom - paddingBottom;
-        const threshold = 200;
-
-        shouldOpenUpward = actualSpaceBelow < threshold;
-      }
-
-      setDropdownOpenUpward(shouldOpenUpward);
-    }
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  const handleDropdownToggle = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleDropdownAction = (actionId: string) => {
     setIsDropdownOpen(false);
@@ -259,27 +253,6 @@ const NestedChecklistItemComponent = ({
   const displayText = showEmojis ? `${emoji}  ${cleanText}` : cleanText;
   const hasChildren = item.children && item.children.length > 0;
 
-  const renderTextWithHashtags = (text: string): React.ReactNode[] => {
-    const hashtagPattern = /#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    let match;
-    while ((match = hashtagPattern.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(text.slice(lastIndex, match.index));
-      }
-      parts.push(
-        <span key={match.index} onMouseDown={(e) => e.stopPropagation()}>
-          <TagLinkViewComponent tag={match[1]} />
-        </span>
-      );
-      lastIndex = match.index + match[0].length;
-    }
-    if (lastIndex < text.length) {
-      parts.push(text.slice(lastIndex));
-    }
-    return parts;
-  };
   const isChild = level > 0;
 
   const dropdownOptions = [
@@ -292,18 +265,13 @@ const NestedChecklistItemComponent = ({
     { id: "delete", name: t("common.delete"), icon: Delete03Icon },
   ];
 
+  const childrenDone = Boolean(
+    hasChildren && item.children?.every((child) => child.completed),
+  );
+
   useEffect(() => {
-    if (hasChildren && item.children) {
-      const allChildrenCompleted = item.children.every(
-        (child) => child.completed,
-      );
-      if (allChildrenCompleted) {
-        setIsExpanded(false);
-      } else {
-        setIsExpanded(true);
-      }
-    }
-  }, [item.children, hasChildren]);
+    if (hasChildren) setIsExpanded(!childrenDone);
+  }, [childrenDone, hasChildren]);
 
   const isBeingDragged = draggedItemId === item.id;
 
@@ -412,6 +380,7 @@ const NestedChecklistItemComponent = ({
                           />
                         </div>
                       )}
+                    <ItemLinkPopup suggestions={editLinkSuggestions} />
                     <Button
                       variant="ghost"
                       size="sm"
@@ -466,7 +435,7 @@ const NestedChecklistItemComponent = ({
                       !isPublicView
                     ) && (
                       <span className="break-words min-w-0">
-                        {tagsEnabled ? renderTextWithHashtags(displayText) : displayText}
+                        <ChecklistItemText text={displayText} tagsEnabled={!!tagsEnabled} />
                       </span>
                     )}
                   </label>
@@ -497,7 +466,7 @@ const NestedChecklistItemComponent = ({
                             : "text-foreground",
                         )}
                       >
-                        {tagsEnabled ? renderTextWithHashtags(displayText) : displayText}
+                        <ChecklistItemText text={displayText} tagsEnabled={!!tagsEnabled} />
                       </span>
                     )}
                 </div>
@@ -557,7 +526,6 @@ const NestedChecklistItemComponent = ({
                 {!isPublicView && (
                   <div className="lg:hidden relative" ref={dropdownRef}>
                     <Button
-                      ref={dropdownButtonRef}
                       variant="ghost"
                       size="sm"
                       onClick={handleDropdownToggle}
@@ -569,11 +537,11 @@ const NestedChecklistItemComponent = ({
 
                     {isDropdownOpen && (
                       <div
+                        ref={dropdownMenuRef}
                         className={cn(
-                          "absolute right-0 z-50 w-48 bg-card border border-border rounded-jotty shadow-lg",
-                          dropdownOpenUpward
-                            ? "bottom-full mb-1 top-auto"
-                            : "top-full mt-1",
+                          "absolute z-50 w-48",
+                          MENU_CLASS,
+                          menuPlacementClasses(dropdownPlacement),
                         )}
                       >
                         <div className="py-1">
@@ -642,6 +610,7 @@ const NestedChecklistItemComponent = ({
                     />
                   </div>
                 )}
+              <ItemLinkPopup suggestions={subItemLinkSuggestions} />
               <form
                 onSubmit={handleAddSubItem}
                 className="flex gap-2 items-center pr-4"
@@ -652,7 +621,10 @@ const NestedChecklistItemComponent = ({
                   type="text"
                   value={newSubItemText}
                   onChange={subItemTagSuggestions.handleChange}
-                  onKeyDown={subItemTagSuggestions.handleKeyDown}
+                  onKeyDown={(e) => {
+                    if (subItemLinkSuggestions.handleKeyDown(e)) return;
+                    subItemTagSuggestions.handleKeyDown(e);
+                  }}
                   placeholder={t("checklists.addSubItemPlaceholder")}
                   autoFocus
                 />
@@ -711,6 +683,7 @@ const NestedChecklistItemComponent = ({
                     isDeletingItem={isDeletingItem}
                     isDragDisabled={isDragDisabled || draggedItemId === item.id}
                     isPublicView={isPublicView}
+                    ownerShowsEmojis={ownerShowsEmojis}
                     checklist={checklist}
                     isOver={overItem?.id === child.id}
                     overPosition={

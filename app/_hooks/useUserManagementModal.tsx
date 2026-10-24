@@ -181,7 +181,7 @@ export const useUserManagementModal = ({
       setRecoveryCode,
     },
     handlers: { handleSubmit, handleDelete },
-    DeleteModal: () => (
+    deleteModal: (
       <ConfirmModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

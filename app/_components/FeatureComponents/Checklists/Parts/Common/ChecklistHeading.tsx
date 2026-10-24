@@ -14,11 +14,14 @@ import { RecurrenceRule, Checklist, Item } from "@/app/_types";
 import { handleScroll, isMobileDevice } from "@/app/_utils/global-utils";
 import { AddItemWithRecurrenceModal } from "@/app/_components/GlobalComponents/Modals/ChecklistModals/AddItemWithRecurrenceModal";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
-import { useSettings } from "@/app/_utils/settings-store";
+import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
+import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
 import { TaskStatus } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
+import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
+import { ItemLinkPopup } from "./ItemLinkPopup";
 import {
   ArrowLeftIcon,
   ArrowRight01FreeIcons,
@@ -59,13 +62,10 @@ export const ChecklistHeading = ({
   const tagSuggestionsWrapperRef = useRef<HTMLDivElement>(null);
   const tagMentionsRef = useRef<{ onKeyDown: (event: KeyboardEvent) => boolean; focusSearch: () => void }>(null);
   const { user, tagsIndex, tagsEnabled } = useAppMode();
-  const { showCompletedSuggestions: sessionShowCompletedSuggestions } =
-    useSettings();
+  const linkSuggestions = useItemLinkSuggestions(newItemText, setNewItemText, inputRef);
+  const showCompletedSuggestions = useQuickValue(QuickSettingId.COMPLETED_SUGGESTIONS);
 
-  const shouldShowSuggestions =
-    (user?.showCompletedSuggestions === "enable" ||
-      sessionShowCompletedSuggestions) &&
-    checklist;
+  const shouldShowSuggestions = showCompletedSuggestions && checklist;
 
   const getAllCompletedItems = (items: Item[]): Item[] => {
     if (!shouldShowSuggestions) return [];
@@ -161,6 +161,7 @@ export const ChecklistHeading = ({
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (linkSuggestions.handleKeyDown(e)) return;
     if (!showTagSuggestions || !tagMentionsRef.current) return;
     if (e.key === "Escape") {
       setShowTagSuggestions(false);
@@ -194,7 +195,7 @@ export const ChecklistHeading = ({
 
   useEffect(() => {
     if (autoFocus && inputRef.current && !isMobileDevice()) {
-      inputRef.current.focus();
+      inputRef.current.focus({ preventScroll: true });
     }
   }, [focusKey, autoFocus]);
 
@@ -300,7 +301,9 @@ export const ChecklistHeading = ({
                   />
                 </div>
               )}
-              {showSuggestions &&
+              <ItemLinkPopup suggestions={linkSuggestions} />
+              {!linkSuggestions.open &&
+                showSuggestions &&
                 filteredSuggestions.length > 0 &&
                 newItemText.trim() !== "" && (
                   <div

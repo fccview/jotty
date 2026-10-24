@@ -5,6 +5,11 @@ export enum Modes {
   DEPRECATED_DOCS = "docs",
 }
 
+export enum ToggleState {
+  ENABLE = "enable",
+  DISABLE = "disable",
+}
+
 export enum ItemTypes {
   CHECKLIST = "checklist",
   NOTE = "note",
@@ -29,6 +34,12 @@ export enum KanbanPriorityLevel {
   MEDIUM = "medium",
   LOW = "low",
   NONE = "none",
+}
+
+export enum KanbanCardPane {
+  TASK = "task",
+  DETAILS = "details",
+  COMMENTS = "comments",
 }
 
 export enum TaskStatus {
@@ -89,4 +100,31 @@ export enum ProfileTabs {
   ENCRYPTION = "encryption",
   USER_PREFERENCES = "userPreferences",
   AUDIT_LOGS = "audit_logs",
+}
+
+export enum BottomBarSpaces {
+  QUICK_NAV = "--jotty-quick-nav-space",
+  NOTE_BAR = "--jotty-note-bar-space",
+}
+
+export enum DropPosition {
+  BEFORE = "before",
+  AFTER = "after",
+}
+
+export enum CardPlacement {
+  TOP = "top",
+  BOTTOM = "bottom",
+}
+
+export enum ItemSort {
+  ALPHABETICAL = "alphabetical",
+  SHUFFLE = "shuffle",
+  CREATED = "created",
+  MODIFIED = "modified",
+}
+
+export enum SortDirection {
+  ASC = "asc",
+  DESC = "desc",
 }

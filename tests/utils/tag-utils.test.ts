@@ -102,6 +102,15 @@ describe("Tag Utils", () => {
       expect(extractHashtagsFromContent(content)).toContain("work/development");
     });
 
+    it("should ignore colours inside html attributes", () => {
+      const content = '<span style="color: #ff0000">red</span> and <mark style="background-color: #ffff00">x</mark> #real';
+      expect(extractHashtagsFromContent(content)).toEqual(["real"]);
+    });
+
+    it("should still find a tag right after an html tag", () => {
+      expect(extractHashtagsFromContent("line<br>#after")).toContain("after");
+    });
+
     it("should extract data-tag attributes", () => {
       const content = '<span data-tag="important">Tag</span>';
       expect(extractHashtagsFromContent(content)).toContain("important");
@@ -203,22 +212,35 @@ describe("Tag Utils", () => {
       expect(index["project"]).toBeDefined();
     });
 
-    it("should track note UUIDs per tag", () => {
+    it("should count notes per tag", () => {
       const notes = [
         { uuid: "note1", tags: ["work"] },
         { uuid: "note2", tags: ["work"] },
       ];
       const index = buildTagsIndex(notes);
 
-      expect(index["work"].noteUuids).toContain("note1");
-      expect(index["work"].noteUuids).toContain("note2");
+      expect(index["work"].noteCount).toBe(2);
     });
 
-    it("should not duplicate UUIDs", () => {
+    it("should count a note once when it repeats a tag", () => {
       const notes = [{ uuid: "note1", tags: ["work", "work"] }];
       const index = buildTagsIndex(notes);
 
-      expect(index["work"].noteUuids).toHaveLength(1);
+      expect(index["work"].noteCount).toBe(1);
+      expect(index["work"].totalCount).toBe(1);
+    });
+
+    it("should count a note once on an ancestor it reaches twice", () => {
+      const notes = [{ uuid: "note1", tags: ["work", "work/project"] }];
+      const index = buildTagsIndex(notes);
+
+      expect(index["work"].totalCount).toBe(1);
+    });
+
+    it("should count checklists apart from notes", () => {
+      const index = buildTagsIndex([{ uuid: "note1", tags: ["work"] }], [{ uuid: "list1", tags: ["work"] }]);
+
+      expect(index["work"]).toMatchObject({ noteCount: 1, checklistCount: 1, totalCount: 2 });
     });
 
     it("should create parent tags for nested tags", () => {
