@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { CardPlacement, KanbanPriorityLevel } from "@/app/_types/enums";
-import { HEX_COLOR, MAX_CARD_BATCH, MAX_EXTERNAL_ID } from "@/app/_consts/kanban";
+import { HEX_COLOR, MAX_CARD_BATCH, MAX_EXTERNAL_ID, STATUS_COLOR_REFUSED } from "@/app/_consts/kanban";
 import {
   ListView,
   categoryField,
@@ -35,6 +35,7 @@ type CardShape = {
   reminder?: z.infer<typeof reminderSchema>;
   description?: string;
   externalId?: string;
+  path?: string;
   children?: CardShape[];
 };
 
@@ -54,6 +55,10 @@ export const kanbanCardSchema: z.ZodType<CardShape> = z
     reminder: reminderSchema.optional(),
     description: z.string().optional(),
     externalId: z.string().optional().describe(EXTERNAL_ID_NOTE),
+    path: z
+      .string()
+      .optional()
+      .describe("Tree index like 0 or 2.1, only on a card found by externalId, since it comes back without the cards it sits under"),
     get children() {
       return z.array(kanbanCardSchema).optional();
     },
@@ -188,7 +193,7 @@ export const boardListQuery = z.object({
 const statusDraftSchema = kanbanStatusSchema.extend({
   color: z
     .string()
-    .regex(HEX_COLOR, "Status color must be a hex colour written #rrggbb, like #3b82f6")
+    .regex(HEX_COLOR, STATUS_COLOR_REFUSED)
     .optional()
     .describe("Hex colour written #rrggbb, like #3b82f6. Left out, the column gets a default grey or its built-in colour"),
 });
@@ -219,8 +224,8 @@ export const boardUpdateBody = z.object({
 
 export const statusesBody = z.object({
   statuses: z
-    .array(statusDraftSchema, { error: "Statuses array is required" })
-    .describe("The full new column list. Cards in a removed column move to the lowest-order one"),
+    .array(kanbanStatusSchema, { error: "Statuses array is required" })
+    .describe("The full new column list. Cards in a removed column move to the lowest-order one. A new or changed color must be #rrggbb, a column's current color is kept as it is"),
 });
 
 const placementField = z

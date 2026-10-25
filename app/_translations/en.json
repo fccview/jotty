@@ -420,6 +420,7 @@
     "publiclySharedNote": "Publicly shared",
     "sharedPubliclyBy": "{owner} shared this note publicly",
     "copyRawContent": "Copy markdown",
+    "copyNoteId": "Copy note ID: {id}",
     "quickSave": "Quick Save",
     "noteNotFound": "Note not found",
     "unarchiveNote": "Unarchive Note",

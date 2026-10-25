@@ -17,15 +17,20 @@ import {
 } from "./contract";
 
 const INVALID_JSON = "Request body must be valid JSON";
+const BODY_TOO_LARGE = "Request body is too large";
+const PAYLOAD_TOO_LARGE = 413;
 
 class BadInput extends Error {
   constructor(
     message: string,
     readonly details?: z.core.$ZodIssue[],
+    readonly status = 400,
   ) {
     super(message);
   }
 }
+
+const _tooLarge = () => new BadInput(BODY_TOO_LARGE, undefined, PAYLOAD_TOO_LARGE);
 
 export const refuse = (error: string, status: number, extra?: object) =>
   NextResponse.json({ error, ...extra }, { status });
@@ -38,8 +43,25 @@ const _check = async <T extends Schema>(schema: T, value: unknown) => {
   throw new BadInput(first?.message ?? "Invalid input", result.error.issues);
 };
 
-const _readBody = async (request: NextRequest) => {
-  const text = await request.text();
+const _readCapped = async (request: NextRequest, limit: number) => {
+  if (Number(request.headers.get("content-length")) > limit) throw _tooLarge();
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+    size += chunk.value.byteLength;
+    if (size > limit) {
+      await reader.cancel();
+      throw _tooLarge();
+    }
+    chunks.push(chunk.value);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+};
+
+const _readBody = async (request: NextRequest, limit?: number) => {
+  const text = limit ? await _readCapped(request, limit) : await request.text();
   if (!text.trim()) return {};
   try {
     return JSON.parse(text);
@@ -59,7 +81,7 @@ const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
     Object.fromEntries(request.nextUrl.searchParams),
   ),
   body: contract.body
-    ? await _check(contract.body, await _readBody(request))
+    ? await _check(contract.body, await _readBody(request, contract.bodyLimit))
     : undefined,
 });
 
@@ -71,7 +93,7 @@ const _run = async (
     return await work();
   } catch (error) {
     if (error instanceof BadInput) {
-      return refuse(error.message, 400, error.details && { details: error.details });
+      return refuse(error.message, error.status, error.details && { details: error.details });
     }
     console.error(`API ${contract.id} failed:`, error);
     return refuse("Internal server error", 500);

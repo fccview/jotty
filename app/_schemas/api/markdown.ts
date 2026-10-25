@@ -3,6 +3,9 @@ import { apiNames } from "@/app/_schemas/api/names";
 import { envelope, required } from "./common";
 
 export const HTML_LIMIT = 5 * 1024 * 1024;
+const JSON_ESCAPE_WORST = 6;
+const BODY_SLACK = 64 * 1024;
+export const HTML_BODY_LIMIT = HTML_LIMIT * JSON_ESCAPE_WORST + BODY_SLACK;
 
 export const fromHtmlBody = z
   .object({

@@ -4,11 +4,10 @@ import { ShareModal } from "@/app/_components/GlobalComponents/Modals/SharingMod
 import { CategoryTreeSelector } from "@/app/_components/GlobalComponents/Dropdowns/CategoryTreeSelector";
 import { BrainButton } from "@/app/_components/FeatureComponents/Brain/Parts/BrainButton";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
+import { CopyIdButton } from "@/app/_components/GlobalComponents/Buttons/CopyIdButton";
 import {
   Archive02Icon,
   ArrowLeft01Icon,
-  Tick02Icon,
-  GridIcon,
   Folder02Icon,
   Orbit01Icon,
   FloppyDiskIcon,
@@ -122,7 +121,6 @@ export const NoteEditorHeader = ({
   >("encrypt");
   const [hasPromptedForDecryption, setHasPromptedForDecryption] =
     useState(false);
-  const [copied, setCopied] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const { toggle: togglePin } = usePinToggle(ItemTypes.NOTE);
   const { user, setUser, appSettings } = useAppMode();
@@ -211,14 +209,6 @@ export const NoteEditorHeader = ({
 
   const handleHistoryClick = () => {
     setShowHistoryModal(true);
-  };
-
-  const handleCopyId = async () => {
-    const success = await copyTextToClipboard(note?.uuid || "");
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
   };
 
   const handleViewDecryption = (
@@ -316,21 +306,10 @@ export const NoteEditorHeader = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold truncate">{title}</h1>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        handleCopyId();
-                      }}
-                      className="h-6 w-6 p-0"
-                      title={`Copy ID: ${note?.uuid || ""}`}
-                    >
-                      {copied ? (
-                        <Tick02Icon className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <GridIcon className="h-3 w-3" />
-                      )}
-                    </Button>
+                    <CopyIdButton
+                      id={note?.uuid || ""}
+                      label={t("notes.copyNoteId", { id: note?.uuid || "" })}
+                    />
 
                     {note?.encrypted && (
                       <LockKeyIcon className="h-4 w-4 text-primary flex-shrink-0" />

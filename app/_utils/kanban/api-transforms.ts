@@ -17,6 +17,7 @@ interface TransformedItem {
   reminder?: { datetime: string; notified?: boolean };
   description?: string;
   externalId?: string;
+  path?: string;
   children?: TransformedItem[];
 }
 
@@ -46,11 +47,15 @@ export const transformItem = (item: Item, index: number): TransformedItem => {
   return baseItem;
 };
 
-const _cardWithExternalId = (items: Item[], externalId: string): TransformedItem | undefined => {
+const _cardWithExternalId = (
+  items: Item[],
+  externalId: string,
+  trail: number[] = [],
+): TransformedItem | undefined => {
   const index = items.findIndex((item) => item.externalId === externalId);
-  if (index >= 0) return transformItem(items[index], index);
+  if (index >= 0) return { ...transformItem(items[index], index), path: [...trail, index].join(".") };
   return items.reduce<TransformedItem | undefined>(
-    (found, item) => found ?? _cardWithExternalId(item.children || [], externalId),
+    (found, item, at) => found ?? _cardWithExternalId(item.children || [], externalId, [...trail, at]),
     undefined,
   );
 };

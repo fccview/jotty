@@ -39,6 +39,7 @@ const CASES: [string, string, string][] = [
   ["bullet and ordered lists", "<ul><li>a</li><li>b<ul><li>c</li></ul></li></ul><ol><li>one</li><li>two</li></ol>", "- a\n- b\n  - c\n\n1. one\n2. two"],
   ["jotty task lists", '<ul data-type="taskList"><li data-type="taskItem" data-checked="true"><p>done</p></li><li data-type="taskItem" data-checked="false"><p>todo</p></li></ul>', "- [x] done\n- [ ] todo"],
   ["github task lists", '<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" checked=""> done</li><li class="task-list-item"><input type="checkbox"> todo</li></ul>', "- [x] done\n- [ ] todo"],
+  ["ordered checkbox lists", '<ol><li><input type="checkbox" checked> done</li><li><input type="checkbox"> todo</li></ol>', "- [x] done\n- [ ] todo"],
   ["code with a language", '<pre><code class="language-js">const a = 1;\nconsole.log(a);</code></pre>', "```js\nconst a = 1;\nconsole.log(a);\n```"],
   ["highlighted code split into spans", '<pre><code class="language-js"><span>const a = 1;</span>\n<span>console.log(a);</span></code></pre>', "```js\nconst a = 1;\nconsole.log(a);\n```"],
   ["mermaid", '<div data-mermaid="" data-mermaid-content="graph TD; A-->B"></div>', "```mermaid\ngraph TD; A-->B\n```"],
@@ -83,6 +84,12 @@ describe("html to markdown through the editor schema", () => {
   it("reads stray comment closers and lone angle brackets as text", async () => {
     expect(mendSource("<p>a --> b <!-- c --> 1 <2</p>")).toBe("<p>a --&gt; b <!-- c --> 1 &lt;2</p>");
     expect(await convert("<pre><code>A-->B</code></pre>")).toBe("```\nA-->B\n```");
+  });
+
+  it("mends megabytes of unclosed comments without stalling", () => {
+    const unclosed = "<!--".repeat(1_300_000);
+    expect(mendSource(unclosed)).toBe(unclosed);
+    expect(mendSource("a<!--x-->b<!--y")).toBe("a<!--x-->b<!--y");
   });
 });
 

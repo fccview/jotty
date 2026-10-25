@@ -1,9 +1,11 @@
+import path from "path";
+import fs from "fs/promises";
 import { BUILT_IN_THEMES } from "@/app/_consts/themes";
 import { SYSTEM_THEME } from "@/app/_consts/quick-settings";
 import { DEFAULT_BORDER_RADIUS, clampRadius, radiusToRem } from "@/app/_consts/styling";
 import { ThemeMode, type EffectiveTheme, type ThemeVariables } from "@/app/_types/theme";
 import type { CustomThemeConfig, SanitisedUser } from "@/app/_types";
-import { ROOT_PALETTE, readPalettes, resolveVars } from "./palettes";
+import { CUSTOM_CSS, ROOT_PALETTE, readPalettes, resolveVars } from "./palettes";
 
 type CustomThemes = CustomThemeConfig["custom-themes"];
 
@@ -24,6 +26,17 @@ enum SystemPalette {
 
 const builtInName = (id: string) => BUILT_IN_THEMES.find((theme) => theme.id === id)?.name;
 
+const own = <T>(record: Record<string, T>, key: string): T | undefined =>
+  Object.hasOwn(record, key) ? record[key] : undefined;
+
+export const hasCustomCss = async () => {
+  try {
+    return (await fs.stat(path.join(process.cwd(), CUSTOM_CSS))).size > 0;
+  } catch {
+    return false;
+  }
+};
+
 const paletteOf = (
   palettes: Record<string, ThemeVariables>,
   id: string,
@@ -31,8 +44,8 @@ const paletteOf = (
 ): ThemeVariables =>
   resolveVars({
     ...palettes[ROOT_PALETTE],
-    ...palettes[id],
-    ...customThemes[id]?.colors,
+    ...own(palettes, id),
+    ...own(customThemes, id)?.colors,
   });
 
 export const radiusFor = (preferred?: number, adminRadius?: number) => {
@@ -45,7 +58,7 @@ export const themeFor = async (sources: ThemeSources): Promise<EffectiveTheme> =
   const { user, customThemes, isRwMarkable, adminRadius, customCss } = sources;
   const palettes = await readPalettes();
   const preferred = user.preferredTheme || SYSTEM_THEME;
-  const name = customThemes[preferred]?.name ?? builtInName(preferred);
+  const name = own(customThemes, preferred)?.name ?? builtInName(preferred);
   const shared = { radius: radiusFor(user.preferredBorderRadius, adminRadius), customCss };
 
   if (preferred !== SYSTEM_THEME && name) {

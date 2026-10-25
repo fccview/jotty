@@ -6,11 +6,9 @@ import { mockUser, mockAuthenticateApiKey, resetApiMocks, createMockRequest, get
 
 const mockSettings = vi.fn();
 const mockThemes = vi.fn();
-const mockCss = vi.fn();
 
 vi.mock("@/app/_server/actions/config/settings", () => ({ getSettings: () => mockSettings() }));
 vi.mock("@/app/_server/actions/config/themes", () => ({ loadCustomThemes: () => mockThemes() }));
-vi.mock("@/app/_server/actions/config/css", () => ({ loadCustomCSS: () => mockCss() }));
 
 import { GET } from "@/app/api/theme/route";
 
@@ -24,7 +22,7 @@ describe("GET /api/theme", () => {
     mockFs.readFile.mockResolvedValue(CSS);
     mockSettings.mockResolvedValue({ borderRadius: 0.25 });
     mockThemes.mockResolvedValue({ "custom-themes": { ember: { name: "Ember", colors: { "--primary": "200 50 10" } } } });
-    mockCss.mockResolvedValue({ success: true, data: "body { color: red; }" });
+    mockFs.stat.mockResolvedValue({ size: 20 });
   });
 
   it("returns the owner's custom theme with radius and custom css flags", async () => {
@@ -39,10 +37,22 @@ describe("GET /api/theme", () => {
 
   it("falls back to system with both palettes", async () => {
     mockAuthenticateApiKey.mockResolvedValue(mockUser);
-    mockCss.mockResolvedValue({ success: true, data: "  " });
+    mockFs.stat.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
     const body = await getResponseJson(await fetchTheme());
     expect(body.data).toMatchObject({ id: "system", mode: "system", radius: null, customCss: false });
     expect(body.data.darkVariables["--background"]).toBe("14 24 64");
+  });
+
+  it.each(["constructor", "toString", "__proto__"])("falls back to system for the inherited key %s", async (preferredTheme) => {
+    mockAuthenticateApiKey.mockResolvedValue({ ...mockUser, preferredTheme });
+    const body = await getResponseJson(await fetchTheme());
+    expect(body.data).toMatchObject({ id: "system", mode: "system" });
+  });
+
+  it("reports no custom css for an empty file", async () => {
+    mockAuthenticateApiKey.mockResolvedValue(mockUser);
+    mockFs.stat.mockResolvedValue({ size: 0 });
+    expect((await getResponseJson(await fetchTheme())).data.customCss).toBe(false);
   });
 
   it("needs an API key", async () => {

@@ -87,7 +87,7 @@ specNote: 5b1e8a52-3c1d-4d7e-9f0a-1b2c3d4e5f60
 - `specNote` is the uuid of the note pinned as the board's spec. Set it with `PUT /api/kanban/{boardId}/spec` rather than by hand, so Jotty can check you can read the note and that it isn't encrypted.
 - `assignee:` is the human assignee, a username.
 - `agent:` is a virtual agent, see below. It sits right after `assignee:` and never replaces it.
-- `externalId` sits inside `metadata:` and is your own reference for the card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card instead, and `POST /api/kanban/{boardId}/items/batch` does the same for up to 200 cards in one save, so an import can run again without duplicating anything. `PUT /api/kanban/{boardId}/items/{itemId}` sets or changes the `externalId` of a card that already exists, and `GET /api/kanban/{boardId}?externalId=...` returns only the card that has it.
+- `externalId` sits inside `metadata:` and is your own reference for the card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card instead, and `POST /api/kanban/{boardId}/items/batch` does the same for up to 200 cards in one save, so an import can run again without duplicating anything. `PUT /api/kanban/{boardId}/items/{itemId}` sets or changes the `externalId` of a card that already exists, and `GET /api/kanban/{boardId}?externalId=...` returns only the card that has it. That card comes back without the cards it sits under, so it carries a `path` with its tree index, like `2.1`, for the routes that take one.
 - Boards without these keep working exactly as before.
 
 ## Agents and board specs
@@ -164,7 +164,7 @@ Two endpoints help a web clipper or a companion app write notes that look like J
 
 | Endpoint | What it does |
 |---|---|
-| `POST /api/markdown/from-html` | Turns `{ "html": "...", "baseUrl": "https://..." }` into markdown with the note editor's own schema, so the result is what the editor would save if that HTML had been put in a note. `baseUrl` is optional, and relative links and images are resolved against it. Tables follow the table syntax set on the key owner's account. Nothing is saved, send the markdown to `POST /api/notes` when you want a note. `html` over 5 MB is refused with `400` |
+| `POST /api/markdown/from-html` | Turns `{ "html": "...", "baseUrl": "https://..." }` into markdown with the note editor's own schema, so the result is what the editor would save if that HTML had been put in a note. `baseUrl` is optional, and relative links and images are resolved against it. Tables follow the table syntax set on the key owner's account. Nothing is saved, send the markdown to `POST /api/notes` when you want a note. `html` over 5 MB is refused with `400`. HTML that takes longer than 15 seconds or too much memory to convert is refused with `422`, and `503` means enough conversions are already queued that yours should try again shortly. Big tables are the slow part |
 | `GET /api/theme` | The key owner's theme as CSS custom properties, built-in and custom themes alike. `mode` is `fixed`, or `system` when the theme follows the device, in which case `variables` is the light palette and `darkVariables` the dark one. `radius` is the corner radius when it isn't the default, and `customCss` says whether the instance has custom CSS at `/api/custom-css`. A theme that was removed falls back to `system` |
 
 ```json

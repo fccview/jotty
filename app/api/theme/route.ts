@@ -5,8 +5,7 @@ import { ERRORS } from "@/app/_schemas/api/common";
 import { themeSchema } from "@/app/_schemas/api/theme";
 import { getSettings } from "@/app/_server/actions/config/settings";
 import { loadCustomThemes } from "@/app/_server/actions/config/themes";
-import { loadCustomCSS } from "@/app/_server/actions/config/css";
-import { themeFor } from "@/app/_server/actions/config/effective-theme";
+import { hasCustomCss, themeFor } from "@/app/_server/actions/config/effective-theme";
 
 export const dynamic = "force-dynamic";
 
@@ -26,13 +25,13 @@ export const GET = defineRoute(
     },
   },
   async ({ user }) => {
-    const [settings, themes, css] = await Promise.all([getSettings(), loadCustomThemes(), loadCustomCSS()]);
+    const [settings, themes, customCss] = await Promise.all([getSettings(), loadCustomThemes(), hasCustomCss()]);
     const theme = await themeFor({
       user,
       customThemes: themes?.["custom-themes"] ?? {},
       isRwMarkable: settings?.isRwMarkable,
       adminRadius: settings?.borderRadius,
-      customCss: Boolean(css.success && css.data?.trim()),
+      customCss,
     });
     return NextResponse.json({ success: true, data: theme });
   },

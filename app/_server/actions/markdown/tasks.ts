@@ -17,10 +17,18 @@ const tickItem = (item: Element) => {
   box.remove();
 };
 
+const unordered = (list: Element) => {
+  if (list.tagName === "UL") return list;
+  const bullets = list.ownerDocument.createElement("ul");
+  bullets.append(...Array.from(list.childNodes));
+  list.replaceWith(bullets);
+  return bullets;
+};
+
 export const tickTasks: DomHook = (doc) =>
   doc.querySelectorAll("ul, ol").forEach((list) => {
     const items = Array.from(list.children).filter((child) => child.tagName === "LI");
     if (!items.length || !items.every(boxOf)) return;
-    list.setAttribute("data-type", "taskList");
+    unordered(list).setAttribute("data-type", "taskList");
     items.forEach(tickItem);
   });

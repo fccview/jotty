@@ -249,7 +249,7 @@ describe("Kanban API", () => {
       const data = await getResponseJson(response)
 
       expect(response.status).toBe(200)
-      expect(data.board.items).toEqual([expect.objectContaining({ id: "card-3", index: 1, externalId: "gh-3" })])
+      expect(data.board.items).toEqual([expect.objectContaining({ id: "card-3", index: 1, path: "1.1", externalId: "gh-3" })])
     })
 
     it("returns no cards when nothing has the asked externalId", async () => {
@@ -383,19 +383,13 @@ describe("Kanban API", () => {
       expect(mockRestatus).not.toHaveBeenCalled()
     })
 
-    it("keeps hex column colours and refuses anything else", async () => {
-      const colored = [{ ...statuses[0], color: "#3B82F6" }]
-      const accepted = await SET_STATUSES(
-        createMockRequest("PUT", `${BASE}/${BOARD_UUID}/statuses`, { statuses: colored }),
-        boardParams(),
-      )
-      const refused = await SET_STATUSES(
+    it("leaves column colours to the action, so a board read and sent back as it is still saves", async () => {
+      const response = await SET_STATUSES(
         createMockRequest("PUT", `${BASE}/${BOARD_UUID}/statuses`, { statuses: [{ ...statuses[0], color: "red" }] }),
         boardParams(),
       )
 
-      expect(accepted.status).toBe(200)
-      expect(refused.status).toBe(400)
+      expect(response.status).toBe(200)
       expect(mockRestatus).toHaveBeenCalledTimes(1)
     })
 

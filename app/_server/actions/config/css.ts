@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import { Result } from "@/app/_types";
 import { isAdmin } from "../users";
 import { logAudit } from "@/app/_server/actions/log";
+import { CUSTOM_CSS } from "./palettes";
 
 export const saveCustomCSS = async (css: string): Promise<Result<null>> => {
   try {
@@ -20,7 +21,7 @@ export const saveCustomCSS = async (css: string): Promise<Result<null>> => {
       return { success: false, error: "Unauthorized" };
     }
 
-    const cssPath = path.join(process.cwd(), "config", "custom.css");
+    const cssPath = path.join(process.cwd(), CUSTOM_CSS);
 
     try {
       await fs.access(path.dirname(cssPath));
@@ -54,7 +55,7 @@ export const saveCustomCSS = async (css: string): Promise<Result<null>> => {
 
 export const loadCustomCSS = async (): Promise<Result<string>> => {
   try {
-    const cssPath = path.join(process.cwd(), "config", "custom.css");
+    const cssPath = path.join(process.cwd(), CUSTOM_CSS);
 
     try {
       const css = await fs.readFile(cssPath, "utf-8");

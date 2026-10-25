@@ -2,7 +2,7 @@ import { revalidatePath } from "next/cache";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { Checklist, Item, Result, KanbanStatus, SanitisedUser } from "@/app/_types";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
-import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { DEFAULT_KANBAN_STATUSES, STATUS_COLOR_REFUSED, strayColor } from "@/app/_consts/kanban";
 import { serverWriteFile } from "@/app/_server/actions/file";
 import { listToMarkdown } from "@/app/_utils/checklist-utils";
 import { reachableFile } from "@/app/_server/actions/share/queries";
@@ -64,6 +64,9 @@ const _restatus = async (
     }
 
     const statuses = reshape(list.statuses);
+    if (strayColor(statuses, list.statuses || DEFAULT_KANBAN_STATUSES)) {
+      return { success: false, error: STATUS_COLOR_REFUSED };
+    }
     const kept = new Set(statuses.map((status) => status.id));
     const removed = (list.statuses || DEFAULT_KANBAN_STATUSES)
       .map((status) => status.id)

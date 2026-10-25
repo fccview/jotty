@@ -6,7 +6,7 @@ import { ERRORS, envelope, okSchema } from "@/app/_schemas/api/common";
 import { kanbanStatusSchema } from "@/app/_schemas/api/items";
 import { statusUpdateBody, taskStatusParams } from "@/app/_schemas/api/tasks";
 import { PermissionTypes } from "@/app/_types/enums";
-import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { DEFAULT_KANBAN_STATUSES, STATUS_COLOR_REFUSED } from "@/app/_consts/kanban";
 import { turnAway } from "@/app/_utils/api-utils";
 import { fetchTask } from "@/app/_utils/api-task";
 
@@ -60,7 +60,7 @@ export const PUT = defineRoute(
       ),
     );
     if (!result.success) {
-      return refuse(result.error || "Failed to update status", 500);
+      return refuse(result.error || "Failed to update status", result.error === STATUS_COLOR_REFUSED ? 400 : 500);
     }
 
     return NextResponse.json({

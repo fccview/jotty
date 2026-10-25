@@ -4,6 +4,7 @@ import type { ThemeVariables } from "@/app/_types/theme";
 
 export const ROOT_PALETTE = ":root";
 export const COLORS_CSS = path.join("app", "_styles", "themes", "colors.css");
+export const CUSTOM_CSS = path.join("config", "custom.css");
 
 const CSS_COMMENT = /\/\*[\s\S]*?\*\//g;
 const RULE = /([:.][\w-]+)\s*\{([^{}]*)\}/g;

@@ -17,17 +17,27 @@ const QUIET_SETTINGS = {
   },
 };
 
-const COMMENT = /(<!--[\s\S]*?-->)/;
+const COMMENT_OPEN = "<!--";
+const COMMENT_CLOSE = "-->";
 const STRAY_CLOSER = /--(!?)>/g;
 const LONE_ANGLE = /<(?![a-zA-Z/!?])/g;
 
-export const mendSource = (source: string) =>
-  source
-    .split(COMMENT)
-    .map((part, index) =>
-      index % 2 ? part : part.replace(STRAY_CLOSER, "--$1&gt;").replace(LONE_ANGLE, "&lt;"),
-    )
-    .join("");
+const mendText = (text: string) => text.replace(STRAY_CLOSER, "--$1&gt;").replace(LONE_ANGLE, "&lt;");
+
+export const mendSource = (source: string) => {
+  const parts: string[] = [];
+  let cursor = 0;
+  while (cursor < source.length) {
+    const open = source.indexOf(COMMENT_OPEN, cursor);
+    const close = open < 0 ? -1 : source.indexOf(COMMENT_CLOSE, open + COMMENT_OPEN.length);
+    if (close < 0) break;
+    const end = close + COMMENT_CLOSE.length;
+    parts.push(mendText(source.slice(cursor, open)), source.slice(open, end));
+    cursor = end;
+  }
+  parts.push(mendText(source.slice(cursor)));
+  return parts.join("");
+};
 
 export const happyKit = (): HappyKit => {
   const window = new Window({ settings: QUIET_SETTINGS });

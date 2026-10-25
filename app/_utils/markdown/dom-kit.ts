@@ -8,10 +8,12 @@ const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 const PRE_TAG = "PRE";
 
-export const browserKit = (): DomKit => ({
-  parser: new window.DOMParser(),
-  document: window.document,
-});
+let shared: DomKit | null = null;
+
+export const browserKit = (): DomKit => {
+  shared ??= { parser: new window.DOMParser(), document: window.document };
+  return shared;
+};
 
 const dropLayout = (element: Element): Element => {
   Array.from(element.childNodes)

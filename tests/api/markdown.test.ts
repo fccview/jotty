@@ -7,7 +7,7 @@ vi.unmock("@/app/_utils/markdown-utils");
 
 import { mockUser, mockAuthenticateApiKey, resetApiMocks, createMockRequest, getResponseJson } from "./setup";
 import { POST } from "@/app/api/markdown/from-html/route";
-import { HTML_LIMIT } from "@/app/_schemas/api/markdown";
+import { HTML_BODY_LIMIT, HTML_LIMIT } from "@/app/_schemas/api/markdown";
 
 const convert = (body: object) =>
   POST(createMockRequest("POST", "http://localhost:3000/api/markdown/from-html", body));
@@ -42,6 +42,21 @@ describe("POST /api/markdown/from-html", () => {
     const response = await convert(body);
     expect(response.status).toBe(400);
     expect((await getResponseJson(response)).error).toBeTruthy();
+  });
+
+  it("refuses a body over the limit before parsing it", async () => {
+    const response = await convert({ html: "x".repeat(HTML_BODY_LIMIT) });
+    expect(response.status).toBe(413);
+    expect((await getResponseJson(response)).error).toBeTruthy();
+  });
+
+  it("refuses a declared length over the limit without reading it", async () => {
+    const response = await POST(
+      createMockRequest("POST", "http://localhost:3000/api/markdown/from-html", { html: "<p>x</p>" }, {
+        "content-length": String(HTML_BODY_LIMIT + 1),
+      }),
+    );
+    expect(response.status).toBe(413);
   });
 
   it("needs an API key", async () => {

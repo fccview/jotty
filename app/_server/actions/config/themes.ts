@@ -1,6 +1,5 @@
 "use server";
 
-import { readFileSync } from "fs";
 import { join } from "path";
 import path from "path";
 import fs from "fs/promises";
@@ -15,10 +14,10 @@ export const loadCustomThemes = async () => {
     let configContent;
 
     try {
-      configContent = readFileSync(configPath, "utf-8");
+      configContent = await fs.readFile(configPath, "utf-8");
     } catch {
       configPath = join(process.cwd(), "_config", "themes.json");
-      configContent = readFileSync(configPath, "utf-8");
+      configContent = await fs.readFile(configPath, "utf-8");
     }
 
     const config = JSON.parse(configContent);

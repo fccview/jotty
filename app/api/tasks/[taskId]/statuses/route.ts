@@ -8,7 +8,7 @@ import { kanbanStatusSchema } from "@/app/_schemas/api/items";
 import { statusCreateBody, taskParams } from "@/app/_schemas/api/tasks";
 import { KanbanStatus } from "@/app/_types";
 import { PermissionTypes } from "@/app/_types/enums";
-import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
+import { DEFAULT_KANBAN_STATUSES, STATUS_COLOR_REFUSED } from "@/app/_consts/kanban";
 import { turnAway } from "@/app/_utils/api-utils";
 import { fetchTask } from "@/app/_utils/api-task";
 
@@ -84,7 +84,7 @@ export const POST = defineRoute(
       return fresh.some((status) => status.id === body.id) ? fresh : [...fresh, created];
     });
     if (!result.success) {
-      return refuse(result.error || "Failed to create status", 500);
+      return refuse(result.error || "Failed to create status", result.error === STATUS_COLOR_REFUSED ? 400 : 500);
     }
 
     return NextResponse.json({ success: true, data: created });
