@@ -166,6 +166,15 @@ export const FAKE_SPEC: OpenApiDocument = {
         responses: { "200": { content: { "application/zip": {} } } },
       },
     },
+    "/kanban/{boardId}/items/batch": {
+      post: {
+        operationId: "createBoardItems",
+        summary: "Add or update many cards at once",
+        tags: ["Kanban"],
+        parameters: [{ name: "boardId", in: "path" as never, required: true, schema: { type: "string" } }],
+        requestBody: { content: { "application/json": { schema: { type: "object", properties: { cards: { type: "array" } } } } } },
+      },
+    },
     "/kanban/{boardId}/items/{itemId}": {
       put: {
         operationId: "updateBoardItem",
@@ -236,6 +245,10 @@ export const serveJotty = (spec: OpenApiDocument | null = FAKE_SPEC): FakeJotty 
       if (url.pathname.endsWith("/check")) return _json({ error: "Item index out of range" }, 400);
       if (url.pathname === "/api/relations/links") return _json({ error: "Mention not found" }, 400);
       if (url.pathname === "/api/notes") return _json(request.method === "GET" ? { notes: [NOTE] } : { success: true, data: NOTE });
+      if (url.pathname.endsWith("/items/batch")) {
+        const cards = [{ ...CARD, externalId: "gh-1", history: [] }, { ...CARD, id: "c-2", description: "long" }];
+        return _json({ success: true, data: cards, created: 1, updated: 1 });
+      }
       if (url.pathname.startsWith("/api/kanban/")) {
         return _json({ success: true, data: { uuid: "b-1", items: [CARD, { ...CARD, id: "c-2" }] }, item: CARD });
       }

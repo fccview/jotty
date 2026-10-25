@@ -37,6 +37,17 @@ describe("theme palettes from colors.css", () => {
     });
   });
 
+  it("resolves var() fallbacks nested inside other fallbacks", () => {
+    expect(
+      resolveVars({
+        "--a": "1 2 3",
+        "--b": "var(--missing, var(--a))",
+        "--c": "var(--missing, var(--gone, var(--a)))",
+        "--d": "rgb(var(--missing, var(--a)) / 0.5)",
+      }),
+    ).toEqual({ "--a": "1 2 3", "--b": "1 2 3", "--c": "1 2 3", "--d": "rgb(1 2 3 / 0.5)" });
+  });
+
   it("gives a fixed theme its own colours over the root ones", async () => {
     const theme = await themeFor(sources({ user: { preferredTheme: "dracula" } }));
     expect(theme).toMatchObject({ id: "dracula", name: "Dracula", mode: ThemeMode.FIXED, darkVariables: null });

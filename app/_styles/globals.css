@@ -1197,23 +1197,24 @@ pre.text-foreground span,
     width: 0;
 }
 
-.overflow-x-auto::-webkit-scrollbar {
-    height: 6px;
-}
-
 .overflow-y-auto::-webkit-scrollbar,
 .overflow-x-auto::-webkit-scrollbar,
 .overflow-auto::-webkit-scrollbar,
 .scrollbar-thin::-webkit-scrollbar {
     -webkit-appearance: none;
     width: 6px;
+    height: 6px;
     background: transparent;
 }
 
 .overflow-y-auto::-webkit-scrollbar-track,
 .overflow-x-auto::-webkit-scrollbar-track,
 .overflow-auto::-webkit-scrollbar-track,
-.scrollbar-thin::-webkit-scrollbar-track {
+.scrollbar-thin::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-corner,
+.overflow-x-auto::-webkit-scrollbar-corner,
+.overflow-auto::-webkit-scrollbar-corner,
+.scrollbar-thin::-webkit-scrollbar-corner {
     background: transparent;
 }
 

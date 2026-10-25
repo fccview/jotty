@@ -87,7 +87,7 @@ specNote: 5b1e8a52-3c1d-4d7e-9f0a-1b2c3d4e5f60
 - `specNote` is the uuid of the note pinned as the board's spec. Set it with `PUT /api/kanban/{boardId}/spec` rather than by hand, so Jotty can check you can read the note and that it isn't encrypted.
 - `assignee:` is the human assignee, a username.
 - `agent:` is a virtual agent, see below. It sits right after `assignee:` and never replaces it.
-- `externalId` sits inside `metadata:` and is your own reference for the card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card instead, and `POST /api/kanban/{boardId}/items/batch` does the same for up to 200 cards in one save, so an import can run again without duplicating anything.
+- `externalId` sits inside `metadata:` and is your own reference for the card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card instead, and `POST /api/kanban/{boardId}/items/batch` does the same for up to 200 cards in one save, so an import can run again without duplicating anything. `PUT /api/kanban/{boardId}/items/{itemId}` sets or changes the `externalId` of a card that already exists, and `GET /api/kanban/{boardId}?externalId=...` returns only the card that has it.
 - Boards without these keep working exactly as before.
 
 ## Agents and board specs

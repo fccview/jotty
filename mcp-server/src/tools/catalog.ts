@@ -1,5 +1,6 @@
 import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { ToolErrorKind, type ErrorHints } from "./errors.ts";
+import { cardBrief, cardsBrief, type Brief } from "./briefs.ts";
 
 export interface CatalogEntry {
   id: string;
@@ -8,6 +9,7 @@ export interface CatalogEntry {
   omit?: string[];
   hints?: ErrorHints;
   annotations?: Tool["annotations"];
+  brief?: Brief;
 }
 
 const SUMMARY_PAGE = { view: "summary", limit: 25 };
@@ -56,8 +58,8 @@ export const CATALOG: CatalogEntry[] = [
   { id: "getBoard" },
   { id: "createBoard" },
   { id: "createBoardItem", omit: CARD_NOISE },
-  { id: "createBoardItems", omit: CARD_NOISE },
-  { id: "updateBoardItem", pick: "item", omit: CARD_NOISE },
+  { id: "createBoardItems", omit: CARD_NOISE, brief: cardsBrief },
+  { id: "updateBoardItem", pick: "item", omit: CARD_NOISE, brief: cardBrief },
   {
     id: "moveBoardItem",
     pick: "item",

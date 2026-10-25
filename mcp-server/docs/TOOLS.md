@@ -117,20 +117,20 @@ If a script rewrites one of your notes, add `managed: true` to its frontmatter. 
 | Tool | What it does | Arguments |
 |---|---|---|
 | `list_boards` | Your boards, 25 at a time with card counts per column | `category`, `status`, `q`, `view`, `limit`, `offset` |
-| `get_board` | One board with its columns, its cards and `specNote` when a spec is pinned | `boardId` |
+| `get_board` | One board with its columns, its cards and `specNote` when a spec is pinned. `externalId` returns only the card that has it | `boardId`, `externalId` |
 | `create_board` | Makes a board, with the default columns unless you pass your own | `title`, `category`, `statuses` |
 | `create_board_item` | Adds a card and returns it with its id | `boardId`, `text`, `status`, `description`, `priority`, `score`, `assignee`, `externalId`, `position` |
-| `create_board_items` | Adds or updates up to 200 cards in one call | `boardId`, `cards`, `position` |
-| `update_board_item` | Changes a card's text, description, priority, score, human assignee, reminder or external id | `boardId`, `itemId`, `text`, `description`, `priority`, `score`, `assignee`, `reminder`, `externalId` |
+| `create_board_items` | Adds or updates up to 200 cards in one call | `boardId`, `cards`, `position`, `verbose` |
+| `update_board_item` | Changes a card's text, description, priority, score, human assignee, reminder or external id | `boardId`, `itemId`, `text`, `description`, `priority`, `score`, `assignee`, `reminder`, `externalId`, `verbose` |
 | `move_board_item` | Moves a card to another column and records it in the card's history | `boardId`, `itemId`, `status` |
 
-The default columns are `todo`, `in_progress`, `completed` and `paused`. A column's `color` is a hex colour like `#3b82f6`. Moving a card into a column marked `autoComplete` also marks it completed, and so does creating it there. A column the board doesn't have is refused, and the error lists the ones it does. Updating or moving a card returns that card without its history, not the whole board.
+The default columns are `todo`, `in_progress`, `completed` and `paused`. A column's `color` is a hex colour written `#rrggbb`, like `#3b82f6`, and anything else is refused. Moving a card into a column marked `autoComplete` also marks it completed, and so does creating it there. A column the board doesn't have is refused, and the error lists the ones it does. Moving a card returns that card without its history, not the whole board. `update_board_item` returns only the card's `id`, `externalId` and `status`, and `verbose: true` returns the whole card.
 
 Boards live in checklist categories, so `list_categories` shows them under `checklists`. `create_board` makes a category that doesn't exist yet and answers with `categoryCreated: true` when it did.
 
 New cards go to the top or bottom of the board as the user's new item setting says. Pass `position` as `top` or `bottom` to choose. `create_board_items` keeps the cards in the order you send them either way.
 
-`externalId` is your own reference for a card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card with the fields you send instead of adding a duplicate, so an import can run again safely. The answer says `updated: true` for a single card, and `create_board_items` counts `created` and `updated`. Two cards on one board can't share an `externalId`.
+`externalId` is your own reference for a card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card with the fields you send instead of adding a duplicate, so an import can run again safely. The answer says `updated: true` for a single card. `create_board_items` answers with `created` and `updated` first, then `cards` with each card's `id`, `externalId` and `status` in the order you sent them. Pass `verbose: true` to get the full cards back. Two cards on one board can't share an `externalId`, and `update_board_item` sets or changes the `externalId` of a card that already exists, so an older board can be backfilled before its next import. `get_board` with `externalId` finds one card without reading the whole board.
 
 ```json
 {

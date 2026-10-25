@@ -4,8 +4,8 @@ import { z } from "zod";
 import { dropList, editList } from "@/app/_server/actions/checklist/editor";
 import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
-import { ERRORS, okSchema } from "@/app/_schemas/api/common";
-import { BOARD_REFUSED, boardParams, boardSchema, boardUpdateBody } from "@/app/_schemas/api/kanban";
+import { ERRORS, ListView, okSchema } from "@/app/_schemas/api/common";
+import { BOARD_REFUSED, boardGetQuery, boardParams, boardSchema, boardUpdateBody } from "@/app/_schemas/api/kanban";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { transformBoard } from "@/app/_utils/kanban/api-transforms";
 import { boardFor } from "@/app/_utils/kanban/api-board";
@@ -19,8 +19,9 @@ export const GET = defineRoute(
     path: "/kanban/{boardId}",
     tag: ApiTag.KANBAN,
     summary: "Get a Kanban board",
-    description: "Also returns boards shared with the API key owner.",
+    description: "Also returns boards shared with the API key owner. Pass externalId to get only the card that has it.",
     params: boardParams,
+    query: boardGetQuery,
     responses: {
       200: { description: "The board", schema: z.object({ board: boardSchema }) },
       400: { description: "Not a kanban board", schema: ERRORS[400].schema },
@@ -29,11 +30,11 @@ export const GET = defineRoute(
       500: ERRORS[500],
     },
   },
-  async ({ request, user, params }) => {
+  async ({ request, user, params, query }) => {
     const { board, refused } = await boardFor(request, params.boardId, user.username);
     if (refused) return refused;
 
-    return NextResponse.json({ board: transformBoard(board) });
+    return NextResponse.json({ board: transformBoard(board, ListView.FULL, query.externalId) });
   },
 );
 

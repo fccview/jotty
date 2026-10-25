@@ -6,6 +6,7 @@ export interface DomKit {
 const LAYOUT_WHITESPACE = /^(\n\s\s|\n)$/;
 const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
+const PRE_TAG = "PRE";
 
 export const browserKit = (): DomKit => ({
   parser: new window.DOMParser(),
@@ -20,7 +21,7 @@ const dropLayout = (element: Element): Element => {
         element.removeChild(child);
         return;
       }
-      if (child.nodeType === ELEMENT_NODE) dropLayout(child as Element);
+      if (child.nodeType === ELEMENT_NODE && (child as Element).tagName !== PRE_TAG) dropLayout(child as Element);
     });
   return element;
 };

@@ -46,6 +46,21 @@ export const transformItem = (item: Item, index: number): TransformedItem => {
   return baseItem;
 };
 
+const _cardWithExternalId = (items: Item[], externalId: string): TransformedItem | undefined => {
+  const index = items.findIndex((item) => item.externalId === externalId);
+  if (index >= 0) return transformItem(items[index], index);
+  return items.reduce<TransformedItem | undefined>(
+    (found, item) => found ?? _cardWithExternalId(item.children || [], externalId),
+    undefined,
+  );
+};
+
+const _items = (items: Item[], externalId?: string): TransformedItem[] => {
+  if (!externalId) return items.map((item, index) => transformItem(item, index));
+  const card = _cardWithExternalId(items, externalId);
+  return card ? [card] : [];
+};
+
 const _statusCounts = (items: Item[]) =>
   items.reduce<Record<string, number>>((counts, item) => {
     const status = item.status || TaskStatus.TODO;
@@ -53,7 +68,7 @@ const _statusCounts = (items: Item[]) =>
     return counts;
   }, {});
 
-export const transformBoard = (list: Checklist, view: ListView = ListView.FULL) => ({
+export const transformBoard = (list: Checklist, view: ListView = ListView.FULL, externalId?: string) => ({
   id: list.uuid,
   title: list.title,
   category: list.category || UNCATEGORIZED,
@@ -61,7 +76,7 @@ export const transformBoard = (list: Checklist, view: ListView = ListView.FULL) 
   ...(list.specNote && { specNote: list.specNote }),
   ...(view === ListView.SUMMARY
     ? { itemCount: list.items.length, statusCounts: _statusCounts(list.items) }
-    : { items: list.items.map((item, index) => transformItem(item, index)) }),
+    : { items: _items(list.items, externalId) }),
   createdAt: list.createdAt,
   updatedAt: list.updatedAt,
 });

@@ -8,7 +8,7 @@ export const COLORS_CSS = path.join("app", "_styles", "themes", "colors.css");
 const CSS_COMMENT = /\/\*[\s\S]*?\*\//g;
 const RULE = /([:.][\w-]+)\s*\{([^{}]*)\}/g;
 const DECLARATION = /(--[\w-]+)\s*:\s*([^;]+);/g;
-const VAR_REF = /var\(\s*(--[\w-]+)\s*(?:,\s*([^)]*))?\)/g;
+const VAR_OPEN = /var\(\s*(--[\w-]+)\s*(,?)/;
 
 let cached: Promise<Record<string, ThemeVariables>> | null = null;
 
@@ -26,12 +26,29 @@ export const parsePalettes = (css: string): Record<string, ThemeVariables> => {
   return palettes;
 };
 
-const resolveValue = (value: string, vars: ThemeVariables, seen: Set<string>): string =>
-  value.replace(VAR_REF, (_match, name: string, fallback?: string) => {
-    const target = vars[name];
-    if (target === undefined || seen.has(name)) return fallback?.trim() ?? "";
-    return resolveValue(target, vars, new Set(seen).add(name));
-  });
+const closingParen = (value: string, from: number): number => {
+  let depth = 1;
+  for (let i = from; i < value.length; i++) {
+    if (value[i] === "(") depth++;
+    if (value[i] === ")" && --depth === 0) return i;
+  }
+  return -1;
+};
+
+const resolveValue = (value: string, vars: ThemeVariables, seen: Set<string>): string => {
+  const match = value.match(VAR_OPEN);
+  if (match?.index === undefined) return value;
+  const [opening, name, comma] = match;
+  const close = closingParen(value, match.index + opening.length);
+  if (close === -1) return value;
+  const target = vars[name];
+  const fallback = comma ? value.slice(match.index + opening.length, close).trim() : "";
+  const resolved =
+    target === undefined || seen.has(name)
+      ? resolveValue(fallback, vars, seen)
+      : resolveValue(target, vars, new Set(seen).add(name));
+  return value.slice(0, match.index) + resolved + resolveValue(value.slice(close + 1), vars, seen);
+};
 
 export const resolveVars = (vars: ThemeVariables): ThemeVariables =>
   Object.fromEntries(

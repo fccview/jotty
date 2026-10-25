@@ -40,6 +40,7 @@ const CASES: [string, string, string][] = [
   ["jotty task lists", '<ul data-type="taskList"><li data-type="taskItem" data-checked="true"><p>done</p></li><li data-type="taskItem" data-checked="false"><p>todo</p></li></ul>', "- [x] done\n- [ ] todo"],
   ["github task lists", '<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" checked=""> done</li><li class="task-list-item"><input type="checkbox"> todo</li></ul>', "- [x] done\n- [ ] todo"],
   ["code with a language", '<pre><code class="language-js">const a = 1;\nconsole.log(a);</code></pre>', "```js\nconst a = 1;\nconsole.log(a);\n```"],
+  ["highlighted code split into spans", '<pre><code class="language-js"><span>const a = 1;</span>\n<span>console.log(a);</span></code></pre>', "```js\nconst a = 1;\nconsole.log(a);\n```"],
   ["mermaid", '<div data-mermaid="" data-mermaid-content="graph TD; A-->B"></div>', "```mermaid\ngraph TD; A-->B\n```"],
   ["tables", "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>", "| A   | B   |\n| --- | --- |\n| 1   | 2   |"],
   ["rules and hard breaks", "<p>a</p><hr><p>b<br>c</p>", "a\n\n---\n\nb  \nc"],

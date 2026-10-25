@@ -54,6 +54,8 @@ export const MAX_CARD_BATCH = 200;
 
 export const MAX_EXTERNAL_ID = 512;
 
+export const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
 export const isUnknownStatus = (error?: string): boolean => !!error?.startsWith(UNKNOWN_STATUS);
 
 export const PROPERTY_FIELD_CLASS =

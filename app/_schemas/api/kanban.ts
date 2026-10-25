@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { CardPlacement, KanbanPriorityLevel } from "@/app/_types/enums";
-import { MAX_CARD_BATCH, MAX_EXTERNAL_ID } from "@/app/_consts/kanban";
+import { HEX_COLOR, MAX_CARD_BATCH, MAX_EXTERNAL_ID } from "@/app/_consts/kanban";
 import {
   ListView,
   categoryField,
@@ -185,13 +185,31 @@ export const boardListQuery = z.object({
   ...pageFields,
 });
 
+const statusDraftSchema = kanbanStatusSchema.extend({
+  color: z
+    .string()
+    .regex(HEX_COLOR, "Status color must be a hex colour written #rrggbb, like #3b82f6")
+    .optional()
+    .describe("Hex colour written #rrggbb, like #3b82f6. Left out, the column gets a default grey or its built-in colour"),
+});
+
 export const boardCreateBody = z.object({
   title: required("Title"),
   category: categoryField,
   statuses: z
-    .array(kanbanStatusSchema)
+    .array(statusDraftSchema)
     .optional()
     .describe("Columns for the new board, the default columns when left out"),
+});
+
+export const boardGetQuery = z.object({
+  externalId: z
+    .string()
+    .trim()
+    .min(1)
+    .max(MAX_EXTERNAL_ID)
+    .optional()
+    .describe("Only the card with this externalId, at any depth, so you can look one up without reading the whole board. items is empty when no card has it"),
 });
 
 export const boardUpdateBody = z.object({
@@ -201,7 +219,7 @@ export const boardUpdateBody = z.object({
 
 export const statusesBody = z.object({
   statuses: z
-    .array(kanbanStatusSchema, { error: "Statuses array is required" })
+    .array(statusDraftSchema, { error: "Statuses array is required" })
     .describe("The full new column list. Cards in a removed column move to the lowest-order one"),
 });
 
