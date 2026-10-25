@@ -108,7 +108,7 @@ const importsOf = (entry: string) => {
     });
   };
   walk(entry);
-  return [...packages, ...seen];
+  return [...Array.from(packages), ...Array.from(seen)];
 };
 
 describe("server conversion imports", () => {
