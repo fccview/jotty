@@ -1,6 +1,6 @@
 "use client";
 
-import { Node, mergeAttributes } from "@tiptap/core";
+import type { NodeConfig } from "@tiptap/core";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -72,49 +72,7 @@ export const MermaidNodeView = ({ node, editor, getPos, updateAttributes, delete
   );
 };
 
-export const MermaidExtension = Node.create({
-  name: "mermaid",
-  group: "block",
-  atom: true,
-  draggable: true,
-
-  addAttributes() {
-    return {
-      content: {
-        default: "",
-        parseHTML: (element) => element.getAttribute("data-mermaid-content") || "",
-        renderHTML: (attributes) => {
-          if (!attributes.content) return {};
-          return {
-            "data-mermaid-content": attributes.content,
-          };
-        },
-      },
-    };
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: "div[data-mermaid]",
-        getAttrs: (element) => ({
-          content: element.getAttribute("data-mermaid-content") || "",
-        }),
-      },
-    ];
-  },
-
-  renderHTML({ node }) {
-    return [
-      "div",
-      mergeAttributes({
-        "data-mermaid": "",
-        "data-mermaid-content": node.attrs.content,
-      }),
-      "[Mermaid Diagram]",
-    ];
-  },
-
+export const MERMAID_VIEW: Partial<NodeConfig> = {
   addNodeView() {
     return ReactNodeViewRenderer(MermaidNodeView);
   },
@@ -130,4 +88,4 @@ export const MermaidExtension = Node.create({
           }),
     };
   },
-});
+};

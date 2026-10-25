@@ -1,47 +1,31 @@
+import { Node, type AnyExtension, type NodeConfig } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import type { Doc } from "yjs";
 import type { Awareness } from "y-protocols/awareness";
 import { liveCaret, liveSelection, type AvatarOf } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/EditorUtils/liveCaret";
-import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import ListItem from "@tiptap/extension-list-item";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import BulletList from "@tiptap/extension-bullet-list";
-import TextUnderlineIcon from "@tiptap/extension-underline";
-import HardBreak from "@tiptap/extension-hard-break";
-import { Table } from "@tiptap/extension-table";
-import { TableRow } from "@tiptap/extension-table-row";
-import { TableCell } from "@tiptap/extension-table-cell";
-import { TableHeader } from "@tiptap/extension-table-header";
-import { CodeBlock } from "@tiptap/extension-code-block";
 import { PrismPlugin } from "./prismPlugin";
-import { Color } from "@tiptap/extension-color";
-import { TextStyle } from "@tiptap/extension-text-style";
-import { Highlight } from "@tiptap/extension-highlight";
-import { FileAttachmentExtension } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/FileAttachmentExtension";
+import { FILE_ATTACHMENT_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/FileAttachment/FileAttachmentExtension";
 import { CodeBlockNodeView } from "@/app/_components/FeatureComponents/Notes/Parts/CodeBlock/CodeBlockNodeView";
-import { DetailsExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
+import { DETAILS_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DetailsExtension";
 import { KeyboardShortcuts } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/KeyboardShortcuts";
 import { OverlayExtension, type OverlayPosition } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/OverlayExtension";
 import { SlashCommands } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
-import { InternalLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
-import { TagLink } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagLink";
-import { MermaidExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
-import { DrawioExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
-import { ExcalidrawExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
-import { DEFAULT_DRAWIO_URL } from "@/app/_consts/diagrams";
-import { CalloutExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
-import { RawBlockExtension, RawInlineExtension } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/RawMarkdownExtension";
+import { INTERNAL_LINK_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/InternalLink";
+import { TAG_LINK_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagLink";
+import { MERMAID_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MermaidExtension";
+import { DRAWIO_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/DrawioExtension";
+import { EXCALIDRAW_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/ExcalidrawExtension";
+import { CALLOUT_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/CalloutExtension";
+import { RAW_BLOCK_VIEW, RAW_INLINE_VIEW } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/RawMarkdownExtension";
 import { AtomGuard } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtomGuard";
 import { MarkdownPaste } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MarkdownPaste";
 import { BoldItalicInput } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/BoldItalicInput";
-import { generateCustomHtmlExtensions } from "@/app/_utils/custom-html-utils";
-import { getContrastColor } from "@/app/_utils/color-utils";
-import { SOFT_BREAK_ATTR } from "@/app/_utils/markdown/consts";
+import { DEFAULT_DRAWIO_URL } from "@/app/_consts/diagrams";
+import { PLAIN_CODE_LANGUAGE } from "@/app/_utils/markdown/consts";
+import { MarkName, NodeName } from "@/app/_utils/markdown/serialize/types";
+import { STARTER_KIT, schemaExtensions, type SchemaLayer } from "@/app/_utils/markdown/schema";
 
 interface OverlayCallbacks {
   onImageClick: (position: OverlayPosition) => void;
@@ -64,194 +48,112 @@ interface EditorData {
   tags?: string[];
 }
 
+interface LiveSession {
+  doc: Doc;
+  awareness: Awareness;
+  avatarOf: AvatarOf;
+}
+
+const CODE_BLOCK_VIEW: Partial<NodeConfig> = {
+  addNodeView() {
+    return ReactNodeViewRenderer(CodeBlockNodeView);
+  },
+  addProseMirrorPlugins() {
+    return [
+      PrismPlugin({
+        name: this.name,
+        defaultLanguage: PLAIN_CODE_LANGUAGE,
+      }),
+    ];
+  },
+};
+
+const NODE_VIEWS: Record<string, Partial<NodeConfig>> = {
+  [NodeName.Details]: DETAILS_VIEW,
+  [NodeName.Callout]: CALLOUT_VIEW,
+  [NodeName.InternalLink]: INTERNAL_LINK_VIEW,
+  [NodeName.TagLink]: TAG_LINK_VIEW,
+  [NodeName.CodeBlock]: CODE_BLOCK_VIEW,
+  [NodeName.FileAttachment]: FILE_ATTACHMENT_VIEW,
+  [NodeName.Mermaid]: MERMAID_VIEW,
+  [NodeName.Drawio]: DRAWIO_VIEW,
+  [NodeName.Excalidraw]: EXCALIDRAW_VIEW,
+  [NodeName.RawBlock]: RAW_BLOCK_VIEW,
+  [NodeName.RawInline]: RAW_INLINE_VIEW,
+};
+
+const GUARDED_ATOMS = [
+  NodeName.RawBlock,
+  NodeName.RawInline,
+  NodeName.Mermaid,
+  NodeName.Drawio,
+  NodeName.Excalidraw,
+];
+
+const DEFAULT_SETTINGS: EditorSettings = {
+  enableSlashCommands: true,
+  enableBubbleMenu: true,
+  enableTableToolbar: true,
+  enableBilateralLinks: true,
+};
+
+const withView = (extension: AnyExtension): AnyExtension => {
+  const view = NODE_VIEWS[extension.name];
+  return view && extension instanceof Node ? extension.extend(view) : extension;
+};
+
 export const createEditorExtensions = (
   callbacks: OverlayCallbacks,
   editorSettings?: EditorSettings,
   editorData?: EditorData,
   t?: (key: string) => string,
-  live?: { doc: Doc; awareness: Awareness; avatarOf: AvatarOf } | null,
+  live?: LiveSession | null,
 ) => {
-  const settings = editorSettings || {
-    enableSlashCommands: true,
-    enableBubbleMenu: true,
-    enableTableToolbar: true,
-    enableBilateralLinks: true,
+  const settings = editorSettings || DEFAULT_SETTINGS;
+
+  const extras: Record<string, SchemaLayer> = {
+    [STARTER_KIT]: (kit) => [
+      live ? kit.configure({ undoRedo: false }) : kit,
+      BoldItalicInput,
+      MarkdownPaste,
+    ],
+    [NodeName.Callout]: (callout) => [
+      withView(callout),
+      KeyboardShortcuts.configure({
+        onLinkRequest: callbacks.onLinkRequest,
+      }),
+      OverlayExtension.configure({
+        onImageClick: callbacks.onImageClick,
+        onTableSelect: callbacks.onTableSelect,
+      }),
+    ],
+    [MarkName.Highlight]: (highlight) => [
+      highlight,
+      SlashCommands.configure({
+        tags: editorData?.tags || [],
+        enableBilateralLinks: settings.enableBilateralLinks,
+        enableSlashCommands: settings.enableSlashCommands,
+        enableTags: settings.enableTags !== false,
+        t: t || ((key: string) => key),
+      }),
+    ],
+    [NodeName.Drawio]: (drawio) => [
+      withView(drawio).configure({
+        drawioUrl: settings.drawioUrl || DEFAULT_DRAWIO_URL,
+        drawioProxyEnabled: settings.drawioProxyEnabled || false,
+      }),
+    ],
+    [NodeName.RawInline]: (rawInline) => [
+      withView(rawInline),
+      AtomGuard.configure({ types: GUARDED_ATOMS }),
+    ],
   };
 
-  const extensions = [
-    StarterKit.configure({
-      codeBlock: false,
-      underline: false,
-      link: false,
-      listItem: false,
-      bulletList: false,
-      hardBreak: false,
-      ...(live && { undoRedo: false as const }),
-      code: {
-        HTMLAttributes: { spellcheck: "false" },
-      },
-    }),
-    BoldItalicInput,
-    MarkdownPaste,
-    ...generateCustomHtmlExtensions(),
-    DetailsExtension,
-    CalloutExtension,
-    KeyboardShortcuts.configure({
-      onLinkRequest: callbacks.onLinkRequest,
-    }),
-    OverlayExtension.configure({
-      onImageClick: callbacks.onImageClick,
-      onTableSelect: callbacks.onTableSelect,
-    }),
-    TextStyle,
-    Color,
-    Highlight.configure({
-      multicolor: true,
-    }).extend({
-      addKeyboardShortcuts() {
-        return {};
-      },
-      addAttributes() {
-        return {
-          color: {
-            default: null,
-            parseHTML: (element) =>
-              element.getAttribute("data-color") ||
-              element.style.backgroundColor,
-            renderHTML: (attributes) => {
-              if (!attributes.color) {
-                return {};
-              }
-              const bgColor = attributes.color;
-              const textColor = getContrastColor(bgColor);
-              return {
-                "data-color": bgColor,
-                style: `background-color: ${bgColor}; color: ${textColor}`,
-              };
-            },
-          },
-        };
-      },
-    }),
-    SlashCommands.configure({
-      tags: editorData?.tags || [],
-      enableBilateralLinks: settings.enableBilateralLinks,
-      enableSlashCommands: settings.enableSlashCommands,
-      enableTags: settings.enableTags !== false,
-      t: t || ((key: string) => key),
-    }),
-    InternalLink,
-    TagLink,
-    TextUnderlineIcon,
-    HardBreak.extend({
-      addAttributes() {
-        return {
-          soft: {
-            default: false,
-            parseHTML: (element) => element.hasAttribute(SOFT_BREAK_ATTR),
-            renderHTML: (attributes) => (attributes.soft ? { [SOFT_BREAK_ATTR]: "" } : {}),
-          },
-        };
-      },
-    }),
-    CodeBlock.extend({
-      addNodeView() {
-        return ReactNodeViewRenderer(CodeBlockNodeView);
-      },
-      addProseMirrorPlugins() {
-        return [
-          PrismPlugin({
-            name: this.name,
-            defaultLanguage: "plaintext",
-          }),
-        ];
-      },
-    }).configure({
-      defaultLanguage: "plaintext",
-    }),
-    Link.configure({
-      openOnClick: false,
-    }),
-    Image.extend({
-      addAttributes() {
-        return {
-          ...this.parent?.(),
-          style: {
-            default: null,
-            parseHTML: (element) => element.getAttribute("style"),
-            renderHTML: (attributes) => {
-              if (!attributes.style) {
-                return {};
-              }
-              return {
-                style: attributes.style,
-              };
-            },
-          },
-        };
-      },
-    }).configure({
-      HTMLAttributes: {},
-    }),
-    FileAttachmentExtension.configure({
-      HTMLAttributes: {
-        class: "file-attachment",
-      },
-    }),
-    MermaidExtension,
-    DrawioExtension.configure({
-      drawioUrl: settings.drawioUrl || DEFAULT_DRAWIO_URL,
-      drawioProxyEnabled: settings.drawioProxyEnabled || false,
-    }),
-    ExcalidrawExtension,
-    RawBlockExtension,
-    RawInlineExtension,
-    AtomGuard.configure({
-      types: [RawBlockExtension, RawInlineExtension, MermaidExtension, DrawioExtension, ExcalidrawExtension].map(
-        (extension) => extension.name,
-      ),
-    }),
-    Table.extend({
-      content: "tableRow+",
-    }).configure({
-      resizable: true,
-    }),
-    TableRow.extend({
-      content: "(tableHeader | tableCell)*",
-    }),
-    TableHeader.extend({
-      content: "block+",
-    }),
-    TableCell.extend({
-      content: "block+",
-    }),
-    ListItem.extend({
-      content: "block+",
-    }),
-    TaskList,
-    TaskItem.extend({
-      content: "block+",
-      parseHTML() {
-        return [
-          {
-            tag: 'li[data-type="taskItem"]',
-            priority: 51,
-            getAttrs: (element: HTMLElement) => {
-              if (typeof element === "string") return false;
-              const dataChecked = element.getAttribute("data-checked");
-              return {
-                checked: dataChecked === "true",
-              };
-            },
-          },
-        ];
-      },
-    }).configure({
-      nested: true,
-    }),
-    BulletList.extend({
-      content: "listItem+",
-    }),
+  const layer: SchemaLayer = (extension) =>
+    extras[extension.name]?.(extension) ?? [withView(extension)];
+
+  return [
+    ...schemaExtensions(layer),
     ...(live ? [
       Collaboration.configure({ document: live.doc }),
       CollaborationCaret.configure({
@@ -262,6 +164,4 @@ export const createEditorExtensions = (
       }),
     ] : []),
   ];
-
-  return extensions;
 };

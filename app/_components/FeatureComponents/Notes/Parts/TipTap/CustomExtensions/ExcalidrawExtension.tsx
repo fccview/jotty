@@ -1,6 +1,6 @@
 "use client";
 
-import { Node, mergeAttributes } from "@tiptap/core";
+import type { NodeConfig } from "@tiptap/core";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -109,75 +109,7 @@ export const ExcalidrawNodeView = ({ node, editor, getPos, updateAttributes, del
   );
 };
 
-export const ExcalidrawExtension = Node.create({
-  name: "excalidraw",
-  group: "block",
-  atom: true,
-  draggable: true,
-
-  addAttributes() {
-    return {
-      diagramData: {
-        default: null,
-        parseHTML: (element) =>
-          element.getAttribute("data-excalidraw-data") || null,
-        renderHTML: (attributes) => {
-          if (!attributes.diagramData) return {};
-          return {
-            "data-excalidraw-data": attributes.diagramData,
-          };
-        },
-      },
-      svgData: {
-        default: null,
-        parseHTML: (element) =>
-          element.getAttribute("data-excalidraw-svg") || null,
-        renderHTML: (attributes) => {
-          if (!attributes.svgData) return {};
-          return {
-            "data-excalidraw-svg": attributes.svgData,
-          };
-        },
-      },
-      themeMode: {
-        default: "light",
-        parseHTML: (element) =>
-          element.getAttribute("data-excalidraw-theme") || "light",
-        renderHTML: (attributes) => {
-          return {
-            "data-excalidraw-theme": attributes.themeMode || "light",
-          };
-        },
-      },
-    };
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: "div[data-excalidraw]",
-        getAttrs: (element) => ({
-          diagramData: element.getAttribute("data-excalidraw-data") || null,
-          svgData: element.getAttribute("data-excalidraw-svg") || null,
-          themeMode: toDiagramTheme(element.getAttribute("data-excalidraw-theme")),
-        }),
-      },
-    ];
-  },
-
-  renderHTML({ node }) {
-    return [
-      "div",
-      mergeAttributes({
-        "data-excalidraw": "",
-        "data-excalidraw-data": node.attrs.diagramData || "",
-        "data-excalidraw-svg": node.attrs.svgData || "",
-        "data-excalidraw-theme": node.attrs.themeMode || "light",
-      }),
-      "[Excalidraw Diagram]",
-    ];
-  },
-
+export const EXCALIDRAW_VIEW: Partial<NodeConfig> = {
   addNodeView() {
     return ReactNodeViewRenderer(ExcalidrawNodeView, {
       as: "div",
@@ -196,4 +128,4 @@ export const ExcalidrawExtension = Node.create({
           }),
     };
   },
-});
+};

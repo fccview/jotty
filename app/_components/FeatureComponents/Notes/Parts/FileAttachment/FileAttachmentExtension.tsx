@@ -1,12 +1,9 @@
-import { Node, mergeAttributes } from "@tiptap/core";
+import type { NodeConfig } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { FileAttachmentNode } from "./FileAttachmentNode";
 import { InputRule } from "@tiptap/core";
 import { mimeOf, urlKind } from "@/app/_consts/attachments";
-
-export interface FileAttachmentOptions {
-  HTMLAttributes: Record<string, any>;
-}
+import type { AttachmentOptions } from "@/app/_utils/markdown/schema/attachment";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -21,103 +18,7 @@ declare module "@tiptap/core" {
   }
 }
 
-export const FileAttachmentExtension = Node.create<FileAttachmentOptions>({
-  name: "fileAttachment",
-
-  addOptions() {
-    return {
-      HTMLAttributes: {},
-    };
-  },
-
-  group: "block",
-
-  atom: true,
-
-  addAttributes() {
-    return {
-      url: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-url"),
-        renderHTML: (attributes) => {
-          if (!attributes.url) {
-            return {};
-          }
-          return {
-            "data-url": attributes.url,
-          };
-        },
-      },
-      fileName: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-file-name"),
-        renderHTML: (attributes) => {
-          if (!attributes.fileName) {
-            return {};
-          }
-          return {
-            "data-file-name": attributes.fileName,
-          };
-        },
-      },
-      mimeType: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-mime-type"),
-        renderHTML: (attributes) => {
-          if (!attributes.mimeType) {
-            return {};
-          }
-          return {
-            "data-mime-type": attributes.mimeType,
-          };
-        },
-      },
-      type: {
-        default: "file",
-        parseHTML: (element) => element.getAttribute("data-type") || "file",
-        renderHTML: (attributes) => {
-          return {
-            "data-type": attributes.type,
-          };
-        },
-      },
-    };
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: "p[data-file-attachment]",
-        getAttrs: (element) => {
-          return {
-            url: element.getAttribute("data-url"),
-            fileName: element.getAttribute("data-file-name"),
-            mimeType: element.getAttribute("data-mime-type"),
-            type: element.getAttribute("data-type") || "file",
-          };
-        },
-      },
-    ];
-  },
-
-  renderHTML({ node, HTMLAttributes }) {
-    return [
-      "p",
-      mergeAttributes(
-        {
-          "data-file-attachment": "",
-          "data-url": node.attrs.url,
-          "data-file-name": node.attrs.fileName,
-          "data-mime-type": node.attrs.mimeType,
-          "data-type": node.attrs.type,
-        },
-        this.options.HTMLAttributes,
-        HTMLAttributes
-      ),
-      `[📎 ${node.attrs.fileName}](${node.attrs.url})`,
-    ];
-  },
-
+export const FILE_ATTACHMENT_VIEW: Partial<NodeConfig<AttachmentOptions>> = {
   addNodeView() {
     return ReactNodeViewRenderer(FileAttachmentNode);
   },
@@ -171,4 +72,4 @@ export const FileAttachmentExtension = Node.create<FileAttachmentOptions>({
       }),
     ];
   },
-});
+};

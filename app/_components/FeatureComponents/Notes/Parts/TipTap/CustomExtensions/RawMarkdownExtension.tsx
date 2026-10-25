@@ -1,17 +1,8 @@
 "use client";
 
-import { Node, mergeAttributes } from "@tiptap/core";
+import type { NodeConfig } from "@tiptap/core";
 import { NodeViewWrapper, ReactNodeViewRenderer, ReactNodeViewProps } from "@tiptap/react";
 import { useTranslations } from "next-intl";
-import { RawAttr, RawNode } from "@/app/_utils/markdown/consts";
-
-const sourceAttribute = {
-  source: {
-    default: "",
-    parseHTML: (element: HTMLElement) => element.getAttribute(RawAttr.Source) ?? "",
-    renderHTML: (attributes: Record<string, string>) => ({ [RawAttr.Source]: attributes.source }),
-  },
-};
 
 const RawBlockView = ({ node, updateAttributes, editor }: ReactNodeViewProps) => {
   const t = useTranslations();
@@ -39,38 +30,14 @@ const RawInlineView = ({ node }: ReactNodeViewProps) => (
   </NodeViewWrapper>
 );
 
-export const RawBlockExtension = Node.create({
-  name: RawNode.Block,
-  group: "block",
-  atom: true,
-  selectable: true,
-  draggable: true,
-
-  addAttributes: () => sourceAttribute,
-
-  parseHTML: () => [{ tag: `div[${RawAttr.Block}]`, priority: 100 }],
-
-  renderHTML: ({ HTMLAttributes }) => ["div", mergeAttributes({ [RawAttr.Block]: "" }, HTMLAttributes)],
-
+export const RAW_BLOCK_VIEW: Partial<NodeConfig> = {
   addNodeView() {
     return ReactNodeViewRenderer(RawBlockView, { stopEvent: () => true });
   },
-});
+};
 
-export const RawInlineExtension = Node.create({
-  name: RawNode.Inline,
-  group: "inline",
-  inline: true,
-  atom: true,
-  selectable: true,
-
-  addAttributes: () => sourceAttribute,
-
-  parseHTML: () => [{ tag: `span[${RawAttr.Inline}]`, priority: 100 }],
-
-  renderHTML: ({ HTMLAttributes }) => ["span", mergeAttributes({ [RawAttr.Inline]: "" }, HTMLAttributes)],
-
+export const RAW_INLINE_VIEW: Partial<NodeConfig> = {
   addNodeView() {
     return ReactNodeViewRenderer(RawInlineView);
   },
-});
+};

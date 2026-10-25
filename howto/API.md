@@ -158,6 +158,34 @@ Both answer with who holds the item afterwards:
 
 The person you share with gets a notification, and the item shows up in their shared items. Editing a shared item through the API keeps its shares. Sharing a whole folder is still done in Jotty itself.
 
+## Clippers and other apps
+
+Two endpoints help a web clipper or a companion app write notes that look like Jotty's own.
+
+| Endpoint | What it does |
+|---|---|
+| `POST /api/markdown/from-html` | Turns `{ "html": "...", "baseUrl": "https://..." }` into markdown with the note editor's own schema, so the result is what the editor would save if that HTML had been put in a note. `baseUrl` is optional, and relative links and images are resolved against it. Tables follow the table syntax set on the key owner's account. Nothing is saved, send the markdown to `POST /api/notes` when you want a note. `html` over 5 MB is refused with `400` |
+| `GET /api/theme` | The key owner's theme as CSS custom properties, built-in and custom themes alike. `mode` is `fixed`, or `system` when the theme follows the device, in which case `variables` is the light palette and `darkVariables` the dark one. `radius` is the corner radius when it isn't the default, and `customCss` says whether the instance has custom CSS at `/api/custom-css`. A theme that was removed falls back to `system` |
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dracula",
+    "name": "Dracula",
+    "mode": "fixed",
+    "variables": { "--background": "40 42 54", "--primary": "189 147 249" },
+    "darkVariables": null,
+    "radius": "0.5rem",
+    "customCss": false
+  }
+}
+```
+
+Colours are space separated RGB triplets, so use them as `rgb(var(--primary))`.
+
+HTML the editor itself writes converts best. Task lists are `<ul data-type="taskList">` with `<li data-type="taskItem" data-checked="true">` items, and GitHub's checkbox lists are read too. Callouts are `<div data-type="callout" data-callout-type="info">`, with `info`, `warning`, `success` or `danger`. Code blocks take their language from `class="language-js"` on the `<code>`. Mermaid is `<div data-mermaid data-mermaid-content="graph TD; A-->B">` or a `language-mermaid` code block. Keep images out of paragraphs, since an image inside a `<p>` splits it in two.
+
 ## Errors
 
 Errors come back as JSON with the status code telling you what went wrong:

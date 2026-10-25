@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM oven/bun:1.3.14-alpine AS build
+FROM --platform=$BUILDPLATFORM oven/bun:1.4.4-alpine AS build
 WORKDIR /src
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
@@ -7,7 +7,7 @@ COPY src ./src
 COPY docs ./docs
 RUN bun run build
 
-FROM oven/bun:1.3.14-alpine
+FROM oven/bun:1.4.4-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV JOTTY_MCP_TRANSPORT=http

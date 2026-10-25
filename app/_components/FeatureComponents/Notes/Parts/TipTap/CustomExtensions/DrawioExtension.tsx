@@ -1,6 +1,6 @@
 "use client";
 
-import { Node, mergeAttributes } from "@tiptap/core";
+import type { NodeConfig } from "@tiptap/core";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -13,11 +13,7 @@ import {
 import { useReturnFocus } from "@/app/_components/FeatureComponents/Notes/Parts/Diagrams/useReturnFocus";
 import { DEFAULT_DRAWIO_URL, DIAGRAM_PROXY_PATH } from "@/app/_consts/diagrams";
 import { DiagramTheme, toDiagramTheme } from "@/app/_utils/markdown/diagram-comment";
-
-interface DrawioOptions {
-  drawioUrl?: string;
-  drawioProxyEnabled?: boolean;
-}
+import type { DrawioOptions } from "@/app/_utils/markdown/schema/diagrams";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -132,81 +128,7 @@ export const DrawioNodeView = ({
   );
 };
 
-export const DrawioExtension = Node.create<DrawioOptions, DrawioOptions>({
-  name: "drawio",
-  group: "block",
-  atom: true,
-  draggable: true,
-
-  addOptions() {
-    return {
-      drawioUrl: DEFAULT_DRAWIO_URL,
-      drawioProxyEnabled: false,
-    };
-  },
-
-  addAttributes() {
-    return {
-      diagramData: {
-        default: null,
-        parseHTML: (element) =>
-          element.getAttribute("data-drawio-data") || null,
-        renderHTML: (attributes) => {
-          if (!attributes.diagramData) return {};
-          return {
-            "data-drawio-data": attributes.diagramData,
-          };
-        },
-      },
-      svgData: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-drawio-svg") || null,
-        renderHTML: (attributes) => {
-          if (!attributes.svgData) return {};
-          return {
-            "data-drawio-svg": attributes.svgData,
-          };
-        },
-      },
-      themeMode: {
-        default: "light",
-        parseHTML: (element) =>
-          element.getAttribute("data-drawio-theme") || "light",
-        renderHTML: (attributes) => {
-          return {
-            "data-drawio-theme": attributes.themeMode || "light",
-          };
-        },
-      },
-    };
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: "div[data-drawio]",
-        getAttrs: (element) => ({
-          diagramData: element.getAttribute("data-drawio-data") || null,
-          svgData: element.getAttribute("data-drawio-svg") || null,
-          themeMode: toDiagramTheme(element.getAttribute("data-drawio-theme")),
-        }),
-      },
-    ];
-  },
-
-  renderHTML({ node }) {
-    return [
-      "div",
-      mergeAttributes({
-        "data-drawio": "",
-        "data-drawio-data": node.attrs.diagramData || "",
-        "data-drawio-svg": node.attrs.svgData || "",
-        "data-drawio-theme": node.attrs.themeMode || "light",
-      }),
-      "[Draw.io Diagram]",
-    ];
-  },
-
+export const DRAWIO_VIEW: Partial<NodeConfig<DrawioOptions, DrawioOptions>> = {
   addNodeView() {
     return ReactNodeViewRenderer(DrawioNodeView, {
       as: "div",
@@ -232,4 +154,4 @@ export const DrawioExtension = Node.create<DrawioOptions, DrawioOptions>({
           }),
     };
   },
-});
+};
