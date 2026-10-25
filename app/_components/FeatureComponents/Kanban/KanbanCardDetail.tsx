@@ -35,6 +35,7 @@ import { formatTimerTime } from "@/app/_utils/kanban/index";
 import { toDateKey } from "@/app/_utils/kanban/calendar-utils";
 import { findItem } from "@/app/_utils/item-tree-utils";
 import { cn } from "@/app/_utils/global-utils";
+import { CopyIdButton } from "@/app/_components/GlobalComponents/Buttons/CopyIdButton";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 
 interface KanbanCardDetailProps {
@@ -337,7 +338,12 @@ export const KanbanCardDetail = ({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={plainItemText(item.text) || t("checklists.untitledTask")}
+        title={
+          <>
+            <span className="truncate">{plainItemText(item.text) || t("checklists.untitledTask")}</span>
+            <CopyIdButton id={item.id} label={t("kanban.copyCardId", { id: item.id })} />
+          </>
+        }
         variant={ModalVariant.WORKSPACE}
         flush
         allowEnlarge

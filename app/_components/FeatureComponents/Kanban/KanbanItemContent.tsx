@@ -3,7 +3,8 @@
 import { plainItemText } from "@/app/_utils/item-href-utils";
 import { memo, type JSX } from "react";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
-import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
+import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
+import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { Item, KanbanStatus } from "@/app/_types";
 import { TaskStatusLabels } from "@/app/_types/enums";
@@ -11,6 +12,18 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
 import { ChecklistItemText } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistItemText";
+import { useToast } from "@/app/_providers/ToastProvider";
+import { copyTextToClipboard } from "@/app/_utils/global-utils";
+import {
+  Archive02Icon,
+  ArrowDataTransferHorizontalIcon,
+  Delete03Icon,
+  GridIcon,
+  MoreHorizontalIcon,
+  PencilEdit02Icon,
+  TaskAdd01Icon,
+  ViewIcon,
+} from "hugeicons-react";
 
 interface KanbanItemContentProps {
   item: Item;
@@ -21,6 +34,7 @@ interface KanbanItemContentProps {
   getUserAvatarUrl: (username: string) => string;
   getStatusIcon: (status?: string) => JSX.Element | null;
   inputRef: React.RefObject<HTMLInputElement | null>;
+  contextTarget: React.RefObject<HTMLElement | null>;
   onEditTextChange: (text: string) => void;
   onEditSave: () => void;
   onEditKeyDown: (e: React.KeyboardEvent) => void;
@@ -42,6 +56,7 @@ const KanbanItemContentComponent = ({
   getUserAvatarUrl,
   getStatusIcon,
   inputRef,
+  contextTarget,
   onEditTextChange,
   onEditSave,
   onEditKeyDown,
@@ -56,7 +71,39 @@ const KanbanItemContentComponent = ({
   const { permissions } = usePermissions();
   const { user, tagsEnabled } = useAppMode();
   const t = useTranslations();
+  const { showToast } = useToast();
   const hideStatus = user?.hideStatusOnCards === "enable";
+
+  const copyId = async () => {
+    const copied = await copyTextToClipboard(item.id);
+    showToast(copied ? { type: "success", title: t("common.copied") } : { type: "error", title: t("common.copyFailed") });
+  };
+
+  const editActions = permissions?.canEdit
+    ? [
+        { label: t("kanban.changeStatus"), onClick: onShowStatusMenu, icon: <ArrowDataTransferHorizontalIcon className="h-4 w-4" /> },
+        { label: t("tasks.addSubtask"), onClick: onShowSubtaskModal, icon: <TaskAdd01Icon className="h-4 w-4" /> },
+        { label: t("tasks.renameTask"), onClick: onEdit, icon: <PencilEdit02Icon className="h-4 w-4" /> },
+      ]
+    : [];
+
+  const removalActions = [
+    ...(permissions?.canEdit
+      ? [{ label: t("tasks.archiveTask"), onClick: onArchive, icon: <Archive02Icon className="h-4 w-4" /> }]
+      : []),
+    ...(permissions?.canDelete
+      ? [{ label: t("tasks.deleteTask"), onClick: onDelete, variant: "destructive" as const, icon: <Delete03Icon className="h-4 w-4" /> }]
+      : []),
+  ];
+
+  const menuItems = [
+    { label: t("tasks.viewTask"), onClick: onShowSubtaskModal, icon: <ViewIcon className="h-4 w-4" /> },
+    { label: t("kanban.copyId"), onClick: copyId, icon: <GridIcon className="h-4 w-4" /> },
+    { type: "divider" as const },
+    ...editActions,
+    { type: "divider" as const },
+    ...removalActions,
+  ];
 
   const getStatusLabel = (status?: string) => {
     if (!status) return TaskStatusLabels.TODO;
@@ -110,54 +157,20 @@ const KanbanItemContentComponent = ({
           className="flex items-center"
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <Dropdown
-            value=""
-            options={[
-              { id: "view", name: t("tasks.viewTask") },
-              ...(permissions?.canEdit
-                ? [
-                    {
-                      id: "status",
-                      name: t("kanban.changeStatus"),
-                    },
-                  ]
-                : []),
-              ...(permissions?.canEdit
-                ? [{ id: "add", name: t("tasks.addSubtask") }]
-                : []),
-              ...(permissions?.canEdit
-                ? [{ id: "rename", name: t("tasks.renameTask") }]
-                : []),
-              ...(permissions?.canEdit
-                ? [{ id: "archive", name: t("tasks.archiveTask") }]
-                : []),
-              ...(permissions?.canDelete
-                ? [{ id: "delete", name: t("tasks.deleteTask") }]
-                : []),
-            ]}
-            onChange={(action) => {
-              switch (action) {
-                case "view":
-                  onShowSubtaskModal();
-                  break;
-                case "status":
-                  onShowStatusMenu();
-                  break;
-                case "add":
-                  onShowSubtaskModal();
-                  break;
-                case "rename":
-                  onEdit();
-                  break;
-                case "archive":
-                  onArchive();
-                  break;
-                case "delete":
-                  onDelete();
-                  break;
-              }
-            }}
-            iconDropdown
+          <DropdownMenu
+            contextTarget={contextTarget}
+            align="right"
+            items={menuItems}
+            trigger={
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                aria-label={t("common.moreOptions")}
+              >
+                <MoreHorizontalIcon className="h-4 w-4" />
+              </Button>
+            }
           />
         </div>
       </div>

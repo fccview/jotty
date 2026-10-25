@@ -170,9 +170,44 @@ describe("runOperation", () => {
     expect(jotty.hits.length).toBe(before);
   });
 
-  it("returns only the changed card from curated card tools", async () => {
+  it("returns only the changed card's id and status from update_board_item", async () => {
     const result = await runOperation(makeCtx(jotty.url), spec, op("updateBoardItem"), { boardId: "b-1", itemId: "c-1", text: "x" }, { curated: true });
+    expect(structured(result)).toEqual({ success: true, item: { id: "c-1", status: "todo" } });
+  });
+
+  it("returns the whole changed card when update_board_item is verbose", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("updateBoardItem"), { boardId: "b-1", itemId: "c-1", text: "x", verbose: true }, { curated: true });
     expect(structured(result)).toEqual({ success: true, item: { id: "c-1", text: "Write tests", status: "todo" } });
+    expect(jotty.hits.at(-1)?.body).toEqual({ text: "x" });
+  });
+
+  it("puts the counts first and shortens each card from create_board_items", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("createBoardItems"), { boardId: "b-1", cards: [] }, { curated: true });
+    expect(text(result)).toMatch(/^\{"success":true,"created":1,"updated":1,/);
+    expect(structured(result)).toEqual({
+      success: true,
+      created: 1,
+      updated: 1,
+      cards: [{ id: "c-1", externalId: "gh-1", status: "todo" }, { id: "c-2", status: "todo" }],
+    });
+  });
+
+  it("returns full cards without the noise when create_board_items is verbose", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("createBoardItems"), { boardId: "b-1", cards: [], verbose: true }, { curated: true });
+    expect(structured(result).cards).toEqual([
+      { id: "c-1", text: "Write tests", status: "todo", externalId: "gh-1" },
+      { id: "c-2", text: "Write tests", status: "todo", description: "long" },
+    ]);
+  });
+
+  it("offers verbose only on the tools that shorten their answer", () => {
+    expect(operationTool(spec, op("createBoardItems"), 12_000).inputSchema.properties).toHaveProperty("verbose");
+    expect(operationTool(spec, op("getNote"), 12_000).inputSchema.properties).not.toHaveProperty("verbose");
+  });
+
+  it("refuses verbose on an operation called by id", async () => {
+    const result = await runOperation(makeCtx(jotty.url), spec, op("updateBoardItem"), { boardId: "b-1", itemId: "c-1", verbose: true });
+    expect(text(result)).toContain("Unknown argument verbose");
   });
 });
 
@@ -181,7 +216,7 @@ describe("builtins", () => {
     const result = await runBuiltin(makeCtx(jotty.url), BuiltinTool.Discover, {});
     const data = structured(result);
     expect(data.version).toBe("9.9.9");
-    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "sort_checklist_items", "update_board_item", "assign_agent", "set_board_spec", "get_task_context", "list_agent_tasks", "connect_items", "list_duplicate_uuids"]);
+    expect(data.tools).toEqual(["search", "list_notes", "get_note", "create_note", "delete_note", "check_checklist_item", "sort_checklist_items", "create_board_items", "update_board_item", "assign_agent", "set_board_spec", "get_task_context", "list_agent_tasks", "connect_items", "list_duplicate_uuids"]);
     expect(data.unavailableTools).toContain("list_boards");
   });
 

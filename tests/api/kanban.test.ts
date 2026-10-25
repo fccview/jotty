@@ -188,6 +188,16 @@ describe("Kanban API", () => {
       expect(mockMakeList.mock.calls[0][2]).toEqual(columns)
     })
 
+    it.each(["blue", "#fff", "rgb(0 0 255)", "3b82f6"])("refuses the column colour %s", async (color) => {
+      const statuses = [{ id: "backlog", label: "Backlog", order: 0, color }]
+
+      const response = await CREATE_BOARD(createMockRequest("POST", BASE, { title: "Sprint", statuses }))
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toContain("#rrggbb")
+      expect(mockMakeList).not.toHaveBeenCalled()
+    })
+
     it("keeps the exact message for a missing title", async () => {
       const response = await CREATE_BOARD(createMockRequest("POST", BASE, { category: "Work" }))
 
@@ -222,6 +232,31 @@ describe("Kanban API", () => {
       expect(data.board.id).toBe(BOARD_UUID)
       expect(data.board.items[0].index).toBe(0)
       expect(mockGetListById).toHaveBeenCalledWith(BOARD_UUID, mockUser.username)
+    })
+
+    it("returns only the card with the asked externalId, nested ones included", async () => {
+      const nested = { id: "card-3", text: "Child", completed: false, order: 1, externalId: "gh-3" }
+      const items = [
+        { id: "card-1", text: "One", completed: false, order: 0, externalId: "gh-1" },
+        { id: "card-2", text: "Two", completed: false, order: 1, children: [{ id: "card-4", text: "x", completed: false, order: 0 }, nested] },
+      ]
+      mockGetListById.mockResolvedValue(board({ items }))
+
+      const response = await GET_BOARD(
+        createMockRequest("GET", `${BASE}/${BOARD_UUID}?externalId=${encodeURIComponent("gh-3")}`),
+        boardParams(),
+      )
+      const data = await getResponseJson(response)
+
+      expect(response.status).toBe(200)
+      expect(data.board.items).toEqual([expect.objectContaining({ id: "card-3", index: 1, path: "1.1", externalId: "gh-3" })])
+    })
+
+    it("returns no cards when nothing has the asked externalId", async () => {
+      const response = await GET_BOARD(createMockRequest("GET", `${BASE}/${BOARD_UUID}?externalId=missing`), boardParams())
+
+      expect(response.status).toBe(200)
+      expect((await getResponseJson(response)).board.items).toEqual([])
     })
 
     it("returns 404 for a board the key owner cannot see", async () => {
@@ -346,6 +381,16 @@ describe("Kanban API", () => {
       expect(response.status).toBe(400)
       expect((await getResponseJson(response)).error).toBe("Statuses array is required")
       expect(mockRestatus).not.toHaveBeenCalled()
+    })
+
+    it("leaves column colours to the action, so a board read and sent back as it is still saves", async () => {
+      const response = await SET_STATUSES(
+        createMockRequest("PUT", `${BASE}/${BOARD_UUID}/statuses`, { statuses: [{ ...statuses[0], color: "red" }] }),
+        boardParams(),
+      )
+
+      expect(response.status).toBe(200)
+      expect(mockRestatus).toHaveBeenCalledTimes(1)
     })
 
     it("answers 400 when the action refuses", async () => {

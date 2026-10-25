@@ -87,7 +87,7 @@ specNote: 5b1e8a52-3c1d-4d7e-9f0a-1b2c3d4e5f60
 - `specNote` is the uuid of the note pinned as the board's spec. Set it with `PUT /api/kanban/{boardId}/spec` rather than by hand, so Jotty can check you can read the note and that it isn't encrypted.
 - `assignee:` is the human assignee, a username.
 - `agent:` is a virtual agent, see below. It sits right after `assignee:` and never replaces it.
-- `externalId` sits inside `metadata:` and is your own reference for the card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card instead, and `POST /api/kanban/{boardId}/items/batch` does the same for up to 200 cards in one save, so an import can run again without duplicating anything.
+- `externalId` sits inside `metadata:` and is your own reference for the card, like a GitHub issue URL. Creating a card with an `externalId` the board already has updates that card instead, and `POST /api/kanban/{boardId}/items/batch` does the same for up to 200 cards in one save, so an import can run again without duplicating anything. `PUT /api/kanban/{boardId}/items/{itemId}` sets or changes the `externalId` of a card that already exists, and `GET /api/kanban/{boardId}?externalId=...` returns only the card that has it. That card comes back without the cards it sits under, so it carries a `path` with its tree index, like `2.1`, for the routes that take one.
 - Boards without these keep working exactly as before.
 
 ## Agents and board specs
@@ -157,6 +157,34 @@ Both answer with who holds the item afterwards:
 ```
 
 The person you share with gets a notification, and the item shows up in their shared items. Editing a shared item through the API keeps its shares. Sharing a whole folder is still done in Jotty itself.
+
+## Clippers and other apps
+
+Two endpoints help a web clipper or a companion app write notes that look like Jotty's own.
+
+| Endpoint | What it does |
+|---|---|
+| `POST /api/markdown/from-html` | Turns `{ "html": "...", "baseUrl": "https://..." }` into markdown with the note editor's own schema, so the result is what the editor would save if that HTML had been put in a note. `baseUrl` is optional, and relative links and images are resolved against it. Tables follow the table syntax set on the key owner's account. Nothing is saved, send the markdown to `POST /api/notes` when you want a note. `html` over 5 MB is refused with `400`. HTML that takes longer than 15 seconds or too much memory to convert is refused with `422`, and `503` means enough conversions are already queued that yours should try again shortly. Big tables are the slow part |
+| `GET /api/theme` | The key owner's theme as CSS custom properties, built-in and custom themes alike. `mode` is `fixed`, or `system` when the theme follows the device, in which case `variables` is the light palette and `darkVariables` the dark one. `radius` is the corner radius when it isn't the default, and `customCss` says whether the instance has custom CSS at `/api/custom-css`. A theme that was removed falls back to `system` |
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "dracula",
+    "name": "Dracula",
+    "mode": "fixed",
+    "variables": { "--background": "40 42 54", "--primary": "189 147 249" },
+    "darkVariables": null,
+    "radius": "0.5rem",
+    "customCss": false
+  }
+}
+```
+
+Colours are space separated RGB triplets, so use them as `rgb(var(--primary))`.
+
+HTML the editor itself writes converts best. Task lists are `<ul data-type="taskList">` with `<li data-type="taskItem" data-checked="true">` items, and GitHub's checkbox lists are read too. Callouts are `<div data-type="callout" data-callout-type="info">`, with `info`, `warning`, `success` or `danger`. Code blocks take their language from `class="language-js"` on the `<code>`. Mermaid is `<div data-mermaid data-mermaid-content="graph TD; A-->B">` or a `language-mermaid` code block. Keep images out of paragraphs, since an image inside a `<p>` splits it in two.
 
 ## Errors
 

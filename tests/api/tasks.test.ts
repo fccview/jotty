@@ -28,6 +28,7 @@ import { PUT as PUT_STATUS, DELETE as DELETE_STATUS } from "@/app/api/tasks/[tas
 import { POST as POST_TASK_ITEM } from "@/app/api/tasks/[taskId]/items/route"
 import { DELETE as DELETE_TASK_ITEM, GET as GET_TASK_ITEM } from "@/app/api/tasks/[taskId]/items/[itemIndex]/route"
 import { PUT as PUT_ITEM_STATUS } from "@/app/api/tasks/[taskId]/items/[itemIndex]/status/route"
+import { STATUS_COLOR_REFUSED } from "@/app/_consts/kanban"
 
 describe("Tasks API", () => {
   const mockTask = {
@@ -430,6 +431,17 @@ describe("Tasks API", () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.data.label).toBe("Code Review")
+    })
+
+    it("answers 400 when the colour is refused", async () => {
+      mockGetListById.mockResolvedValue(mockTask)
+      mockRestatus.mockResolvedValueOnce({ success: false, error: STATUS_COLOR_REFUSED })
+
+      const request = createMockRequest("PUT", "http://localhost:3000/api/tasks/task-uuid-1/statuses/todo", { color: "red" })
+      const response = await PUT_STATUS(request, { params: Promise.resolve({ taskId: "task-uuid-1", statusId: "todo" }) })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe(STATUS_COLOR_REFUSED)
     })
 
     it("should return 404 for non-existent status", async () => {

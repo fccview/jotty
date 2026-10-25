@@ -71,6 +71,7 @@ export interface RouteContract<
   params?: P;
   query?: Q;
   body?: B;
+  bodyLimit?: number;
   responses: Record<number, ResponseSpec>;
 }
 

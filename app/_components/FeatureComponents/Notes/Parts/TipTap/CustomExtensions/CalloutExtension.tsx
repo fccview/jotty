@@ -1,6 +1,6 @@
 "use client";
 
-import { Node, mergeAttributes } from "@tiptap/core";
+import type { NodeConfig } from "@tiptap/core";
 import {
   NodeViewWrapper,
   NodeViewContent,
@@ -18,6 +18,15 @@ import { useTranslations } from "next-intl";
 import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/DropdownMenu";
 import { CalloutType } from "@/app/_consts/callouts";
 import { MENU_ITEM_ACTIVE_CLASS } from "@/app/_consts/styling";
+import { DEFAULT_CALLOUT } from "@/app/_utils/markdown/schema/callout";
+
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    callout: {
+      setCallout: (type?: CalloutType) => ReturnType;
+    };
+  }
+}
 
 const CalloutIcons: Record<CalloutType, typeof Idea01Icon> = {
   info: Idea01Icon,
@@ -26,21 +35,12 @@ const CalloutIcons: Record<CalloutType, typeof Idea01Icon> = {
   danger: AlertCircleIcon,
 };
 
-interface CalloutNodeViewComponentProps extends ReactNodeViewProps {
-  node: ReactNodeViewProps["node"] & {
-    attrs: {
-      type: CalloutType;
-    };
-  };
-  updateAttributes: (attrs: { type?: CalloutType }) => void;
-}
-
-const CalloutNodeView: FC<CalloutNodeViewComponentProps> = ({
+const CalloutNodeView: FC<ReactNodeViewProps> = ({
   node,
   updateAttributes,
 }) => {
   const t = useTranslations();
-  const calloutType = node.attrs.type || "info";
+  const calloutType: CalloutType = node.attrs.type || DEFAULT_CALLOUT;
   const IconComponent = CalloutIcons[calloutType];
 
   const dropdownItems = (Object.keys(CalloutIcons) as CalloutType[]).map(
@@ -82,78 +82,21 @@ const CalloutNodeView: FC<CalloutNodeViewComponentProps> = ({
   );
 };
 
-export const CalloutExtension = Node.create({
-  name: "callout",
-  group: "block",
-  content: "block+",
-  defining: true,
-
-  addAttributes() {
-    return {
-      type: {
-        default: "info",
-        parseHTML: (element) =>
-          (element.getAttribute("data-callout-type") as CalloutType) || "info",
-        renderHTML: (attributes) => ({
-          "data-callout-type": attributes.type,
-        }),
-      },
-    };
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: 'div[data-type="callout"]',
-        getAttrs: (dom) => {
-          const element = dom as HTMLElement;
-          return {
-            type: element.getAttribute("data-callout-type") || "info",
-          };
-        },
-        contentElement: (dom: HTMLElement) => {
-          return dom.querySelector(".callout-content") || dom;
-        },
-      },
-    ];
-  },
-
-  renderHTML({ node, HTMLAttributes }) {
-    const type = node.attrs.type || "info";
-
-    return [
-      "div",
-      mergeAttributes(HTMLAttributes, {
-        "data-type": "callout",
-        "data-callout-type": type,
-        class: `callout callout-${type}`,
-      }),
-      [
-        "div",
-        { class: "callout-wrapper" },
-        ["span", { class: `callout-icon callout-icon-${type}` }],
-        ["div", { class: "callout-content" }, 0],
-      ],
-    ];
-  },
-
+export const CALLOUT_VIEW: Partial<NodeConfig> = {
   addNodeView() {
-    /** @ts-ignore */
     return ReactNodeViewRenderer(CalloutNodeView);
   },
 
-  /** @ts-ignore */
   addCommands() {
     return {
       setCallout:
-        (type: CalloutType = "info") =>
-          ({ commands }: any) => {
-            return commands.insertContent({
+        (type: CalloutType = DEFAULT_CALLOUT) =>
+          ({ commands }) =>
+            commands.insertContent({
               type: this.name,
               attrs: { type },
               content: [{ type: "paragraph" }],
-            });
-          },
+            }),
     };
   },
 
@@ -212,4 +155,4 @@ export const CalloutExtension = Node.create({
       },
     };
   },
-});
+};

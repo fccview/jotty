@@ -54,6 +54,15 @@ export const MAX_CARD_BATCH = 200;
 
 export const MAX_EXTERNAL_ID = 512;
 
+export const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+export const STATUS_COLOR_REFUSED = "Status color must be a hex colour written #rrggbb, like #3b82f6";
+
+export const strayColor = (next: KanbanStatus[], stored: KanbanStatus[] = []): boolean => {
+  const kept = new Map(stored.map((status) => [status.id, status.color]));
+  return next.some(({ id, color }) => !!color && !HEX_COLOR.test(color) && kept.get(id) !== color);
+};
+
 export const isUnknownStatus = (error?: string): boolean => !!error?.startsWith(UNKNOWN_STATUS);
 
 export const PROPERTY_FIELD_CLASS =

@@ -34,6 +34,7 @@ import * as logs from "@/app/api/logs/route";
 import * as logsCleanup from "@/app/api/logs/cleanup/route";
 import * as logsExport from "@/app/api/logs/export/route";
 import * as logsStats from "@/app/api/logs/stats/route";
+import * as markdownFromHtml from "@/app/api/markdown/from-html/route";
 import * as notes from "@/app/api/notes/route";
 import * as notesNoteId from "@/app/api/notes/[noteId]/route";
 import * as notesNoteIdTags from "@/app/api/notes/[noteId]/tags/route";
@@ -56,6 +57,7 @@ import * as tasksTaskIdItemsItemIndexStatus from "@/app/api/tasks/[taskId]/items
 import * as tasksTaskIdStatuses from "@/app/api/tasks/[taskId]/statuses/route";
 import * as tasksTaskIdStatusesStatusId from "@/app/api/tasks/[taskId]/statuses/[statusId]/route";
 import * as templates from "@/app/api/templates/route";
+import * as theme from "@/app/api/theme/route";
 import * as user from "@/app/api/user/route";
 import * as userUsername from "@/app/api/user/[username]/route";
 
@@ -96,6 +98,7 @@ export const ROUTE_MODULES: object[] = [
   logsCleanup,
   logsExport,
   logsStats,
+  markdownFromHtml,
   notes,
   notesNoteId,
   notesNoteIdTags,
@@ -118,6 +121,7 @@ export const ROUTE_MODULES: object[] = [
   tasksTaskIdStatuses,
   tasksTaskIdStatusesStatusId,
   templates,
+  theme,
   user,
   userUsername,
 ];

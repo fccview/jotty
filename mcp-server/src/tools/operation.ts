@@ -3,12 +3,13 @@ import { binaryMediaOf, type JsonSchema, type Operation } from "../jotty/openapi
 import { API_KEY_HEADER, JottyError } from "../jotty/client.ts";
 import type { Spec } from "../jotty/spec.ts";
 import { ToolErrorKind, errorResult, fromError, type ErrorHints } from "./errors.ts";
-import { respond, toolResult, type MoreRows, type ToolResult } from "./result.ts";
+import { asRecord, respond, toolResult, type MoreRows, type ToolResult } from "./result.ts";
 import type { ToolContext } from "./context.ts";
 import { fillPath, splitArgs, toolInput, type ArgLayout } from "./schema.ts";
 import { catalogEntry, toolNameOf } from "./catalog.ts";
 import { logger } from "../utils/logger.ts";
 import { budgetOf, withBudget, withoutBudget } from "./budget.ts";
+import { splitVerbose, withVerbose } from "./briefs.ts";
 
 const LOG_NS = "tool-operation";
 const SERVER_ERROR = 500;
@@ -49,15 +50,16 @@ const _withDefaults = (schema: JsonSchema, defaults: Record<string, unknown> = {
   ),
 });
 
-export const operationTool = (spec: Spec, op: Operation, maxChars: number): Tool => ({
-  name: toolNameOf(op.operationId),
-  description: describe(op),
-  inputSchema: withBudget(
-    _withDefaults(toolInput(spec, op).schema, catalogEntry(op.operationId)?.defaults),
-    maxChars,
-  ) as Tool["inputSchema"],
-  annotations: annotationsOf(op),
-});
+export const operationTool = (spec: Spec, op: Operation, maxChars: number): Tool => {
+  const entry = catalogEntry(op.operationId);
+  const schema = _withDefaults(toolInput(spec, op).schema, entry?.defaults);
+  return {
+    name: toolNameOf(op.operationId),
+    description: describe(op),
+    inputSchema: withBudget(entry?.brief ? withVerbose(schema) : schema, maxChars) as Tool["inputSchema"],
+    annotations: annotationsOf(op),
+  };
+};
 
 const _picked = (data: unknown, field?: string): unknown => {
   if (!field || !data || typeof data !== "object" || !(field in data)) return data;
@@ -124,9 +126,9 @@ export const runOperation = async (
   { signal, curated = false, maxChars }: RunOptions = {},
 ): Promise<ToolResult> => {
   const budget = maxChars ?? budgetOf(given, ctx.config.output.maxTextChars);
-  const args = withoutBudget(given);
-  const { schema, layout } = toolInput(spec, op);
   const entry = curated ? catalogEntry(op.operationId) : undefined;
+  const { verbose, rest: args } = splitVerbose(withoutBudget(given), Boolean(entry?.brief));
+  const { schema, layout } = toolInput(spec, op);
   const known = Object.keys(schema.properties ?? {});
   const unknown = Object.keys(args).filter((name) => !known.includes(name));
   if (unknown.length) {
@@ -150,7 +152,8 @@ export const runOperation = async (
   if (binary) return _download(ctx, path, binary);
   try {
     const response = await ctx.client.send({ method: op.method, path, query: parts.query, body: parts.body, signal });
-    const data = _omitted(_picked(response.data, entry?.pick), entry?.omit);
+    const shaped = _omitted(_picked(response.data, entry?.pick), entry?.omit);
+    const data = entry?.brief ? entry.brief(asRecord(shaped), verbose) : shaped;
     return respond(data, budget, _moreRows(layout, merged[OFFSET]));
   } catch (err) {
     const refused = err instanceof JottyError && err.status < SERVER_ERROR;

@@ -29,4 +29,16 @@ describe("remarkSoftBreaks", () => {
   it("still splits paragraphs on a blank line", () => {
     expect(parsed("one\n\ntwo").children.map((node) => node.type)).toEqual(["paragraph", "paragraph"]);
   });
+
+  it("keeps a callout's text on the line after its marker without a break", () => {
+    const [quote] = parsed("> [!NOTE]\n> The tables use Mac keys.\n> Second line").children;
+    const [paragraph] = "children" in quote ? quote.children : [];
+    expect(kinds(paragraph)).toEqual(["text", "break", "text"]);
+    expect("children" in paragraph && paragraph.children[0]).toMatchObject({ value: "[!NOTE]\nThe tables use Mac keys." });
+  });
+
+  it("still breaks after callout-looking text that isn't at the start of a quote", () => {
+    const [paragraph] = parsed("[!NOTE]\nhere").children;
+    expect(kinds(paragraph)).toEqual(["text", "break", "text"]);
+  });
 });

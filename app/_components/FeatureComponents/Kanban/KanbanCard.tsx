@@ -6,7 +6,7 @@ import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { cn } from "@/app/_utils/global-utils";
 import { Dropdown } from "@/app/_components/GlobalComponents/Dropdowns/Dropdown";
 import { Modal } from "@/app/_components/GlobalComponents/Modals/Modal";
-import { useState, useEffect, memo, useMemo, useCallback } from "react";
+import { useState, useEffect, memo, useMemo, useCallback, useRef } from "react";
 import { TaskStatus } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
@@ -93,6 +93,15 @@ const KanbanCardComponent = ({
     ghost: isDragging,
   });
 
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const attachCard = useCallback(
+    (node: HTMLDivElement | null) => {
+      cardRef.current = node;
+      setNodeRef(node);
+    },
+    [setNodeRef],
+  );
+
   useEffect(() => {
     if (isLifted) {
       kanbanItemHook.stopTimerOnDrag();
@@ -171,7 +180,7 @@ const KanbanCardComponent = ({
         )}
       >
         <div
-          ref={setNodeRef}
+          ref={attachCard}
           style={style}
           {...handleProps}
           tabIndex={0}
@@ -195,6 +204,7 @@ const KanbanCardComponent = ({
               getUserAvatarUrl={getUserAvatarUrl}
               getStatusIcon={getStatusIcon}
               inputRef={kanbanItemHook.inputRef}
+              contextTarget={cardRef}
               onEditTextChange={kanbanItemHook.setEditText}
               onEditSave={kanbanItemHook.handleSave}
               onEditKeyDown={kanbanItemHook.handleKeyDown}
