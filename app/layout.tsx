@@ -308,7 +308,7 @@ export default async function RootLayout({
                           noteCategories={noteCategories.data || []}
                           checklistCategories={checklistCategories.data || []}
                         >
-                          <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                          <div className="min-h-[100dvh] bg-background text-foreground transition-colors jotty-page">
                             <DynamicFavicon />
                             {children}
 
