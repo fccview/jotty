@@ -67,7 +67,7 @@ export const Layout = ({
 
   return (
     <div
-      className={`jotty-layout flex h-screen lg:bg-background w-full overflow-hidden transition-[margin-top] duration-300 ease-in-out relative ${extraClasses}`}
+      className={`jotty-layout flex h-[100dvh] lg:bg-background w-full overflow-hidden transition-[margin-top] duration-300 ease-in-out relative ${extraClasses}`}
     >
       {customSidebar ? (
         customSidebar({
