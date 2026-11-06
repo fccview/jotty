@@ -5,8 +5,16 @@ vi.unmock("unist-util-visit");
 vi.unmock("js-beautify");
 vi.unmock("@/app/_utils/markdown-utils");
 
-import { sanitizeMarkdown, tagOutsideCode } from "@/app/_utils/markdown-utils";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw";
+import rehypeSlug from "rehype-slug";
+import rehypeStringify from "rehype-stringify";
+import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
 import { markdownToEditorHtml } from "@/app/_utils/markdown/parse/to-html";
+import { remarkTags } from "@/app/_utils/markdown/parse/tags";
 import { serializeDoc } from "@/app/_utils/markdown/serialize";
 import type { NodeJson } from "@/app/_utils/markdown/serialize/types";
 
@@ -30,6 +38,19 @@ const BASH_SNIPPET = [
   "done > script.txt",
 ].join("\n");
 
+const viewHtml = (markdown: string) =>
+  String(
+    unified()
+      .use(remarkParse)
+      .use(remarkGfm)
+      .use(remarkTags)
+      .use(remarkRehype, { allowDangerousHtml: true })
+      .use(rehypeRaw)
+      .use(rehypeSlug)
+      .use(rehypeStringify)
+      .processSync(markdown),
+  );
+
 const decodeEntities = (html: string) =>
   html
     .replace(/&#x27;/g, "'")
@@ -42,19 +63,30 @@ describe("markdown round trip", () => {
   const markdown = `Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter #tagged\n`;
 
   it("tags hashtags without touching the bash block for the view renderer", () => {
-    const tagged = tagOutsideCode(markdown);
+    const html = viewHtml(markdown);
+    const code = html.match(/<code[^>]*>([\s\S]*?)<\/code>/)?.[1] ?? "";
 
-    expect(tagged).toBe(
-      `Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter <span data-tag="tagged">tagged</span>\n`,
-    );
+    expect(decodeEntities(code)).toBe(`${BASH_SNIPPET}\n`);
+    expect(html).toContain('<p>After <span data-tag="tagged">tagged</span></p>');
   });
 
   it("leaves colours inside html attributes alone for the view renderer", () => {
-    const markdown = '<span style="color: #ff0000">red</span> #tag';
+    const html = viewHtml('<span style="color: #ff0000">red</span> #tag');
 
-    expect(tagOutsideCode(markdown)).toBe(
-      '<span style="color: #ff0000">red</span> <span data-tag="tag">tag</span>',
+    expect(html).toContain('<span style="color: #ff0000">red</span> <span data-tag="tag">tag</span>');
+  });
+
+  it("renders anchor links as links pointing at the slugged heading for the view renderer", () => {
+    const html = viewHtml(
+      "* [FOREWORD](#foreword)\n* [Trim white-space, from string!](#trim-white-space-from-string)\n\n[ref]: #foreword\n\n## FOREWORD\n\n## Trim white-space, from string!\n\nsee [again][ref] #todo",
     );
+
+    expect(html).toContain('<a href="#foreword">FOREWORD</a>');
+    expect(html).toContain('<a href="#trim-white-space-from-string">');
+    expect(html).toContain('<h2 id="foreword">FOREWORD</h2>');
+    expect(html).toContain('<h2 id="trim-white-space-from-string">');
+    expect(html).toContain('<a href="#foreword">again</a>');
+    expect(html.match(/data-tag="([^"]+)"/g)).toEqual(['data-tag="todo"']);
   });
 
   it("keeps a bash code block with $' intact when rendering to html", () => {

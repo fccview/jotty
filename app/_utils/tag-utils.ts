@@ -76,6 +76,16 @@ export const buildTagsIndex = (
   return index;
 };
 
+const LINK_GAP = String.raw`[ \t]{0,3}\n?[ \t]{0,3}`;
+const LINK_DEFINITION = String.raw`(?:^|\n) {0,3}\[[^\]^\n][^\]\n]*\]:${LINK_GAP}`;
+const LINK_DESTINATION = String.raw`\]\(${LINK_GAP}`;
+const SPACE_LEAD = String.raw`\s(?<!${LINK_DEFINITION}|${LINK_DESTINATION})`;
+const PAREN_LEAD = String.raw`\((?<!\]\()`;
+
+export const TAG_LEAD = `(^|${SPACE_LEAD}|${PAREN_LEAD})`;
+
+const HASHTAG = new RegExp(`${TAG_LEAD}#([a-zA-Z][a-zA-Z0-9_/-]*)`, "g");
+
 export const extractHashtagsFromContent = (content: string): string[] => {
   const tags = new Set<string>();
 
@@ -92,9 +102,8 @@ export const extractHashtagsFromContent = (content: string): string[] => {
     /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>|<!--[\s\S]*?-->|<[a-zA-Z\/][^>]*>/gi;
   const contentWithoutCode = content.replace(codeBlockRegex, " ");
 
-  const hashtagRegex = /(?:^|[\s(])#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
-  while ((match = hashtagRegex.exec(contentWithoutCode)) !== null) {
-    const tag = normalizeTag(match[1]);
+  for (const [, , name] of Array.from(contentWithoutCode.matchAll(HASHTAG))) {
+    const tag = normalizeTag(name);
     if (tag && !tag.includes("//") && !tag.endsWith("/")) {
       tags.add(tag);
     }

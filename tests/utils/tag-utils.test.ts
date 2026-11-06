@@ -170,6 +170,45 @@ describe("Tag Utils", () => {
       expect(extractHashtagsFromContent(content)).toContain("parentag");
     });
 
+    it("should ignore anchors in markdown link destinations", () => {
+      const content = [
+        "* [FOREWORD](#foreword)",
+        "* [STRINGS](#strings)",
+        "    * [Trim leading and trailing white-space from string](#trim-leading-and-trailing-white-space-from-string)",
+        "",
+        "## FOREWORD",
+        "",
+        "text #todo and (#aside)",
+      ].join("\n");
+      expect(extractHashtagsFromContent(content).sort()).toEqual(["aside", "todo"]);
+    });
+
+    it("should ignore anchors in reference link definitions", () => {
+      const content = "[toc]: #foreword\n[^note]: #footnotetag\n\nsee [toc] #real";
+      expect(extractHashtagsFromContent(content).sort()).toEqual(["footnotetag", "real"]);
+    });
+
+    it("should ignore anchors after whitespace or a line break in link syntax", () => {
+      const content = "a [x]( #spaced)\n[r]:\n  #nextline\n  [i]: #indented\nStatus [beta]: #feature";
+      expect(extractHashtagsFromContent(content)).toEqual(["feature"]);
+    });
+
+    it("should stay fast on long whitespace runs", () => {
+      const content = `](${" ".repeat(100000)}#late ${"\t".repeat(100000)} #later`;
+      const started = performance.now();
+      expect(extractHashtagsFromContent(content)).toEqual(["late", "later"]);
+      expect(performance.now() - started).toBeLessThan(1000);
+    });
+
+    it("should ignore anchors inside urls", () => {
+      const content = "https://github.com/user/repo#readme and https://example.com/#/route #real";
+      expect(extractHashtagsFromContent(content)).toEqual(["real"]);
+    });
+
+    it("should still find a tag inside link text", () => {
+      expect(extractHashtagsFromContent("[see #linked](#anchor)")).toEqual(["linked"]);
+    });
+
     it("should extract tags with underscores", () => {
       const content = "#my_tag";
       expect(extractHashtagsFromContent(content)).toContain("my_tag");

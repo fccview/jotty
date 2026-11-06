@@ -13,30 +13,6 @@ const trimBlankTail = (text: string): string => {
 
 const normalizeLineEndings = (text: string) => text.replace(/\r\n/g, "\n");
 
-const CODE_STASH_MARK = "\uE000";
-const CODE_STASH_REGEX = new RegExp(
-  `${CODE_STASH_MARK}(\\d+)${CODE_STASH_MARK}`,
-  "g"
-);
-
-export const tagOutsideCode = (markdown: string): string => {
-  const codeBlockRegex = /```[\s\S]*?```|`[^`]+`|<!--[\s\S]*?-->|<[a-zA-Z\/][^>]*>/g;
-  const codeBlocks: string[] = [];
-  const stashed = markdown.replace(codeBlockRegex, (match) => {
-    codeBlocks.push(match);
-    return `${CODE_STASH_MARK}${codeBlocks.length - 1}${CODE_STASH_MARK}`;
-  });
-
-  return stashed
-    .replace(
-      /(?:^|(?<=[\s(]))#([a-zA-Z][a-zA-Z0-9_/-]*)/gm,
-      '<span data-tag="$1">$1</span>'
-    )
-    .replace(CODE_STASH_REGEX, (match, index: string) =>
-      codeBlocks[Number(index)] ?? match
-    );
-};
-
 const RISKY_HTML = [
   /<iframe[\s\S]*?<\/iframe>/gi,
   /<embed[\s\S]*?>/gi,
