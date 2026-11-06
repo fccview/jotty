@@ -65,6 +65,17 @@ describe("typing a hashtag in the rich editor", () => {
     expect(saved).toBe("hello #todo\n\nnext");
   });
 
+  it("turns a word typed after a line break into a tag", () => {
+    const saved = editAndSave("line one", (instance) => {
+      caretAfter(instance, "line one");
+      instance.commands.setHardBreak();
+      typeText(instance, "#todo next");
+      expect(tagsOf(instance)).toEqual(["todo"]);
+    });
+    expect(saved).not.toContain("\\#");
+    expect(saved).toContain("#todo next");
+  });
+
   it("turns the word into a tag when the caret moves away", () => {
     const saved = editAndSave("first\n\nsecond", (instance) => {
       caretAfter(instance, "first");
@@ -178,6 +189,12 @@ describe("escaped hashes in the rich editor", () => {
     const { json } = open("<p>legacy #old and C# and <code>#code</code></p>");
     expect(findAll(json, "tagLink").map((node) => node.attrs?.tag)).toEqual(["old"]);
     expect(freshSave("<p>legacy #old and C#</p>")).toBe("legacy #old and C#");
+  });
+
+  it("keeps a hashtag after a line break in legacy html notes as a tag", () => {
+    const saved = freshSave("<p>a<br>#tag</p>");
+    expect(saved).not.toContain("\\#");
+    expect(saved).toContain("#tag");
   });
 
   it("reads a tag first inside bold as a bold tag", () => {

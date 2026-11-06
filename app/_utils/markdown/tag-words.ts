@@ -12,6 +12,7 @@ export interface TagWord {
 
 export const TAG_WORD = new RegExp(`(^|${TAG_BOUNDARY.source})${TAG_PATTERN.source}`, "g");
 const LEAF = "\ufffc";
+const LINE_BREAK = "\n";
 const WORD_CHAR = new RegExp("[\\p{L}\\p{N}\\p{M}]", "u");
 const NESTING = "/";
 const EMPTY_LEVEL = "//";
@@ -27,9 +28,11 @@ const _guarded = (doc: PmNode, word: TagWord) => {
   return guarded;
 };
 
+const _leafText = (leaf: PmNode) => (leaf.type.name === NodeName.HardBreak ? LINE_BREAK : LEAF);
+
 const _wordsIn = (block: PmNode, start: number): TagWord[] => {
   if (!block.isTextblock || block.type.spec.code) return [];
-  const text = block.textBetween(0, block.content.size, undefined, LEAF);
+  const text = block.textBetween(0, block.content.size, undefined, _leafText);
   return Array.from(text.matchAll(TAG_WORD), (match) => {
     const at = match.index + match[1].length;
     const end = at + 1 + match[2].length;

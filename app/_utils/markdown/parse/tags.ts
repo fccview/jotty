@@ -1,10 +1,11 @@
-import type { Parent, Root, Text } from "mdast";
+import type { Parent, Root } from "mdast";
 import { findAndReplace, type RegExpMatchObject } from "mdast-util-find-and-replace";
 
 export const TAG_PATTERN = /#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
 export const TAG_BOUNDARY = /[\s(]/;
 const ESCAPE = "\\";
 const SPACED_SIBLINGS = new Set(["break", "html", "inlineCode"]);
+const WRAPPERS = new Set(["strong", "emphasis", "delete"]);
 
 interface SourceFile {
   value?: unknown;
@@ -13,10 +14,14 @@ interface SourceFile {
 export const tagHtml = (tag: string) => `<span data-tag="${tag}">${tag}</span>`;
 
 const _gluedToSibling = (found: RegExpMatchObject): boolean => {
-  const node = found.stack[found.stack.length - 1] as Text;
-  const siblings = (found.stack[found.stack.length - 2] as Parent | undefined)?.children ?? [];
-  const previous = siblings[siblings.indexOf(node) - 1];
-  return Boolean(previous && !SPACED_SIBLINGS.has(previous.type));
+  for (let depth = found.stack.length - 1; depth > 0; depth--) {
+    const parent = found.stack[depth - 1] as Parent;
+    const previous = parent.children[parent.children.indexOf(found.stack[depth] as Parent["children"][number]) - 1];
+    if (previous?.type === "text") return !TAG_BOUNDARY.test(previous.value.slice(-1));
+    if (previous) return !SPACED_SIBLINGS.has(previous.type);
+    if (!WRAPPERS.has(parent.type)) return false;
+  }
+  return false;
 };
 
 const _escapedInSource = (found: RegExpMatchObject, tag: string, file?: SourceFile): boolean => {

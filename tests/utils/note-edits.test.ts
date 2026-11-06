@@ -84,6 +84,14 @@ describe("hashtags", () => {
     expect(dropHashtags(body, ["garden"])).toBe("[ref]:\n  #garden\n\n[Garden](\n#garden)\n");
   });
 
+  it("keeps bold closed when the tag sits right before the closer", () => {
+    expect(dropHashtags("**bold #tag**\n", ["tag"])).toBe("**bold**\n");
+  });
+
+  it("drops a bold tag whose closer is on a later line of the paragraph", () => {
+    expect(dropHashtags("**#tag\nmore**\n", ["tag"])).toBe("**more**\n");
+  });
+
   it("still drops a tag written after a bracketed word and colon in prose", () => {
     expect(dropHashtags("Status [beta]: #garden\n", ["garden"])).toBe("Status [beta]:\n");
   });

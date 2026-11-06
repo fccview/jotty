@@ -70,6 +70,13 @@ describe("UnifiedMarkdownRenderer tags", () => {
     expect(pills).toEqual(["tag"]);
   });
 
+  it("skips a hashtag that opens bold glued to the word before it", async () => {
+    const view = await render("foo**#bar** and **#ok** and _#fine_");
+    const pills = Array.from(view.querySelectorAll("[data-pill]")).map((pill) => pill.getAttribute("data-pill"));
+
+    expect(pills).toEqual(["ok", "fine"]);
+  });
+
   it("skips escaped hashtags and hashtags glued to formatting", async () => {
     const view = await render("plain \\#escaped **bold**#glued #real\n\n**#inside** <b>#html</b> `c`#coded");
     const pills = Array.from(view.querySelectorAll("[data-pill]")).map((pill) => pill.getAttribute("data-pill"));
