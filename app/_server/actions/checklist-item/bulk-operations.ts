@@ -28,6 +28,7 @@ import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
+import { firstColumn } from "@/app/_consts/kanban";
 
 const _createBulkItems = async (
   formData: FormData
@@ -63,6 +64,7 @@ const _createBulkItems = async (
     const firstOrder = insertAtBottom
       ? existing.reduce((max, item) => Math.max(max, item.order ?? 0), -1) + 1
       : 0;
+    const status = firstColumn(list.statuses) as TaskStatus;
     const newItems = lines.map((text, index) => ({
       id: `${list.uuid}-${Date.now()}-${index}`,
       text: text.trim(),
@@ -73,11 +75,11 @@ const _createBulkItems = async (
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
       ...(isKanbanType(list.type) && {
-        status: TaskStatus.TODO,
+        status,
         timeEntries: [],
         history: [
           {
-            status: TaskStatus.TODO,
+            status,
             timestamp: now,
             user: currentUser,
           },
@@ -91,7 +93,7 @@ const _createBulkItems = async (
         ? [...existing, ...newItems]
         : [
             ...newItems,
-            ...existing.map((item) => ({ ...item, order: item.order + lines.length })),
+            ...existing.map((item) => ({ ...item, order: (item.order ?? 0) + lines.length })),
           ],
       updatedAt: new Date().toISOString(),
     };

@@ -79,8 +79,8 @@ export const buildTagsIndex = (
 const LINK_GAP = String.raw`[ \t]{0,3}\n?[ \t]{0,3}`;
 const LINK_DEFINITION = String.raw`(?:^|\n) {0,3}\[[^\]^\n][^\]\n]*\]:${LINK_GAP}`;
 const LINK_DESTINATION = String.raw`\]\(${LINK_GAP}`;
-const SPACE_LEAD = String.raw`\s(?<!${LINK_DEFINITION}|${LINK_DESTINATION})`;
-const PAREN_LEAD = String.raw`\((?<!\]\()`;
+const SPACE_LEAD = String.raw`\s(?=#)(?<!${LINK_DEFINITION}|${LINK_DESTINATION})`;
+const PAREN_LEAD = String.raw`\((?=#)(?<!\]\()`;
 
 export const TAG_LEAD = `(^|${SPACE_LEAD}|${PAREN_LEAD})`;
 

@@ -45,6 +45,9 @@ export const UNKNOWN_STATUS = "Status not found on this board";
 export const boardColumns = (statuses?: KanbanStatus[]): KanbanStatus[] =>
   statuses?.length ? statuses : DEFAULT_KANBAN_STATUSES;
 
+export const firstColumn = (statuses?: KanbanStatus[]): string =>
+  [...boardColumns(statuses)].sort((a, b) => a.order - b.order)[0].id;
+
 export const unknownStatus = (statuses?: KanbanStatus[]): string =>
   `${UNKNOWN_STATUS}. Its columns are ${boardColumns(statuses).map((column) => column.id).join(", ")}`;
 

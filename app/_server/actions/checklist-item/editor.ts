@@ -22,6 +22,7 @@ import {
   SanitisedUser,
 } from "@/app/_types";
 import {
+  CardPlacement,
   ItemTypes,
   Modes,
   NotificationTargets,
@@ -35,7 +36,7 @@ import { isKanbanType } from "@/app/_types/enums";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { assigneeRefusal } from "@/app/_server/actions/kanban/assignee";
 import { agentRefusal, normalAgent } from "@/app/_consts/agents";
-import { TAKEN_EXTERNAL_ID, boardColumns, unknownStatus } from "@/app/_consts/kanban";
+import { TAKEN_EXTERNAL_ID, boardColumns, firstColumn, unknownStatus } from "@/app/_consts/kanban";
 import { cardWithExternalId } from "@/app/_utils/kanban/card-tree";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
@@ -297,21 +298,8 @@ const _addItem = async (
       }
     }
 
-    const getDefaultStatus = (): TaskStatus => {
-      if (status) return status as TaskStatus;
-
-      if (stored.statuses && stored.statuses.length > 0) {
-        const sortedStatuses = [...stored.statuses].sort(
-          (a, b) => a.order - b.order,
-        );
-        return sortedStatuses[0].id as TaskStatus;
-      }
-
-      return TaskStatus.TODO;
-    };
-
     const defaultStatus = isKanbanType(stored.type)
-      ? getDefaultStatus()
+      ? ((status || firstColumn(stored.statuses)) as TaskStatus)
       : undefined;
 
     let isSharedBoard = false;
@@ -323,11 +311,11 @@ const _addItem = async (
 
     const shiftedItems = stored.items.map((item) => ({
       ...item,
-      order: item.order + 1,
+      order: (item.order ?? 0) + 1,
     }));
 
     const userRecord = await findUserRecord(currentUser);
-    const insertAtBottom = userRecord?.newItemInsertion === "bottom";
+    const insertAtBottom = userRecord?.newItemInsertion === CardPlacement.BOTTOM;
 
     const newItem = {
       id: `${stored.uuid}-${Date.now()}`,

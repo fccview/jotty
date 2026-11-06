@@ -11,6 +11,8 @@ const TAG_NAME = /^[a-zA-Z][a-zA-Z0-9_/-]*$/;
 const FENCE = /^\s*(```|~~~)/;
 const INLINE_CODE = /(`[^`]*`)/;
 const TAG_ONLY_LINE = /^\s*(?:#[a-zA-Z][a-zA-Z0-9_/-]*\s*)+$/;
+const OPENS_DESTINATION = /(?:^ {0,3}\[[^\]^\n][^\]\n]*\]:|\]\()[ \t]{0,3}$/;
+const LEADING_ANCHOR = /^[ \t]{0,3}#[^\s)]*/;
 
 export type TextEdit = { body: string } | { error: string };
 
@@ -53,6 +55,11 @@ const _stripTags = (text: string, tags: string[]): string =>
     )
     .join("");
 
+const _stripInContext = (text: string, above: string | undefined, tags: string[]): string => {
+  const anchor = above !== undefined && OPENS_DESTINATION.test(above) ? text.match(LEADING_ANCHOR)?.[0] : "";
+  return anchor ? anchor + _stripTags(text.slice(anchor.length), tags) : _stripTags(text, tags);
+};
+
 export const addHashtags = (body: string, tags: string[]): string => {
   const present = new Set(extractHashtagsFromContent(body));
   const fresh = tags.filter((tag) => !present.has(tag));
@@ -72,7 +79,8 @@ export const addHashtags = (body: string, tags: string[]): string => {
 export const dropHashtags = (body: string, tags: string[]): string => {
   let fence: string | null = null;
   const emptied: number[] = [];
-  const lines = splitLines(body).map((line, index) => {
+  const source = splitLines(body);
+  const lines = source.map((line, index) => {
     const opener = line.text.match(FENCE)?.[1];
     if (fence) {
       if (opener === fence) fence = null;
@@ -82,7 +90,7 @@ export const dropHashtags = (body: string, tags: string[]): string => {
       fence = opener;
       return line;
     }
-    const stripped = _stripTags(line.text, tags);
+    const stripped = _stripInContext(line.text, source[index - 1]?.text, tags);
     if (stripped === line.text) return line;
     if (!stripped.trim()) emptied.push(index);
     return { ...line, text: stripped.replace(/[ \t]+$/, "") };

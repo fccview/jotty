@@ -79,6 +79,11 @@ describe("hashtags", () => {
     expect(dropHashtags(body, ["garden"])).toBe("* [Garden](#garden)\n\n[ref]: #garden\n\n## Garden\n");
   });
 
+  it("leaves anchors on the line after a link definition or destination alone", () => {
+    const body = "[ref]:\n  #garden\n\n[Garden](\n#garden)\n\n#garden\n";
+    expect(dropHashtags(body, ["garden"])).toBe("[ref]:\n  #garden\n\n[Garden](\n#garden)\n");
+  });
+
   it("still drops a tag written after a bracketed word and colon in prose", () => {
     expect(dropHashtags("Status [beta]: #garden\n", ["garden"])).toBe("Status [beta]:\n");
   });
