@@ -26,7 +26,7 @@ export const jottySchema = () => {
 
 export const markdownOf = (html: string, kit: DomKit, tableSyntax?: TableSyntax) => {
   const shape = jottySchema();
-  const content = htmlToNodes(shape, kit)(html);
+  const content = htmlToNodes(shape, kit)(html, true);
   return saveMarkdown(
     { type: NodeName.Doc, content },
     null,

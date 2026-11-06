@@ -1,5 +1,5 @@
 import { defangHtml } from "@/app/_utils/markdown-utils";
-import { extractHashtagsFromContent, TAG_LEAD } from "@/app/_utils/tag-utils";
+import { closesEmphasis, emphasisOf, extractHashtagsFromContent, TAG_LEAD } from "@/app/_utils/tag-utils";
 import { dropLine, joinLines, splitLines } from "@/app/_utils/text-lines";
 
 export const FIND_MISSING = "The find text is not in the note";
@@ -13,6 +13,8 @@ const INLINE_CODE = /(`[^`]*`)/;
 const TAG_ONLY_LINE = /^\s*(?:#[a-zA-Z][a-zA-Z0-9_/-]*\s*)+$/;
 const OPENS_DESTINATION = /(?:^ {0,3}\[[^\]^\n][^\]\n]*\]:|\]\()[ \t]{0,3}$/;
 const LEADING_ANCHOR = /^[ \t]{0,3}#[^\s)]*/;
+const UNDERSCORE = "_";
+const WORD_CHAR = /[a-zA-Z0-9]/;
 
 export type TextEdit = { body: string } | { error: string };
 
@@ -45,13 +47,31 @@ export const cleanTag = (tag: string): string | null => {
 };
 
 const _tagPattern = (tag: string): RegExp =>
-  new RegExp(`${TAG_LEAD}#${tag.replace(/[/-]/g, "\\$&")}(?![a-zA-Z0-9_/-])[ \\t]?`, "gi");
+  new RegExp(`${TAG_LEAD}#${tag.replace(/[/-]/g, "\\$&")}(?![a-zA-Z0-9/-])([*_~]{0,3})([ \\t]?)`, "gi");
+
+const _mirrored = (marks: string, close: string): number => {
+  let count = 0;
+  while (count < close.length && close[count] === marks[marks.length - 1 - count]) count++;
+  return count;
+};
+
+const _dropTag = (match: string, lead: string, close: string, gap: string, at: number, text: string): string => {
+  const marks = emphasisOf(lead);
+  const paired = _mirrored(marks, close);
+  const opened = lead.slice(0, lead.length - paired);
+  const rest = close.slice(paired);
+  const glued = !gap && WORD_CHAR.test(text[at + match.length] ?? "");
+  if (rest.startsWith(UNDERSCORE) || (close.endsWith(UNDERSCORE) && glued)) return match;
+  if (marks && !paired && !closesEmphasis(text, at + lead.length + 1, marks)) return match;
+  if (emphasisOf(opened) && !rest) return opened;
+  return rest ? opened + rest + gap : opened;
+};
 
 const _stripTags = (text: string, tags: string[]): string =>
   text
     .split(INLINE_CODE)
     .map((part, index) =>
-      index % 2 ? part : tags.reduce((result, tag) => result.replace(_tagPattern(tag), "$1"), part),
+      index % 2 ? part : tags.reduce((result, tag) => result.replace(_tagPattern(tag), _dropTag), part),
     )
     .join("");
 
