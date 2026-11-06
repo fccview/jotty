@@ -79,13 +79,13 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const handleDelete = () => {
     checkNavigation(() => {
       router.push(returnPath);
+      router.refresh();
     });
   };
 
   const viewModel = useNoteEditor({
     note: localNote,
     onUpdate: handleUpdate,
-    onBack: handleBack,
     onDelete: handleDelete,
   });
 

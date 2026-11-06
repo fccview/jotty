@@ -1,18 +1,26 @@
 import { describe, it, expect, vi } from "vitest";
 import os from "os";
 import path from "path";
-import { mkdtempSync } from "fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "fs";
+import { CATEGORY_INFO_FILE } from "@/app/_consts/sharing";
 import {
   getOrCompute,
   invalidateCached,
   invalidatePath,
   dropByPrefix,
+  metaCacheKey,
 } from "@/app/_server/actions/lib/metadata-cache";
+import { Modes } from "@/app/_types/enums";
 
 const defer = (ms = 20) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const tempDir = (): string =>
   mkdtempSync(path.join(os.tmpdir(), "jotty-meta-cache-"));
+
+const until = async (done: () => boolean, ms = 3000) => {
+  const deadline = Date.now() + ms;
+  while (!done() && Date.now() < deadline) await defer(25);
+};
 
 describe("metadata cache", () => {
   it("should serve the computed value from cache on the second call", async () => {
@@ -180,6 +188,72 @@ describe("metadata cache", () => {
 
       expect(refresh).not.toHaveBeenCalled();
       expect(after).toEqual(listing(2));
+    });
+  });
+
+  describe("folder info changing on disk", () => {
+    interface Filed {
+      id: string;
+      category: string;
+    }
+
+    const filed: Filed[] = [
+      { id: "a", category: "" },
+      { id: "b", category: "Work/Projects" },
+    ];
+
+    const writeInfo = (dir: string, folder: string) => {
+      mkdirSync(path.join(dir, folder), { recursive: true });
+      writeFileSync(path.join(dir, folder, CATEGORY_INFO_FILE), JSON.stringify({ uuid: folder }));
+    };
+
+    it("keeps the listing when a folder with nothing listed in it gets its info", async () => {
+      const dir = tempDir();
+      const compute = vi.fn(async () => filed);
+      const refresh = vi.fn(async (_paths: string[], current: Filed[]) => current);
+      const read = () => getOrCompute(metaCacheKey(Modes.NOTES, dir), dir, compute, refresh);
+
+      await read();
+      writeInfo(dir, "Brand new");
+      await defer(200);
+      writeFileSync(path.join(dir, "a.md"), "a");
+      await until(() => {
+        void read();
+        return refresh.mock.calls.length + compute.mock.calls.length > 1;
+      });
+
+      expect(compute).toHaveBeenCalledTimes(1);
+      expect(refresh).toHaveBeenCalled();
+    });
+
+    it("reads everything again when a folder holding listed items gets new info", async () => {
+      const dir = tempDir();
+      const compute = vi.fn(async () => filed);
+      const read = () => getOrCompute(metaCacheKey(Modes.CHECKLISTS, dir), dir, compute);
+
+      await read();
+      writeInfo(dir, "Work");
+      await until(() => {
+        void read();
+        return compute.mock.calls.length > 1;
+      });
+
+      expect(compute).toHaveBeenCalledTimes(2);
+    });
+
+    it("still drops caches that are not item listings when any folder info changes", async () => {
+      const dir = tempDir();
+      const compute = vi.fn(async () => [{ owner: "alice", categoryPath: "Work" }]);
+      const read = () => getOrCompute("mounts:notes:bob", dir, compute);
+
+      await read();
+      writeInfo(dir, "Brand new");
+      await until(() => {
+        void read();
+        return compute.mock.calls.length > 1;
+      });
+
+      expect(compute).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -108,9 +108,10 @@ export const ChecklistClient = ({
     setShowEditModal(true);
   };
 
-  const handleDelete = (deletedId: string) => {
+  const handleDelete = () => {
     checkNavigation(() => {
       router.push(returnPath);
+      router.refresh();
     });
   };
 
@@ -243,7 +244,6 @@ export const ChecklistClient = ({
           onCreated={() => {
             setShowCategoryModal(false);
             setInitialParentCategory("");
-            router.refresh();
           }}
         />
       )}

@@ -49,22 +49,34 @@ const _ownTopNames = async (
 const _mountsKey = (mode: Modes, username: string): string =>
   `${MOUNTS_CACHE_PREFIX}${mode}:${username}`;
 
+const _homeOf = (mode: Modes, username: string): string =>
+  path.join(process.cwd(), userDirFor(mode, username));
+
+const _isInside = (dir: string, target: string): boolean =>
+  target.startsWith(`${dir}${path.sep}`);
+
 const _touchesViewer = async (
+  mode: Modes,
   filePath: string,
   username: string,
   mounts: SharedMount[],
 ): Promise<boolean> => {
+  if (_isInside(_homeOf(mode, username), filePath)) return false;
   const metadata = await currentFrontmatterOf(filePath);
   if (parseSharedWith(metadata?.[SHARED_WITH_KEY])?.users[username]) return true;
   const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : null;
-  return mounts.some((mount) => mount.isImplicit && (!uuid || mount.itemUuids?.includes(uuid)));
+  return mounts.some(
+    (mount) =>
+      mount.isImplicit &&
+      (uuid ? mount.itemUuids?.includes(uuid) : _isInside(_homeOf(mode, mount.owner), filePath)),
+  );
 };
 
 const _patchMounts =
-  (username: string) =>
+  (mode: Modes, username: string) =>
   async (paths: string[], current: SharedMount[]): Promise<SharedMount[] | null> => {
     for (const filePath of paths) {
-      if (await _touchesViewer(filePath, username, current)) return null;
+      if (await _touchesViewer(mode, filePath, username, current)) return null;
     }
     return current;
   };
@@ -79,7 +91,7 @@ const _cachedMounts = async (
     _mountsKey(mode, username),
     watched,
     () => listMounts(mode, username),
-    _patchMounts(username),
+    _patchMounts(mode, username),
   );
 };
 
