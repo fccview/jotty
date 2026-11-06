@@ -241,6 +241,49 @@ describe("metadata cache", () => {
       expect(compute).toHaveBeenCalledTimes(2);
     });
 
+    it("hands a folder info change to a cache that can patch itself", async () => {
+      const dir = tempDir();
+      const infoPath = path.join(dir, "alice", "Brand new", CATEGORY_INFO_FILE);
+      const compute = vi.fn(async () => [{ owner: "alice", categoryPath: "Work" }]);
+      const refresh = vi.fn(async (_paths: string[], current: unknown[]) => current);
+      const read = () => getOrCompute("mounts:notes:carol", dir, compute, refresh, true);
+
+      await read();
+      invalidatePath(infoPath);
+      await read();
+
+      expect(compute).toHaveBeenCalledTimes(1);
+      expect(refresh).toHaveBeenCalledWith([infoPath], [{ owner: "alice", categoryPath: "Work" }]);
+    });
+
+    it("drops a cache whose patcher only knows notes when folder info changes", async () => {
+      const dir = tempDir();
+      const compute = vi.fn(async () => [{ id: "a" }]);
+      const refresh = vi.fn(async (_paths: string[], current: unknown[]) => current);
+      const read = () => getOrCompute("tags:notes:carol", dir, compute, refresh);
+
+      await read();
+      invalidatePath(path.join(dir, "alice", "Work", CATEGORY_INFO_FILE));
+      await read();
+
+      expect(refresh).not.toHaveBeenCalled();
+      expect(compute).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps an item listing when told about info for a folder it does not hold", async () => {
+      const dir = tempDir();
+      const compute = vi.fn(async () => filed);
+      const read = () => getOrCompute(metaCacheKey(Modes.NOTES, dir), dir, compute);
+
+      await read();
+      invalidatePath(path.join(dir, "Brand new", CATEGORY_INFO_FILE));
+      await read();
+      invalidatePath(path.join(dir, "Work", CATEGORY_INFO_FILE));
+      await read();
+
+      expect(compute).toHaveBeenCalledTimes(2);
+    });
+
     it("still drops caches that are not item listings when any folder info changes", async () => {
       const dir = tempDir();
       const compute = vi.fn(async () => [{ owner: "alice", categoryPath: "Work" }]);

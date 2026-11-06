@@ -13,6 +13,7 @@ interface MetaCacheState {
   stamps: Map<string, number>;
   refreshers?: Map<string, Refresh>;
   dirty?: Map<string, Set<string>>;
+  folderReaders?: Set<string>;
 }
 
 declare global {
@@ -28,6 +29,7 @@ const state: MetaCacheState = (globalThis.__jottyMetaCache ??= {
 });
 const refreshers: Map<string, Refresh> = (state.refreshers ??= new Map());
 const dirty: Map<string, Set<string>> = (state.dirty ??= new Map());
+const folderReaders: Set<string> = (state.folderReaders ??= new Set());
 const { store, pending, watchers, dirToKeys, stamps } = state;
 
 const MARKDOWN = ".md";
@@ -64,13 +66,23 @@ const _holdsFolder = (listing: unknown[], folder: string) =>
 const _isListing = (key: string, dir: string) =>
   Object.values(Modes).some((type) => key === metaCacheKey(type, dir) || key === summaryCacheKey(type, dir));
 
-const reorderFolder = (dir: string, folder: string) =>
+const FOLDER_INFO_FILES = [CATEGORY_INFO_FILE, LEGACY_ORDER_FILE];
+
+export const isFolderInfo = (filePath: string) => FOLDER_INFO_FILES.includes(path.basename(filePath));
+
+const _folderOf = (dir: string, infoPath: string) =>
+  path.relative(dir, path.dirname(infoPath)).split(path.sep).join("/");
+
+const folderInfoChanged = (dir: string, infoPath: string) => {
+  const folder = _folderOf(dir, infoPath);
   dirToKeys.get(dir)?.forEach((key) => {
+    if (folderReaders.has(key)) return touch(key, infoPath);
+    if (!_isListing(key, dir)) return drop(key);
     const held = store.get(key);
-    const settled = held && !pending.has(key) && _isListing(key, dir);
-    if (folder && settled && !_holdsFolder(held, folder)) return;
+    if (folder && held && !pending.has(key) && !_holdsFolder(held, folder)) return;
     drop(key);
   });
+};
 
 function startWatcher(dir: string) {
   if (watchers.has(dir)) return;
@@ -83,9 +95,8 @@ function startWatcher(dir: string) {
         if (!filename) return;
         if (filename.endsWith(MARKDOWN)) {
           touchFile(dir, path.join(dir, filename));
-        } else if (filename.endsWith(CATEGORY_INFO_FILE) || filename.endsWith(LEGACY_ORDER_FILE)) {
-          const folder = path.dirname(filename);
-          reorderFolder(dir, folder === "." ? "" : folder.split(path.sep).join("/"));
+        } else if (isFolderInfo(filename)) {
+          folderInfoChanged(dir, path.join(dir, filename));
         }
       },
     );
@@ -124,8 +135,11 @@ export async function getOrCompute<T>(
   dir: string,
   compute: () => Promise<T[]>,
   refresh?: (paths: string[], current: T[]) => Promise<T[] | null>,
+  readsFolderInfo = false,
 ): Promise<T[]> {
   if (refresh) refreshers.set(key, refresh as Refresh);
+  if (readsFolderInfo) folderReaders.add(key);
+  else folderReaders.delete(key);
   const changed = dirty.get(key);
   if (store.has(key) && !changed?.size) return [...(store.get(key)! as T[])];
 
@@ -166,6 +180,8 @@ export function invalidatePath(target: string) {
   dirToKeys.forEach((_, dir) => {
     if (abs.endsWith(MARKDOWN) && abs.startsWith(dir + path.sep)) {
       touchFile(dir, abs);
+    } else if (isFolderInfo(abs) && abs.startsWith(dir + path.sep)) {
+      folderInfoChanged(dir, abs);
     } else if (abs === dir || abs.startsWith(dir + path.sep) || dir.startsWith(abs + path.sep)) {
       invalidateDir(dir);
     }
