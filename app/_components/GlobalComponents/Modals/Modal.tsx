@@ -47,6 +47,8 @@ interface ModalProps {
 }
 
 const PORTAL_ID = "modal-portal-root";
+const MODAL_LAYER = "var(--jotty-modal-z)";
+const MODAL_SELECTOR = '[aria-modal="true"]';
 const SLIDE_MS = 320;
 const MOTION = "duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none";
 const FOCUSABLE =
@@ -82,10 +84,19 @@ const portalRoot = (): HTMLElement => {
   root.style.position = "fixed";
   root.style.top = "0";
   root.style.left = "0";
-  root.style.zIndex = "9999";
+  root.style.zIndex = MODAL_LAYER;
   document.body.appendChild(root);
   return root;
 };
+
+const foreignOnTop = (portal: HTMLElement) =>
+  Array.from(document.querySelectorAll<HTMLElement>(MODAL_SELECTOR))
+    .filter(
+      (dialog) =>
+        !portal.contains(dialog) &&
+        Boolean(portal.compareDocumentPosition(dialog) & Node.DOCUMENT_POSITION_FOLLOWING),
+    )
+    .at(-1);
 
 const trapTab = (event: KeyboardEvent, panel: HTMLElement) => {
   const focusables = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
@@ -244,7 +255,7 @@ export const Modal = ({
         if (!escapeRef.current || event.defaultPrevented) return;
         close();
       } else if (event.key === "Tab" && panelRef.current) {
-        trapTab(event, panelRef.current);
+        trapTab(event, foreignOnTop(portal) ?? panelRef.current);
       }
     };
 

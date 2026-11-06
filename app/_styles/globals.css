@@ -100,6 +100,7 @@ svg {
 @layer base {
   :root {
     --jotty-radius-effective: var(--jotty-radius, var(--jotty-radius-user, var(--jotty-radius-admin, 0.25rem)));
+    --jotty-modal-z: 9999;
   }
 
   * {
@@ -1515,4 +1516,12 @@ pre.text-foreground span,
 
 .jotty-home-hero {
   background-color: color-mix(in oklab, rgb(var(--primary)) 78%, black);
+}
+
+body > .excalidraw-modal-container {
+  --zIndex-modal: calc(var(--jotty-modal-z) + 1);
+}
+
+body > .excalidraw-tooltip {
+  --zIndex-popup: calc(var(--jotty-modal-z) + 2);
 }
