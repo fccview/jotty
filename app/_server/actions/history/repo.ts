@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import { simpleGit, SimpleGit } from "simple-git";
 import { lock } from "proper-lockfile";
 import { NOTES_FOLDER } from "@/app/_consts/notes";
+import { LOCKS_DIR_NAME } from "@/app/_consts/files";
 import { getSettings } from "@/app/_server/actions/config";
 
 export interface HistoryEntry {
@@ -29,7 +30,6 @@ export interface HistoryResult<T> {
 export type HistoryAction = "create" | "update" | "rename" | "move" | "delete" | "attachments";
 
 const LEGACY_LOCK_FILE = ".historylock";
-const LOCKS_DIR = ".locks";
 const LOCK_STALE_MS = 30000;
 const LOCK_RETRIES = {
   retries: 5,
@@ -47,7 +47,7 @@ export const historyLockPath = (username: string) =>
   path.join(
     process.cwd(),
     "data",
-    LOCKS_DIR,
+    LOCKS_DIR_NAME,
     `history-${username.replace(/[^a-zA-Z0-9._-]/g, "_")}.lock`
   );
 
