@@ -52,8 +52,42 @@ const themeVariables = (light: boolean) => {
   };
 };
 
-export const normalizeMermaid = (code: string): string =>
-  code.replace(/^(\s*)sankey(\s)/m, "$1sankey-beta$2");
+const FENCE = /^\s*---\s*$/;
+const QUIET_LINE = /^\s*(?:%%.*)?\s*$/;
+const DIRECTIVE_OPEN = /^\s*%%\{/;
+const DIRECTIVE_CLOSE = "}%%";
+const PLAIN_ARCHITECTURE = /^(\s*)architecture(?![\w-])/;
+
+const bodyStart = (lines: string[]) => {
+  if (!FENCE.test(lines[0] ?? "")) return 0;
+  const close = lines.findIndex((line, index) => index > 0 && FENCE.test(line));
+  return close === -1 ? 0 : close + 1;
+};
+
+const headerLine = (lines: string[]) => {
+  let inDirective = false;
+  for (let index = bodyStart(lines); index < lines.length; index++) {
+    const line = lines[index];
+    if (inDirective) {
+      inDirective = !line.includes(DIRECTIVE_CLOSE);
+      continue;
+    }
+    if (DIRECTIVE_OPEN.test(line) && !line.includes(DIRECTIVE_CLOSE)) {
+      inDirective = true;
+      continue;
+    }
+    if (!QUIET_LINE.test(line)) return index;
+  }
+  return -1;
+};
+
+export const normalizeMermaid = (code: string): string => {
+  const lines = code.split("\n");
+  const header = headerLine(lines);
+  if (header === -1 || !PLAIN_ARCHITECTURE.test(lines[header])) return code;
+  lines[header] = lines[header].replace(PLAIN_ARCHITECTURE, "$1architecture-beta");
+  return lines.join("\n");
+};
 
 const removeLeftovers = (id: string) => {
   document.getElementById(id)?.remove();
