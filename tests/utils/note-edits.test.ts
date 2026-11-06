@@ -73,4 +73,17 @@ describe("hashtags", () => {
   it("keeps other tags on a shared tag line", () => {
     expect(dropHashtags("Body\n\n#garden #work\n", ["garden"])).toBe("Body\n\n#work\n");
   });
+
+  it("leaves markdown anchor links alone when dropping a tag of the same name", () => {
+    const body = "* [Garden](#garden)\n\n[ref]: #garden\n\n## Garden #garden\n";
+    expect(dropHashtags(body, ["garden"])).toBe("* [Garden](#garden)\n\n[ref]: #garden\n\n## Garden\n");
+  });
+
+  it("still drops a tag written after a bracketed word and colon in prose", () => {
+    expect(dropHashtags("Status [beta]: #garden\n", ["garden"])).toBe("Status [beta]:\n");
+  });
+
+  it("does not count an anchor link as a tag already present", () => {
+    expect(addHashtags("[Garden](#garden)\n", ["garden"])).toBe("[Garden](#garden)\n\n#garden\n");
+  });
 });

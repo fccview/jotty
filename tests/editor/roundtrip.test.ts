@@ -41,6 +41,8 @@ const corpus: Record<string, string> = {
   imageTitle: "![alt](/api/image/u/p.png \"A title\")",
   mermaid: "```mermaid\ngraph TD\n  A-->B\n```",
   tags: "hello #world and #nested/tag",
+  anchorLinks: "- [FOREWORD](#foreword)\n- [STRINGS](#strings)\n  - [Trim white-space](#trim-white-space)\n\n## FOREWORD\n\ntext #todo",
+  anchorDefinition: "see [toc]\n\n[toc]: #foreword",
   headingTag: "# Title #tag",
   internalLink: "[My note](/jotty/123e4567-e89b-42d3-a456-426614174000)",
   wikilink: "see [[Some Note]] here",

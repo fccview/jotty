@@ -1,5 +1,5 @@
 import { defangHtml } from "@/app/_utils/markdown-utils";
-import { extractHashtagsFromContent } from "@/app/_utils/tag-utils";
+import { extractHashtagsFromContent, TAG_LEAD } from "@/app/_utils/tag-utils";
 import { dropLine, joinLines, splitLines } from "@/app/_utils/text-lines";
 
 export const FIND_MISSING = "The find text is not in the note";
@@ -43,7 +43,7 @@ export const cleanTag = (tag: string): string | null => {
 };
 
 const _tagPattern = (tag: string): RegExp =>
-  new RegExp(`(^|[\\s(])#${tag.replace(/[/-]/g, "\\$&")}(?![a-zA-Z0-9_/-])[ \\t]?`, "gi");
+  new RegExp(`${TAG_LEAD}#${tag.replace(/[/-]/g, "\\$&")}(?![a-zA-Z0-9_/-])[ \\t]?`, "gi");
 
 const _stripTags = (text: string, tags: string[]): string =>
   text
