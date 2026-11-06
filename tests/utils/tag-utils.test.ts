@@ -209,6 +209,47 @@ describe("Tag Utils", () => {
       expect(extractHashtagsFromContent("[see #linked](#anchor)")).toEqual(["linked"]);
     });
 
+    it.each([
+      ["**#inside**", ["inside"]],
+      ["text **#bold** more", ["bold"]],
+      ["(*#aside*)", ["aside"]],
+      ["***#both***", ["both"]],
+      ["~~#struck~~", ["struck"]],
+      ["_#under_", ["under"]],
+      ["__#strong__ and _#a_b_", ["strong", "a_b"]],
+      ["**_#mixed_**", ["mixed"]],
+      ["**#inside more**", ["inside"]],
+    ])("should extract a tag opening emphasis in %s", (content, tags) => {
+      expect(extractHashtagsFromContent(content)).toEqual(tags);
+    });
+
+    it.each([
+      "**bold**#glued",
+      "a**#x**",
+      "word_#x_",
+      "****#four****",
+      "[a](**#x**)",
+      "rate *#foo here",
+      "approx ~#foo",
+      "**#open\n\nnever closed**",
+    ])("should not extract a tag from %s", (content) => {
+      expect(extractHashtagsFromContent(content)).toEqual([]);
+    });
+
+    it("should stay fast on many unclosed emphasis leads", () => {
+      const content = "rate *#foo ".repeat(50000);
+      const started = performance.now();
+      expect(extractHashtagsFromContent(content)).toEqual([]);
+      expect(performance.now() - started).toBeLessThan(1000);
+    });
+
+    it("should stay fast on long emphasis runs", () => {
+      const content = `${"*".repeat(100000)}#late ${" *".repeat(100000)} **#later**`;
+      const started = performance.now();
+      expect(extractHashtagsFromContent(content)).toEqual(["later"]);
+      expect(performance.now() - started).toBeLessThan(1000);
+    });
+
     it("should extract tags with underscores", () => {
       const content = "#my_tag";
       expect(extractHashtagsFromContent(content)).toContain("my_tag");

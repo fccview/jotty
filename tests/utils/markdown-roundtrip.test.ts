@@ -121,6 +121,86 @@ describe("markdown round trip", () => {
   });
 });
 
+describe("plain hashes", () => {
+  const bold = (text: string): NodeJson => ({ type: "text", text, marks: [{ type: "bold" }] });
+  const tagLink = (tag: string): NodeJson => ({ type: "tagLink", attrs: { tag } });
+  const tagsIn = (markdown: string) => viewHtml(markdown).match(/data-tag="[^"]+"/g) ?? [];
+
+  it.each([
+    ["plain #escaped", "plain \\#escaped"],
+    ["#start of a line", "\\#start of a line"],
+    ["an (#aside)", "an (\\#aside)"],
+    ["a\tTab #x", "a\tTab \\#x"],
+  ])("escapes %s so it stays text", (text, saved) => {
+    const markdown = serializeDoc(doc(paragraph(text)));
+    expect(markdown).toBe(saved);
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it.each([
+    "C# and F#",
+    "item #1 and #2b",
+    "a#b and x#y",
+    "see https://example.com/#readme",
+    "a lone # here",
+  ])("leaves %s alone", (text) => {
+    expect(serializeDoc(doc(paragraph(text)))).not.toContain("\\#");
+  });
+
+  it("leaves a line start heading marker to the line start escape", () => {
+    expect(serializeDoc(doc(paragraph("# not a heading")))).toBe("\\# not a heading");
+  });
+
+  it("escapes a plain hash opening bold text", () => {
+    const markdown = serializeDoc(doc({ type: "paragraph", content: [{ type: "text", text: "see " }, bold("#inside")] }));
+    expect(markdown).toBe("see **\\#inside**");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("does not escape a hash glued after bold text", () => {
+    const markdown = serializeDoc(doc({ type: "paragraph", content: [bold("bold"), { type: "text", text: "#glued" }] }));
+    expect(markdown).toBe("**bold**#glued");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("escapes a hash at the start of a text after a space", () => {
+    const markdown = serializeDoc(doc({ type: "paragraph", content: [tagLink("real"), { type: "text", text: " #fake" }] }));
+    expect(markdown).toBe("#real \\#fake");
+    expect(tagsIn(markdown)).toEqual(['data-tag="real"']);
+  });
+
+  it("escapes a plain hash next to underline html", () => {
+    const underline = (text: string): NodeJson => ({ type: "text", text, marks: [{ type: "underline" }] });
+    const markdown = serializeDoc(doc(
+      { type: "paragraph", content: [underline("#under")] },
+      { type: "paragraph", content: [underline("u"), { type: "text", text: "#after" }] },
+    ));
+    expect(markdown).toBe("<u>\\#under</u>\n\n<u>u</u>\\#after");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("escapes a plain hash right after inline code", () => {
+    const markdown = serializeDoc(doc({
+      type: "paragraph",
+      content: [{ type: "text", text: "x", marks: [{ type: "code" }] }, { type: "text", text: "#foo bar" }],
+    }));
+    expect(markdown).toBe("`x`\\#foo bar");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("leaves hashes in link text alone", () => {
+    const markdown = serializeDoc(doc({
+      type: "paragraph",
+      content: [{ type: "text", text: "#linked", marks: [{ type: "link", attrs: { href: "https://example.com" } }] }],
+    }));
+    expect(markdown).toBe("[#linked](https://example.com)");
+  });
+
+  it("still writes tag nodes as tags", () => {
+    expect(serializeDoc(doc({ type: "paragraph", content: [tagLink("work"), { type: "text", text: " done" }] }))).toBe("#work done");
+  });
+});
+
 describe("saved note bytes", () => {
   it("does not end a note with the trailing empty paragraph", () => {
     const markdown = serializeDoc(doc(paragraph("just testing this out"), paragraph()));

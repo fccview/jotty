@@ -88,6 +88,30 @@ describe("hashtags", () => {
     expect(dropHashtags("Status [beta]: #garden\n", ["garden"])).toBe("Status [beta]:\n");
   });
 
+  it.each([
+    ["**#garden**\n", ""],
+    ["Plant **#garden** now\n", "Plant now\n"],
+    ["(*#garden*) note\n", "() note\n"],
+    ["_#garden_ and ~~#garden~~\n", "and\n"],
+    ["**_#garden_** x\n", "x\n"],
+    ["**#garden more**\n", "**more**\n"],
+    ["***#garden** x*\n", "*x*\n"],
+    ["*#garden*text\n", "text\n"],
+  ])("removes an emphasis wrapped tag from %j", (body, expected) => {
+    expect(dropHashtags(body, ["garden"])).toBe(expected);
+  });
+
+  it.each([
+    "**bold**#garden\n",
+    "a**#garden**\n",
+    "_#garden_patch_\n",
+    "#garden_\n",
+    "_#garden_x\n",
+    "rate *#garden here\n",
+  ])("leaves %j alone", (body) => {
+    expect(dropHashtags(body, ["garden"])).toBe(body);
+  });
+
   it("does not count an anchor link as a tag already present", () => {
     expect(addHashtags("[Garden](#garden)\n", ["garden"])).toBe("[Garden](#garden)\n\n#garden\n");
   });

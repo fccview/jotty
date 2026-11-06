@@ -2,7 +2,7 @@ import type { Parent, Root, Text } from "mdast";
 import { findAndReplace, type RegExpMatchObject } from "mdast-util-find-and-replace";
 
 export const TAG_PATTERN = /#([a-zA-Z][a-zA-Z0-9_/-]*)/g;
-const TAG_BOUNDARY = /[\s(]/;
+export const TAG_BOUNDARY = /[\s(]/;
 const ESCAPE = "\\";
 const SPACED_SIBLINGS = new Set(["break", "html", "inlineCode"]);
 

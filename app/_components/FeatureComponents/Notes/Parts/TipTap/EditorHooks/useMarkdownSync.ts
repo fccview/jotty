@@ -2,6 +2,7 @@ import { useCallback, useRef } from "react";
 import type { Editor, JSONContent } from "@tiptap/react";
 import { loadMarkdown, type MarkdownSnapshot } from "@/app/_utils/markdown/session";
 import { docToMarkdown, htmlToNodes } from "@/app/_utils/markdown/editor-bridge";
+import { typedTagDoc } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagInput";
 import type { TableSyntax } from "@/app/_types";
 
 export const useMarkdownSync = (tableSyntax?: TableSyntax) => {
@@ -21,7 +22,7 @@ export const useMarkdownSync = (tableSyntax?: TableSyntax) => {
   );
 
   const read = useCallback(
-    (editor: Editor) => docToMarkdown(editor.state.doc, snapshot.current, tableSyntax),
+    (editor: Editor) => docToMarkdown(typedTagDoc(editor.state), snapshot.current, tableSyntax),
     [tableSyntax],
   );
 
