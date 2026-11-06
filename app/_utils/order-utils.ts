@@ -25,7 +25,7 @@ export const orderByUuids = <T>(
   return [...ranked, ...rest];
 };
 
-interface Dated {
+export interface Dated {
   updatedAt: string;
 }
 

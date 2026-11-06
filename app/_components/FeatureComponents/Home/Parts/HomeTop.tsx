@@ -61,7 +61,7 @@ export const HomeTop = <T extends { uuid: string }>({
     selectedFilter?.type === "category"
       ? categoryLeaf(selectedFilter.value, selectedFilter.value)
       : selectedFilter?.value || "";
-  const showPickUp = widgets.pickUp && Boolean(pickUp);
+  const showPickUp = Boolean(pickUp);
   const showTags =
     widgets.tags && tagsEnabled && !selectedFilter && tags.some((tag) => tagCount(tag) > 0);
   const showPins = pinned.length > 0 && !selectedFilter;
