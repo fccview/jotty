@@ -322,7 +322,6 @@ export const ShortcutProvider = ({
           onCreated={() => {
             setShowCreateCategoryModal(false);
             setInitialParentCategory("");
-            router.refresh();
           }}
         />
       )}

@@ -56,6 +56,22 @@ function touchFile(dir: string, filePath: string) {
   dirToKeys.get(dir)?.forEach((key) => touch(key, filePath));
 }
 
+const _holdsFolder = (listing: unknown[], folder: string) =>
+  (listing as { category?: string }[]).some(
+    ({ category = "" }) => category === folder || category.startsWith(`${folder}/`),
+  );
+
+const _isListing = (key: string, dir: string) =>
+  Object.values(Modes).some((type) => key === metaCacheKey(type, dir) || key === summaryCacheKey(type, dir));
+
+const reorderFolder = (dir: string, folder: string) =>
+  dirToKeys.get(dir)?.forEach((key) => {
+    const held = store.get(key);
+    const settled = held && !pending.has(key) && _isListing(key, dir);
+    if (folder && settled && !_holdsFolder(held, folder)) return;
+    drop(key);
+  });
+
 function startWatcher(dir: string) {
   if (watchers.has(dir)) return;
 
@@ -68,7 +84,8 @@ function startWatcher(dir: string) {
         if (filename.endsWith(MARKDOWN)) {
           touchFile(dir, path.join(dir, filename));
         } else if (filename.endsWith(CATEGORY_INFO_FILE) || filename.endsWith(LEGACY_ORDER_FILE)) {
-          invalidateDir(dir);
+          const folder = path.dirname(filename);
+          reorderFolder(dir, folder === "." ? "" : folder.split(path.sep).join("/"));
         }
       },
     );

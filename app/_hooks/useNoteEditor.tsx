@@ -28,14 +28,12 @@ interface UseNoteEditorProps {
   note: Note;
   onUpdate: (updatedNote: Note) => void;
   onDelete: (deletedId: string) => void;
-  onBack: () => void;
 }
 
 export const useNoteEditor = ({
   note,
   onUpdate,
   onDelete,
-  onBack,
 }: UseNoteEditorProps) => {
   const t = useTranslations();
   const searchParams = useSearchParams();
@@ -431,10 +429,12 @@ export const useNoteEditor = ({
       return;
     }
 
-    onDelete?.(note.uuid || "");
-    router.refresh();
-    onBack();
+    autosave.reset();
+    if (note.uuid) discardDraft(note.uuid);
+    setProviderUnsaved(false);
+    unregisterNavigationGuard();
     setShowDeleteModal(false);
+    onDelete(note.uuid || "");
   };
 
   const handleUnsavedChangesSave = async () => {
