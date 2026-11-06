@@ -12,9 +12,11 @@ import {
   areAllItemsCompleted
 } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result } from "@/app/_types";
 import {
+  CardPlacement,
   ItemTypes,
   Modes,
   PermissionTypes,
@@ -55,15 +57,17 @@ const _createBulkItems = async (
     const now = new Date().toISOString();
 
     const lines = itemsText.split("\n").filter((line) => line.trim());
-    const shiftedItems = (list.items || []).map((item) => ({
-      ...item,
-      order: item.order + lines.length,
-    }));
+    const existing = list.items || [];
+    const insertAtBottom =
+      (await findUserRecord(currentUser))?.newItemInsertion === CardPlacement.BOTTOM;
+    const firstOrder = insertAtBottom
+      ? existing.reduce((max, item) => Math.max(max, item.order ?? 0), -1) + 1
+      : 0;
     const newItems = lines.map((text, index) => ({
       id: `${list.uuid}-${Date.now()}-${index}`,
       text: text.trim(),
       completed: false,
-      order: index,
+      order: firstOrder + index,
       createdBy: currentUser,
       createdAt: now,
       lastModifiedBy: currentUser,
@@ -83,7 +87,12 @@ const _createBulkItems = async (
 
     const updatedList = {
       ...list,
-      items: [...newItems, ...shiftedItems],
+      items: insertAtBottom
+        ? [...existing, ...newItems]
+        : [
+            ...newItems,
+            ...existing.map((item) => ({ ...item, order: item.order + lines.length })),
+          ],
       updatedAt: new Date().toISOString(),
     };
 
@@ -115,6 +124,7 @@ const _createBulkItems = async (
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
+    console.error("Error creating bulk items:", error);
     return { success: false, error: "Failed to create bulk items" };
   }
 };
