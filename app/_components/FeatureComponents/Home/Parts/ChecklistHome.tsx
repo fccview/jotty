@@ -9,6 +9,7 @@ import { CreatePrefill } from "@/app/_providers/ShortcutsProvider";
 import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { newestFirst } from "@/app/_utils/order-utils";
+import { homeWidgets, pickUpItem } from "@/app/_utils/home-widgets";
 import { getChecklistsForDisplay } from "@/app/_server/actions/checklist";
 import { useHomeFeed } from "@/app/_hooks/useHomeFeed";
 import { usePins } from "@/app/_hooks/usePins";
@@ -54,10 +55,11 @@ export const ChecklistHome = ({
   const feed = useHomeFeed<Checklist>(getChecklistsForDisplay);
   const pins = usePins(lists, user?.pinnedLists, ItemTypes.CHECKLIST);
 
-  const lastEdited = useMemo(() => {
-    const sorted = [...lists].sort(newestFirst);
-    return sorted.find((list) => !isKanbanType(list.type)) || sorted[0];
-  }, [lists]);
+  const showPickUp = homeWidgets(user).pickUp;
+  const lastEdited = useMemo(
+    () => pickUpItem(lists, showPickUp, (list) => !isKanbanType(list.type)),
+    [lists, showPickUp],
+  );
 
   const { boards, simple } = useMemo(() => {
     const rest = feed.filter

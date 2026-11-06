@@ -9,6 +9,7 @@ import { CreatePrefill } from "@/app/_providers/ShortcutsProvider";
 import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { newestFirst } from "@/app/_utils/order-utils";
+import { homeWidgets, pickUpItem } from "@/app/_utils/home-widgets";
 import { getNotesForDisplay } from "@/app/_server/actions/note";
 import { useHomeFeed } from "@/app/_hooks/useHomeFeed";
 import { usePins } from "@/app/_hooks/usePins";
@@ -48,7 +49,8 @@ export const NotesHome = ({ notes, user, onCreate, onSelectNote }: NotesHomeProp
   const feed = useHomeFeed<Note>(getNotesForDisplay);
   const pins = usePins(notes, user?.pinnedNotes, ItemTypes.NOTE);
 
-  const lastEdited = useMemo(() => [...notes].sort(newestFirst)[0], [notes]);
+  const showPickUp = homeWidgets(user).pickUp;
+  const lastEdited = useMemo(() => pickUpItem(notes, showPickUp), [notes, showPickUp]);
 
   const recent = useMemo(() => {
     if (feed.filter) return feed.items;
