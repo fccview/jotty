@@ -3,7 +3,17 @@ import * as fs from "fs";
 import fsp from "fs/promises";
 import path from "path";
 import { ExportResult, ExportProgress } from "@/app/_types";
-import { DATA_DIR, USERS_FILE, EXPORT_TEMP_DIR } from "@/app/_consts/files";
+import {
+  DATA_DIR,
+  USERS_FILE,
+  EXPORT_TEMP_DIR,
+  EXPORT_TEMP_DIR_NAME,
+  LOCKS_DIR_NAME,
+  ATOMIC_TMP_EXT,
+} from "@/app/_consts/files";
+import { RELATIONS_DB_NAME, relationsNodeDb, SQLITE_SIDECARS } from "@/app/_consts/relations";
+import { LINK_PROBE_PREFIX } from "@/app/_consts/attachment-migration";
+import { relationsFile } from "@/app/_server/actions/relations/store";
 import { getAllLists } from "@/app/_server/actions/checklist/queries";
 import { getAllNotes } from "@/app/_server/actions/note/queries";
 import { readJsonFile, ensureDir } from "@/app/_server/actions/file";
@@ -25,6 +35,28 @@ const updateProgress = (progress: number, message: string) => {
 
 export const readExportProgress = (): ExportProgress => exportProgress;
 
+type ZipGlob = NonNullable<Parameters<archiver.Archiver["glob"]>[1]>;
+
+const TRANSIENT_FILES = [
+  `**/.*${ATOMIC_TMP_EXT}`,
+  `**/${LINK_PROBE_PREFIX}*`,
+  "**/.git/**/*.lock",
+];
+
+const _relationsDbs = (sourceDir: string) => {
+  const live = path.relative(sourceDir, relationsFile());
+  const inside = !live.startsWith("..") && !path.isAbsolute(live);
+  const names = [RELATIONS_DB_NAME, relationsNodeDb("*")];
+  if (inside) names.push(live.split(path.sep).join("/"));
+  return names.flatMap((name) => SQLITE_SIDECARS.map((suffix) => `${name}${suffix}`));
+};
+
+const _wholeDataGlob = (sourceDir: string): ZipGlob => ({
+  dot: true,
+  skip: [EXPORT_TEMP_DIR_NAME, LOCKS_DIR_NAME],
+  ignore: [...TRANSIENT_FILES, ..._relationsDbs(sourceDir)],
+});
+
 const _copyAttachments = async (tempDir: string, uuids: (string | undefined)[]) => {
   for (const uuid of uuids) {
     const folder = uuid ? folderOf(uuid) : null;
@@ -37,7 +69,7 @@ const zipDirectory = async (
   sourceDir: string,
   outPath: string,
   updateProgress: (progress: number, message: string) => void,
-  excludeTempExports: boolean = false,
+  glob?: ZipGlob,
 ): Promise<void> => {
   await ensureDir(path.dirname(outPath));
   const archive = archiver("zip", { zlib: { level: 9 } });
@@ -50,6 +82,11 @@ const zipDirectory = async (
     archive.on("error", (err: Error) => {
       console.error("Archiver error:", err);
       reject(err);
+      archive.abort();
+      stream.destroy();
+      fsp.rm(outPath, { force: true }).catch((error) =>
+        console.error(`Could not remove partial export ${outPath}:`, error),
+      );
     });
 
     archive.pipe(stream);
@@ -67,11 +104,8 @@ const zipDirectory = async (
       );
     });
 
-    if (excludeTempExports) {
-      archive.glob("**/*", {
-        cwd: sourceDir,
-        ignore: ["temp_exports/**"],
-      });
+    if (glob) {
+      archive.glob("**/*", { ...glob, cwd: sourceDir });
     } else {
       archive.directory(sourceDir, false);
     }
@@ -301,7 +335,12 @@ export const buildWholeData = async (): Promise<ExportResult> => {
     await ensureDir(path.join(process.cwd(), EXPORT_TEMP_DIR));
 
     updateProgress(50, "Compressing the whole data folder...");
-    await zipDirectory(dataFolderPath, tempExportPath, updateProgress, true);
+    await zipDirectory(
+      dataFolderPath,
+      tempExportPath,
+      updateProgress,
+      _wholeDataGlob(dataFolderPath),
+    );
 
     updateProgress(100, "Export completed.");
     return {
