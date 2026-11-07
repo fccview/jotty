@@ -197,6 +197,8 @@ export const getThemeBackgroundColor = (themeId: string): string => {
   return THEME_BACKGROUND_COLORS[themeId] || THEME_BACKGROUND_COLORS["dark"];
 };
 
+export const OWNER_THEME_ATTR = "data-owner-theme";
+
 export const themeInitScript = (customThemesData?: string) => `
 (function() {
   try {
@@ -228,6 +230,8 @@ export const themeInitScript = (customThemesData?: string) => `
         document.documentElement.style.setProperty('${NOTE_FONT_SIZE_VAR}', noteFontSize + 'px');
       }
     }
+
+    if (document.documentElement.hasAttribute('${OWNER_THEME_ATTR}')) return;
 
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const chosenTheme = localStorageTheme || userPreferredTheme || '${SYSTEM_THEME}';

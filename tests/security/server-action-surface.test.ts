@@ -71,6 +71,10 @@ const NEVER_AN_ACTION = [
   "gandalf",
   "writeShares",
   "announceShare",
+  "publicUuids",
+  "publicLinksFor",
+  "ownerThemeFor",
+  "loadPublicNote",
 ];
 
 const PUBLIC_ACTIONS: Record<string, string> = {

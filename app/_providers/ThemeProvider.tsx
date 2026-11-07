@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { PUBLIC_ROUTE_PREFIX } from "@/app/_consts/sharing";
 import { resolveTheme } from "@/app/_utils/settings-store";
 import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId, SYSTEM_THEME } from "@/app/_consts/quick-settings";
@@ -13,6 +15,7 @@ import { useTranslations } from "next-intl";
 import { syncThemeColorMeta } from "@/app/_utils/theme-color-utils";
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const followsViewer = !usePathname()?.startsWith(PUBLIC_ROUTE_PREFIX);
   const { isRwMarkable } = useAppMode();
   const t = useTranslations();
   const theme = useQuickValue(QuickSettingId.THEME);
@@ -90,9 +93,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const allThemes = [...themeIDs, ...Object.keys(customThemeColors)];
     document.documentElement.classList.remove(...allThemes);
-    document.documentElement.classList.add(resolvedTheme);
+    if (followsViewer) document.documentElement.classList.add(resolvedTheme);
 
-    if (customThemeColors[resolvedTheme]) {
+    if (followsViewer && customThemeColors[resolvedTheme]) {
       const styleId = "custom-theme-styles";
       let styleElement = document.getElementById(styleId) as HTMLStyleElement;
 
@@ -142,7 +145,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     syncThemeColorMeta();
-  }, [resolvedTheme, customThemeColors, customCSS]);
+  }, [resolvedTheme, customThemeColors, customCSS, followsViewer]);
 
   return <>{children}</>;
 };

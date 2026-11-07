@@ -14,6 +14,8 @@ import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
 import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
 import { isLegacyUrl } from "@/app/_consts/attachments";
+import { ownerThemeFor } from "@/app/_server/actions/config/owner-theme";
+import { OwnerTheme } from "@/app/_components/FeatureComponents/PublicView/Parts/OwnerTheme";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface PublicChecklistPageProps {
@@ -88,9 +90,12 @@ export default async function PublicChecklistPage(
       type: "checklist" as const,
     };
 
+    const theme = await ownerThemeFor(userRecord);
+
     return (
       <MetadataProvider metadata={metadata}>
         <PermissionsProvider item={checklist}>
+          <OwnerTheme theme={theme} />
           <PublicChecklistView
             checklist={checklist}
             user={user}

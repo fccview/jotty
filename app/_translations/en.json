@@ -419,6 +419,7 @@
     "byType": "By type",
     "publiclySharedNote": "Publicly shared",
     "sharedPubliclyBy": "{owner} shared this note publicly",
+    "updatedOn": "Updated {date}",
     "copyRawContent": "Copy markdown",
     "copyNoteId": "Copy note ID: {id}",
     "quickSave": "Quick Save",
