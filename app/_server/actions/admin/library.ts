@@ -34,13 +34,15 @@ const _settled = async <T>(username: string, label: string, read: () => Promise<
 
 const _shelfOf = async (username: string): Promise<AdminLibrary> => {
   const [notes, lists] = await Promise.all([
-    _settled(username, Modes.NOTES, () => readNotesRecursively(NOTES_DIR(username), username)),
+    _settled(username, Modes.NOTES, () =>
+      readNotesRecursively(NOTES_DIR(username), username, { metadataOnly: true, withSize: true }),
+    ),
     _settled(username, Modes.CHECKLISTS, () =>
       readListsRecursively(_abs(CHECKLISTS_DIR(username)), username),
     ),
   ]);
   return {
-    notes: notes.map((note) => _rowOf(note, note.content.length)),
+    notes: notes.map((note) => _rowOf(note, note.size ?? 0)),
     checklists: (lists as Checklist[]).map((list) => _rowOf(list, list.items.length)),
   };
 };

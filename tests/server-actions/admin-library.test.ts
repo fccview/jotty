@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterAll, beforeAll } from "vitest";
 import path from "path";
-import { mkdirSync, rmSync, writeFileSync } from "fs";
+import { mkdirSync, rmSync, statSync, writeFileSync } from "fs";
 
 const { home, root } = vi.hoisted(() => {
   const os = process.getBuiltinModule("os");
@@ -63,10 +63,13 @@ const rowOf = (item: Note | Checklist, size: number): AdminRow => ({
   size,
 });
 
+const fileSizeOf = (doc: Note) =>
+  statSync(itemPath(Modes.NOTES, doc.owner || "", doc.category || "", doc.id)).size;
+
 const byUuid = (rows: AdminRow[]) => [...rows].sort((a, b) => a.uuid.localeCompare(b.uuid));
 
 const fromFullReads = async () => ({
-  notes: byUuid(((await getAllNotes()).data || []).map((doc) => rowOf(doc, doc.content.length))),
+  notes: byUuid(((await getAllNotes()).data || []).map((doc) => rowOf(doc, fileSizeOf(doc)))),
   checklists: byUuid(((await getAllLists()).data || []).map((item) => rowOf(item, item.items.length))),
 });
 

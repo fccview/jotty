@@ -27,7 +27,7 @@ import { listingStats } from "@/app/_server/actions/lib/listing-stats";
 import { listingPatcher } from "@/app/_server/actions/lib/listing-patch";
 import { verifyListing } from "@/app/_server/actions/lib/listing-verify";
 
-export type ListedNote = Note & { sourcePath?: string };
+export type ListedNote = Note & { sourcePath?: string; size?: number };
 
 declare global {
   var __jottyNoteSummaryMemo: ReturnType<typeof summaryMemo<ListedNote>> | undefined;
@@ -56,6 +56,7 @@ export interface NoteReadOptions {
   allowArchived?: boolean;
   isRaw?: boolean;
   metadataOnly?: boolean;
+  withSize?: boolean;
   excerptLength?: number;
   metadataCache?: Map<string, Record<string, unknown>>;
   statsCache?: Map<string, FileStatsEntry>;
@@ -74,7 +75,7 @@ export const readNoteEntry = async (
   options: NoteReadOptions = {},
   known: KnownFile = {},
 ): Promise<ListedNote | null> => {
-  const { isRaw = false, metadataOnly = false, excerptLength, summarize = false } = options;
+  const { isRaw = false, metadataOnly = false, withSize = false, excerptLength, summarize = false } = options;
   const fileName = path.basename(filePath);
   const id = path.basename(fileName, ".md");
   try {
@@ -109,6 +110,7 @@ export const readNoteEntry = async (
         sharedWith: metadata?.sharedWith as string | string[] | undefined,
         encrypted: metadata?.encrypted === true,
         tags,
+        ...(withSize && { size: stats.size ?? 0 }),
       } as ListedNote;
     } else if (excerptLength) {
       const metadata =

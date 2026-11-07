@@ -13,12 +13,12 @@ const ROW_OVERSCAN = 6;
 
 interface RowLook {
   linkBase: string;
-  sizeKey: string;
+  sizeText: (size: number) => string;
 }
 
 const keyOf = (item: AdminRow) => item.uuid || `${item.category}/${item.id}`;
 
-const AdminContentRow = ({ item, linkBase, sizeKey }: RowLook & { item: AdminRow }) => {
+const AdminContentRow = ({ item, linkBase, sizeText }: RowLook & { item: AdminRow }) => {
   const t = useTranslations();
   return (
     <Link
@@ -34,7 +34,7 @@ const AdminContentRow = ({ item, linkBase, sizeKey }: RowLook & { item: AdminRow
             <LinkForwardIcon className="h-3 w-3 text-muted-foreground flex-shrink-0" />
           </div>
           <p className="text-md lg:text-xs text-muted-foreground mt-1">
-            {`${item.owner} • ${item.category} • ${t(sizeKey, { count: item.size })}`}
+            {`${item.owner} • ${item.category} • ${sizeText(item.size)}`}
           </p>
         </div>
         {item.isShared && (

@@ -17,13 +17,13 @@ import { reindexRelations } from "@/app/_server/actions/relations";
 import { updateTagsFromContent } from "@/app/_server/actions/tags";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
+import { formatFileSize } from "@/app/_utils/file-icon-utils";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
 const CHECKLIST_LINK = "/admin/checklist";
 const NOTE_LINK = "/admin/note";
 const CHECKLIST_SIZE = "common.itemCount";
-const NOTE_SIZE = "common.characterCount";
 
 interface AdminContentProps {
   allLists: AdminRow[];
@@ -258,14 +258,14 @@ export const AdminContent = ({
                         icon={<CheckmarkSquare04Icon className="h-4 w-4" />}
                         items={checklists}
                         linkBase={CHECKLIST_LINK}
-                        sizeKey={CHECKLIST_SIZE}
+                        sizeText={(count) => t(CHECKLIST_SIZE, { count })}
                       />
                       <AdminContentColumn
                         title={t('notes.title')}
                         icon={<File02Icon className="h-4 w-4" />}
                         items={notes}
                         linkBase={NOTE_LINK}
-                        sizeKey={NOTE_SIZE}
+                        sizeText={formatFileSize}
                       />
                     </div>
                   ) : (
