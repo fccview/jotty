@@ -130,3 +130,5 @@ export type {
 } from "./dnd";
 
 export type { AppNotification, AppNotificationData, NotificationType } from "./notifications";
+
+export type { AdminRow, AdminLibrary, AdminCounts } from "./admin";

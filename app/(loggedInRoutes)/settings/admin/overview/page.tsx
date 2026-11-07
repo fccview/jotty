@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { AdminOverview } from "@/app/_components/FeatureComponents/Admin/Parts/AdminOverview";
 import { isAdmin, getUsersForAdmin } from "@/app/_server/actions/users";
-import { getAllLists } from "@/app/_server/actions/checklist/queries";
-import { getAllNotes } from "@/app/_server/actions/note/queries";
+import { adminCounts } from "@/app/_server/actions/admin/library";
 
 export default async function AdminOverviewPage() {
     const admin = await isAdmin();
@@ -11,20 +10,14 @@ export default async function AdminOverviewPage() {
         return notFound();
     }
 
-    const [usersData, listsData, docsData] = await Promise.all([
-        getUsersForAdmin(),
-        getAllLists(),
-        getAllNotes(),
-    ]);
-
-    const users = usersData;
-    const allLists = listsData.success && listsData.data ? listsData.data : [];
-    const allDocs = docsData.success && docsData.data ? docsData.data : [];
+    const users = await getUsersForAdmin();
+    const counts = await adminCounts(users.map((user) => user.username));
+    const perUser = Object.values(counts);
 
     const stats = {
         totalUsers: users.length,
-        totalChecklists: allLists.length,
-        totalNotes: allDocs.length,
+        totalChecklists: perUser.reduce((sum, count) => sum + count.checklists, 0),
+        totalNotes: perUser.reduce((sum, count) => sum + count.notes, 0),
         adminUsers: users.filter((u) => u.isAdmin).length,
     };
 
