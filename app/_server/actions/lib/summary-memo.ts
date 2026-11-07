@@ -36,6 +36,8 @@ export const summaryMemo = <T>(limit: number = MEMO_LIMIT) => {
     return value;
   };
 
+  const forget = (given: string) => memo.delete(path.resolve(given));
+
   const stampOf = (filePath: string): string | undefined => memo.get(path.resolve(filePath))?.stamp;
 
   const pathsUnder = (dir: string): string[] => {
@@ -43,5 +45,5 @@ export const summaryMemo = <T>(limit: number = MEMO_LIMIT) => {
     return Array.from(memo.keys()).filter((filePath) => filePath.startsWith(prefix));
   };
 
-  return { recall, remember, stampOf, pathsUnder };
+  return { recall, remember, forget, stampOf, pathsUnder };
 };

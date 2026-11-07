@@ -12,9 +12,11 @@ import {
   areAllItemsCompleted
 } from "@/app/_utils/checklist-utils";
 import { getUsername } from "@/app/_server/actions/users";
+import { findUserRecord } from "@/app/_server/actions/users/records";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { Checklist, Result } from "@/app/_types";
 import {
+  CardPlacement,
   ItemTypes,
   Modes,
   PermissionTypes,
@@ -26,6 +28,7 @@ import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
+import { firstColumn } from "@/app/_consts/kanban";
 
 const _createBulkItems = async (
   formData: FormData
@@ -55,25 +58,28 @@ const _createBulkItems = async (
     const now = new Date().toISOString();
 
     const lines = itemsText.split("\n").filter((line) => line.trim());
-    const shiftedItems = (list.items || []).map((item) => ({
-      ...item,
-      order: item.order + lines.length,
-    }));
+    const existing = list.items || [];
+    const insertAtBottom =
+      (await findUserRecord(currentUser))?.newItemInsertion === CardPlacement.BOTTOM;
+    const firstOrder = insertAtBottom
+      ? existing.reduce((max, item) => Math.max(max, item.order ?? 0), -1) + 1
+      : 0;
+    const status = firstColumn(list.statuses) as TaskStatus;
     const newItems = lines.map((text, index) => ({
       id: `${list.uuid}-${Date.now()}-${index}`,
       text: text.trim(),
       completed: false,
-      order: index,
+      order: firstOrder + index,
       createdBy: currentUser,
       createdAt: now,
       lastModifiedBy: currentUser,
       lastModifiedAt: now,
       ...(isKanbanType(list.type) && {
-        status: TaskStatus.TODO,
+        status,
         timeEntries: [],
         history: [
           {
-            status: TaskStatus.TODO,
+            status,
             timestamp: now,
             user: currentUser,
           },
@@ -83,7 +89,12 @@ const _createBulkItems = async (
 
     const updatedList = {
       ...list,
-      items: [...newItems, ...shiftedItems],
+      items: insertAtBottom
+        ? [...existing, ...newItems]
+        : [
+            ...newItems,
+            ...existing.map((item) => ({ ...item, order: (item.order ?? 0) + lines.length })),
+          ],
       updatedAt: new Date().toISOString(),
     };
 
@@ -115,6 +126,7 @@ const _createBulkItems = async (
 
     return { success: true, data: updatedList as Checklist };
   } catch (error) {
+    console.error("Error creating bulk items:", error);
     return { success: false, error: "Failed to create bulk items" };
   }
 };

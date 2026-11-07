@@ -172,23 +172,26 @@ const _listedPaths = async (dir: string, uuid: string): Promise<string[]> => {
   }
 };
 
+const _isPresent = (filePath: string): Promise<boolean> =>
+  fs.stat(filePath).then(
+    () => true,
+    () => false,
+  );
+
+const _verified = async (uuid: string, found: GrepFileResult): Promise<GrepFileResult | null> =>
+  (await _isPresent(found.filePath)) && (await _answersTo(uuid, found)) ? found : null;
+
 const _fromListing = async (dir: string, uuid: string): Promise<GrepFileResult | null> => {
   const root = path.resolve(dir);
   const listed = await _listedPaths(root, uuid);
   if (listed.length !== 1 || !isPathSafe(root, listed[0])) return null;
-  const found = _resultFor(root, listed[0]);
-  return (await _answersTo(uuid, found)) ? found : null;
+  return _verified(uuid, _resultFor(root, listed[0]));
 };
 
 const _fromIndex = async (dir: string, uuid: string): Promise<GrepFileResult | null> => {
   const claimants = await _indexedClaimants(dir, uuid);
   if (claimants.length !== 1) return null;
-  const found = _resultFor(dir, claimants[0]);
-  const present = await fs.stat(found.filePath).then(
-    () => true,
-    () => false,
-  );
-  return present && (await _answersTo(uuid, found)) ? found : null;
+  return _verified(uuid, _resultFor(dir, claimants[0]));
 };
 
 export const grepFindFileByUuid = async (

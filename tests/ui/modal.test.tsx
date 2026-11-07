@@ -14,6 +14,43 @@ const SLIDE_MS = 320;
 
 let host: HTMLElement;
 let root: Root;
+const planted: HTMLElement[] = [];
+
+const plant = <T extends HTMLElement>(node: T): T => {
+  document.body.appendChild(node);
+  planted.push(node);
+  return node;
+};
+
+const pressTab = async (target: HTMLElement, shiftKey = false) => {
+  const event = new KeyboardEvent("keydown", { key: "Tab", shiftKey, bubbles: true, cancelable: true });
+  await act(async () => {
+    target.dispatchEvent(event);
+  });
+  return event;
+};
+
+const Drawing = () => (
+  <Modal isOpen onClose={() => undefined} title="Draw" closeOnEscape={false}>
+    <button>first</button>
+    <button>last</button>
+  </Modal>
+);
+
+const excalidrawDialog = () => {
+  const dialog = document.createElement("div");
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  const content = document.createElement("div");
+  content.tabIndex = 0;
+  const island = document.createElement("div");
+  const field = document.createElement("textarea");
+  const insert = document.createElement("button");
+  island.append(field, insert);
+  content.appendChild(island);
+  dialog.appendChild(content);
+  return { dialog: plant(dialog), content, field, insert };
+};
 
 const render = async (node: ReactElement) => {
   await act(async () => root.render(node));
@@ -28,6 +65,7 @@ const pressEscape = async () =>
   });
 
 const dialog = () => document.querySelector<HTMLElement>('[role="dialog"]');
+const dialogPanel = () => document.querySelector<HTMLElement>('#modal-portal-root [role="dialog"]');
 const wrapper = () => dialog()?.parentElement ?? null;
 
 const Stubborn = ({ onClose }: { onClose: () => void }) => (
@@ -61,21 +99,22 @@ const Unmounting = () => {
   ) : null;
 };
 
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "requestAnimationFrame", "cancelAnimationFrame"] });
+  host = document.createElement("div");
+  document.body.appendChild(host);
+  root = createRoot(host);
+});
+
+afterEach(async () => {
+  await act(async () => root.unmount());
+  host.remove();
+  planted.splice(0).forEach((node) => node.remove());
+  document.getElementById("modal-portal-root")?.replaceChildren();
+  vi.useRealTimers();
+});
+
 describe("Modal close", () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "requestAnimationFrame", "cancelAnimationFrame"] });
-    host = document.createElement("div");
-    document.body.appendChild(host);
-    root = createRoot(host);
-  });
-
-  afterEach(async () => {
-    await act(async () => root.unmount());
-    host.remove();
-    document.getElementById("modal-portal-root")?.replaceChildren();
-    vi.useRealTimers();
-  });
-
   it("asks the parent first and stays visible when the parent keeps it open", async () => {
     const onClose = vi.fn();
     await render(<Stubborn onClose={onClose} />);
@@ -178,5 +217,70 @@ describe("Modal close", () => {
     await pressEscape();
     expect(document.activeElement).toBe(trigger);
     trigger.remove();
+  });
+});
+
+describe("Modal focus trap", () => {
+  it("leaves Tab alone inside a third-party dialog stacked on top", async () => {
+    await render(<Drawing />);
+    const { field } = excalidrawDialog();
+    field.focus();
+
+    const tab = await pressTab(field);
+
+    expect(tab.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(field);
+  });
+
+  it("sends focus that slipped behind a stacked dialog back into it", async () => {
+    await render(<Drawing />);
+    const { dialog, content, insert } = excalidrawDialog();
+    content.focus();
+
+    const back = await pressTab(content, true);
+    expect(back.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(insert);
+
+    const panelButton = dialogPanel()!.querySelector("button")!;
+    panelButton.focus();
+    const tab = await pressTab(panelButton);
+    expect(tab.defaultPrevented).toBe(true);
+    expect(dialog.contains(document.activeElement)).toBe(true);
+  });
+
+  it("ignores a dialog that was already open underneath", async () => {
+    const { dialog, field } = excalidrawDialog();
+    document.body.prepend(dialog);
+    await render(<Drawing />);
+    field.focus();
+
+    const tab = await pressTab(field);
+
+    expect(tab.defaultPrevented).toBe(true);
+    expect(dialogPanel()?.contains(document.activeElement)).toBe(true);
+  });
+
+  it("keeps Tab in the panel when the dialog after it is hidden", async () => {
+    await render(<Drawing />);
+    const { dialog } = excalidrawDialog();
+    dialog.style.display = "none";
+    const panelButton = dialogPanel()!.querySelector("button")!;
+    panelButton.focus();
+
+    const tab = await pressTab(panelButton, true);
+
+    expect(tab.defaultPrevented).toBe(true);
+    expect(dialogPanel()?.contains(document.activeElement)).toBe(true);
+  });
+
+  it("still pulls stray focus back into the panel", async () => {
+    await render(<Drawing />);
+    const stray = plant(document.createElement("button"));
+    stray.focus();
+
+    const tab = await pressTab(stray);
+
+    expect(tab.defaultPrevented).toBe(true);
+    expect(dialogPanel()?.contains(document.activeElement)).toBe(true);
   });
 });

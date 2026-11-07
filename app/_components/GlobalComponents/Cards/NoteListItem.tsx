@@ -61,7 +61,7 @@ export const NoteListItem = ({
         >
           {note.title}
         </span>
-        <span className="block font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
+        <span className="block text-[11px] text-muted-foreground mt-0.5 truncate">
           {categoryTrail(note.category, t("notes.uncategorized"))}
         </span>
         {showExcerpt &&
@@ -77,7 +77,7 @@ export const NoteListItem = ({
       </button>
 
       <span className="flex flex-col items-end gap-1 shrink-0">
-        <span className="font-mono text-[11px] text-muted-foreground">
+        <span className="tabular-nums text-[11px] text-muted-foreground">
           {formatShortTime(note.updatedAt, t)}
         </span>
         <span className="flex items-center gap-1 text-muted-foreground">

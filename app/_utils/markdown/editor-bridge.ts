@@ -4,6 +4,7 @@ import { fixTables } from "@tiptap/pm/tables";
 import { keyOf, saveBlocks, type Block, type HtmlToNodes, type MarkdownSnapshot } from "./session";
 import type { NodeJson, SerializeOptions } from "./serialize/types";
 import { bodyFrom, browserKit, type DomKit } from "./dom-kit";
+import { taggedDoc } from "./tag-words";
 import type { TableSyntax } from "@/app/_types";
 
 const DEFAULT_SPANS = ["colspan", "rowspan"];
@@ -15,10 +16,11 @@ const tidyDoc = (doc: PmNode) => fixTables(EditorState.create({ doc }))?.doc ?? 
 const parsers = new WeakMap<Schema, HtmlToNodes>();
 const blocks = new WeakMap<PmNode, Block>();
 
-const parseWith = (schema: Schema, kitOf: () => DomKit): HtmlToNodes => (html) => {
+const parseWith = (schema: Schema, kitOf: () => DomKit): HtmlToNodes => (html, hashtags = false) => {
   if (!html.trim()) return [];
   const parsed = DOMParser.fromSchema(schema).parse(bodyFrom(html, kitOf()));
-  const doc = (TABLE_TAG.test(html) ? tidyDoc(parsed) : parsed).toJSON() as NodeJson;
+  const tidy = TABLE_TAG.test(html) ? tidyDoc(parsed) : parsed;
+  const doc = (hashtags ? taggedDoc(tidy) : tidy).toJSON() as NodeJson;
   return doc.content ?? [];
 };
 

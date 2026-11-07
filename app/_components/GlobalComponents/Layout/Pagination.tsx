@@ -74,7 +74,7 @@ export const Pagination = ({
     <div className={cn("jotty-pagination-footer mt-8 pt-5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4", className)}>
       <p className="text-md lg:text-sm text-muted-foreground order-2 sm:order-1">
         {t("common.page")}{" "}
-        <span className="font-mono text-foreground">
+        <span className="tabular-nums text-foreground">
           {t("common.pageOfPages", { currentPage, totalPages })}
         </span>
       </p>
@@ -96,7 +96,7 @@ export const Pagination = ({
                 variant={page === currentPage ? "default" : "ghost"}
                 size="sm"
                 onClick={() => onPageChange(page)}
-                className="h-8 min-w-8 px-1.5 text-xs font-mono"
+                className="h-8 min-w-8 px-1.5 text-xs tabular-nums"
               >
                 {page}
               </Button>

@@ -142,6 +142,7 @@ export const ExcalidrawEditorModal = ({ diagramData, onSave, onClose }: Excalidr
 
   const handleKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!(event.metaKey || event.ctrlKey)) return;
+    if (!(event.target instanceof Node) || !wrapperRef.current?.contains(event.target)) return;
     const key = event.key.toLowerCase();
     if (key !== SAVE_KEY && event.key !== ENTER) return;
     event.preventDefault();

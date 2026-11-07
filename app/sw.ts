@@ -16,17 +16,27 @@ declare global {
 
 declare const self: WorkerGlobalScope;
 
+const PAGES_CACHE = "pages";
+
+const pagePlugins = [
+  new CacheableResponsePlugin({ statuses: [200] }),
+  new ExpirationPlugin({
+    maxEntries: 128,
+    maxAgeSeconds: 30 * 24 * 60 * 60,
+  }),
+];
+
 const pageStrategy = new NetworkFirst({
-  cacheName: "pages",
+  cacheName: PAGES_CACHE,
   matchOptions: { ignoreVary: true },
   networkTimeoutSeconds: 5,
-  plugins: [
-    new CacheableResponsePlugin({ statuses: [200] }),
-    new ExpirationPlugin({
-      maxEntries: 128,
-      maxAgeSeconds: 30 * 24 * 60 * 60,
-    }),
-  ],
+  plugins: pagePlugins,
+});
+
+const rscStrategy = new NetworkFirst({
+  cacheName: PAGES_CACHE,
+  matchOptions: { ignoreVary: true },
+  plugins: pagePlugins,
 });
 
 const embedPageStrategy = new StaleWhileRevalidate({
@@ -58,7 +68,7 @@ const serwist = new Serwist({
     {
       matcher: ({ request, sameOrigin }) =>
         request.headers.get("RSC") === "1" && sameOrigin,
-      handler: pageStrategy,
+      handler: rscStrategy,
     },
     {
       matcher: /\/_next\/static.+\.js$/i,

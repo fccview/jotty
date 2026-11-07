@@ -16,6 +16,8 @@ import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useMinimalMode } from "@/app/_hooks/useMinimalMode";
 import { ItemTypes } from "@/app/_types/enums";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { appendMove } from "@/app/_utils/category-path-utils";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isEncrypted } from "@/app/_utils/encryption-utils";
 import { withAdoptedAttachments } from "@/app/_utils/adopt-legacy";
@@ -28,14 +30,12 @@ interface UseNoteEditorProps {
   note: Note;
   onUpdate: (updatedNote: Note) => void;
   onDelete: (deletedId: string) => void;
-  onBack: () => void;
 }
 
 export const useNoteEditor = ({
   note,
   onUpdate,
   onDelete,
-  onBack,
 }: UseNoteEditorProps) => {
   const t = useTranslations();
   const searchParams = useSearchParams();
@@ -46,7 +46,7 @@ export const useNoteEditor = ({
   const isMinimalMode = useMinimalMode();
   const defaultEditorIsMarkdown = user?.notesDefaultEditor === "markdown";
   const [title, setTitle] = useState(note.title);
-  const [category, setCategory] = useState(note.category || "Uncategorized");
+  const [category, setCategory] = useState(note.category || UNCATEGORIZED);
   const [editorContent, setEditorContent] = useState(
     () => extractYamlMetadata(note.content || "").contentWithoutMetadata,
   );
@@ -122,7 +122,6 @@ export const useNoteEditor = ({
       const formData = new FormData();
       formData.append("title", note.title);
       formData.append("content", content);
-      formData.append("category", note.category || "Uncategorized");
       formData.append("user", note.owner || user?.username || "");
       formData.append("uuid", note.uuid || "");
 
@@ -134,7 +133,7 @@ export const useNoteEditor = ({
       if (note.uuid) markSaved(note.uuid, content);
       return true;
     },
-    [note.title, note.category, note.owner, note.uuid, user?.username],
+    [note.title, note.owner, note.uuid, user?.username],
   );
 
   const autosave = useAutosave({ enabled: canAutosave, save: autosaveContent });
@@ -148,12 +147,16 @@ export const useNoteEditor = ({
 
     if (previous !== note && extractYamlMetadata(previous.content || "").contentWithoutMetadata === contentWithoutMetadata) {
       if (previous.title !== note.title) setTitle(note.title);
-      if (previous.category !== note.category) setCategory(note.category || "Uncategorized");
+      if (previous.category !== note.category) {
+        const before = previous.category || UNCATEGORIZED;
+        const after = note.category || UNCATEGORIZED;
+        setCategory((picked) => (picked === before ? after : picked));
+      }
       return;
     }
 
     setTitle(note.title);
-    setCategory(note.category || "Uncategorized");
+    setCategory(note.category || UNCATEGORIZED);
     setContentIsDirty(false);
     setEditorContent(contentWithoutMetadata);
     setIsMarkdownMode(Boolean(note.encrypted) || isMinimalMode || defaultEditorIsMarkdown);
@@ -186,7 +189,7 @@ export const useNoteEditor = ({
   }, [isEditorVisible]);
 
   const titleChanged = title !== note.title;
-  const categoryChanged = category !== (note.category || "Uncategorized");
+  const categoryChanged = category !== (note.category || UNCATEGORIZED);
   const contentUnsaved = canAutosave ? autosave.hasUnsaved : contentIsDirty;
 
   useEffect(() => {
@@ -296,7 +299,7 @@ export const useNoteEditor = ({
       const formData = new FormData();
       formData.append("title", title);
       formData.append("content", contentToSave);
-      formData.append("category", category);
+      appendMove(formData, category, note.category || UNCATEGORIZED);
       formData.append("user", note.owner || user?.username || "");
       formData.append("uuid", note.uuid || "");
 
@@ -323,6 +326,7 @@ export const useNoteEditor = ({
     [
       note.uuid,
       note.owner,
+      note.category,
       note.encryptionMethod,
       title,
       derivedMarkdownContent,
@@ -391,7 +395,7 @@ export const useNoteEditor = ({
     }
     setIsEditing(false);
     setTitle(note.title);
-    setCategory(note.category || "Uncategorized");
+    setCategory(note.category || UNCATEGORIZED);
     setContentIsDirty(false);
     setProviderUnsaved(false);
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
@@ -431,10 +435,12 @@ export const useNoteEditor = ({
       return;
     }
 
-    onDelete?.(note.uuid || "");
-    router.refresh();
-    onBack();
+    autosave.reset();
+    if (note.uuid) discardDraft(note.uuid);
+    setProviderUnsaved(false);
+    unregisterNavigationGuard();
     setShowDeleteModal(false);
+    onDelete(note.uuid || "");
   };
 
   const handleUnsavedChangesSave = async () => {

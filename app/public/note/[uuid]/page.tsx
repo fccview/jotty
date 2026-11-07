@@ -1,18 +1,14 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getNoteById } from "@/app/_server/actions/note/queries";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicNoteView } from "@/app/_components/FeatureComponents/PublicView/PublicNoteView";
-import { getCurrentUser } from "@/app/_server/actions/users";
-import { findUserRecord } from "@/app/_server/actions/users/records";
+import { OwnerTheme } from "@/app/_components/FeatureComponents/PublicView/Parts/OwnerTheme";
+import { loadPublicNote } from "@/app/_server/actions/note/public-view";
 import type { Metadata } from "next";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { Modes, ItemTypes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
-import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
-import { isLegacyUrl } from "@/app/_consts/attachments";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface PublicNotePageProps {
@@ -51,43 +47,30 @@ export default async function PublicNotePage(props: PublicNotePageProps) {
     redirect("/");
   }
 
-  const note = await getNoteById(uuid);
+  const payload = await loadPublicNote(uuid);
 
-  if (!note) {
+  if (!payload) {
     redirect("/");
   }
 
-  const userRecord = await findUserRecord(note.owner!);
-  const user = sanitizeUserForPublic(
-    userRecord,
-    !isLegacyUrl(userRecord?.avatarUrl),
+  const { note, user, theme, links } = payload;
+  const metadata = {
+    id: note.id,
+    uuid: note.uuid,
+    title: note.title,
+    category: note.category || UNCATEGORIZED,
+    owner: note.owner,
+    createdAt: note.createdAt,
+    updatedAt: note.updatedAt,
+    type: "note" as const,
+  };
+
+  return (
+    <MetadataProvider metadata={metadata}>
+      <PermissionsProvider item={note}>
+        <OwnerTheme theme={theme} />
+        <PublicNoteView note={note} user={user} links={links} />
+      </PermissionsProvider>
+    </MetadataProvider>
   );
-
-  const isPubliclyShared = await isPublicItem(note.uuid!, ItemTypes.NOTE);
-
-  const currentUser = await getCurrentUser();
-  const isOwner = currentUser?.username === note.owner;
-
-  if (isPubliclyShared || isOwner) {
-    const metadata = {
-      id: note.id,
-      uuid: note.uuid,
-      title: note.title,
-      category: note.category || UNCATEGORIZED,
-      owner: note.owner,
-      createdAt: note.createdAt,
-      updatedAt: note.updatedAt,
-      type: "note" as const,
-    };
-
-    return (
-      <MetadataProvider metadata={metadata}>
-        <PermissionsProvider item={note}>
-          <PublicNoteView note={note} user={user} />
-        </PermissionsProvider>
-      </MetadataProvider>
-    );
-  }
-
-  redirect("/");
 }

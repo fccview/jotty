@@ -138,10 +138,7 @@ export default function LoginForm({
 
       {isDemoMode && (
         <div className="rounded-jotty border border-dashed border-primary/40 bg-primary/5 px-3 py-2.5">
-          <div className={cn(KICKER_CLASS, "mb-1.5 flex items-center gap-2")}>
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            {t("demoMode")}
-          </div>
+          <div className={cn(KICKER_CLASS, "mb-1.5")}>{t("demoMode")}</div>
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-md lg:text-sm">
             <dt className="text-muted-foreground">{t("usernameLabel")}</dt>
             <dd className="font-mono">{DEMO_USERNAME}</dd>

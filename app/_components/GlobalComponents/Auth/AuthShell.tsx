@@ -44,7 +44,6 @@ export const AuthShell = ({ kicker, title, description, badge, children }: AuthS
 
           <header className="border-b border-dashed border-border px-5 py-4 lg:px-6">
             <div className={cn(KICKER_CLASS, "mb-1.5 flex items-center gap-2")}>
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
               {kicker}
               {badge && (
                 <span className="rounded-jotty border border-primary/40 bg-primary/5 px-1.5 py-px text-primary">

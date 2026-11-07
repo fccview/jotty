@@ -161,7 +161,7 @@ export const AuditLogCard = ({ log, showUsername = false }: AuditLogCardProps) =
             {log.resourceType && log.resourceTitle && (
               <div className="text-md lg:text-sm text-muted-foreground">
                 <span className="font-medium capitalize">{log.resourceType}:</span>{" "}
-                <span className="font-mono text-xs">{displayResourceTitle}</span>
+                <span className="text-xs">{displayResourceTitle}</span>
                 {log.resourceId && (
                   <span className="text-md lg:text-xs text-muted-foreground ml-2">
                     (ID: {log.resourceId})

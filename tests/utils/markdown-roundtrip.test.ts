@@ -5,8 +5,16 @@ vi.unmock("unist-util-visit");
 vi.unmock("js-beautify");
 vi.unmock("@/app/_utils/markdown-utils");
 
-import { sanitizeMarkdown, tagOutsideCode } from "@/app/_utils/markdown-utils";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw";
+import rehypeSlug from "rehype-slug";
+import rehypeStringify from "rehype-stringify";
+import { sanitizeMarkdown } from "@/app/_utils/markdown-utils";
 import { markdownToEditorHtml } from "@/app/_utils/markdown/parse/to-html";
+import { remarkTags } from "@/app/_utils/markdown/parse/tags";
 import { serializeDoc } from "@/app/_utils/markdown/serialize";
 import type { NodeJson } from "@/app/_utils/markdown/serialize/types";
 
@@ -30,6 +38,19 @@ const BASH_SNIPPET = [
   "done > script.txt",
 ].join("\n");
 
+const viewHtml = (markdown: string) =>
+  String(
+    unified()
+      .use(remarkParse)
+      .use(remarkGfm)
+      .use(remarkTags)
+      .use(remarkRehype, { allowDangerousHtml: true })
+      .use(rehypeRaw)
+      .use(rehypeSlug)
+      .use(rehypeStringify)
+      .processSync(markdown),
+  );
+
 const decodeEntities = (html: string) =>
   html
     .replace(/&#x27;/g, "'")
@@ -42,19 +63,30 @@ describe("markdown round trip", () => {
   const markdown = `Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter #tagged\n`;
 
   it("tags hashtags without touching the bash block for the view renderer", () => {
-    const tagged = tagOutsideCode(markdown);
+    const html = viewHtml(markdown);
+    const code = html.match(/<code[^>]*>([\s\S]*?)<\/code>/)?.[1] ?? "";
 
-    expect(tagged).toBe(
-      `Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter <span data-tag="tagged">tagged</span>\n`,
-    );
+    expect(decodeEntities(code)).toBe(`${BASH_SNIPPET}\n`);
+    expect(html).toContain('<p>After <span data-tag="tagged">tagged</span></p>');
   });
 
   it("leaves colours inside html attributes alone for the view renderer", () => {
-    const markdown = '<span style="color: #ff0000">red</span> #tag';
+    const html = viewHtml('<span style="color: #ff0000">red</span> #tag');
 
-    expect(tagOutsideCode(markdown)).toBe(
-      '<span style="color: #ff0000">red</span> <span data-tag="tag">tag</span>',
+    expect(html).toContain('<span style="color: #ff0000">red</span> <span data-tag="tag">tag</span>');
+  });
+
+  it("renders anchor links as links pointing at the slugged heading for the view renderer", () => {
+    const html = viewHtml(
+      "* [FOREWORD](#foreword)\n* [Trim white-space, from string!](#trim-white-space-from-string)\n\n[ref]: #foreword\n\n## FOREWORD\n\n## Trim white-space, from string!\n\nsee [again][ref] #todo",
     );
+
+    expect(html).toContain('<a href="#foreword">FOREWORD</a>');
+    expect(html).toContain('<a href="#trim-white-space-from-string">');
+    expect(html).toContain('<h2 id="foreword">FOREWORD</h2>');
+    expect(html).toContain('<h2 id="trim-white-space-from-string">');
+    expect(html).toContain('<a href="#foreword">again</a>');
+    expect(html.match(/data-tag="([^"]+)"/g)).toEqual(['data-tag="todo"']);
   });
 
   it("keeps a bash code block with $' intact when rendering to html", () => {
@@ -86,6 +118,86 @@ describe("markdown round trip", () => {
 
     expect(saved).toBe(`Before\n\n\`\`\`bash\n${BASH_SNIPPET}\n\`\`\`\n\nAfter`);
     expect(saved).not.toContain(ZWSP);
+  });
+});
+
+describe("plain hashes", () => {
+  const bold = (text: string): NodeJson => ({ type: "text", text, marks: [{ type: "bold" }] });
+  const tagLink = (tag: string): NodeJson => ({ type: "tagLink", attrs: { tag } });
+  const tagsIn = (markdown: string) => viewHtml(markdown).match(/data-tag="[^"]+"/g) ?? [];
+
+  it.each([
+    ["plain #escaped", "plain \\#escaped"],
+    ["#start of a line", "\\#start of a line"],
+    ["an (#aside)", "an (\\#aside)"],
+    ["a\tTab #x", "a\tTab \\#x"],
+  ])("escapes %s so it stays text", (text, saved) => {
+    const markdown = serializeDoc(doc(paragraph(text)));
+    expect(markdown).toBe(saved);
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it.each([
+    "C# and F#",
+    "item #1 and #2b",
+    "a#b and x#y",
+    "see https://example.com/#readme",
+    "a lone # here",
+  ])("leaves %s alone", (text) => {
+    expect(serializeDoc(doc(paragraph(text)))).not.toContain("\\#");
+  });
+
+  it("leaves a line start heading marker to the line start escape", () => {
+    expect(serializeDoc(doc(paragraph("# not a heading")))).toBe("\\# not a heading");
+  });
+
+  it("escapes a plain hash opening bold text", () => {
+    const markdown = serializeDoc(doc({ type: "paragraph", content: [{ type: "text", text: "see " }, bold("#inside")] }));
+    expect(markdown).toBe("see **\\#inside**");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("does not escape a hash glued after bold text", () => {
+    const markdown = serializeDoc(doc({ type: "paragraph", content: [bold("bold"), { type: "text", text: "#glued" }] }));
+    expect(markdown).toBe("**bold**#glued");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("escapes a hash at the start of a text after a space", () => {
+    const markdown = serializeDoc(doc({ type: "paragraph", content: [tagLink("real"), { type: "text", text: " #fake" }] }));
+    expect(markdown).toBe("#real \\#fake");
+    expect(tagsIn(markdown)).toEqual(['data-tag="real"']);
+  });
+
+  it("escapes a plain hash next to underline html", () => {
+    const underline = (text: string): NodeJson => ({ type: "text", text, marks: [{ type: "underline" }] });
+    const markdown = serializeDoc(doc(
+      { type: "paragraph", content: [underline("#under")] },
+      { type: "paragraph", content: [underline("u"), { type: "text", text: "#after" }] },
+    ));
+    expect(markdown).toBe("<u>\\#under</u>\n\n<u>u</u>\\#after");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("escapes a plain hash right after inline code", () => {
+    const markdown = serializeDoc(doc({
+      type: "paragraph",
+      content: [{ type: "text", text: "x", marks: [{ type: "code" }] }, { type: "text", text: "#foo bar" }],
+    }));
+    expect(markdown).toBe("`x`\\#foo bar");
+    expect(tagsIn(markdown)).toEqual([]);
+  });
+
+  it("leaves hashes in link text alone", () => {
+    const markdown = serializeDoc(doc({
+      type: "paragraph",
+      content: [{ type: "text", text: "#linked", marks: [{ type: "link", attrs: { href: "https://example.com" } }] }],
+    }));
+    expect(markdown).toBe("[#linked](https://example.com)");
+  });
+
+  it("still writes tag nodes as tags", () => {
+    expect(serializeDoc(doc({ type: "paragraph", content: [tagLink("work"), { type: "text", text: " done" }] }))).toBe("#work done");
   });
 });
 

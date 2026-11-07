@@ -103,7 +103,7 @@ const CategoryNode = ({
         <CheckBox checked={isSelected || isInherited} />
         <span className="truncate flex-1">{category.name}</span>
         {countOf && (
-          <span className="text-md lg:text-xs text-muted-foreground ml-auto font-mono">
+          <span className="text-md lg:text-xs text-muted-foreground ml-auto tabular-nums">
             {countOf(category)}
           </span>
         )}

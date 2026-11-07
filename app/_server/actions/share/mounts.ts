@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import { Modes } from "@/app/_types/enums";
+import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";
 import { SharedMount } from "@/app/_types/sharing";
 import {
@@ -10,13 +10,16 @@ import {
   CHECKLISTS_DIR,
 } from "@/app/_consts/files";
 import { mountName, parseSharedWith } from "@/app/_utils/sharing-utils";
-import { currentFrontmatterOf } from "@/app/_server/actions/lib/frontmatter-memo";
+import { currentFrontmatterOf, forgetFrontmatter } from "@/app/_server/actions/lib/frontmatter-memo";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import {
   getOrCompute,
   dropByPrefix,
+  isFolderInfo,
 } from "@/app/_server/actions/lib/metadata-cache";
 import { listMounts, catAccess } from "./access";
+import { readCatInfo } from "./category-info";
+import { isPathSafe } from "@/app/_utils/path-utils";
 
 const MOUNTS_CACHE_PREFIX = "mounts:";
 
@@ -49,22 +52,64 @@ const _ownTopNames = async (
 const _mountsKey = (mode: Modes, username: string): string =>
   `${MOUNTS_CACHE_PREFIX}${mode}:${username}`;
 
+const _homeOf = (mode: Modes, username: string): string =>
+  path.join(process.cwd(), userDirFor(mode, username));
+
+const _samePerms = (a: SharingPermissions, b: SharingPermissions): boolean =>
+  Object.values(PermissionTypes).every((key) => Boolean(a[key]) === Boolean(b[key]));
+
+const _alreadyMounted = (uuid: string | null, granted: SharingPermissions, mounts: SharedMount[]) =>
+  uuid !== null &&
+  mounts.some(
+    (mount) => mount.isImplicit && mount.itemUuids?.includes(uuid) && _samePerms(mount.permissions, granted),
+  );
+
 const _touchesViewer = async (
+  mode: Modes,
   filePath: string,
   username: string,
   mounts: SharedMount[],
 ): Promise<boolean> => {
+  if (isPathSafe(_homeOf(mode, username), filePath)) return false;
+  forgetFrontmatter(filePath);
   const metadata = await currentFrontmatterOf(filePath);
-  if (parseSharedWith(metadata?.[SHARED_WITH_KEY])?.users[username]) return true;
   const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : null;
-  return mounts.some((mount) => mount.isImplicit && (!uuid || mount.itemUuids?.includes(uuid)));
+  const granted = parseSharedWith(metadata?.[SHARED_WITH_KEY])?.users[username];
+  if (granted) return !_alreadyMounted(uuid, granted, mounts);
+  return mounts.some(
+    (mount) =>
+      mount.isImplicit &&
+      (uuid ? mount.itemUuids?.includes(uuid) : isPathSafe(_homeOf(mode, mount.owner), filePath)),
+  );
+};
+
+const _mountDirOf = (mode: Modes, mount: SharedMount): string =>
+  path.join(_homeOf(mode, mount.owner), mount.categoryPath);
+
+const _folderTouchesViewer = async (
+  mode: Modes,
+  infoPath: string,
+  username: string,
+  mounts: SharedMount[],
+): Promise<boolean> => {
+  if (isPathSafe(_homeOf(mode, username), infoPath)) return false;
+  const folder = path.dirname(infoPath);
+  const info = await readCatInfo(folder);
+  const granted = info.sharing?.users?.[username];
+  const folders = mounts.filter((mount) => !mount.isImplicit);
+  const here = folders.find((mount) => _mountDirOf(mode, mount) === folder);
+
+  if (here) return !granted || here.categoryUuid !== info.uuid || !_samePerms(here.permissions, granted);
+  if (!granted) return false;
+  return !folders.some((mount) => isPathSafe(_mountDirOf(mode, mount), folder));
 };
 
 const _patchMounts =
-  (username: string) =>
+  (mode: Modes, username: string) =>
   async (paths: string[], current: SharedMount[]): Promise<SharedMount[] | null> => {
     for (const filePath of paths) {
-      if (await _touchesViewer(filePath, username, current)) return null;
+      const touches = isFolderInfo(filePath) ? _folderTouchesViewer : _touchesViewer;
+      if (await touches(mode, filePath, username, current)) return null;
     }
     return current;
   };
@@ -79,7 +124,8 @@ const _cachedMounts = async (
     _mountsKey(mode, username),
     watched,
     () => listMounts(mode, username),
-    _patchMounts(username),
+    _patchMounts(mode, username),
+    true,
   );
 };
 

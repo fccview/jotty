@@ -29,7 +29,7 @@ export const PinnedNoteCard = ({ note, position, onSelect, onTogglePin }: Pinned
       onClick={handleClick}
       className="jotty-note-card group cursor-pointer bg-card border border-border rounded-jotty p-3.5 pt-4 transition-colors hover:border-primary/50 [overflow-wrap:anywhere]">
       <div className="flex items-start gap-2">
-        <span className="font-mono text-[11px] font-semibold text-primary mt-0.5">
+        <span className="tabular-nums text-[11px] font-semibold text-primary mt-0.5">
           {String(position).padStart(2, "0")}
         </span>
         <button
@@ -53,7 +53,7 @@ export const PinnedNoteCard = ({ note, position, onSelect, onTogglePin }: Pinned
           {stats.excerpt}
         </p>
       )}
-      <div className="mt-3 flex items-center justify-between gap-2 font-mono text-[11px] text-muted-foreground">
+      <div className="mt-3 flex items-center justify-between gap-2 tabular-nums text-[11px] text-muted-foreground">
         <span className="truncate">{categoryLeaf(note.category, t("notes.uncategorized"))}</span>
         <span className="flex items-center gap-1.5 shrink-0">
           <ItemShareMark item={note} mode={Modes.NOTES} />

@@ -7,6 +7,7 @@ const LOG_NS = "sessions";
 
 export const SESSION_HEADER = "mcp-session-id";
 export const SESSION_IDLE_MS = 30 * 60 * 1000;
+export const MAX_BODY_BYTES = 10 * 1024 * 1024;
 
 enum RpcCode {
   ParseError = -32700,
@@ -82,6 +83,7 @@ export const createSessionPool = (
       transport: new WebStandardStreamableHTTPServerTransport({
         sessionIdGenerator: () => crypto.randomUUID(),
         enableDnsRebindingProtection: true,
+        maxRequestBodySize: MAX_BODY_BYTES,
         allowedHosts: policy.allowedHosts.length ? policy.allowedHosts : undefined,
         allowedOrigins: policy.allowedOrigins.length ? policy.allowedOrigins : undefined,
         onsessioninitialized: (id) => {

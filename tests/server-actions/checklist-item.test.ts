@@ -707,6 +707,92 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
       expect(result.success).toBe(true);
     });
+
+    it("should prepend items in entered order by default", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha\nBeta",
+      });
+
+      const result = await createBulkItems(formData);
+
+      expect(result.success).toBe(true);
+      expect(
+        result.data?.items.map((item) => [item.text, item.order]),
+      ).toEqual([
+        ["Alpha", 0],
+        ["Beta", 1],
+        ["First item", 2],
+        ["Second item", 3],
+        ["Third item", 4],
+      ]);
+    });
+
+    it("should append items in entered order when newItemInsertion is 'bottom'", async () => {
+      mockFindUserRecord.mockResolvedValue({
+        username: "testuser",
+        newItemInsertion: "bottom",
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha\nBeta",
+      });
+
+      const result = await createBulkItems(formData);
+
+      expect(result.success).toBe(true);
+      expect(
+        result.data?.items.map((item) => [item.text, item.order]),
+      ).toEqual([
+        ["First item", 0],
+        ["Second item", 1],
+        ["Third item", 2],
+        ["Alpha", 3],
+        ["Beta", 4],
+      ]);
+      expect(mockFindUserRecord).toHaveBeenCalledWith("testuser");
+    });
+
+    it("should put bulk cards in the board's first column", async () => {
+      mockGetListById.mockResolvedValue({
+        ...mockTaskChecklist,
+        statuses: [
+          { id: "doing", label: "Doing", color: "blue", order: 1 },
+          { id: "backlog", label: "Backlog", color: "gray", order: 0 },
+        ],
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha\nBeta",
+      });
+
+      const result = await createBulkItems(formData);
+      const added = result.data?.items.filter((item) => ["Alpha", "Beta"].includes(item.text));
+
+      expect(result.success).toBe(true);
+      expect(added?.map((item) => item.status)).toEqual(["backlog", "backlog"]);
+    });
+
+    it("should not write NaN orders when older items have no order", async () => {
+      mockGetListById.mockResolvedValue({
+        ...mockChecklist,
+        items: [{ id: "old", text: "Old item", completed: false }],
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha",
+      });
+
+      const result = await createBulkItems(formData);
+
+      expect(result.data?.items.map((item) => [item.text, item.order])).toEqual([
+        ["Alpha", 0],
+        ["Old item", 1],
+      ]);
+    });
   });
 
   describe("bulkToggleItems", () => {

@@ -10,6 +10,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
+import { KICKER_CLASS } from "@/app/_consts/styling";
 import { readModalEnlarged, writeModalEnlarged } from "@/app/_utils/modal-store";
 import { EXIT_CLASS_ATTR, ghostOut } from "@/app/_utils/modal/modal-ghost";
 import { lastFocusOutside, restoreFocus, trackFocus } from "@/app/_utils/modal/focus-history";
@@ -47,6 +48,8 @@ interface ModalProps {
 }
 
 const PORTAL_ID = "modal-portal-root";
+const MODAL_LAYER = "var(--jotty-modal-z)";
+const MODAL_SELECTOR = '[aria-modal="true"]';
 const SLIDE_MS = 320;
 const MOTION = "duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none";
 const FOCUSABLE =
@@ -68,6 +71,9 @@ const WORKSPACE_INSETS: Partial<Record<ModalWidth, string>> = {
 const SHEET_CLASS =
   "inset-x-0 bottom-0 rounded-t-[calc(var(--jotty-radius-effective)*3)] border-b-0 lg:rounded-jotty lg:border-b";
 
+const HIDDEN = "hidden";
+const NO_DISPLAY = "none";
+
 const openStack: string[] = [];
 
 trackFocus();
@@ -82,10 +88,28 @@ const portalRoot = (): HTMLElement => {
   root.style.position = "fixed";
   root.style.top = "0";
   root.style.left = "0";
-  root.style.zIndex = "9999";
+  root.style.zIndex = MODAL_LAYER;
   document.body.appendChild(root);
   return root;
 };
+
+const _shown = (element: HTMLElement): boolean => {
+  if (getComputedStyle(element).visibility === HIDDEN) return false;
+  for (let node: HTMLElement | null = element; node; node = node.parentElement) {
+    if (getComputedStyle(node).display === NO_DISPLAY) return false;
+  }
+  return true;
+};
+
+const foreignOnTop = (portal: HTMLElement) =>
+  Array.from(document.querySelectorAll<HTMLElement>(MODAL_SELECTOR))
+    .filter(
+      (dialog) =>
+        !portal.contains(dialog) &&
+        _shown(dialog) &&
+        Boolean(portal.compareDocumentPosition(dialog) & Node.DOCUMENT_POSITION_FOLLOWING),
+    )
+    .at(-1);
 
 const trapTab = (event: KeyboardEvent, panel: HTMLElement) => {
   const focusables = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
@@ -244,7 +268,7 @@ export const Modal = ({
         if (!escapeRef.current || event.defaultPrevented) return;
         close();
       } else if (event.key === "Tab" && panelRef.current) {
-        trapTab(event, panelRef.current);
+        trapTab(event, foreignOnTop(portal) ?? panelRef.current);
       }
     };
 
@@ -304,7 +328,7 @@ export const Modal = ({
         <header className="jotty-modal-header flex shrink-0 items-start gap-4 border-b border-dashed border-border px-6 pt-4 pb-4">
           <div className="min-w-0 flex-1">
             {kicker && (
-              <div className="mb-1.5 flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              <div className={cn(KICKER_CLASS, "mb-1.5 flex items-center gap-2")}>
                 {kicker}
               </div>
             )}
@@ -340,7 +364,7 @@ export const Modal = ({
               type="button"
               onClick={close}
               aria-label={t("common.close")}
-              className="hidden lg:inline-flex items-center rounded-jotty border border-border px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="hidden lg:inline-flex items-center rounded-jotty border border-border px-1.5 py-0.5 text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               esc
             </button>

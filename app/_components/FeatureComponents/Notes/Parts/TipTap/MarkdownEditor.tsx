@@ -1,7 +1,8 @@
 import { SyntaxHighlightedEditor } from "./SyntaxHighlightedEditor";
 import { useNotesStore } from "@/app/_utils/notes-store";
 import { VisualGuideRuler } from "./VisualGuideRuler";
-import { memo, useEffect, useState } from "react";
+import { memo } from "react";
+import { useCharWidth } from "@/app/_hooks/useCharWidth";
 
 interface MarkdownEditorProps {
   content: string;
@@ -19,16 +20,7 @@ export const MarkdownEditor = memo(({
   onCodeBlockRequest,
 }: MarkdownEditorProps) => {
   const { showLineNumbers, showRuler, showVisualGuides, visualGuideColumns } = useNotesStore();
-  const [charWidth, setCharWidth] = useState(0);
-
-  useEffect(() => {
-    const el = document.createElement("span");
-    el.className = "markdown-line-measure";
-    el.textContent = "x".repeat(100);
-    document.body.append(el);
-    setCharWidth(el.offsetWidth / 100);
-    el.remove();
-  }, []);
+  const charWidth = useCharWidth();
 
   const handleValueChange = (newValue: string) => {
     const syntheticEvent = {

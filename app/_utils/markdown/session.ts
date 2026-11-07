@@ -10,7 +10,7 @@ import { NodeName, type BlockContext, type NodeJson, type SerializeOptions } fro
 export { keyOf };
 export type { MarkdownSnapshot };
 
-export type HtmlToNodes = (html: string) => NodeJson[];
+export type HtmlToNodes = (html: string, hashtags?: boolean) => NodeJson[];
 
 export interface Block {
   json: NodeJson;
@@ -49,7 +49,7 @@ export const loadMarkdown = (markdown: string, toNodes: HtmlToNodes): LoadedMark
   const source = normalizeLineEndings(markdown || "");
   if (isLegacyHtml(source)) {
     return {
-      doc: docOf(toNodes(source)),
+      doc: docOf(toNodes(source, true)),
       snapshot: { source, head: "", tail: "", segments: [], legacyHtml: true },
     };
   }

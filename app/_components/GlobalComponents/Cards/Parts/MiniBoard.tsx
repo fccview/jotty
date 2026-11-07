@@ -63,7 +63,7 @@ export const MiniBoard = ({ summary, compact = false }: MiniBoardProps) => {
                 style={{ backgroundColor: color }}
               />
               {!compact && <span className="truncate">{status.label}</span>}
-              <span className="ml-auto font-mono text-foreground">
+              <span className="ml-auto tabular-nums text-foreground">
                 {abbreviate(count)}
               </span>
             </div>
@@ -96,7 +96,7 @@ export const MiniBoard = ({ summary, compact = false }: MiniBoardProps) => {
                 />
               )}
               {count > rows && (
-                <div className="text-center font-mono text-[9px] leading-3 text-muted-foreground">
+                <div className="text-center tabular-nums text-[9px] leading-3 text-muted-foreground">
                   +{abbreviate(count - rows)}
                 </div>
               )}
@@ -106,7 +106,7 @@ export const MiniBoard = ({ summary, compact = false }: MiniBoardProps) => {
       })}
       {hidden.length > 0 && (
         <div
-          className="min-w-0 rounded-jotty border border-dashed border-border flex items-center justify-center font-mono text-[10px] text-muted-foreground"
+          className="min-w-0 rounded-jotty border border-dashed border-border flex items-center justify-center tabular-nums text-[10px] text-muted-foreground"
           title={hidden.map(({ status }) => status.label).join(", ")}
         >
           +{hidden.length}

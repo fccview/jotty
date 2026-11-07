@@ -25,7 +25,7 @@ export const BrowseHeader = ({
   return (
     <div className="jotty-browse-header flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
       <div className="min-w-0">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">{kicker}</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-primary">{kicker}</p>
         <h1 className="mt-3 text-4xl sm:text-5xl font-bold text-foreground tracking-tight">
           {title}
         </h1>
