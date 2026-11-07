@@ -130,7 +130,7 @@ svg {
 
 @media (min-width: 1024px) {
   .kanban-grid {
-    grid-template-columns: repeat(var(--kanban-col-count), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--kanban-col-count), minmax(var(--kanban-col-min, 0px), 1fr));
   }
 }
 

@@ -11,6 +11,8 @@ import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Not
 import { PrintView } from "@/app/_components/FeatureComponents/Notes/Parts/PrintView";
 import { PublicEncryptedNote } from "./Parts/PublicEncryptedNote";
 import { PublicPaper } from "./Parts/PublicPaper";
+import { PublicCopyButton } from "./Parts/PublicCopyButton";
+import { copyableMarkdown } from "@/app/_utils/public-note-utils";
 
 const PRINT_MODE = "print";
 
@@ -25,6 +27,8 @@ export const PublicNoteView = ({ note, user, links }: PublicNoteViewProps) => {
   const searchParams = useSearchParams();
   const [decryptedContent, setDecryptedContent] = useState<string | null>(null);
 
+  const markdown = copyableMarkdown(note);
+
   if (searchParams.get("view_mode") === PRINT_MODE) {
     return <PrintView note={note} />;
   }
@@ -38,6 +42,7 @@ export const PublicNoteView = ({ note, user, links }: PublicNoteViewProps) => {
       footer={t("notes.sharedPubliclyBy", { owner: note.owner ?? "" })}
       links={links}
       hasContents
+      actions={markdown !== null && <PublicCopyButton markdown={markdown} />}
     >
       {note.encrypted && !decryptedContent ? (
         <PublicEncryptedNote content={note.content} onDecrypted={setDecryptedContent} />

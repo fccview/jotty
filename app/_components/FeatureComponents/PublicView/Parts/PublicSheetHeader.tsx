@@ -1,21 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { SidebarRightIcon } from "@hugeicons/core-free-icons";
 import { PublicUser } from "@/app/_utils/user-sanitize-utils";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
+import { cn } from "@/app/_utils/global-utils";
 
 interface PublicSheetHeaderProps {
   user: PublicUser | null;
   category?: string;
   updatedAt: string;
-  onOpenDetails?: () => void;
+  actions?: ReactNode;
+  isDetailsOpen?: boolean;
+  onToggleDetails?: () => void;
 }
 
-export const PublicSheetHeader = ({ user, category, updatedAt, onOpenDetails }: PublicSheetHeaderProps) => {
+export const PublicSheetHeader = ({
+  user,
+  category,
+  updatedAt,
+  actions,
+  isDetailsOpen = false,
+  onToggleDetails,
+}: PublicSheetHeaderProps) => {
   const t = useTranslations();
   const { formatDateString } = usePreferredDateTime();
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -34,13 +44,18 @@ export const PublicSheetHeader = ({ user, category, updatedAt, onOpenDetails }: 
           <span>{t("notes.updatedOn", { date: formatDateString(updatedAt) })}</span>
         </p>
       </div>
-      {onOpenDetails && (
+      {actions}
+      {onToggleDetails && (
         <button
           type="button"
-          onClick={onOpenDetails}
-          title={t("notePanel.show")}
-          aria-label={t("notePanel.show")}
-          className="flex-none rounded-[calc(var(--jotty-radius-effective)*0.75)] p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:hidden"
+          onClick={onToggleDetails}
+          title={t(isDetailsOpen ? "notePanel.hide" : "notePanel.show")}
+          aria-label={t(isDetailsOpen ? "notePanel.hide" : "notePanel.show")}
+          aria-pressed={isDetailsOpen}
+          className={cn(
+            "flex-none rounded-[calc(var(--jotty-radius-effective)*0.75)] p-2 transition-colors hover:bg-muted hover:text-foreground",
+            isDetailsOpen ? "text-primary" : "text-muted-foreground",
+          )}
         >
           <HugeiconsIcon icon={SidebarRightIcon} className="h-5 w-5" />
         </button>

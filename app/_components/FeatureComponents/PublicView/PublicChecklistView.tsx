@@ -38,7 +38,7 @@ export const PublicChecklistView = ({ checklist, user, links, ownerShowsEmojis }
         </div>
       )}
       {isBoard && hasItems ? (
-        <PublicBoard checklist={checklist} ownerShowsEmojis={ownerShowsEmojis} />
+        <PublicBoard checklist={checklist} />
       ) : (
         <PublicChecklistBody checklist={checklist} ownerShowsEmojis={ownerShowsEmojis} />
       )}

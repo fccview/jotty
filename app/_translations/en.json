@@ -647,6 +647,7 @@
     "reminder": "Reminder",
     "usernamePlaceholder": "username",
     "scoreLabel": "Score: {score}",
+    "repeats": "Repeats {description}",
     "today": "Today",
     "exportIcs": "Export .ics",
     "unscheduled": "Unscheduled ({count})",

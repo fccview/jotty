@@ -18,6 +18,7 @@ export const radiusToRem = (value?: number): string =>
   `${clampRadius(value)}rem`;
 
 export const DEFAULT_KANBAN_COLUMN_WIDTH = 280;
+export const KANBAN_GRID_MAX_COLUMNS = 6;
 export const MIN_KANBAN_COLUMN_WIDTH = 200;
 export const MAX_KANBAN_COLUMN_WIDTH = 500;
 export const KANBAN_COLUMN_WIDTH_STEP = 10;

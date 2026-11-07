@@ -45,3 +45,11 @@ export const filterItems = (items: Item[], predicate: (item: Item) => boolean): 
         ? filterItems(item.children, predicate)
         : undefined,
     }));
+
+export const isFullyDone = (item: Item): boolean =>
+  item.completed && (item.children?.length ? item.children.every(isFullyDone) : true);
+
+export const splitByCompletion = (items: Item[]): { incompleteItems: Item[]; completedItems: Item[] } => ({
+  incompleteItems: items.filter((item) => !isFullyDone(item)),
+  completedItems: items.filter(isFullyDone),
+});
