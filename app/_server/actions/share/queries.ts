@@ -153,6 +153,13 @@ export const usersWithAccess = async (
   }
 };
 
+const _withoutPublic = (
+  users: Record<string, SharingPermissions>,
+): Record<string, SharingPermissions> =>
+  Object.fromEntries(
+    Object.entries(users).filter(([name]) => name !== PUBLIC_USER),
+  );
+
 export const itemShares = async (
   uuid: string,
   itemType: ItemType,
@@ -172,9 +179,7 @@ export const itemShares = async (
     const access = await resolveAccess(mode, filePath);
     if (!access) return empty;
 
-    const users = Object.fromEntries(
-      Object.entries(access.users).filter(([name]) => name !== PUBLIC_USER),
-    );
+    const users = _withoutPublic(access.users);
 
     const parent = access.inherited
       ? access
@@ -197,25 +202,35 @@ export const folderShares = async (
   mode: Modes,
   categoryPath: string,
 ): Promise<FolderShares> => {
-  const empty: FolderShares = { users: {}, isPublic: false, inherit: true };
+  const empty: FolderShares = {
+    users: {},
+    isPublic: false,
+    inherit: true,
+    inherited: [],
+  };
 
   try {
     const username = await getUsername();
     if (!username) return empty;
 
     const target = await targetDir(mode, username, categoryPath);
-    const info = await readCatInfo(target.dir);
+    if (target.owner !== username || !target.category) return empty;
 
-    const users = Object.fromEntries(
-      Object.entries(info.sharing?.users || {}).filter(
-        ([name]) => name !== PUBLIC_USER,
-      ),
-    );
+    const info = await readCatInfo(target.dir);
+    const parent =
+      info.sharing?.inherit === false
+        ? null
+        : await catAccess(mode, path.dirname(target.dir));
 
     return {
-      users,
+      users: _withoutPublic(info.sharing?.users || {}),
       isPublic: Boolean(info.sharing?.users?.[PUBLIC_USER]),
       inherit: info.sharing?.inherit !== false,
+      inherited: (parent?.sources || []).map(({ category, users }) => ({
+        category,
+        users: _withoutPublic(users),
+        isPublic: Boolean(users[PUBLIC_USER]),
+      })),
       uuid: info.uuid,
     };
   } catch (error) {

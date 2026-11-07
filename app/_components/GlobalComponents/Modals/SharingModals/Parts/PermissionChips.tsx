@@ -38,7 +38,7 @@ export const FOLDER_CHIPS = [CREATE_CHIP, EDIT_CHIP, DELETE_CHIP];
 interface PermissionChipsProps {
   chips: ChipSpec[];
   permissions: SharingPermissions;
-  onChange: (key: Permission, value: boolean) => void;
+  onChange?: (key: Permission, value: boolean) => void;
   disabled?: boolean;
 }
 
@@ -64,7 +64,7 @@ export const PermissionChips = ({
             aria-label={t(labelKey)}
             title={label}
             disabled={disabled}
-            onClick={() => onChange(key, !isOn)}
+            onClick={() => onChange?.(key, !isOn)}
             className={cn(
               "jotty-permission-chip flex h-7 w-7 items-center justify-center rounded-jotty transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
               !isOn && "text-muted-foreground/60 hover:bg-muted/60 hover:text-foreground",
