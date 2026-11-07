@@ -10,6 +10,7 @@ import {
 } from "hugeicons-react";
 import { Button } from "../Buttons/Button";
 import { cn } from "@/app/_utils/global-utils";
+import { KICKER_CLASS } from "@/app/_consts/styling";
 import { readModalEnlarged, writeModalEnlarged } from "@/app/_utils/modal-store";
 import { EXIT_CLASS_ATTR, ghostOut } from "@/app/_utils/modal/modal-ghost";
 import { lastFocusOutside, restoreFocus, trackFocus } from "@/app/_utils/modal/focus-history";
@@ -327,7 +328,7 @@ export const Modal = ({
         <header className="jotty-modal-header flex shrink-0 items-start gap-4 border-b border-dashed border-border px-6 pt-4 pb-4">
           <div className="min-w-0 flex-1">
             {kicker && (
-              <div className="mb-1.5 flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              <div className={cn(KICKER_CLASS, "mb-1.5 flex items-center gap-2")}>
                 {kicker}
               </div>
             )}
@@ -363,7 +364,7 @@ export const Modal = ({
               type="button"
               onClick={close}
               aria-label={t("common.close")}
-              className="hidden lg:inline-flex items-center rounded-jotty border border-border px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="hidden lg:inline-flex items-center rounded-jotty border border-border px-1.5 py-0.5 text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               esc
             </button>

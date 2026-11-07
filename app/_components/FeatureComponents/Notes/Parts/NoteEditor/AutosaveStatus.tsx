@@ -21,7 +21,7 @@ export const AutosaveStatus = ({ state }: { state: SaveState | null }) => {
       aria-live="polite"
       title={state === SaveState.FAILED ? t("notes.autosaveFailedHint") : undefined}
       className={cn(
-        "jotty-autosave-status hidden lg:inline-flex items-center gap-1 whitespace-nowrap font-mono text-[11px] uppercase tracking-wider",
+        "jotty-autosave-status hidden lg:inline-flex items-center gap-1 whitespace-nowrap text-[11px] uppercase tracking-wider",
         state === SaveState.FAILED ? "text-destructive" : "text-muted-foreground",
       )}
     >

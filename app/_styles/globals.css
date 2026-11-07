@@ -777,7 +777,7 @@ p > code::after,
   text-shadow: none !important;
   box-shadow: none !important;
   filter: none !important;
-  font-family: "Google Sans Code Variable" !important;
+  font-family: "Google Sans Code Variable", monospace !important;
 }
 
 .code-block-container pre {
@@ -1098,7 +1098,7 @@ pre.text-foreground *,
 pre.text-foreground span,
 .font-mono textarea {
   font-family:
-    "JetBrainsMono", "Fira Code", "Monaco", "Consolas", monospace !important;
+    "Google Sans Code Variable", monospace !important;
   font-size: 14px !important;
   font-weight: normal !important;
   font-style: normal !important;
@@ -1324,16 +1324,6 @@ pre.text-foreground span,
   }
 }
 
-@keyframes jotty-pulse-connected {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 @keyframes jotty-draw {
   0% {
     stroke-dashoffset: 1;
@@ -1386,7 +1376,7 @@ pre.text-foreground span,
 .markdown-code-editor,
 .markdown-code-editor * {
   font-family:
-    Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace !important;
+    "Google Sans Code Variable", monospace !important;
   font-size: 14px !important;
   line-height: 21px !important;
 }
@@ -1396,7 +1386,7 @@ pre.text-foreground span,
 }
 
 .markdown-line-numbers {
-  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-family: "Google Sans Code Variable", monospace;
   font-size: 14px;
   line-height: 21px;
 }
@@ -1406,7 +1396,7 @@ pre.text-foreground span,
   visibility: hidden;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-family: "Google Sans Code Variable", monospace;
   font-size: 14px;
   line-height: 21px;
 }

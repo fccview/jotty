@@ -159,7 +159,7 @@ export const Pinboard = <T extends { uuid: string }>({
 
       {isBoard && total > cap && (
         <div className="mt-5 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span className="font-mono">
+          <span className="tabular-nums">
             {showAll
               ? t("browse.pinnedTotal", { total: compact(total) })
               : t("browse.pinnedOf", { shown: cap, total: compact(total) })}

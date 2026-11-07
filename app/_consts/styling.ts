@@ -72,7 +72,7 @@ export const normaliseNoteFontSize = (value?: number): number =>
     : clampNoteFontSize(value);
 
 export const KICKER_CLASS =
-  "font-mono text-[11px] uppercase tracking-widest text-muted-foreground";
+  "text-[11px] uppercase tracking-widest text-muted-foreground";
 
 export const MENU_CLASS =
   "jotty-menu bg-card border border-border rounded-jotty shadow-xl shadow-black/[0.08]";

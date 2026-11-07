@@ -45,7 +45,7 @@ export const TickGrid = ({ summary }: { summary: ListSummary }) => {
         })}
       </div>
       {bucket > 1 && (
-        <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">
+        <p className="mt-1.5 text-[10px] text-muted-foreground">
           {t("browse.bucket", { count: bucket })}
         </p>
       )}

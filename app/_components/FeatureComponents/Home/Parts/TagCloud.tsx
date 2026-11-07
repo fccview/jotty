@@ -59,7 +59,7 @@ export const TagCloud = ({ tags, countOf, onSelect, matchSibling = false }: TagC
             <Tag01Icon className="h-4 w-4" />
           </span>
           <h2 className="text-base font-semibold text-foreground">{t("notes.tags")}</h2>
-          <span className="ml-auto font-mono text-xs text-muted-foreground">
+          <span className="ml-auto tabular-nums text-xs text-muted-foreground">
             {compact(ranked.length)}
           </span>
           <WidgetDismiss widget="homeTags" className="-my-1 -mr-2" />
@@ -72,7 +72,7 @@ export const TagCloud = ({ tags, countOf, onSelect, matchSibling = false }: TagC
               onClick={() => onSelect(tag)}
               title={t("browse.tagCount", { tag: tag.name, count })}
               className={cn(
-                "font-mono hover:text-primary transition-colors truncate max-w-full",
+                "hover:text-primary transition-colors truncate max-w-full",
                 sizeOf(count),
               )}
             >

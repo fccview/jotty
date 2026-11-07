@@ -17,6 +17,7 @@ import { useNotesStore } from "@/app/_utils/notes-store";
 import { VisualGuideRuler } from "./VisualGuideRuler";
 import { EditorSettingsDropdown } from "./Toolbar/EditorSettingsDropdown";
 import { NOTE_PROSE_CLASS } from "@/app/_consts/notes";
+import { useCharWidth } from "@/app/_hooks/useCharWidth";
 
 interface MinimalModeEditorProps {
   isEditing: boolean;
@@ -43,16 +44,7 @@ export const MinimalModeEditor = ({
     contentWithoutMetadata,
   );
   const [showPreview, setShowPreview] = useState(false);
-  const [charWidth, setCharWidth] = useState(0);
-
-  useEffect(() => {
-    const el = document.createElement("span");
-    el.className = "markdown-line-measure";
-    el.textContent = "x".repeat(100);
-    document.body.append(el);
-    setCharWidth(el.offsetWidth / 100);
-    el.remove();
-  }, []);
+  const charWidth = useCharWidth();
 
   useEffect(() => {
     const { contentWithoutMetadata: newContent } =
