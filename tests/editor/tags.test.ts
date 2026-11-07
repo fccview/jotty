@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from "vitest";
 import type { Editor } from "@tiptap/core";
+import { closeHistory } from "@tiptap/pm/history";
 import { editAndSave, editor, freshSave, open } from "./harness";
 import { caretAfter, positionOf } from "./cursor";
 import { expectRoundtrip, findAll } from "./properties";
@@ -74,6 +75,23 @@ describe("typing a hashtag in the rich editor", () => {
     });
     expect(saved).not.toContain("\\#");
     expect(saved).toContain("#todo next");
+  });
+
+  it("turns the word back into a tag after undoing the conversion", () => {
+    const saved = editAndSave("first\n\nsecond", (instance) => {
+      caretAfter(instance, "first");
+      instance.view.dispatch(closeHistory(instance.state.tr));
+      typeText(instance, " #foo");
+      instance.view.dispatch(closeHistory(instance.state.tr));
+      typeText(instance, " ");
+      expect(tagsOf(instance)).toEqual(["foo"]);
+      instance.commands.undo();
+      expect(tagsOf(instance)).toEqual([]);
+      caretAfter(instance, "second");
+      expect(tagsOf(instance)).toEqual(["foo"]);
+    });
+    expect(saved).not.toContain("\\#foo");
+    expect(saved).toContain("#foo");
   });
 
   it("turns the word into a tag when the caret moves away", () => {

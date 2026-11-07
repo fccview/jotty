@@ -1,10 +1,26 @@
-import type { Result, SidebarPage, SidebarSearch, SidebarSpot } from "@/app/_types";
+import type { Result, SidebarEntry, SidebarPage, SidebarSearch, SidebarSpot } from "@/app/_types";
 import { SIDEBAR_PAGE_SIZE, SIDEBAR_SEARCH_LIMIT } from "@/app/_consts/sidebar";
 import { categoriesFor } from "@/app/_server/actions/category/tree";
 import { getUsername } from "@/app/_server/actions/users";
 import { folderOf } from "@/app/_utils/sidebar-tree-utils";
 import { isItemMode, itemListing } from "@/app/_server/actions/catalog/listing";
 import { folderStampOf, searchSnapshot } from "./listing";
+
+const STAMP_MEMO_SIZE = 64;
+const stampMemo = new Map<string, { items: SidebarEntry[]; stamp: string }>();
+
+const _sameItems = (left: SidebarEntry[], right: SidebarEntry[]): boolean =>
+  left.length === right.length && left.every((item, index) => item === right[index]);
+
+const _folderStamp = (key: string, items: SidebarEntry[]): string => {
+  const known = stampMemo.get(key);
+  if (known && _sameItems(known.items, items)) return known.stamp;
+  const stamp = folderStampOf(items);
+  stampMemo.delete(key);
+  stampMemo.set(key, { items, stamp });
+  if (stampMemo.size > STAMP_MEMO_SIZE) stampMemo.delete(stampMemo.keys().next().value as string);
+  return stamp;
+};
 
 const _whole = (value: unknown): number =>
   typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : 0;
@@ -28,7 +44,7 @@ export const getSidebarRows = async (
     success: true,
     data: {
       stamp,
-      ...(stamped && { folderStamp: folderStampOf(inFolder) }),
+      ...(stamped && { folderStamp: _folderStamp(`${username}:${mode}:${category}`, inFolder) }),
       total: inFolder.length,
       rows: inFolder.slice(start, start + SIDEBAR_PAGE_SIZE),
     },

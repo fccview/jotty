@@ -12,6 +12,21 @@ import {
   getChildTags,
 } from "@/app/_utils/tag-utils";
 
+describe("tags inside html blocks", () => {
+  it("leaves tags inside html blocks out of the index, as the view does", () => {
+    expect(extractHashtagsFromContent("<div>#foo</div>")).toEqual([]);
+    expect(extractHashtagsFromContent("<details>\n<summary>x</summary>\n#todo\n</details>")).toEqual([]);
+    expect(extractHashtagsFromContent("text\n<div>#x</div>")).toEqual([]);
+  });
+
+  it("still indexes inline html and text after a block ends", () => {
+    expect(extractHashtagsFromContent("<b>#html</b> text")).toEqual(["html"]);
+    expect(extractHashtagsFromContent("para\n<span>\n#y")).toEqual(["y"]);
+    expect(extractHashtagsFromContent("<div>a</div>\n\n#after")).toEqual(["after"]);
+    expect(extractHashtagsFromContent("```\n<div>\n```\n\n#fenced")).toEqual(["fenced"]);
+  });
+});
+
 describe("Tag Utils", () => {
   describe("normalizeTag", () => {
     it("should lowercase tags", () => {

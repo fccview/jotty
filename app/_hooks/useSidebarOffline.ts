@@ -6,21 +6,28 @@ import { libraryEpoch } from "@/app/_utils/sidebar-tree-utils";
 
 const OFFLINE_SETTLE_MS = 3_000;
 const OFFLINE_RETRY_MS = 30_000;
+const OFFLINE_RETRY_CAP_MS = 30 * 60_000;
 const OFFLINE_MODES = ["notes", "checklists"] as const;
 const ONLINE_EVENT = "online";
 
 let worker: Worker | null = null;
 let cachedStamp: string | null = null;
 let retry: (() => void) | null = null;
+let failures = 0;
 
 const _worker = (): Worker | null => {
   if (worker || typeof Worker === "undefined") return worker;
   try {
     worker = new Worker(new URL("../_workers/sidebar-offline.worker.ts", import.meta.url), { type: "module" });
     worker.onmessage = ({ data }: MessageEvent<OfflineOutcome>) => {
-      if (data.done || cachedStamp !== data.stamp) return;
+      if (cachedStamp !== data.stamp) return;
+      if (data.done) {
+        failures = 0;
+        return;
+      }
       cachedStamp = null;
-      setTimeout(() => retry?.(), OFFLINE_RETRY_MS);
+      failures += 1;
+      setTimeout(() => retry?.(), Math.min(OFFLINE_RETRY_MS * 2 ** (failures - 1), OFFLINE_RETRY_CAP_MS));
     };
   } catch (error) {
     console.error("Offline sidebar cache could not start:", error);
@@ -36,10 +43,14 @@ export const useSidebarOffline = () => {
 
   useEffect(() => {
     const again = () => setAttempt((count) => count + 1);
+    const reconnected = () => {
+      failures = 0;
+      again();
+    };
     retry = again;
-    window.addEventListener(ONLINE_EVENT, again);
+    window.addEventListener(ONLINE_EVENT, reconnected);
     return () => {
-      window.removeEventListener(ONLINE_EVENT, again);
+      window.removeEventListener(ONLINE_EVENT, reconnected);
       if (retry === again) retry = null;
     };
   }, []);

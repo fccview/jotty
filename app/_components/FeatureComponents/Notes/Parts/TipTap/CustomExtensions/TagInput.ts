@@ -33,6 +33,10 @@ const _nextPending = (tr: Transaction, pending: number | null, old: EditorState,
   }
   const mapped = pending === null ? null : tr.mapping.mapResult(pending, 1);
   const kept = mapped && !mapped.deleted && tagWordAt(state.doc, mapped.pos, true) ? mapped.pos : null;
+  if (caret !== null && tr.docChanged && isHistoryTransaction(tr)) {
+    const word = tagWordAt(state.doc, caret);
+    if (word && _fresh(tr, old, word.from)) return word.from;
+  }
   if (caret !== null && _typed(tr) && _touches(tr, caret)) {
     const word = tagWordAt(state.doc, caret);
     if (word && (word.from === kept || _fresh(tr, old, word.from))) return word.from;

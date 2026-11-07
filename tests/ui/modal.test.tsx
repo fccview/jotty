@@ -260,6 +260,19 @@ describe("Modal focus trap", () => {
     expect(dialogPanel()?.contains(document.activeElement)).toBe(true);
   });
 
+  it("keeps Tab in the panel when the dialog after it is hidden", async () => {
+    await render(<Drawing />);
+    const { dialog } = excalidrawDialog();
+    dialog.style.display = "none";
+    const panelButton = dialogPanel()!.querySelector("button")!;
+    panelButton.focus();
+
+    const tab = await pressTab(panelButton, true);
+
+    expect(tab.defaultPrevented).toBe(true);
+    expect(dialogPanel()?.contains(document.activeElement)).toBe(true);
+  });
+
   it("still pulls stray focus back into the panel", async () => {
     await render(<Drawing />);
     const stray = plant(document.createElement("button"));

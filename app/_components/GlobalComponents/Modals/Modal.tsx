@@ -70,6 +70,9 @@ const WORKSPACE_INSETS: Partial<Record<ModalWidth, string>> = {
 const SHEET_CLASS =
   "inset-x-0 bottom-0 rounded-t-[calc(var(--jotty-radius-effective)*3)] border-b-0 lg:rounded-jotty lg:border-b";
 
+const HIDDEN = "hidden";
+const NO_DISPLAY = "none";
+
 const openStack: string[] = [];
 
 trackFocus();
@@ -89,11 +92,20 @@ const portalRoot = (): HTMLElement => {
   return root;
 };
 
+const _shown = (element: HTMLElement): boolean => {
+  if (getComputedStyle(element).visibility === HIDDEN) return false;
+  for (let node: HTMLElement | null = element; node; node = node.parentElement) {
+    if (getComputedStyle(node).display === NO_DISPLAY) return false;
+  }
+  return true;
+};
+
 const foreignOnTop = (portal: HTMLElement) =>
   Array.from(document.querySelectorAll<HTMLElement>(MODAL_SELECTOR))
     .filter(
       (dialog) =>
         !portal.contains(dialog) &&
+        _shown(dialog) &&
         Boolean(portal.compareDocumentPosition(dialog) & Node.DOCUMENT_POSITION_FOLLOWING),
     )
     .at(-1);

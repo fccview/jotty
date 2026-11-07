@@ -2,7 +2,7 @@ import path from "path";
 import type { AdminCounts, AdminLibrary, AdminRow, Checklist, Note } from "@/app/_types";
 import { CHECKLISTS_DIR, NOTES_DIR } from "@/app/_consts/files";
 import { mapPooled } from "@/app/_server/actions/lib/concurrency";
-import { statMarkdown } from "@/app/_server/actions/lib/markdown-walk";
+import { countMarkdown } from "@/app/_server/actions/lib/markdown-walk";
 import { canAccessAllContent, isAdmin } from "@/app/_server/actions/users";
 import { Modes } from "@/app/_types/enums";
 import { readNotesRecursively } from "@/app/_server/actions/note/readers";
@@ -45,8 +45,7 @@ const _shelfOf = async (username: string): Promise<AdminLibrary> => {
   };
 };
 
-const _itemsUnder = async (dir: string): Promise<number> =>
-  (await statMarkdown(_abs(dir)))?.size ?? 0;
+const _itemsUnder = (dir: string): Promise<number> => countMarkdown(_abs(dir));
 
 export const adminLibrary = async (usernames: string[]): Promise<AdminLibrary> => {
   if (!(await canAccessAllContent())) return NOTHING;

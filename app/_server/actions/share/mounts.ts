@@ -19,6 +19,7 @@ import {
 } from "@/app/_server/actions/lib/metadata-cache";
 import { listMounts, catAccess } from "./access";
 import { readCatInfo } from "./category-info";
+import { isPathSafe } from "@/app/_utils/path-utils";
 
 const MOUNTS_CACHE_PREFIX = "mounts:";
 
@@ -54,23 +55,20 @@ const _mountsKey = (mode: Modes, username: string): string =>
 const _homeOf = (mode: Modes, username: string): string =>
   path.join(process.cwd(), userDirFor(mode, username));
 
-const _isInside = (dir: string, target: string): boolean =>
-  target.startsWith(`${dir}${path.sep}`);
-
 const _touchesViewer = async (
   mode: Modes,
   filePath: string,
   username: string,
   mounts: SharedMount[],
 ): Promise<boolean> => {
-  if (_isInside(_homeOf(mode, username), filePath)) return false;
+  if (isPathSafe(_homeOf(mode, username), filePath)) return false;
   const metadata = await currentFrontmatterOf(filePath);
   if (parseSharedWith(metadata?.[SHARED_WITH_KEY])?.users[username]) return true;
   const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : null;
   return mounts.some(
     (mount) =>
       mount.isImplicit &&
-      (uuid ? mount.itemUuids?.includes(uuid) : _isInside(_homeOf(mode, mount.owner), filePath)),
+      (uuid ? mount.itemUuids?.includes(uuid) : isPathSafe(_homeOf(mode, mount.owner), filePath)),
   );
 };
 
@@ -86,7 +84,7 @@ const _folderTouchesViewer = async (
   username: string,
   mounts: SharedMount[],
 ): Promise<boolean> => {
-  if (_isInside(_homeOf(mode, username), infoPath)) return false;
+  if (isPathSafe(_homeOf(mode, username), infoPath)) return false;
   const folder = path.dirname(infoPath);
   const info = await readCatInfo(folder);
   const granted = info.sharing?.users?.[username];
@@ -95,7 +93,7 @@ const _folderTouchesViewer = async (
 
   if (here) return !granted || here.categoryUuid !== info.uuid || !_samePerms(here.permissions, granted);
   if (!granted) return false;
-  return !folders.some((mount) => _isInside(_mountDirOf(mode, mount), folder));
+  return !folders.some((mount) => isPathSafe(_mountDirOf(mode, mount), folder));
 };
 
 const _patchMounts =

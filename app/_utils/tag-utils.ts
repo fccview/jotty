@@ -118,6 +118,29 @@ const _unwrapped = (lead: string, name: string) => {
   return run && name.endsWith(run) ? name.slice(0, -run.length) : name;
 };
 
+const FENCED_CODE = /```[\s\S]*?```/g;
+const HTML_BLOCK_NAMES =
+  "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul";
+const HTML_BLOCK_START = new RegExp(String.raw`^ {0,3}<\/?(?:${HTML_BLOCK_NAMES})(?:\s|\/?>|$)`, "i");
+const LONE_TAG_LINE =
+  /^ {0,3}(?:<(?!(?:script|style|pre|textarea)\b)[a-zA-Z][a-zA-Z0-9-]*(?:\s[^<>]*)?\/?>|<\/[a-zA-Z][a-zA-Z0-9-]*\s*>)\s*$/i;
+const LINE_SPLIT = /\r?\n/;
+
+const _withoutHtmlBlocks = (content: string): string => {
+  let inBlock = false;
+  let previousBlank = true;
+  return content
+    .split(LINE_SPLIT)
+    .map((line) => {
+      const blank = !line.trim();
+      if (blank) inBlock = false;
+      else if (!inBlock) inBlock = HTML_BLOCK_START.test(line) || (previousBlank && LONE_TAG_LINE.test(line));
+      previousBlank = blank;
+      return inBlock ? "" : line;
+    })
+    .join("\n");
+};
+
 export const extractHashtagsFromContent = (content: string): string[] => {
   const tags = new Set<string>();
 
@@ -132,7 +155,7 @@ export const extractHashtagsFromContent = (content: string): string[] => {
 
   const codeBlockRegex =
     /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>|<!--[\s\S]*?-->|<[a-zA-Z\/][^>]*>/gi;
-  const contentWithoutCode = content.replace(codeBlockRegex, " ");
+  const contentWithoutCode = _withoutHtmlBlocks(content.replace(FENCED_CODE, " ")).replace(codeBlockRegex, " ");
 
   const closes = _closerFinder(contentWithoutCode);
   for (const match of Array.from(contentWithoutCode.matchAll(HASHTAG))) {
