@@ -28,8 +28,8 @@ import { THEME_COLOR_META } from "./_utils/theme-color-utils";
 import { loadCustomThemes } from "./_server/actions/config";
 import { getUserChecklists } from "./_server/actions/checklist/queries";
 import { getUserNotes } from "./_server/actions/note/queries";
-import { sidebarSnapshot, sidebarStampOf } from "./_server/actions/sidebar/listing";
-import type { Category, SidebarEntry } from "./_types";
+import { sidebarSnapshot } from "./_server/actions/sidebar/listing";
+import type { SidebarEntry } from "./_types";
 import { libraryStatsOf } from "./_utils/catalog-utils";
 import { buildTagsIndex } from "./_utils/tag-utils";
 
@@ -217,13 +217,11 @@ export default async function RootLayout({
   const checklists = checklistsResult.success
     ? checklistsResult.data || []
     : [];
-  const snapshotOf = (items: SidebarEntry[], categories: Category[]) =>
-    sidebarSnapshot(items, categories, sidebarStampOf(items, categories));
   const sidebar =
     user && !isPublicRoute
       ? {
-          [Modes.NOTES]: snapshotOf(notes as SidebarEntry[], noteCategories.data || []),
-          [Modes.CHECKLISTS]: snapshotOf(checklists as SidebarEntry[], checklistCategories.data || []),
+          [Modes.NOTES]: sidebarSnapshot(notes as SidebarEntry[], noteCategories.data || []),
+          [Modes.CHECKLISTS]: sidebarSnapshot(checklists as SidebarEntry[], checklistCategories.data || []),
         }
       : {};
 

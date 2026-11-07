@@ -4,7 +4,7 @@ import { categoriesFor } from "@/app/_server/actions/category/tree";
 import { getUsername } from "@/app/_server/actions/users";
 import { folderOf } from "@/app/_utils/sidebar-tree-utils";
 import { isItemMode, itemListing } from "@/app/_server/actions/catalog/listing";
-import { sidebarSnapshot } from "./listing";
+import { folderStampOf, searchSnapshot } from "./listing";
 
 const _whole = (value: unknown): number =>
   typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : 0;
@@ -14,6 +14,7 @@ export const getSidebarRows = async (
   category: unknown,
   offset: unknown,
   stamp: string,
+  stamped = false,
 ): Promise<Result<SidebarPage>> => {
   const username = await getUsername();
   if (!username) return { success: false, error: "Not authenticated" };
@@ -27,6 +28,7 @@ export const getSidebarRows = async (
     success: true,
     data: {
       stamp,
+      ...(stamped && { folderStamp: folderStampOf(inFolder) }),
       total: inFolder.length,
       rows: inFolder.slice(start, start + SIDEBAR_PAGE_SIZE),
     },
@@ -71,7 +73,7 @@ export const searchSidebar = async (
   return {
     success: true,
     data: {
-      snapshot: sidebarSnapshot(found.slice(0, SIDEBAR_SEARCH_LIMIT), categories, `search:${stamp}:${needle}`),
+      snapshot: searchSnapshot(found.slice(0, SIDEBAR_SEARCH_LIMIT), categories, `search:${stamp}:${needle}`),
       folders: categories
         .filter((category) => category.name.toLowerCase().includes(needle))
         .map((category) => category.path),
