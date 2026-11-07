@@ -1,7 +1,7 @@
 "use client";
 
 import { LockedItemNotice } from "@/app/_components/GlobalComponents/Feedback/LockedItemNotice";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Category, Checklist, SanitisedUser } from "@/app/_types";
 import { ChecklistView } from "@/app/_components/FeatureComponents/Checklists/Checklist";
@@ -23,6 +23,7 @@ import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes } from "@/app/_types/enums";
 import { useTranslations } from "next-intl";
 import { useReturnPath } from "@/app/_hooks/useReturnPath";
+import { useServerItem } from "@/app/_hooks/useServerItem";
 
 interface ChecklistClientProps {
   checklist: Checklist;
@@ -38,7 +39,7 @@ export const ChecklistClient = ({
   const router = useRouter();
   const t = useTranslations();
   const { checkNavigation } = useNavigationGuard();
-  const [localChecklist, setLocalChecklist] = useState<Checklist>(checklist);
+  const [localChecklist, setLocalChecklist] = useServerItem(checklist);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showConversionModal, setShowConversionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -51,19 +52,6 @@ export const ChecklistClient = ({
   const { openCreateChecklistModal, openCreateCategoryModal, openSettings } =
     useShortcut();
   const returnPath = useReturnPath(`/?mode=${Modes.CHECKLISTS}`);
-  const prevChecklistId = useRef(checklist.id);
-  const prevUpdatedAt = useRef(checklist.updatedAt);
-
-  useEffect(() => {
-    if (
-      checklist.id !== prevChecklistId.current ||
-      checklist.updatedAt !== prevUpdatedAt.current
-    ) {
-      setLocalChecklist(checklist);
-      prevChecklistId.current = checklist.id;
-      prevUpdatedAt.current = checklist.updatedAt;
-    }
-  }, [checklist]);
 
   const handleUpdate = useCallback((updatedChecklist: Checklist) => {
     setLocalChecklist(updatedChecklist);

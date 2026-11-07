@@ -61,6 +61,8 @@ import { NoteHistoryModal } from "@/app/_components/GlobalComponents/Modals/Note
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useTemplateMaker } from "@/app/_hooks/useTemplates";
 import { isTemplateCategory } from "@/app/_utils/template-utils";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { appendMove } from "@/app/_utils/category-path-utils";
 import {
   QuickBarPortal,
   QuickBarSlots,
@@ -253,7 +255,7 @@ export const NoteEditorHeader = ({
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", newContent);
-    formData.append("category", category);
+    appendMove(formData, category, note.category || UNCATEGORIZED);
     formData.append("uuid", note.uuid || "");
 
     const result = await updateNote(formData);
