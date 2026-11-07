@@ -29,11 +29,12 @@ import {
 } from "@/app/_utils/grep-utils";
 import { getAllFileStats } from "@/app/_server/actions/file";
 import { fillFrontmatters } from "@/app/_server/actions/lib/frontmatter-memo";
-import { getOrCompute } from "@/app/_server/actions/lib/metadata-cache";
+import { getOrCompute, isFolderInfo } from "@/app/_server/actions/lib/metadata-cache";
 import { shareFactsKey } from "./mounts";
 import { modeFor } from "@/app/_utils/sharing-utils";
 import { isPathUuid } from "@/app/_server/actions/lib/read-only";
 import { isLockedItem } from "@/app/_server/actions/lib/unstamped";
+import { isPathSafe } from "@/app/_utils/path-utils";
 import { canReachFile, catAccess, resolveAccess, sharersOf } from "./access";
 import { readCatInfo } from "./category-info";
 import { targetDir } from "./target";
@@ -239,25 +240,41 @@ export const sharedFrom = async (
   }
 };
 
-const _grantingDirs = async (mode: Modes): Promise<string[]> => {
+declare global {
+  var __jottyShareShapes: Map<Modes, Map<string, string>> | undefined;
+}
+
+const shareShapes: Map<Modes, Map<string, string>> = (globalThis.__jottyShareShapes ??= new Map());
+
+const _shapeOf = (info: CategoryInfo): string =>
+  JSON.stringify([
+    Object.entries(info.sharing?.users || {}).sort(([a], [b]) => a.localeCompare(b)),
+    info.sharing?.inherit !== false,
+  ]);
+
+const UNSHARED_SHAPE = _shapeOf({});
+const SHARING_NEEDLE = '"sharing"';
+
+const _sharingFolders = async (mode: Modes): Promise<Map<string, CategoryInfo>> => {
   const infoFiles = await grepFilesByText(
     _modeDir(mode),
-    "\"users\"",
+    SHARING_NEEDLE,
     CATEGORY_INFO_FILE,
   );
-  const dirs: string[] = [];
+  const infos = new Map<string, CategoryInfo>();
 
   for (const infoFile of infoFiles) {
     const dir = path.dirname(infoFile);
-    const info: CategoryInfo = await readCatInfo(dir);
-
-    if (info.sharing?.users && Object.keys(info.sharing.users).length > 0) {
-      dirs.push(dir);
-    }
+    infos.set(dir, await readCatInfo(dir));
   }
 
-  return dirs;
+  return infos;
 };
+
+const _grantingDirs = (infos: Map<string, CategoryInfo>): string[] =>
+  Array.from(infos)
+    .filter(([, info]) => Object.keys(info.sharing?.users || {}).length > 0)
+    .map(([dir]) => dir);
 
 const _explicitlyShared = async (mode: Modes): Promise<string[]> => {
   const frontmatters = new Map<string, Record<string, unknown>>();
@@ -268,11 +285,12 @@ const _explicitlyShared = async (mode: Modes): Promise<string[]> => {
 };
 
 const _reachableFiles = async (mode: Modes): Promise<string[]> => {
-  const [explicit, dirs] = await Promise.all([_explicitlyShared(mode), _grantingDirs(mode)]);
+  const [explicit, infos] = await Promise.all([_explicitlyShared(mode), _sharingFolders(mode)]);
+  shareShapes.set(mode, new Map(Array.from(infos, ([dir, info]) => [dir, _shapeOf(info)])));
 
   const paths = new Set(explicit);
 
-  for (const dir of dirs) {
+  for (const dir of _grantingDirs(infos)) {
     const files = await grepListAllFiles(dir);
     files.forEach((file) => paths.add(file.filePath));
   }
@@ -313,18 +331,52 @@ const _computeFacts = async (mode: Modes): Promise<SharedFact[]> => {
   return facts;
 };
 
+const _reshaped = async (mode: Modes, folder: string): Promise<boolean> => {
+  const known = shareShapes.get(mode);
+  const shape = _shapeOf(await readCatInfo(folder));
+  if (known && (known.get(folder) ?? UNSHARED_SHAPE) === shape) return false;
+  known?.set(folder, shape);
+  return true;
+};
+
+const _underFolder = async (
+  mode: Modes,
+  infoPath: string,
+  current: SharedFact[],
+): Promise<string[]> => {
+  const folder = path.dirname(infoPath);
+  if (!(await _reshaped(mode, folder))) return [];
+  const listed = (await grepListAllFiles(folder)).map((file) => file.filePath);
+  const known = current.filter((fact) => isPathSafe(folder, fact.path)).map((fact) => fact.path);
+  return [...listed, ...known];
+};
+
+const _affectedBy = async (
+  mode: Modes,
+  paths: string[],
+  current: SharedFact[],
+): Promise<string[]> => {
+  const affected = new Set<string>();
+  for (const filePath of paths) {
+    const reached = isFolderInfo(filePath)
+      ? await _underFolder(mode, filePath, current)
+      : [filePath];
+    reached.forEach((reachedPath) => affected.add(reachedPath));
+  }
+  return Array.from(affected);
+};
+
 const _patchFacts =
   (mode: Modes) =>
-  async (paths: string[], current: SharedFact[]): Promise<SharedFact[]> => {
-    const next = [...current];
-    for (const filePath of paths) {
+  async (paths: string[], current: SharedFact[]): Promise<SharedFact[] | null> => {
+    if (!shareShapes.has(mode) && paths.some(isFolderInfo)) return null;
+    const byPath = new Map(current.map((fact) => [fact.path, fact]));
+    for (const filePath of await _affectedBy(mode, paths, current)) {
       const fact = await _factOf(mode, filePath);
-      const at = next.findIndex((known) => known.path === filePath);
-      if (at >= 0 && fact) next[at] = fact;
-      else if (at >= 0) next.splice(at, 1);
-      else if (fact) next.push(fact);
+      if (fact) byPath.set(filePath, fact);
+      else byPath.delete(filePath);
     }
-    return next;
+    return Array.from(byPath.values());
   };
 
 const _factsFor = cache(
@@ -334,6 +386,7 @@ const _factsFor = cache(
       _modeDir(mode),
       () => _computeFacts(mode),
       _patchFacts(mode),
+      true,
     ),
 );
 

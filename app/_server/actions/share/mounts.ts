@@ -1,6 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
-import { Modes } from "@/app/_types/enums";
+import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";
 import { SharedMount } from "@/app/_types/sharing";
 import {
@@ -15,8 +15,10 @@ import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import {
   getOrCompute,
   dropByPrefix,
+  isFolderInfo,
 } from "@/app/_server/actions/lib/metadata-cache";
 import { listMounts, catAccess } from "./access";
+import { readCatInfo } from "./category-info";
 
 const MOUNTS_CACHE_PREFIX = "mounts:";
 
@@ -72,11 +74,36 @@ const _touchesViewer = async (
   );
 };
 
+const _mountDirOf = (mode: Modes, mount: SharedMount): string =>
+  path.join(_homeOf(mode, mount.owner), mount.categoryPath);
+
+const _samePerms = (a: SharingPermissions, b: SharingPermissions): boolean =>
+  Object.values(PermissionTypes).every((key) => Boolean(a[key]) === Boolean(b[key]));
+
+const _folderTouchesViewer = async (
+  mode: Modes,
+  infoPath: string,
+  username: string,
+  mounts: SharedMount[],
+): Promise<boolean> => {
+  if (_isInside(_homeOf(mode, username), infoPath)) return false;
+  const folder = path.dirname(infoPath);
+  const info = await readCatInfo(folder);
+  const granted = info.sharing?.users?.[username];
+  const folders = mounts.filter((mount) => !mount.isImplicit);
+  const here = folders.find((mount) => _mountDirOf(mode, mount) === folder);
+
+  if (here) return !granted || here.categoryUuid !== info.uuid || !_samePerms(here.permissions, granted);
+  if (!granted) return false;
+  return !folders.some((mount) => _isInside(_mountDirOf(mode, mount), folder));
+};
+
 const _patchMounts =
   (mode: Modes, username: string) =>
   async (paths: string[], current: SharedMount[]): Promise<SharedMount[] | null> => {
     for (const filePath of paths) {
-      if (await _touchesViewer(mode, filePath, username, current)) return null;
+      const touches = isFolderInfo(filePath) ? _folderTouchesViewer : _touchesViewer;
+      if (await touches(mode, filePath, username, current)) return null;
     }
     return current;
   };
@@ -92,6 +119,7 @@ const _cachedMounts = async (
     watched,
     () => listMounts(mode, username),
     _patchMounts(mode, username),
+    true,
   );
 };
 
