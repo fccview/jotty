@@ -1,6 +1,6 @@
 {
   "name": "jotty-mcp",
-  "version": "1.29.2",
+  "version": "1.30.0-beta.1",
   "private": true,
   "type": "module",
   "module": "src/main.ts",
