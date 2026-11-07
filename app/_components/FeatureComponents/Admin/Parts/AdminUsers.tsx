@@ -9,7 +9,7 @@ import {
     UserIcon,
 } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { SanitisedUser as UserType, Checklist, Note } from "@/app/_types";
+import { SanitisedUser as UserType, AdminCounts } from "@/app/_types";
 import { UserAvatar } from "@/app/_components/GlobalComponents/User/UserAvatar";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
@@ -22,8 +22,7 @@ interface AdminUsersProps {
     onAddUser: () => void;
     onEditUser: (user: UserType) => void;
     onDeleteUser: (user: UserType) => void;
-    allLists: Checklist[];
-    allDocs: Note[];
+    counts: Record<string, AdminCounts>;
     username: string;
     deletingUser: string | null;
 }
@@ -35,8 +34,7 @@ export const AdminUsers = ({
     onAddUser,
     onEditUser,
     onDeleteUser,
-    allLists,
-    allDocs,
+    counts,
     username,
     deletingUser,
 }: AdminUsersProps) => {
@@ -72,12 +70,8 @@ export const AdminUsers = ({
 
             <div className="space-y-3">
                 {filteredUsers.map((user) => {
-                    const userChecklists = allLists.filter(
-                        (list) => list.owner === user.username
-                    ).length;
-                    const userDocs = allDocs.filter(
-                        (doc) => doc.owner === user.username
-                    ).length;
+                    const userChecklists = counts[user.username]?.checklists ?? 0;
+                    const userDocs = counts[user.username]?.notes ?? 0;
 
                     return (
                         <div

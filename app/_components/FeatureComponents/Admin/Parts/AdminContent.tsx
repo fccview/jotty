@@ -8,7 +8,7 @@ import {
   ArrowRight01Icon,
   ShieldUserIcon,
 } from "hugeicons-react";
-import { Checklist, Note, SanitisedUser as UserType } from "@/app/_types";
+import { AdminRow, SanitisedUser as UserType } from "@/app/_types";
 import { AdminContentColumn } from "./AdminContentColumn";
 import { ExportContent } from "./AdminExport";
 import { Accordion } from "@/app/_components/GlobalComponents/Layout/Accordion";
@@ -20,9 +20,14 @@ import { useTranslations } from "next-intl";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 
+const CHECKLIST_LINK = "/admin/checklist";
+const NOTE_LINK = "/admin/note";
+const CHECKLIST_SIZE = "common.itemCount";
+const NOTE_SIZE = "common.characterCount";
+
 interface AdminContentProps {
-  allLists: Checklist[];
-  allDocs: Note[];
+  allLists: AdminRow[];
+  allDocs: AdminRow[];
   users: UserType[];
 }
 
@@ -39,7 +44,7 @@ export const AdminContent = ({
   const [updatingTags, setUpdatingTags] = useState(false);
 
   const sortedUserContent = useMemo(() => {
-    const listsByOwner = new Map<string, Checklist[]>();
+    const listsByOwner = new Map<string, AdminRow[]>();
     allLists.forEach((list) => {
       if (list.owner) {
         const ownerLists = listsByOwner.get(list.owner) || [];
@@ -48,7 +53,7 @@ export const AdminContent = ({
       }
     });
 
-    const docsByOwner = new Map<string, Note[]>();
+    const docsByOwner = new Map<string, AdminRow[]>();
     allDocs.forEach((doc) => {
       if (doc.owner) {
         const ownerDocs = docsByOwner.get(doc.owner) || [];
@@ -251,20 +256,16 @@ export const AdminContent = ({
                       <AdminContentColumn
                         title={t('checklists.title')}
                         icon={<CheckmarkSquare04Icon className="h-4 w-4" />}
-                        items={checklists.map((list) => ({
-                          ...list,
-                          link: `/admin/checklist/${list.uuid}`,
-                          details: `${list.owner} • ${list.category} • ${t('common.itemCount', { count: list.items.length })}`,
-                        }))}
+                        items={checklists}
+                        linkBase={CHECKLIST_LINK}
+                        sizeKey={CHECKLIST_SIZE}
                       />
                       <AdminContentColumn
                         title={t('notes.title')}
                         icon={<File02Icon className="h-4 w-4" />}
-                        items={notes.map((doc) => ({
-                          ...doc,
-                          link: `/admin/note/${doc.uuid}`,
-                          details: `${doc.owner} • ${doc.category} • ${t('common.characterCount', { count: doc.content.length })}`,
-                        }))}
+                        items={notes}
+                        linkBase={NOTE_LINK}
+                        sizeKey={NOTE_SIZE}
                       />
                     </div>
                   ) : (
