@@ -37,6 +37,14 @@ const write = (filePath: string, uuid: string, extra = "") => {
   invalidatePath(filePath);
 };
 
+const echoMidRead = (...paths: string[]) => {
+  const real = grep.grepFilesByText;
+  return vi.spyOn(grep, "grepFilesByText").mockImplementationOnce(async (...args) => {
+    paths.forEach(invalidatePath);
+    return real(...args);
+  });
+};
+
 const sharedNotes = async () => (await allShared()).notes.map((entry) => entry.uuid);
 const bobsLooseItems = async () =>
   (await mountsFor(Modes.NOTES, "bob")).flatMap((mount) => mount.itemUuids || []);
@@ -71,7 +79,9 @@ describe("share caches after a single note changes", () => {
   it("keep the viewer's mounts when one of their own notes goes, and re-read them when a shared one goes", async () => {
     write(plan, PLAN, "sharedWith: bob:r\n");
     write(bobsOwn, BOBS);
+    const echo = echoMidRead(plan, bobsOwn);
     expect(await bobsLooseItems()).toEqual([PLAN]);
+    echo.mockRestore();
 
     const scans = vi.spyOn(grep, "grepFilesByText");
 
@@ -90,7 +100,9 @@ describe("share caches after a single note changes", () => {
 
   it("keep the viewer's mounts when a shared note is edited with the same grant, and re-read them when the grant changes", async () => {
     write(plan, PLAN, "sharedWith: bob:r\n");
+    const echo = echoMidRead(plan);
     expect(await bobsLooseItems()).toEqual([PLAN]);
+    echo.mockRestore();
 
     const scans = vi.spyOn(grep, "grepFilesByText");
 

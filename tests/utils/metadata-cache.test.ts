@@ -171,7 +171,7 @@ describe("metadata cache", () => {
       expect(compute).toHaveBeenCalledTimes(2);
     });
 
-    it("drops a change that lands while the listing is still being read", async () => {
+    it("re-reads a change that lands while the listing is still being read instead of reading everything again", async () => {
       const dir = tempDir();
       let runs = 0;
       const compute = async () => {
@@ -179,14 +179,36 @@ describe("metadata cache", () => {
         await defer();
         return listing(runs);
       };
-      const refresh = vi.fn(async (_paths: string[], current: Row[]) => current);
+      const refresh = vi.fn(async (paths: string[], current: Row[]) =>
+        current.map((row) => (paths.includes(path.join(dir, `${row.id}.md`)) ? { ...row, version: 9 } : row)),
+      );
 
       const inflight = getOrCompute("patch:four", dir, compute, refresh);
       invalidatePath(path.join(dir, "a.md"));
       await inflight;
       const after = await getOrCompute("patch:four", dir, compute, refresh);
 
-      expect(refresh).not.toHaveBeenCalled();
+      expect(runs).toBe(1);
+      expect(refresh).toHaveBeenCalledWith([path.join(dir, "a.md")], listing(1));
+      expect(after).toEqual([{ id: "a", version: 9 }, { id: "b", version: 1 }]);
+    });
+
+    it("still reads everything again when a change lands mid-read and the patch cannot place it", async () => {
+      const dir = tempDir();
+      let runs = 0;
+      const compute = async () => {
+        runs += 1;
+        await defer();
+        return listing(runs);
+      };
+      const refresh = vi.fn(async () => null);
+
+      const inflight = getOrCompute("patch:five", dir, compute, refresh);
+      invalidatePath(path.join(dir, "a.md"));
+      await inflight;
+      const after = await getOrCompute("patch:five", dir, compute, refresh);
+
+      expect(refresh).toHaveBeenCalledTimes(1);
       expect(after).toEqual(listing(2));
     });
   });

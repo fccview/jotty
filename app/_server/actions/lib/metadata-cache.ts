@@ -45,7 +45,7 @@ function invalidateDir(dir: string) {
 }
 
 function touch(key: string, filePath: string) {
-  if (pending.has(key) || !refreshers.has(key) || !store.has(key)) {
+  if (!refreshers.has(key) || (!store.has(key) && !pending.has(key))) {
     drop(key);
     return;
   }
