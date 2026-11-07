@@ -196,7 +196,7 @@ export const UnifiedMarkdownRenderer = ({
         </abbr>
       );
     },
-    a({ href, children, ...props }) {
+    a({ node, href, children, ...props }) {
       const childText = String(children);
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;

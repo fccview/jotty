@@ -16,7 +16,7 @@ import { DropdownMenu } from "@/app/_components/GlobalComponents/Dropdowns/Dropd
 import { AppMode, Checklist, Note, SanitisedUser } from "@/app/_types";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ARCHIVED_DIR_NAME } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { toggleArchive } from "@/app/_server/actions/dashboard";
@@ -59,6 +59,7 @@ export const SidebarItem = ({
 }: SidebarItemProps) => {
   const t = useTranslations();
   const router = useRouter();
+  const pathname = usePathname();
   const { showToast } = useToast();
   const { checkNavigation, checkWouldBlock } = useNavigationGuard();
   const returnPath = useReturnPath(`/?mode=${mode}`);
@@ -83,16 +84,12 @@ export const SidebarItem = ({
     const formData = new FormData();
     formData.append("uuid", item.uuid!);
 
-    if (mode === Modes.CHECKLISTS) {
-      const result = await deleteList(formData);
-      if (result.success) {
-        router.refresh();
-      }
+    const result = mode === Modes.CHECKLISTS ? await deleteList(formData) : await deleteNote(formData);
+    if (result.success) {
+      if (pathname === itemHref) router.push(returnPath);
+      router.refresh();
     } else {
-      const result = await deleteNote(formData);
-      if (result.success) {
-        router.refresh();
-      }
+      console.error("Failed to delete item:", result.error);
     }
     setShowDeleteModal(false);
   };

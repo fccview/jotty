@@ -7,6 +7,7 @@ import { caretAfter, positionOf } from "./cursor";
 import { expectRoundtrip, findAll } from "./properties";
 import { docToMarkdown } from "@/app/_utils/markdown/editor-bridge";
 import { typedTagDoc } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagInput";
+import { pickTag } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/SlashCommands";
 import type { NodeJson } from "@/app/_utils/markdown/serialize/types";
 
 const typeText = (instance: Editor, text: string) => {
@@ -121,6 +122,28 @@ describe("typing a hashtag in the rich editor", () => {
     typeText(instance, " #draft");
     instance.commands.setTextSelection(positionOf(instance, "#draft") + 3);
     expect(tagsOf(instance)).toEqual([]);
+  });
+
+  it("puts a space after a tag picked from the popup so the next word stays separate", () => {
+    const saved = editAndSave("hello", (instance) => {
+      caretAfter(instance, "hello");
+      typeText(instance, " #wor");
+      const from = positionOf(instance, "#wor");
+      pickTag(instance, { from, to: from + 4 }, "work");
+      typeText(instance, "more");
+      expect(tagsOf(instance)).toEqual(["work"]);
+    });
+    expect(saved).toBe("hello #work more");
+  });
+
+  it("does not double the space when one already follows the picked tag", () => {
+    const saved = editAndSave("hello next", (instance) => {
+      caretAfter(instance, "hello");
+      typeText(instance, " #wor");
+      const from = positionOf(instance, "#wor");
+      pickTag(instance, { from, to: from + 4 }, "work");
+    });
+    expect(saved).toBe("hello #work next");
   });
 
   it("picks a suggestion without leaving a second tag behind", () => {

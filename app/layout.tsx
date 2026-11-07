@@ -65,7 +65,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   const user = await getCurrentUser();
   const ogName = settings?.isRwMarkable ? "rwMarkable" : "jotty·page";
   const appName = settings?.appName || ogName;
-  const appVersion = new Date().getTime().toString();
+  const appVersion = (await readPackageVersion()).data ?? "";
   const appDescription =
     settings?.appDescription ||
     "A simple, fast, and lightweight checklist and notes application";

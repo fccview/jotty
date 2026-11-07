@@ -28,8 +28,24 @@ import { itemHref } from "@/app/_utils/global-utils";
 import { findMentionables } from "@/app/_utils/mention-lookup";
 
 const WIKILINK_OPEN = "[[";
+const LINE_BREAK = "\n";
+const SEPARATOR = /\s/;
 
 const WIKILINK_CLOSE_CHAR = "]";
+
+export const pickTag = (editor: Editor, range: Range, tag: string) => {
+  const { doc } = editor.state;
+  const next = doc.textBetween(range.to, Math.min(range.to + 1, doc.content.size), LINE_BREAK, LINE_BREAK);
+  editor
+    .chain()
+    .focus()
+    .deleteRange(range)
+    .insertContent([
+      { type: "tagLink", attrs: { tag } },
+      ...(next && SEPARATOR.test(next) ? [] : [{ type: "text", text: " " }]),
+    ])
+    .run();
+};
 
 export interface SlashCommandItem {
   title: string;
@@ -267,19 +283,7 @@ export const SlashCommands = Extension.create({
           editor: any;
           range: any;
           props: { tag: string; display: string };
-        }) => {
-          editor
-            .chain()
-            .focus()
-            .deleteRange(range)
-            .insertContent({
-              type: "tagLink",
-              attrs: {
-                tag: props.tag,
-              },
-            })
-            .run();
-        },
+        }) => pickTag(editor, range, props.tag),
         items: ({ query }: { query: string }) => {
           const lowerQuery = query.toLowerCase().trim();
           const filtered = tagSuggestionData.tags
