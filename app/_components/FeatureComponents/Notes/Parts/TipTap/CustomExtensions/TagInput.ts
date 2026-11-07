@@ -3,7 +3,8 @@ import { isChangeOrigin } from "@tiptap/extension-collaboration";
 import { isHistoryTransaction } from "@tiptap/pm/history";
 import { Plugin, PluginKey, type EditorState, type Transaction } from "@tiptap/pm/state";
 import { pastedMarkdown } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MarkdownPaste";
-import { TAG_WORD, tagWordAt, tagged } from "@/app/_utils/markdown/tag-words";
+import { ySyncPluginKey } from "@tiptap/y-tiptap";
+import { TAG_WORD, plainTagCount, tagWordAt, tagged } from "@/app/_utils/markdown/tag-words";
 
 const COMPOSITION = "composition";
 const UI_EVENT = "uiEvent";
@@ -21,6 +22,14 @@ const _typed = (tr: Transaction) =>
 const _touches = (tr: Transaction, pos: number) =>
   getChangedRanges(tr).some(({ newRange }) => newRange.from <= pos && pos <= newRange.to);
 
+const _undone = (tr: Transaction) =>
+  tr.docChanged && (isHistoryTransaction(tr) || Boolean(tr.getMeta(ySyncPluginKey)?.isUndoRedoOperation));
+
+const _untagged = (old: EditorState, state: EditorState, caret: number) => {
+  const word = tagWordAt(state.doc, caret);
+  return word && plainTagCount(state.doc, word.tag) > plainTagCount(old.doc, word.tag) ? word.from : null;
+};
+
 const _fresh = (tr: Transaction, old: EditorState, from: number) =>
   !tagWordAt(old.doc, tr.mapping.invert().map(from, -1), true);
 
@@ -28,15 +37,15 @@ const _nextPending = (tr: Transaction, pending: number | null, old: EditorState,
   if (tr.getMeta(tagInputKey) || tr.getMeta(PREVENT_UPDATE) !== undefined) return null;
   const { selection } = state;
   const caret = selection.empty ? selection.from : null;
+  if (caret !== null && _undone(tr)) {
+    const untagged = _untagged(old, state, caret);
+    if (untagged !== null) return untagged;
+  }
   if (isChangeOrigin(tr)) {
     return pending === null || caret === null ? null : tagWordAt(state.doc, caret)?.from ?? null;
   }
   const mapped = pending === null ? null : tr.mapping.mapResult(pending, 1);
   const kept = mapped && !mapped.deleted && tagWordAt(state.doc, mapped.pos, true) ? mapped.pos : null;
-  if (caret !== null && tr.docChanged && isHistoryTransaction(tr)) {
-    const word = tagWordAt(state.doc, caret);
-    if (word && _fresh(tr, old, word.from)) return word.from;
-  }
   if (caret !== null && _typed(tr) && _touches(tr, caret)) {
     const word = tagWordAt(state.doc, caret);
     if (word && (word.from === kept || _fresh(tr, old, word.from))) return word.from;

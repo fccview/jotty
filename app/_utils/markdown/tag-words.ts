@@ -40,6 +40,16 @@ const _wordsIn = (block: PmNode, start: number): TagWord[] => {
   });
 };
 
+export const plainTagCount = (doc: PmNode, tag: string): number => {
+  let count = 0;
+  doc.descendants((node, pos) => {
+    if (!node.isTextblock) return true;
+    count += _wordsIn(node, pos + 1).filter((word) => word.tag === tag && !_guarded(doc, word)).length;
+    return false;
+  });
+  return count;
+};
+
 export const tagWordAt = (doc: PmNode, pos: number, exact = false): TagWord | null => {
   const $pos = doc.resolve(pos);
   const word = _wordsIn($pos.parent, $pos.start()).find((found) =>
