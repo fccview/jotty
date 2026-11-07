@@ -12,30 +12,35 @@ import {
 } from "@/app/_components/FeatureComponents/Notes/Parts/NotePanel/NotePanelBody";
 import { PublicLinkList } from "./PublicLinkList";
 
+export const linkCountOf = (links: PublicLinks) => links.backlinks.length + links.links.length;
+
+export const publicTabsFor = (hasContents: boolean, links: PublicLinks): NotePanelTabs[] => [
+  ...(hasContents ? [NotePanelTabs.CONTENTS] : []),
+  ...(linkCountOf(links) > 0 ? [NotePanelTabs.LINKS] : []),
+];
+
 interface PublicPanelBodyProps {
+  tabs: NotePanelTabs[];
   links: PublicLinks;
   trailing?: ReactNode;
 }
 
-export const PublicPanelBody = ({ links, trailing }: PublicPanelBodyProps) => {
+export const PublicPanelBody = ({ tabs, links, trailing }: PublicPanelBodyProps) => {
   const t = useTranslations();
-  const [tab, setTab] = useState(NotePanelTabs.CONTENTS);
-
-  const linkCount = links.backlinks.length + links.links.length;
-  const tabs = linkCount > 0 ? [NotePanelTabs.CONTENTS, NotePanelTabs.LINKS] : [NotePanelTabs.CONTENTS];
-  const active = tabs.includes(tab) ? tab : NotePanelTabs.CONTENTS;
+  const [tab, setTab] = useState(tabs[0]);
+  const active = tabs.includes(tab) ? tab : tabs[0];
 
   const panelTabs = tabs.map((id) => ({
     id,
     icon: PANEL_TAB_ICONS[id],
     label: t(PANEL_TAB_LABELS[id]),
-    count: id === NotePanelTabs.LINKS ? linkCount : undefined,
+    count: id === NotePanelTabs.LINKS ? linkCountOf(links) : undefined,
   }));
 
   return (
     <>
       <PanelTabs tabs={panelTabs} active={active} onSelect={setTab} trailing={trailing} />
-      <div role="tabpanel" className="flex-1 overflow-y-auto hide-scrollbar p-2">
+      <div role="tabpanel" className="min-h-0 flex-1 overflow-y-auto hide-scrollbar p-2">
         {active === NotePanelTabs.CONTENTS && <TableOfContents />}
         {active === NotePanelTabs.LINKS && <PublicLinkList links={links} />}
       </div>

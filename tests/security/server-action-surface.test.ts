@@ -75,6 +75,9 @@ const NEVER_AN_ACTION = [
   "publicLinksFor",
   "ownerThemeFor",
   "loadPublicNote",
+  "loadPublicChecklist",
+  "mayViewPublic",
+  "publicExtrasFor",
 ];
 
 const PUBLIC_ACTIONS: Record<string, string> = {

@@ -1,55 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Checklist, User } from "@/app/_types";
-import { PublicChecklistHeader } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistHeader";
-import { PublicChecklistBody } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistBody";
+import { Checklist } from "@/app/_types";
+import type { PublicLinks } from "@/app/_types/relations";
+import { isKanbanType } from "@/app/_types/enums";
 import { PublicUser } from "@/app/_utils/user-sanitize-utils";
+import { ChecklistProgress } from "@/app/_components/FeatureComponents/Checklists/Parts/Simple/ChecklistProgress";
+import { PublicChecklistBody } from "@/app/_components/FeatureComponents/PublicView/Parts/PublicChecklistBody";
+import { PublicBoard } from "./Parts/PublicBoard";
+import { PublicPaper } from "./Parts/PublicPaper";
 
 interface PublicChecklistViewProps {
   checklist: Checklist;
   user: PublicUser | null;
+  links: PublicLinks;
   ownerShowsEmojis: boolean;
 }
 
-export const PublicChecklistView = ({
-  checklist,
-  user,
-  ownerShowsEmojis,
-}: PublicChecklistViewProps) => {
+export const PublicChecklistView = ({ checklist, user, links, ownerShowsEmojis }: PublicChecklistViewProps) => {
   const t = useTranslations();
-  const [avatarUrl, setAvatarUrl] = useState("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && user?.avatarUrl) {
-      setAvatarUrl(window.location.origin + user.avatarUrl);
-    }
-  }, [user?.avatarUrl]);
+  const isBoard = isKanbanType(checklist.type);
+  const hasItems = checklist.items.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <PublicChecklistHeader
-          checklist={checklist}
-          totalCount={checklist.items.length}
-          user={user}
-          avatarUrl={avatarUrl}
-        />
-
-        <main className="space-y-6">
-          <PublicChecklistBody
-            checklist={checklist}
-            ownerShowsEmojis={ownerShowsEmojis}
-          />
-        </main>
-
-        <footer className="mt-12 pt-8 border-t border-border text-center">
-          <p className="text-md lg:text-sm text-muted-foreground">
-            {t("checklists.sharedPubliclyBy", { owner: checklist.owner ?? "" })}
-          </p>
-        </footer>
-      </div>
-    </div>
+    <PublicPaper
+      title={checklist.title}
+      user={user}
+      category={checklist.category}
+      updatedAt={checklist.updatedAt}
+      footer={t("checklists.sharedPubliclyBy", { owner: checklist.owner ?? "" })}
+      links={links}
+      wide={isBoard && hasItems}
+    >
+      {hasItems && (
+        <div className="mb-4">
+          <ChecklistProgress checklist={checklist} />
+        </div>
+      )}
+      {isBoard && hasItems ? (
+        <PublicBoard checklist={checklist} ownerShowsEmojis={ownerShowsEmojis} />
+      ) : (
+        <PublicChecklistBody checklist={checklist} ownerShowsEmojis={ownerShowsEmojis} />
+      )}
+    </PublicPaper>
   );
 };
