@@ -505,6 +505,17 @@ const _summaries = async (
   return { all, open };
 };
 
+export const publicUuids = async (): Promise<Record<ItemTypes, Set<string>>> => {
+  const [notes, checklists] = await Promise.all([
+    _summaries(Modes.NOTES),
+    _summaries(Modes.CHECKLISTS),
+  ]);
+  const lowered = ({ open }: { open: SharedItemSummary[] }) =>
+    new Set(open.map((item) => item.uuid.toLowerCase()));
+
+  return { [ItemTypes.NOTE]: lowered(notes), [ItemTypes.CHECKLIST]: lowered(checklists) };
+};
+
 export const allShared = async (): Promise<AllSharedItems> => {
   try {
     const [notes, checklists] = await Promise.all([

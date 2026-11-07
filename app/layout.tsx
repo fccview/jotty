@@ -23,8 +23,10 @@ import { headers } from "next/headers";
 import {
   themeInitScript,
   getThemeBackgroundColor,
+  OWNER_THEME_ATTR,
 } from "./_consts/themes";
 import { THEME_COLOR_META } from "./_utils/theme-color-utils";
+import { PUBLIC_ROUTE_PREFIX } from "./_consts/sharing";
 import { loadCustomThemes } from "./_server/actions/config";
 import { getUserChecklists } from "./_server/actions/checklist/queries";
 import { getUserNotes } from "./_server/actions/note/queries";
@@ -160,11 +162,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = (await headers()).get("x-pathname");
-  const isPublicRoute = pathname?.startsWith("/public");
+  const isPublicRoute = pathname?.startsWith(PUBLIC_ROUTE_PREFIX);
   const settings = await getSettings();
   const appName =
     settings?.appName || (settings?.isRwMarkable ? "rwMarkable" : "jotty·page");
   const user = await getCurrentUser();
+  const viewerTheme = isPublicRoute ? undefined : user?.preferredTheme;
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES;
@@ -236,7 +239,8 @@ export default async function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-rwmarkable={settings?.isRwMarkable ? "true" : "false"}
-      data-user-theme={user?.preferredTheme || ""}
+      data-user-theme={viewerTheme || ""}
+      {...(isPublicRoute && { [OWNER_THEME_ATTR]: "" })}
       style={
         {
           [ADMIN_BORDER_RADIUS_VAR]: radiusToRem(settings?.borderRadius),
@@ -264,7 +268,7 @@ export default async function RootLayout({
         <meta
           name={THEME_COLOR_META}
           content={getThemeBackgroundColor(
-            serverThemeId(settings?.isRwMarkable, user?.preferredTheme),
+            serverThemeId(settings?.isRwMarkable, viewerTheme),
           )}
         />
         <script

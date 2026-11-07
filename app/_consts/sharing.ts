@@ -4,6 +4,7 @@ export const LEGACY_SHARING_FILE = ".sharing.json";
 export const MIGRATED_SHARING_FILE = ".sharing.json.migrated";
 
 export const PUBLIC_USER = "public";
+export const PUBLIC_ROUTE_PREFIX = "/public/";
 export const IMPLICIT_MOUNT_PREFIX = "shared-by:";
 export const SHARE_CODE_SEPARATOR = ":";
 export const SHARED_WITH_KEY = "sharedWith";
