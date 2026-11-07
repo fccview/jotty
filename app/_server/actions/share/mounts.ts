@@ -10,7 +10,7 @@ import {
   CHECKLISTS_DIR,
 } from "@/app/_consts/files";
 import { mountName, parseSharedWith } from "@/app/_utils/sharing-utils";
-import { currentFrontmatterOf } from "@/app/_server/actions/lib/frontmatter-memo";
+import { currentFrontmatterOf, forgetFrontmatter } from "@/app/_server/actions/lib/frontmatter-memo";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import {
   getOrCompute,
@@ -55,6 +55,15 @@ const _mountsKey = (mode: Modes, username: string): string =>
 const _homeOf = (mode: Modes, username: string): string =>
   path.join(process.cwd(), userDirFor(mode, username));
 
+const _samePerms = (a: SharingPermissions, b: SharingPermissions): boolean =>
+  Object.values(PermissionTypes).every((key) => Boolean(a[key]) === Boolean(b[key]));
+
+const _alreadyMounted = (uuid: string | null, granted: SharingPermissions, mounts: SharedMount[]) =>
+  uuid !== null &&
+  mounts.some(
+    (mount) => mount.isImplicit && mount.itemUuids?.includes(uuid) && _samePerms(mount.permissions, granted),
+  );
+
 const _touchesViewer = async (
   mode: Modes,
   filePath: string,
@@ -62,9 +71,11 @@ const _touchesViewer = async (
   mounts: SharedMount[],
 ): Promise<boolean> => {
   if (isPathSafe(_homeOf(mode, username), filePath)) return false;
+  forgetFrontmatter(filePath);
   const metadata = await currentFrontmatterOf(filePath);
-  if (parseSharedWith(metadata?.[SHARED_WITH_KEY])?.users[username]) return true;
   const uuid = typeof metadata?.uuid === "string" ? metadata.uuid : null;
+  const granted = parseSharedWith(metadata?.[SHARED_WITH_KEY])?.users[username];
+  if (granted) return !_alreadyMounted(uuid, granted, mounts);
   return mounts.some(
     (mount) =>
       mount.isImplicit &&
@@ -74,9 +85,6 @@ const _touchesViewer = async (
 
 const _mountDirOf = (mode: Modes, mount: SharedMount): string =>
   path.join(_homeOf(mode, mount.owner), mount.categoryPath);
-
-const _samePerms = (a: SharingPermissions, b: SharingPermissions): boolean =>
-  Object.values(PermissionTypes).every((key) => Boolean(a[key]) === Boolean(b[key]));
 
 const _folderTouchesViewer = async (
   mode: Modes,

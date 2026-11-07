@@ -282,8 +282,9 @@ export const readNotesRecursively = async (
 };
 
 export const patchNoteListing = (dir: string, owner: string, options: NoteReadOptions = {}) =>
-  listingPatcher<ListedNote>(dir, skippedDirs(options.allowArchived), (filePath, category) =>
-    readNoteEntry(filePath, category, owner, options),
-  );
+  listingPatcher<ListedNote>(dir, skippedDirs(options.allowArchived), (filePath, category) => {
+    memo.forget(filePath);
+    return readNoteEntry(filePath, category, owner, options);
+  });
 
 export const verifyNoteSummaries = (key: string, dir: string) => verifyListing(key, dir, memo);

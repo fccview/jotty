@@ -47,6 +47,7 @@ import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
 import { CATEGORY_INFO_FILE } from "@/app/_consts/sharing";
 import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const READ_ONLY = { canRead: true, canEdit: false, canDelete: false };
 const WRITABLE = { canRead: true, canEdit: true, canDelete: false };
@@ -149,6 +150,7 @@ afterAll(() => {
 beforeEach(() => {
   mockBroadcast.mockReset();
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   dropMounts(Modes.CHECKLISTS);
 });

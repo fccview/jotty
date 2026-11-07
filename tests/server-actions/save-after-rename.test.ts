@@ -59,6 +59,7 @@ import { dropMounts } from "@/app/_server/actions/share/mounts";
 import { Modes } from "@/app/_types/enums";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
 import { appendMove } from "@/app/_utils/category-path-utils";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const NOTE = "b2b2b2b2-b2b2-4b2b-8b2b-b2b2b2b2b2b2";
 
@@ -105,6 +106,7 @@ afterAll(() => {
 beforeEach(() => {
   actor.username = "alice";
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   mkdirSync(path.dirname(path.join(root, USERS_FILE)), { recursive: true });
   writeFileSync(path.join(root, USERS_FILE), JSON.stringify([{ username: "alice" }]));

@@ -42,6 +42,7 @@ import { dropMounts } from "@/app/_server/actions/share/mounts";
 import { ItemTypes, Modes, PermissionTypes } from "@/app/_types/enums";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
 import { CATEGORY_INFO_FILE, PUBLIC_USER } from "@/app/_consts/sharing";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const NOTE = "a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1";
 const READ = { canRead: true, canEdit: false, canDelete: false, canCreate: false };
@@ -80,6 +81,7 @@ afterAll(() => {
 beforeEach(() => {
   actor.username = "alice";
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   mkdirSync(path.dirname(path.join(root, USERS_FILE)), { recursive: true });
   writeFileSync(

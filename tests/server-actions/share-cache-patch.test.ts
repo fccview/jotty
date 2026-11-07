@@ -87,4 +87,23 @@ describe("share caches after a single note changes", () => {
 
     scans.mockRestore();
   });
+
+  it("keep the viewer's mounts when a shared note is edited with the same grant, and re-read them when the grant changes", async () => {
+    write(plan, PLAN, "sharedWith: bob:r\n");
+    expect(await bobsLooseItems()).toEqual([PLAN]);
+
+    const scans = vi.spyOn(grep, "grepFilesByText");
+
+    write(plan, PLAN, "sharedWith: bob:r\ntags:\n  - edited\n");
+    expect(await bobsLooseItems()).toEqual([PLAN]);
+    expect(scans).not.toHaveBeenCalled();
+
+    write(plan, PLAN, "sharedWith: bob:rw\n");
+    const [mount] = await mountsFor(Modes.NOTES, "bob");
+    expect(mount.itemUuids).toEqual([PLAN]);
+    expect(mount.permissions.canEdit).toBe(true);
+    expect(scans).toHaveBeenCalled();
+
+    scans.mockRestore();
+  });
 });
