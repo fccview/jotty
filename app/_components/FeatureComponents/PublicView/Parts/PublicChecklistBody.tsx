@@ -1,16 +1,20 @@
-import { Checklist } from "@/app/_types";
+import { Checklist, Item } from "@/app/_types";
 import { CheckmarkSquare04Icon } from "hugeicons-react";
 import { useTranslations } from "next-intl";
+import { splitByCompletion } from "@/app/_utils/item-tree-utils";
 import { NestedChecklistItem } from "../../Checklists/Parts/Simple/NestedChecklistItem";
+import { ChecklistItemsWrapper } from "../../Checklists/Parts/Simple/ChecklistItemsWrapper";
 
-export const PublicChecklistBody = ({
-  checklist,
-  ownerShowsEmojis,
-}: {
+interface PublicChecklistBodyProps {
   checklist: Checklist;
   ownerShowsEmojis?: boolean;
-}) => {
+}
+
+const _noop = () => {};
+
+export const PublicChecklistBody = ({ checklist, ownerShowsEmojis }: PublicChecklistBodyProps) => {
   const t = useTranslations();
+  const { incompleteItems, completedItems } = splitByCompletion(checklist.items);
 
   if (checklist.items.length === 0) {
     return (
@@ -22,23 +26,36 @@ export const PublicChecklistBody = ({
     );
   }
 
+  const _rows = (items: Item[], offset: number, completed: boolean) =>
+    items.map((item, index) => (
+      <NestedChecklistItem
+        key={item.id}
+        item={item}
+        index={(offset + index).toString()}
+        level={0}
+        onToggle={_noop}
+        onDelete={_noop}
+        completed={completed}
+        isPublicView
+        ownerShowsEmojis={ownerShowsEmojis}
+        isDeletingItem={false}
+        isDragDisabled
+        checklist={checklist}
+      />
+    ));
+
   return (
-    <div className="space-y-3">
-      {checklist.items.map((item, index) => (
-        <NestedChecklistItem
-          key={item.id}
-          item={item}
-          index={index.toString()}
-          level={0}
-          onToggle={() => {}}
-          onDelete={() => {}}
-          isPublicView={true}
-          ownerShowsEmojis={ownerShowsEmojis}
-          isDeletingItem={false}
-          isDragDisabled={true}
-          checklist={checklist}
-        />
-      ))}
+    <div className="w-full space-y-4">
+      {incompleteItems.length > 0 && (
+        <ChecklistItemsWrapper title={t("tasks.todo")} count={incompleteItems.length} readOnly>
+          {_rows(incompleteItems, 0, false)}
+        </ChecklistItemsWrapper>
+      )}
+      {completedItems.length > 0 && (
+        <ChecklistItemsWrapper title={t("tasks.completed")} count={completedItems.length} isCompleted readOnly>
+          {_rows(completedItems, incompleteItems.length, true)}
+        </ChecklistItemsWrapper>
+      )}
     </div>
   );
 };

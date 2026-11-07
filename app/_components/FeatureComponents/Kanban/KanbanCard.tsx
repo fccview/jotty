@@ -10,24 +10,15 @@ import { useState, useEffect, memo, useMemo, useCallback, useRef } from "react";
 import { TaskStatus } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useKanbanItem } from "@/app/_hooks/kanban/useKanbanItem";
-import {
-  formatTimerTime,
-  getStatusColor,
-  getStatusIcon,
-  getPriorityDotColor,
-  getPriorityLabel,
-} from "@/app/_utils/kanban/index";
+import { formatTimerTime } from "@/app/_utils/kanban/index";
 import { TimeEntriesAccordion } from "./TimeEntriesAccordion";
 import { KanbanItemTimer } from "./KanbanItemTimer";
 import { KanbanItemContent } from "./KanbanItemContent";
-import { getRecurrenceDescription } from "@/app/_utils/recurrence-utils";
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
-import { formatReminderTime } from "@/app/_utils/kanban/reminder-utils";
-import { CircleIcon, Notification03Icon, UserIcon } from "hugeicons-react";
+import { CircleIcon } from "hugeicons-react";
 import { usePreferredDateTime } from "@/app/_hooks/usePreferredDateTime";
 import { useTranslations } from "next-intl";
-import { UserAvatar } from "../../GlobalComponents/User/UserAvatar";
-import { AgentChip } from "./AgentChip";
+import { KanbanCardFace, KanbanCardShell } from "./KanbanCardFace";
 import { TimeEntriesModal } from "./TimeEntriesModal";
 import { FALLBACK_STATUS_COLOR } from "@/app/_consts/kanban";
 
@@ -179,153 +170,98 @@ const KanbanCardComponent = ({
             "rounded-jotty outline-dashed outline-2 -outline-offset-2 outline-primary/30",
         )}
       >
-        <div
+        <KanbanCardShell
           ref={attachCard}
+          status={item.status}
           style={style}
           {...handleProps}
           tabIndex={0}
           aria-label={plainItemText(item.text)}
           onDoubleClick={() => onOpenDetail(item)}
           className={cn(
-            "group bg-background border rounded-jotty p-3 transition-all duration-200 hover:shadow-md cursor-grab active:cursor-grabbing min-w-0",
-            getStatusColor(item.status),
+            "cursor-grab active:cursor-grabbing",
             isDragging &&
               "opacity-60 scale-[0.98] shadow-lg border-primary/40 z-50 transition-all duration-200",
             isLifted && "opacity-0 pointer-events-none",
           )}
         >
-          <div className="space-y-2">
-            <KanbanItemContent
-              item={item}
-              statuses={statuses}
-              isEditing={kanbanItemHook.isEditing}
-              editText={kanbanItemHook.editText}
-              isShared={isShared}
-              getUserAvatarUrl={getUserAvatarUrl}
-              getStatusIcon={getStatusIcon}
-              inputRef={kanbanItemHook.inputRef}
-              contextTarget={cardRef}
-              onEditTextChange={kanbanItemHook.setEditText}
-              onEditSave={kanbanItemHook.handleSave}
-              onEditKeyDown={kanbanItemHook.handleKeyDown}
-              onShowSubtaskModal={() => onOpenDetail(item)}
-              onShowStatusMenu={() => setShowStatusSheet(true)}
-              onEdit={kanbanItemHook.handleEdit}
-              onDelete={kanbanItemHook.handleDelete}
-              onArchive={kanbanItemHook.handleArchive}
-              formatDateString={formatDateString}
-              formatDateTimeString={formatDateTimeString}
-            />
-
-            <div className="flex flex-wrap gap-1.5">
-              {item.priority && item.priority !== "none" && (
-                <span className={cn(
-                  "text-[10px] font-medium px-1.5 py-0.5 rounded-jotty flex items-center gap-1",
-                  item.priority === "critical" && "bg-destructive/10 text-destructive",
-                  item.priority === "high" && "bg-warning/10 text-warning",
-                  item.priority !== "critical" && item.priority !== "high" && "bg-muted text-muted-foreground"
-                )}>
-                  <span
-                    className="w-2 h-2 rounded-jotty flex-shrink-0"
-                    style={{
-                      backgroundColor: getPriorityDotColor(item.priority),
-                    }}
+          <KanbanCardFace
+            item={item}
+            checklist={checklist}
+            avatarFor={getUserAvatarUrl}
+            head={
+              <KanbanItemContent
+                item={item}
+                statuses={statuses}
+                isEditing={kanbanItemHook.isEditing}
+                editText={kanbanItemHook.editText}
+                isShared={isShared}
+                getUserAvatarUrl={getUserAvatarUrl}
+                inputRef={kanbanItemHook.inputRef}
+                contextTarget={cardRef}
+                onEditTextChange={kanbanItemHook.setEditText}
+                onEditSave={kanbanItemHook.handleSave}
+                onEditKeyDown={kanbanItemHook.handleKeyDown}
+                onShowSubtaskModal={() => onOpenDetail(item)}
+                onShowStatusMenu={() => setShowStatusSheet(true)}
+                onEdit={kanbanItemHook.handleEdit}
+                onDelete={kanbanItemHook.handleDelete}
+                onArchive={kanbanItemHook.handleArchive}
+                formatDateString={formatDateString}
+                formatDateTimeString={formatDateTimeString}
+              />
+            }
+            tracker={
+              !hideTimeTrackingOnCards && (
+                <>
+                  <KanbanItemTimer
+                    totalTime={kanbanItemHook.totalTime}
+                    currentTime={kanbanItemHook.currentTime}
+                    isRunning={kanbanItemHook.isRunning}
+                    formatTimerTime={formatTimerTime}
+                    onTimerToggle={kanbanItemHook.handleTimerToggle}
+                    onAddManualTime={kanbanItemHook.handleAddManualTime}
                   />
-                  {getPriorityLabel(item.priority, t)}
-                </span>
-              )}
 
-              {item.score !== undefined && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground">
-                  {t("kanban.scoreLabel", { score: item.score })}
-                </span>
-              )}
-
-              {item.reminder && !item.reminder.notified && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground flex items-center gap-0.5">
-                  <span className="w-4 h-4 rounded-full bg-warning flex items-center justify-center">
-                    <Notification03Icon className="h-2 w-2 text-white" />
-                  </span>
-                  {formatReminderTime(item.reminder.datetime)}
-                </span>
-              )}
-
-              {item.assignee && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground flex items-center gap-0.5">
-                  <UserAvatar
-                    username={item.assignee}
-                    size="xs"
-                    avatarUrl={getUserAvatarUrl(item.assignee) || ""}
+                  {item.timeEntries && item.timeEntries.length > 0 && (
+                    <div onPointerDown={(e) => e.stopPropagation()}>
+                      <TimeEntriesAccordion
+                        timeEntries={item.timeEntries}
+                        totalTime={
+                          kanbanItemHook.totalTime + kanbanItemHook.currentTime
+                        }
+                        formatTimerTime={formatTimerTime}
+                        usersPublicData={usersPublicData}
+                        formatDateString={formatDateString}
+                        formatTimeString={formatTimeString}
+                        onOpenTimeEntries={() => setShowTimeEntriesModal(true)}
+                      />
+                    </div>
+                  )}
+                </>
+              )
+            }
+            footer={
+              !hideMobileStatusDropdown && (
+                <div
+                  className="lg:hidden"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Dropdown
+                    value={item.status || TaskStatus.TODO}
+                    options={statusOptions}
+                    onChange={(newStatus) =>
+                      kanbanItemHook.handleStatusChange(newStatus as TaskStatus)
+                    }
+                    className="w-full text-sm"
                   />
-                  {item.assignee}
-                </span>
-              )}
-
-              {item.agent && (
-                <AgentChip
-                  agentId={item.agent}
-                  checklist={checklist}
-                  className="text-[10px] font-medium px-1.5 py-0.5 rounded-jotty bg-muted text-muted-foreground"
-                />
-              )}
-            </div>
-
-            {!hideTimeTrackingOnCards && (
-              <>
-                <KanbanItemTimer
-                  totalTime={kanbanItemHook.totalTime}
-                  currentTime={kanbanItemHook.currentTime}
-                  isRunning={kanbanItemHook.isRunning}
-                  formatTimerTime={formatTimerTime}
-                  onTimerToggle={kanbanItemHook.handleTimerToggle}
-                  onAddManualTime={kanbanItemHook.handleAddManualTime}
-                />
-
-                {item.timeEntries && item.timeEntries.length > 0 && (
-                  <div onPointerDown={(e) => e.stopPropagation()}>
-                    <TimeEntriesAccordion
-                      timeEntries={item.timeEntries}
-                      totalTime={
-                        kanbanItemHook.totalTime + kanbanItemHook.currentTime
-                      }
-                      formatTimerTime={formatTimerTime}
-                      usersPublicData={usersPublicData}
-                      formatDateString={formatDateString}
-                      formatTimeString={formatTimeString}
-                      onOpenTimeEntries={() => setShowTimeEntriesModal(true)}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-
-            {item.recurrence && (
-              <div className="text-md lg:text-xs flex items-center gap-1 capitalize !mt-2 border bg-muted-foreground/5 border-muted-foreground/20 rounded-jotty p-2">
-                <span className="text-muted-foreground/80">
-                  Repeats {getRecurrenceDescription(item.recurrence)}
-                </span>
-              </div>
-            )}
-
-            {!hideMobileStatusDropdown && (
-              <div
-                className="lg:hidden"
-                onPointerDown={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Dropdown
-                  value={item.status || TaskStatus.TODO}
-                  options={statusOptions}
-                  onChange={(newStatus) =>
-                    kanbanItemHook.handleStatusChange(newStatus as TaskStatus)
-                  }
-                  className="w-full text-sm"
-                />
-              </div>
-            )}
-          </div>
-        </div>
+                </div>
+              )
+            }
+          />
+        </KanbanCardShell>
       </div>
       {kanbanItemHook.deleteModal}
     </>

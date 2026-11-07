@@ -31,6 +31,7 @@ import { useRouter } from "next/navigation";
 import { getUsername } from "@/app/_server/actions/users";
 import { copyTextToClipboard } from "../_utils/global-utils";
 import { areAllItemsCompleted } from "../_utils/checklist-utils";
+import { splitByCompletion } from "../_utils/item-tree-utils";
 import {
   SortedList,
   preorderIds,
@@ -819,32 +820,7 @@ export const useChecklist = ({
     }
   };
 
-  const isItemFullyCompleted = (item: any): boolean => {
-    if (!item.completed) return false;
-
-    if (item.children && item.children.length > 0) {
-      return item.children.every(isItemFullyCompleted);
-    }
-
-    return true;
-  };
-
-  const hasAnyCompletion = (item: any): boolean => {
-    if (item.completed) return true;
-
-    if (item.children && item.children.length > 0) {
-      return item.children.some(hasAnyCompletion);
-    }
-
-    return false;
-  };
-
-  const incompleteItems = localList.items.filter(
-    (item) => !isItemFullyCompleted(item)
-  );
-  const completedItems = localList.items.filter((item) =>
-    isItemFullyCompleted(item)
-  );
+  const { incompleteItems, completedItems } = splitByCompletion(localList.items);
 
   return {
     isLoading,
