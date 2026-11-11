@@ -1,4 +1,4 @@
-import { Item, Checklist } from "@/app/_types";
+import { Item, Checklist, RecurrenceRule } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 import { DEFAULT_KANBAN_STATUSES } from "@/app/_consts/kanban";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
@@ -15,6 +15,9 @@ interface TransformedItem {
   assignee?: string;
   agent?: string;
   reminder?: { datetime: string; notified?: boolean };
+  recurrence?: RecurrenceRule;
+  startDate?: string;
+  targetDate?: string;
   description?: string;
   externalId?: string;
   path?: string;
@@ -33,6 +36,9 @@ export const transformItem = (item: Item, index: number): TransformedItem => {
     assignee: item.assignee,
     agent: item.agent,
     reminder: item.reminder,
+    recurrence: item.recurrence,
+    startDate: item.startDate,
+    targetDate: item.targetDate,
     description: item.description,
     externalId: item.externalId,
   };

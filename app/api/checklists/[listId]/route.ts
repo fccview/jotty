@@ -9,6 +9,7 @@ import { checklistSchema, checklistUpdateBody, listParams } from "@/app/_schemas
 import { ChecklistsTypes } from "@/app/_types/enums";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { toApiChecklist } from "@/app/_utils/api-checklist";
+import { rollRecurring } from "@/app/_server/actions/checklist/recurring";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export const GET = defineRoute(
     path: "/checklists/{listId}",
     tag: ApiTag.CHECKLISTS,
     summary: "Get a checklist",
-    description: "One checklist with its items, including ones shared with the API key owner. Each item carries itemIndex, the tree index the item routes take.",
+    description: "One checklist with its items, including ones shared with the API key owner. Each item carries itemIndex, the tree index the item routes take. Completed recurring items whose next occurrence is due are rolled first, as in the web app.",
     params: listParams,
     responses: {
       200: { description: "The checklist", schema: envelope(checklistSchema) },
@@ -39,7 +40,7 @@ export const GET = defineRoute(
     const list = await _visibleList(request, params.listId, user.username);
     if (!list) return refuse(NOT_FOUND, 404);
 
-    return NextResponse.json({ success: true, data: toApiChecklist(list) });
+    return NextResponse.json({ success: true, data: toApiChecklist(await rollRecurring(list)) });
   },
 );
 

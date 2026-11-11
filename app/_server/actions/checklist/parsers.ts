@@ -18,6 +18,7 @@ export const getChecklistType = (content: string): ChecklistType => {
 
 export const checkAndRefreshRecurringItems = async (
   checklist: Checklist,
+  storedPath?: string,
 ): Promise<{ checklist: Checklist; hasChanges: boolean }> => {
   let hasChanges = false;
   const updatedItems = checklist.items.map((item) => {
@@ -39,17 +40,16 @@ export const checkAndRefreshRecurringItems = async (
   };
 
   try {
-    const ownerDir = path.join(
-      process.cwd(),
-      "data",
-      CHECKLISTS_FOLDER,
-      checklist.owner!,
-    );
-    const categoryDir = path.join(
-      ownerDir,
-      checklist.category || "Uncategorized",
-    );
-    const filePath = path.join(categoryDir, `${checklist.id}.md`);
+    const filePath =
+      storedPath ??
+      path.join(
+        process.cwd(),
+        "data",
+        CHECKLISTS_FOLDER,
+        checklist.owner!,
+        checklist.category || "Uncategorized",
+        `${checklist.id}.md`,
+      );
 
     await serverWriteFile(filePath, listToMarkdown(updatedChecklist));
   } catch (error) {

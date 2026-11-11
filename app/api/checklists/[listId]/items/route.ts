@@ -10,6 +10,7 @@ import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
 import { itemCreateBody, itemCreatedSchema, listParams } from "@/app/_schemas/api/checklists";
 import { PermissionTypes } from "@/app/_types/enums";
+import { ruleFrom } from "@/app/_utils/recurrence-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,8 @@ export const POST = defineRoute(
     if (body.time !== undefined) {
       formData.append("time", typeof body.time === "string" ? body.time : JSON.stringify(body.time));
     }
+    const rule = body.recurrence ? ruleFrom(body.recurrence) : undefined;
+    if (rule) formData.append("recurrence", JSON.stringify(rule));
 
     const result = await addItem(user, list, formData, true);
     if (!result.success) {

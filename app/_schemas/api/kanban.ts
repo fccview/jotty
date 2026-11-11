@@ -17,6 +17,8 @@ import {
   checklistTypeSchema,
   kanbanStatusSchema,
   prioritySchema,
+  recurrenceBody,
+  recurrenceSchema,
   reminderSchema,
   statusChangeSchema,
   timeEntrySchema,
@@ -33,6 +35,9 @@ type CardShape = {
   assignee?: string;
   agent?: string;
   reminder?: z.infer<typeof reminderSchema>;
+  recurrence?: z.infer<typeof recurrenceSchema>;
+  startDate?: string;
+  targetDate?: string;
   description?: string;
   externalId?: string;
   path?: string;
@@ -53,6 +58,9 @@ export const kanbanCardSchema: z.ZodType<CardShape> = z
     assignee: z.string().optional().describe("Username"),
     agent: z.string().optional().describe("Virtual agent id from the board's spec note, not a user"),
     reminder: reminderSchema.optional(),
+    recurrence: recurrenceSchema.optional(),
+    startDate: z.string().optional(),
+    targetDate: z.string().optional(),
     description: z.string().optional(),
     externalId: z.string().optional().describe(EXTERNAL_ID_NOTE),
     path: z
@@ -97,6 +105,7 @@ type StoredCardShape = {
   assignee?: string;
   agent?: string;
   reminder?: z.infer<typeof reminderSchema>;
+  recurrence?: z.infer<typeof recurrenceSchema>;
   externalId?: string;
   timeEntries?: z.infer<typeof timeEntrySchema>[];
   history?: z.infer<typeof statusChangeSchema>[];
@@ -120,6 +129,7 @@ export const storedCardSchema: z.ZodType<StoredCardShape> = z
     assignee: z.string().optional(),
     agent: z.string().optional(),
     reminder: reminderSchema.optional(),
+    recurrence: recurrenceSchema.optional(),
     externalId: z.string().optional().describe(EXTERNAL_ID_NOTE),
     timeEntries: z.array(timeEntrySchema).optional(),
     history: z.array(statusChangeSchema).optional(),
@@ -301,6 +311,7 @@ export const cardUpdateBody = z.object({
     .describe("Empty string clears it"),
   assignee: z.string().optional().describe("Username, empty string clears it"),
   reminder: reminderSchema.nullable().optional().describe("null clears it"),
+  recurrence: recurrenceBody.nullable().optional().describe("null stops the card repeating"),
   description: z.string().optional().describe("Empty string clears it"),
   externalId: z
     .string()

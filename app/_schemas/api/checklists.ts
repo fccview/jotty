@@ -2,7 +2,7 @@ import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { ChecklistsTypes, DropPosition, ItemSort, KanbanPriorityLevel, SortDirection } from "@/app/_types/enums";
 import { ListView, categoryField, pageFields, required, searchQuery, timestamp, uuidParam } from "./common";
-import { apiItemSchema, checklistTypeSchema, itemIndexParam, timeEntrySchema } from "./items";
+import { apiItemSchema, checklistTypeSchema, itemIndexParam, recurrenceBody, timeEntrySchema } from "./items";
 
 const TYPE_REFUSAL = "Type must be 'simple' or 'kanban'";
 const PRIORITY_REFUSAL = `'priority' must be one of: ${Object.values(KanbanPriorityLevel).join(", ")}`;
@@ -72,7 +72,8 @@ export const itemCreateBody = z.object({
   parentIndex: z
     .union([z.string(), z.number()])
     .optional()
-    .describe("Tree index of the parent item, e.g. 0 or 2.1. Sub-items ignore status and time"),
+    .describe("Tree index of the parent item, e.g. 0 or 2.1. Sub-items ignore status, time and recurrence"),
+  recurrence: recurrenceBody.optional(),
 });
 
 export const itemUpdateBody = z
@@ -84,6 +85,7 @@ export const itemUpdateBody = z
     startDate: mustBeString("startDate").nullish().describe("ISO date"),
     targetDate: mustBeString("targetDate").nullish().describe("ISO date"),
     estimatedTime: mustBeNumber("estimatedTime").nullish().describe("Estimated hours"),
+    recurrence: recurrenceBody.nullish().describe("null stops the item repeating"),
   })
   .refine(
     (patch) => Object.values(patch).some((value) => value !== undefined),

@@ -324,3 +324,36 @@ export const isValidRRule = (rruleString: string): boolean => {
     return false;
   }
 };
+
+export type RecurrenceInput = Pick<RecurrenceRule, "rrule" | "dtstart" | "until">;
+
+export const RECURRENCE_REFUSED =
+  "Recurrence needs an rrule with FREQ, like FREQ=WEEKLY;INTERVAL=1, and a valid dtstart";
+
+const RRULE_SHAPE = /^[A-Z0-9=;,:+-]+$/i;
+
+const _isDate = (value?: string) => value === undefined || !Number.isNaN(Date.parse(value));
+
+export const isRecurrenceInput = (input: RecurrenceInput): boolean =>
+  typeof input?.rrule === "string" &&
+  typeof input.dtstart === "string" &&
+  (input.until === undefined || typeof input.until === "string") &&
+  RRULE_SHAPE.test(input.rrule) &&
+  /(^|;)FREQ=/i.test(input.rrule) &&
+  isValidRRule(input.rrule) &&
+  _isDate(input.dtstart) &&
+  _isDate(input.until);
+
+export const ruleFrom = (input: RecurrenceInput): RecurrenceRule | undefined => {
+  if (!isRecurrenceInput(input)) return undefined;
+
+  const dtstart = new Date(input.dtstart).toISOString();
+  const until = input.until ? new Date(input.until).toISOString() : undefined;
+
+  return {
+    rrule: input.rrule.toUpperCase(),
+    dtstart,
+    ...(until && { until }),
+    nextDue: calculateNextOccurrence(input.rrule.toUpperCase(), dtstart, undefined, until),
+  };
+};

@@ -6,6 +6,7 @@ import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS, okSchema } from "@/app/_schemas/api/common";
 import { listItemParams } from "@/app/_schemas/api/checklists";
+import { rollRecurring } from "@/app/_server/actions/checklist/recurring";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export const PUT = defineRoute(
     path: "/checklists/{listId}/items/{itemIndex}/check",
     tag: ApiTag.CHECKLIST_ITEMS,
     summary: "Check a checklist item",
-    description: "Marks the item and its sub-items as done. Needs edit permission.",
+    description: "Marks the item and its sub-items as done. A recurring item whose next occurrence is already due rolls to it straight away, as in the web app. Needs edit permission.",
     params: listItemParams,
     responses: {
       200: { description: "Done", schema: okSchema },
@@ -39,6 +40,7 @@ export const PUT = defineRoute(
     if (!result.success) {
       return refuse(result.error || "Failed to check item", 500);
     }
+    if (result.data) await rollRecurring(result.data);
 
     return NextResponse.json({ success: true });
   },
