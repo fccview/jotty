@@ -110,6 +110,7 @@ describe("Kanban API", () => {
             status: "todo",
             completed: false,
             priority: "high",
+            targetDate: "2030-01-10",
           },
         ],
         createdAt: "2024-01-01T00:00:00.000Z",

@@ -7,6 +7,7 @@ import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS, okSchema } from "@/app/_schemas/api/common";
 import { itemUpdateBody, listItemParams } from "@/app/_schemas/api/checklists";
 import { PermissionTypes } from "@/app/_types/enums";
+import { RECURRENCE_REFUSED } from "@/app/_utils/recurrence-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export const PATCH = defineRoute(
     tag: ApiTag.CHECKLIST_ITEMS,
     summary: "Update a checklist item",
     description:
-      "Send at least one field. Fields left out keep their value, null clears every field except text. Needs edit permission.",
+      "Send at least one field. Fields left out keep their value, null clears every field except text. Sending recurrence replaces the item's series and works out its next due date. Needs edit permission.",
     params: listItemParams,
     body: itemUpdateBody,
     responses: {
@@ -45,8 +46,12 @@ export const PATCH = defineRoute(
     if (body.startDate !== undefined) formData.append("startDate", _blankable(body.startDate));
     if (body.targetDate !== undefined) formData.append("targetDate", _blankable(body.targetDate));
     if (body.estimatedTime !== undefined) formData.append("estimatedTime", _blankable(body.estimatedTime));
+    if (body.recurrence !== undefined) {
+      formData.append("recurrence", body.recurrence === null ? "" : JSON.stringify(body.recurrence));
+    }
 
     const result = await editItem(user, found.list, formData, true);
+    if (result.error === RECURRENCE_REFUSED) return refuse(result.error, 400);
     if (!result.success) {
       return refuse(result.error || "Failed to update item", 500);
     }

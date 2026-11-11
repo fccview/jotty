@@ -2,6 +2,7 @@ import { z } from "zod";
 import { apiNames } from "@/app/_schemas/api/names";
 import { ChecklistsTypes, KanbanPriorityLevel } from "@/app/_types/enums";
 import { timestamp } from "./common";
+import { RECURRENCE_REFUSED, isRecurrenceInput } from "@/app/_utils/recurrence-utils";
 
 export const checklistTypeSchema = z
   .enum(ChecklistsTypes)
@@ -47,6 +48,26 @@ export const reminderSchema = z
   })
   .register(apiNames, { id: "KanbanReminder" });
 
+export const recurrenceSchema = z
+  .object({
+    rrule: z.string().describe("RFC 5545 RRULE without the RRULE: prefix, like FREQ=WEEKLY;INTERVAL=1"),
+    dtstart: timestamp.describe("When the series starts"),
+    until: timestamp.optional().describe("When the series stops"),
+    nextDue: timestamp.optional().describe("Next occurrence, worked out by the server"),
+    lastCompleted: timestamp.optional().describe("When the item was last rolled to its next occurrence"),
+  })
+  .register(apiNames, { id: "Recurrence" });
+
+export const recurrenceBody = z
+  .object({
+    rrule: z.string().describe(recurrenceSchema.shape.rrule.description ?? ""),
+    dtstart: z.string().describe("When the series starts. Any date Date.parse accepts, ISO 8601 recommended"),
+    until: z.string().optional().describe("When the series stops, left out for no end"),
+  })
+  .refine(isRecurrenceInput, RECURRENCE_REFUSED)
+  .describe("Repeats the item. The server works out nextDue. Completing it rolls it to the next occurrence once that is due")
+  .register(apiNames, { id: "RecurrenceInput" });
+
 type ApiItemShape = {
   id: string;
   index: number;
@@ -66,6 +87,8 @@ type ApiItemShape = {
   lastModifiedBy?: string;
   lastModifiedAt?: string;
   history?: z.infer<typeof statusChangeSchema>[];
+  reminder?: z.infer<typeof reminderSchema>;
+  recurrence?: z.infer<typeof recurrenceSchema>;
   children?: ApiItemShape[];
 };
 
@@ -92,6 +115,8 @@ export const apiItemSchema: z.ZodType<ApiItemShape> = z
     lastModifiedBy: z.string().optional(),
     lastModifiedAt: timestamp.optional(),
     history: z.array(statusChangeSchema).optional(),
+    reminder: reminderSchema.optional(),
+    recurrence: recurrenceSchema.optional(),
     get children() {
       return z.array(apiItemSchema).optional();
     },

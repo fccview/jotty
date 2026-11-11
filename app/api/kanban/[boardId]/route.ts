@@ -9,6 +9,7 @@ import { BOARD_REFUSED, boardGetQuery, boardParams, boardSchema, boardUpdateBody
 import { UNCATEGORIZED } from "@/app/_consts/notes";
 import { transformBoard } from "@/app/_utils/kanban/api-transforms";
 import { boardFor } from "@/app/_utils/kanban/api-board";
+import { rollRecurring } from "@/app/_server/actions/checklist/recurring";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export const GET = defineRoute(
     path: "/kanban/{boardId}",
     tag: ApiTag.KANBAN,
     summary: "Get a Kanban board",
-    description: "Also returns boards shared with the API key owner. Pass externalId to get only the card that has it.",
+    description: "Also returns boards shared with the API key owner. Pass externalId to get only the card that has it. Completed recurring cards whose next occurrence is due are rolled first, as in the web app.",
     params: boardParams,
     query: boardGetQuery,
     responses: {
@@ -34,7 +35,7 @@ export const GET = defineRoute(
     const { board, refused } = await boardFor(request, params.boardId, user.username);
     if (refused) return refused;
 
-    return NextResponse.json({ board: transformBoard(board, ListView.FULL, query.externalId) });
+    return NextResponse.json({ board: transformBoard(await rollRecurring(board), ListView.FULL, query.externalId) });
   },
 );
 
