@@ -17,8 +17,10 @@ export const rollRecurring = async (list: Checklist): Promise<Checklist> => {
   return runQueued(itemLane(Modes.CHECKLISTS, list.uuid), async () => {
     const stored = await getListById(list.uuid!, list.owner);
     if (!stored || !_isDue(stored)) return stored ? { ...list, items: stored.items } : list;
+    if (stored.lockReason || !stored.owner) return { ...list, items: stored.items };
 
-    const found = await grepFindFileByUuid(path.join(process.cwd(), DATA_DIR, Modes.CHECKLISTS), list.uuid!);
+    const ownerDir = path.join(process.cwd(), DATA_DIR, Modes.CHECKLISTS, stored.owner);
+    const found = await grepFindFileByUuid(ownerDir, list.uuid!);
     if (!found) return { ...list, items: stored.items };
 
     const { checklist, hasChanges } = await checkAndRefreshRecurringItems(stored, found.filePath);
