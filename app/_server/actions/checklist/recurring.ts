@@ -1,5 +1,8 @@
+import path from "path";
 import { Checklist } from "@/app/_types";
 import { Modes } from "@/app/_types/enums";
+import { DATA_DIR } from "@/app/_consts/files";
+import { grepFindFileByUuid } from "@/app/_utils/grep-utils";
 import { getListById } from "@/app/_server/actions/checklist/queries";
 import { checkAndRefreshRecurringItems } from "@/app/_server/actions/checklist/parsers";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
@@ -15,7 +18,10 @@ export const rollRecurring = async (list: Checklist): Promise<Checklist> => {
     const stored = await getListById(list.uuid!, list.owner);
     if (!stored || !_isDue(stored)) return stored ? { ...list, items: stored.items } : list;
 
-    const { checklist, hasChanges } = await checkAndRefreshRecurringItems(stored);
+    const found = await grepFindFileByUuid(path.join(process.cwd(), DATA_DIR, Modes.CHECKLISTS), list.uuid!);
+    if (!found) return { ...list, items: stored.items };
+
+    const { checklist, hasChanges } = await checkAndRefreshRecurringItems(stored, found.filePath);
     if (!hasChanges) return list;
 
     await broadcast({ type: "checklist", action: "updated", entityId: list.uuid!, username: list.owner! });
