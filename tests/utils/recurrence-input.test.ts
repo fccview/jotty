@@ -29,6 +29,12 @@ describe("recurrence input from the REST API", () => {
     expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;INTERVAL=1.5", dtstart: "2020-01-01" })).toBe(false);
   });
 
+  it("refuses counts that are not positive whole numbers", () => {
+    expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;COUNT=-1", dtstart: "2020-01-01" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;COUNT=0", dtstart: "2020-01-01" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;COUNT=3", dtstart: "2020-01-01" })).toBe(true);
+  });
+
   it("refuses parts that could filter out every date", () => {
     expect(isRecurrenceInput({ rrule: "FREQ=DAILY;BYMONTH=2;BYMONTHDAY=30", dtstart: "2030-01-07" })).toBe(false);
     expect(isRecurrenceInput({ rrule: "FREQ=MONTHLY;BYMONTHDAY=15", dtstart: "2030-01-07" })).toBe(false);
@@ -53,8 +59,15 @@ describe("recurrence input from the REST API", () => {
     expect(ruleFrom({ rrule: "freq=weekly;byday=mo,fr", dtstart: "2030-01-07T09:00:00Z" })?.rrule).toBe("FREQ=WEEKLY;BYDAY=MO,FR");
   });
 
-  it("refuses a series that started too long ago to schedule", () => {
-    expect(ruleFrom({ rrule: "FREQ=DAILY", dtstart: "1800-01-01T00:00:00Z" })).toBeUndefined();
+  it("schedules a series that started long ago", () => {
+    const rule = ruleFrom({ rrule: "FREQ=DAILY", dtstart: "1800-01-01T09:00:00Z" });
+
+    expect(new Date(rule!.nextDue!).getTime()).toBeGreaterThan(Date.now());
+  });
+
+  it("refuses counts too large to walk and dates it can't read", () => {
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;COUNT=50001", dtstart: "2020-01-01" })).toBe(false);
+    expect(ruleFrom({ rrule: "FREQ=MONTHLY", dtstart: "0999-01-01T00:00:00Z" })).toBeUndefined();
   });
 
   it("normalises the rule and works out the next occurrence", () => {

@@ -91,11 +91,18 @@ interface Occurrence {
   settled: boolean;
 }
 
+const DAY_MS = 86_400_000;
+
+const PERIOD_DAYS: Partial<Record<Frequency, number>> = {
+  [Frequency.DAILY]: 1,
+  [Frequency.WEEKLY]: 7,
+};
+
 const _optionsOf = (rruleString: string) => {
   try {
     return RRule.parseString(rruleString.toUpperCase());
   } catch (error) {
-    console.warn("Unreadable recurrence rule:", error);
+    console.warn(`Unreadable recurrence rule ${rruleString}:`, (error as Error).message);
     return undefined;
   }
 };
@@ -112,20 +119,32 @@ const SCHEDULABLE_PARTS = new Set<string>([
 const _plainWeekdays = (byweekday: ByWeekday | ByWeekday[]) =>
   [byweekday].flat().every((day) => !(day instanceof Weekday) || day.n == null);
 
-/**
- * Daily to yearly, moving forward, with nothing that can filter out every date, so finding the next occurrence always ends quickly
- */
-export const isSchedulable = (rruleString: string): boolean => {
+const _isPositiveUpTo = (value: number | null | undefined, max: number) =>
+  value == null || (Number.isInteger(value) && value > 0 && value <= max);
+
+const _schedulableOptions = (rruleString: string): Partial<Options> | undefined => {
   const options = _optionsOf(rruleString);
-  if (!options || options.freq === undefined || options.freq > Frequency.DAILY) return false;
+  if (!options || options.freq === undefined || options.freq > Frequency.DAILY) return undefined;
 
   const parts = Object.entries(options).filter(([, value]) => value != null);
-  if (parts.some(([part]) => !SCHEDULABLE_PARTS.has(part))) return false;
+  if (parts.some(([part]) => !SCHEDULABLE_PARTS.has(part))) return undefined;
   if (options.byweekday != null && (options.freq !== Frequency.WEEKLY || !_plainWeekdays(options.byweekday))) {
-    return false;
+    return undefined;
   }
 
-  return options.interval == null || (Number.isInteger(options.interval) && options.interval > 0);
+  const fits = _isPositiveUpTo(options.interval, Number.MAX_SAFE_INTEGER) && _isPositiveUpTo(options.count, MAX_OCCURRENCE_STEPS);
+  return fits ? options : undefined;
+};
+
+export const isSchedulable = (rruleString: string): boolean => Boolean(_schedulableOptions(rruleString));
+
+const _searchStart = (options: Partial<Options>, dtstart: Date, after: Date): Date => {
+  const days = options.freq === undefined ? undefined : PERIOD_DAYS[options.freq];
+  if (!days || options.count != null) return dtstart;
+
+  const period = days * DAY_MS * (options.interval ?? 1);
+  const skipped = Math.floor((after.getTime() - dtstart.getTime()) / period) - 1;
+  return skipped > 0 ? new Date(dtstart.getTime() + skipped * period) : dtstart;
 };
 
 const _nextOccurrence = (
@@ -134,22 +153,22 @@ const _nextOccurrence = (
   after?: Date,
   until?: string
 ): Occurrence => {
-  if (!isSchedulable(rruleString)) return { settled: false };
+  const options = _schedulableOptions(rruleString);
+  if (!options) return { settled: false };
 
   try {
-    const rfc5545Dtstart = isoToRFC5545(dtstart);
+    const afterDate = after || new Date();
+    const searchStart = _searchStart(options, new Date(dtstart), afterDate);
 
     let finalRruleString = rruleString;
     if (until && !rruleString.includes("UNTIL=")) {
-      const rfc5545Until = isoToRFC5545(until);
-      finalRruleString = `${rruleString};UNTIL=${rfc5545Until}`;
+      finalRruleString = `${rruleString};UNTIL=${isoToRFC5545(until)}`;
     }
 
     const rule = RRule.fromString(
-      `DTSTART:${rfc5545Dtstart}\nRRULE:${finalRruleString}`
+      `DTSTART:${isoToRFC5545(searchStart.toISOString())}\nRRULE:${finalRruleString}`
     );
 
-    const afterDate = after || new Date();
     let nextDate: Date | undefined;
     let outOfSteps = false;
     rule.all((date, index) => {
@@ -207,7 +226,7 @@ export const shouldRefreshRecurringItem = (item: Item): boolean => {
     }
   }
 
-  if (item.recurrence.nextDue && new Date(item.recurrence.nextDue) > new Date()) {
+  if (!item.recurrence.nextDue || new Date(item.recurrence.nextDue) > new Date()) {
     return false;
   }
 
@@ -249,6 +268,7 @@ export const refreshRecurringItem = (item: Item): Item => {
     item.recurrence.until
   );
   if (!settled) return item;
+  if (!nextDue) return { ...item, recurrence: { ...item.recurrence, nextDue: undefined } };
 
   if (item?.status !== TaskStatus.PAUSED) {
     return {
@@ -391,7 +411,7 @@ export const isValidRRule = (rruleString: string): boolean => {
 export type RecurrenceInput = Pick<RecurrenceRule, "rrule" | "dtstart" | "until">;
 
 export const RECURRENCE_REFUSED =
-  "Recurrence needs an rrule like FREQ=WEEKLY;INTERVAL=1 using FREQ (DAILY to YEARLY), a positive INTERVAL, COUNT, UNTIL, WKST and, for WEEKLY, plain BYDAY weekdays, plus a valid dtstart";
+  `Recurrence needs an rrule like FREQ=WEEKLY;INTERVAL=1 using FREQ (DAILY to YEARLY), a positive INTERVAL, a COUNT up to ${MAX_OCCURRENCE_STEPS}, UNTIL, WKST and, for WEEKLY, plain BYDAY weekdays, plus a valid dtstart`;
 
 export const NESTED_RECURRENCE = "Only top-level items can repeat";
 

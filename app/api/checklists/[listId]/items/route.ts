@@ -10,7 +10,7 @@ import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
 import { itemCreateBody, itemCreatedSchema, listParams } from "@/app/_schemas/api/checklists";
 import { PermissionTypes } from "@/app/_types/enums";
-import { RECURRENCE_REFUSED, ruleFrom } from "@/app/_utils/recurrence-utils";
+import { NESTED_RECURRENCE, RECURRENCE_REFUSED, ruleFrom } from "@/app/_utils/recurrence-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +44,7 @@ export const POST = defineRoute(
     if (refused) return refused;
 
     if (body.parentIndex !== undefined) {
+      if (body.recurrence) return refuse(NESTED_RECURRENCE, 400);
       const path = indexPath(body.parentIndex.toString());
       const parent = path ? itemAt(list.items, path) : undefined;
       if (!parent) return refuse(NO_PARENT, 404);

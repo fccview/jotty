@@ -40,6 +40,7 @@ import { pinsFirst } from "@/app/_utils/pin-utils";
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
     username,
+    requester,
     allowArchived = false,
     isRaw = false,
     projection,
@@ -229,7 +230,7 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
         lists.map(async (list) => {
           const checklist = await rollRecurring(
             list as Checklist,
-            currentUser.username,
+            requester ?? currentUser.username,
           );
           return isSummary && !checklist.summary
             ? { ...checklist, items: [], summary: summarizeList(checklist) }

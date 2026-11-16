@@ -21,6 +21,7 @@ export interface GetNotesOptions {
 
 export interface GetChecklistsOptions {
   username?: string;
+  requester?: string;
   allowArchived?: boolean;
   isRaw?: boolean;
   projection?: string[];

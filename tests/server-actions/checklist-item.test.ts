@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mockRevalidatePath, resetAllMocks, createFormData } from "../setup";
 import { INVALID_AGENT } from "@/app/_consts/agents";
+import { RECURRENCE_PRESETS, RECURRENCE_REFUSED, createRecurrenceFromPreset } from "@/app/_utils/recurrence-utils";
 
 const mockGetUserModeDir = vi.fn();
 const mockEnsureDir = vi.fn();
@@ -324,6 +325,38 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.description).toBe("Item description");
+    });
+
+    it("saves every repeat the web app offers", async () => {
+      const presets = Object.values(RECURRENCE_PRESETS).filter((preset) => preset.value);
+
+      for (const preset of presets) {
+        const recurrence = createRecurrenceFromPreset(preset.value, new Date("2030-01-07T00:00:00Z"));
+        const formData = createFormData({
+          uuid: "test-uuid-123",
+          text: `Repeats ${preset.label}`,
+          recurrence: JSON.stringify(recurrence),
+        });
+
+        const result = await createItem(mockChecklist, formData);
+
+        expect(result.success, preset.label).toBe(true);
+        expect(result.data?.recurrence, preset.label).toMatchObject({ rrule: preset.value, dtstart: recurrence!.dtstart });
+        expect(result.data?.recurrence?.nextDue, preset.label).toBeDefined();
+      }
+    });
+
+    it("refuses a repeat the app can't schedule instead of saving it", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        text: "Every second",
+        recurrence: JSON.stringify({ rrule: "FREQ=SECONDLY", dtstart: "1970-01-01T00:00:00Z" }),
+      });
+
+      const result = await createItem(mockChecklist, formData);
+
+      expect(result).toMatchObject({ success: false, error: RECURRENCE_REFUSED });
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
     });
 
     it("should return error when permission denied", async () => {

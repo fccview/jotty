@@ -83,18 +83,32 @@ describe("Checklist Items API", () => {
       expect(data.success).toBe(true)
     })
 
-    it("refuses a recurrence too long ago to schedule instead of dropping it", async () => {
+    it("refuses a recurrence it can't schedule instead of dropping it", async () => {
       mockGetListById.mockResolvedValue(mockList)
 
       const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
         text: "Ancient chore",
-        recurrence: { rrule: "FREQ=DAILY", dtstart: "1800-01-01T00:00:00Z" },
+        recurrence: { rrule: "FREQ=MONTHLY", dtstart: "0999-01-01T00:00:00Z" },
       })
       const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
 
       expect(response.status).toBe(400)
       expect((await getResponseJson(response)).error).toBe(RECURRENCE_REFUSED)
       expect(mockAddItem).not.toHaveBeenCalled()
+    })
+
+    it("refuses a recurrence on a sub-item instead of dropping it", async () => {
+      mockGetListById.mockResolvedValue(mockList)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
+        text: "Child chore",
+        parentIndex: "0",
+        recurrence: { rrule: "FREQ=DAILY", dtstart: "2030-01-07T09:00:00Z" },
+      })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe(NESTED_RECURRENCE)
     })
 
     it("should create a task item with status", async () => {

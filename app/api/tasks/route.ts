@@ -30,7 +30,7 @@ export const GET = defineRoute(
     path: "/tasks",
     tag: ApiTag.TASKS,
     summary: "List tasks",
-    description: "Task checklists the API key owner owns. Tasks shared with them are left out.",
+    description: "Task checklists the API key owner owns. Tasks shared with them are left out. Completed recurring items whose next occurrence is due come back rolled, and are saved that way where the API key owner can edit.",
     query: taskListQuery,
     responses: {
       200: { description: "Tasks", schema: z.object({ tasks: z.array(taskSchema), total: totalField }) },

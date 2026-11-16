@@ -61,6 +61,7 @@ export const getUserStats = async (
 
     const listsResult = (await getUserChecklists({
       username: targetUsername,
+      requester: currentUser.username,
     })) as Result<Checklist[]>;
     if (!listsResult.success || !listsResult.data) {
       return {

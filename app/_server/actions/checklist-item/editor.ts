@@ -298,24 +298,8 @@ const _addItem = async (
 
     const now = new Date().toISOString();
 
-    let recurrence = undefined;
-    if (recurrenceStr) {
-      try {
-        recurrence = JSON.parse(recurrenceStr);
-
-        if (recurrence && !recurrence.nextDue) {
-          const { calculateNextOccurrence } =
-            await import("@/app/_utils/recurrence-utils");
-          recurrence.nextDue = calculateNextOccurrence(
-            recurrence.rrule,
-            recurrence.dtstart,
-          );
-        }
-      } catch (e) {
-        console.error("Failed to parse recurrence:", e);
-        recurrence = undefined;
-      }
-    }
+    const recurrence = _readRule(recurrenceStr);
+    if (recurrence.refused) return { success: false, error: RECURRENCE_REFUSED };
 
     const defaultStatus = isKanbanType(stored.type)
       ? ((status || firstColumn(stored.statuses)) as TaskStatus)
@@ -361,7 +345,7 @@ const _addItem = async (
         ],
       }),
       ...(isSharedBoard && { assignee: currentUser }),
-      ...(recurrence && { recurrence }),
+      ...(recurrence.rule && { recurrence: recurrence.rule }),
     };
 
     const inlineTags = extractHashtagsFromContent(text);

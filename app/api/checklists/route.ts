@@ -20,7 +20,7 @@ export const GET = defineRoute(
     path: "/checklists",
     tag: ApiTag.CHECKLISTS,
     summary: "List checklists",
-    description: "Checklists the API key owner owns or that were shared with them, items included. Jotty stores Kanban boards as checklists of type kanban, so they show up here too. Pass type=simple for plain lists only, and use listBoards and getBoard for a board's cards. Use view=summary with limit and offset to page through them with item counts instead of items.",
+    description: "Checklists the API key owner owns or that were shared with them, items included. Jotty stores Kanban boards as checklists of type kanban, so they show up here too. Pass type=simple for plain lists only, and use listBoards and getBoard for a board's cards. Use view=summary with limit and offset to page through them with item counts instead of items. Completed recurring items whose next occurrence is due come back rolled, and are saved that way where the API key owner can edit.",
     query: checklistListQuery,
     responses: {
       200: { description: "Checklists", schema: z.object({ checklists: z.array(checklistSchema), total: totalField }) },

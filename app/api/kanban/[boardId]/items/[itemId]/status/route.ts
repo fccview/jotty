@@ -16,7 +16,7 @@ export const PUT = defineRoute(
     path: "/kanban/{boardId}/items/{itemId}/status",
     tag: ApiTag.KANBAN,
     summary: "Move a card to another column",
-    description: "Records the change in the card's history. Moving into a column with autoComplete marks the card completed. Needs edit permission.",
+    description: "Records the change in the card's history. Moving into a column with autoComplete marks the card completed. A recurring card whose next occurrence is already due rolls to it straight away, so it comes back in todo. Needs edit permission.",
     params: cardParams,
     body: cardStatusBody,
     responses: {

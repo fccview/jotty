@@ -48,12 +48,12 @@ Checklist items and Kanban cards can repeat. Send `recurrence` when creating a c
 { "recurrence": { "rrule": "FREQ=WEEKLY;INTERVAL=1", "dtstart": "2026-01-05T09:00:00Z", "until": "2026-12-31T00:00:00Z" } }
 ```
 
-- `rrule` is an RFC 5545 rule without the `RRULE:` prefix. It takes `FREQ` (`DAILY`, `WEEKLY`, `MONTHLY` or `YEARLY`), `INTERVAL` as a positive whole number, `COUNT`, `UNTIL`, `WKST`, and plain `BYDAY` weekdays on a `WEEKLY` rule, like `FREQ=WEEKLY;BYDAY=MO,TH`. Lowercase is fine. Other parts are refused. For "every month on the 15th" or "every year on 3 March", put that date in `dtstart`, the series repeats from it. `until` is optional, leave it out for a series that never ends.
-- Jotty works out `nextDue` itself, so don't send it. Reads return `recurrence` with `nextDue`, plus `lastCompleted` once it has rolled.
+- `rrule` is an RFC 5545 rule without the `RRULE:` prefix. It takes `FREQ` (`DAILY`, `WEEKLY`, `MONTHLY` or `YEARLY`), `INTERVAL` as a positive whole number, `COUNT` up to 50000, `UNTIL`, `WKST`, and plain `BYDAY` weekdays on a `WEEKLY` rule, like `FREQ=WEEKLY;BYDAY=MO,TH`. Lowercase is fine. Other parts are refused. For "every month on the 15th" or "every year on 3 March", put that date in `dtstart`, the series repeats from it. `until` is optional, leave it out for a series that never ends.
+- Jotty works out `nextDue` itself, so don't send it. Reads return `recurrence` with `nextDue`, plus `lastCompleted` once it has rolled. A series with no occurrences left has no `nextDue`.
 - `null` on an update stops the item repeating. Only top-level items and cards can repeat.
 - A rule Jotty can't read, or a date it can't parse, is refused with `400`.
 
-A completed item rolls to its next occurrence once that is due: it comes back unticked, a card goes back to `todo`, and `nextDue` moves on. That happens when you check the item, move the card, or read the checklist or board, so a script always sees the current occurrence. Only ticked items and cards in a completed column roll, a card that is still in progress stays where it is. The rolled item is saved when the API key owner can edit the checklist or board. Someone with read access sees the current occurrence too, but their read never changes the owner's file.
+A completed item rolls to its next occurrence once that is due: it comes back unticked, a card goes back to `todo`, and `nextDue` moves on. That happens when you check the item, move the card, or read the checklist or board, so a script always sees the current occurrence. Only ticked items and cards in a completed column roll, a card that is still in progress stays where it is. Once a series has no occurrences left, because of `COUNT` or `until`, the item stays completed. The rolled item is saved when the API key owner can edit the checklist or board. Someone with read access sees the current occurrence too, but their read never changes the owner's file.
 
 ## Note files
 
