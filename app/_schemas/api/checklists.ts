@@ -85,7 +85,7 @@ export const itemUpdateBody = z
     startDate: mustBeString("startDate").nullish().describe("ISO date"),
     targetDate: mustBeString("targetDate").nullish().describe("ISO date"),
     estimatedTime: mustBeNumber("estimatedTime").nullish().describe("Estimated hours"),
-    recurrence: recurrenceBody.nullish().describe("null stops the item repeating"),
+    recurrence: recurrenceBody.nullish().describe("Top-level items only. null stops the item repeating"),
   })
   .refine(
     (patch) => Object.values(patch).some((value) => value !== undefined),

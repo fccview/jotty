@@ -311,7 +311,7 @@ export const cardUpdateBody = z.object({
     .describe("Empty string clears it"),
   assignee: z.string().optional().describe("Username, empty string clears it"),
   reminder: reminderSchema.nullable().optional().describe("null clears it"),
-  recurrence: recurrenceBody.nullable().optional().describe("null stops the card repeating"),
+  recurrence: recurrenceBody.nullable().optional().describe("Top-level cards only. null stops the card repeating"),
   description: z.string().optional().describe("Empty string clears it"),
   externalId: z
     .string()

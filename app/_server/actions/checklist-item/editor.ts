@@ -41,7 +41,7 @@ import { cardWithExternalId } from "@/app/_utils/kanban/card-tree";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { rehomeRefs } from "@/app/_server/actions/attachments/adopt";
-import { RECURRENCE_REFUSED, ruleFrom } from "@/app/_utils/recurrence-utils";
+import { NESTED_RECURRENCE, RECURRENCE_REFUSED, ruleFrom } from "@/app/_utils/recurrence-utils";
 
 const _readRule = (raw: string | null): { rule?: Item["recurrence"]; refused?: boolean } => {
   if (raw === null || raw === "") return {};
@@ -154,6 +154,9 @@ const _editItem = async (
     const recurrenceRaw = formData.get("recurrence") as string | null;
     const recurrence = _readRule(recurrenceRaw);
     if (recurrence.refused) return { success: false, error: RECURRENCE_REFUSED };
+    if (recurrence.rule && !stored.items.some((item) => item.id === itemId)) {
+      return { success: false, error: NESTED_RECURRENCE };
+    }
 
     const updatedList = {
       ...stored,

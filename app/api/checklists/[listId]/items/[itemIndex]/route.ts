@@ -7,7 +7,7 @@ import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS, okSchema } from "@/app/_schemas/api/common";
 import { itemUpdateBody, listItemParams } from "@/app/_schemas/api/checklists";
 import { PermissionTypes } from "@/app/_types/enums";
-import { RECURRENCE_REFUSED } from "@/app/_utils/recurrence-utils";
+import { isRecurrenceRefusal } from "@/app/_utils/recurrence-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +51,7 @@ export const PATCH = defineRoute(
     }
 
     const result = await editItem(user, found.list, formData, true);
-    if (result.error === RECURRENCE_REFUSED) return refuse(result.error, 400);
+    if (isRecurrenceRefusal(result.error)) return refuse(result.error, 400);
     if (!result.success) {
       return refuse(result.error || "Failed to update item", 500);
     }

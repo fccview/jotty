@@ -330,6 +330,11 @@ export type RecurrenceInput = Pick<RecurrenceRule, "rrule" | "dtstart" | "until"
 export const RECURRENCE_REFUSED =
   "Recurrence needs an rrule with FREQ, like FREQ=WEEKLY;INTERVAL=1, and a valid dtstart";
 
+export const NESTED_RECURRENCE = "Only top-level items can repeat";
+
+export const isRecurrenceRefusal = (error?: string): error is string =>
+  error === RECURRENCE_REFUSED || error === NESTED_RECURRENCE;
+
 const RRULE_SHAPE = /^[A-Z0-9=;,:+-]+$/i;
 
 const _isDate = (value?: string) => value === undefined || !Number.isNaN(Date.parse(value));
@@ -347,13 +352,14 @@ export const isRecurrenceInput = (input: RecurrenceInput): boolean =>
 export const ruleFrom = (input: RecurrenceInput): RecurrenceRule | undefined => {
   if (!isRecurrenceInput(input)) return undefined;
 
+  const rrule = input.rrule.toUpperCase();
   const dtstart = new Date(input.dtstart).toISOString();
   const until = input.until ? new Date(input.until).toISOString() : undefined;
 
   return {
-    rrule: input.rrule.toUpperCase(),
+    rrule,
     dtstart,
     ...(until && { until }),
-    nextDue: calculateNextOccurrence(input.rrule.toUpperCase(), dtstart, undefined, until),
+    nextDue: calculateNextOccurrence(rrule, dtstart, undefined, until),
   };
 };
