@@ -200,7 +200,7 @@ export const parseChecklistContent = (
             ...(reminder ? { reminder } : {}),
           };
         } else {
-          let itemText = text.replace(/∣/g, "|");
+          let itemText = text;
           let itemMetadata: Record<string, any> = {};
           let description: string | undefined;
 
@@ -223,6 +223,7 @@ export const parseChecklistContent = (
 
             recurrence = parseRecurrenceFromMarkdown(parts.slice(1));
           }
+          itemText = itemText.replace(/∣/g, "|");
 
           item = {
             id: itemMetadata.id || generateItemId(parentLevel),
