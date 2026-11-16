@@ -25,7 +25,7 @@ import {
 } from "./readers";
 import { mountsFor, mountedItems } from "@/app/_server/actions/share/mounts";
 import { canReachFile } from "@/app/_server/actions/share/access";
-import { checkAndRefreshRecurringItems } from "./parsers";
+import { rollRecurring } from "./recurring";
 import { countItems } from "@/app/_utils/checklist-count-utils";
 import { summarizeList } from "@/app/_utils/browse/list-summary-utils";
 import { isDebugFlag } from "@/app/_utils/env-utils";
@@ -40,6 +40,7 @@ import { pinsFirst } from "@/app/_utils/pin-utils";
 export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
   const {
     username,
+    requester,
     allowArchived = false,
     isRaw = false,
     projection,
@@ -227,8 +228,9 @@ export const getUserChecklists = async (options: GetChecklistsOptions = {}) => {
     if (!metadataOnly && !isRaw) {
       lists = await Promise.all(
         lists.map(async (list) => {
-          const { checklist } = await checkAndRefreshRecurringItems(
+          const checklist = await rollRecurring(
             list as Checklist,
+            requester ?? currentUser.username,
           );
           return isSummary && !checklist.summary
             ? { ...checklist, items: [], summary: summarizeList(checklist) }

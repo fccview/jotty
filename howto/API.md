@@ -40,6 +40,21 @@ Checklist and task items are addressed by their tree index inside the list: `0` 
 
 The new order is saved to the file, so every device and every later request sees it. Item `itemIndex` values change with it, so read the list again before using one. Alphabetical order follows the language set on the account behind the API key, falling back to the instance default, so `ż` sorts after `z` for a Polish account. `created` uses when each item was added and `modified` when it was last changed, falling back to its creation time. Items with no timestamp, usually ones written by hand or by an older version, keep their relative order at the end. A list that is already in the requested order is answered as it is and left untouched on disk.
 
+## Recurring items
+
+Checklist items and Kanban cards can repeat. Send `recurrence` when creating a checklist item, or when updating a checklist item or a card:
+
+```json
+{ "recurrence": { "rrule": "FREQ=WEEKLY;INTERVAL=1", "dtstart": "2026-01-05T09:00:00Z", "until": "2026-12-31T00:00:00Z" } }
+```
+
+- `rrule` is an RFC 5545 rule without the `RRULE:` prefix. It takes `FREQ` (`DAILY`, `WEEKLY`, `MONTHLY` or `YEARLY`), `INTERVAL` as a positive whole number, `COUNT` up to 50000, `UNTIL`, `WKST`, and plain `BYDAY` weekdays on a `WEEKLY` rule, like `FREQ=WEEKLY;BYDAY=MO,TH`. Lowercase is fine. Other parts are refused. For "every month on the 15th" or "every year on 3 March", put that date in `dtstart`, the series repeats from it. `until` is optional, leave it out for a series that never ends.
+- Jotty works out `nextDue` itself, so don't send it. Reads return `recurrence` with `nextDue`, plus `lastCompleted` once it has rolled. A series with no occurrences left has no `nextDue`.
+- `null` on an update stops the item repeating. Only top-level items and cards can repeat.
+- A rule Jotty can't read, or a date it can't parse, is refused with `400`.
+
+A completed item rolls to its next occurrence once that is due: it comes back unticked, a card goes back to `todo`, and `nextDue` moves on. That happens when you check the item, move the card, or read the checklist or board, so a script always sees the current occurrence. Only ticked items and cards in a completed column roll, a card that is still in progress stays where it is. Once a series has no occurrences left, because of `COUNT` or `until`, the item stays completed. The rolled item is saved when the API key owner can edit the checklist or board. Someone with read access sees the current occurrence too, but their read never changes the owner's file.
+
 ## Note files
 
 Every note is a markdown file in your data folder, with some YAML frontmatter at the top. If a script writes notes straight to disk, this is the shape Jotty expects:

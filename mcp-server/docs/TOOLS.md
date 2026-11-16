@@ -95,8 +95,8 @@ If a script rewrites one of your notes, add `managed: true` to its frontmatter. 
 | `create_checklist` | Makes a checklist | `title`, `category`, `type` |
 | `update_checklist` | Renames or moves a checklist | `listId`, `title`, `category` |
 | `delete_checklist` | Deletes a checklist | `listId` |
-| `create_checklist_item` | Adds an item, or a sub-item under `parentIndex` | `listId`, `text`, `parentIndex` |
-| `update_checklist_item` | Changes an item's text or details | `listId`, `itemIndex`, `text`, `description`, `priority`, `score`, `startDate`, `targetDate`, `estimatedTime` |
+| `create_checklist_item` | Adds an item, or a sub-item under `parentIndex`. `recurrence` makes a top-level item repeat | `listId`, `text`, `parentIndex`, `recurrence` |
+| `update_checklist_item` | Changes an item's text or details. `recurrence: null` stops a repeating item | `listId`, `itemIndex`, `text`, `description`, `priority`, `score`, `startDate`, `targetDate`, `estimatedTime`, `recurrence` |
 | `delete_checklist_item` | Removes an item and its sub-items | `listId`, `itemIndex` |
 | `check_checklist_item` | Ticks an item and its sub-items | `listId`, `itemIndex` |
 | `uncheck_checklist_item` | Unticks an item and its sub-items | `listId`, `itemIndex` |
@@ -121,7 +121,7 @@ If a script rewrites one of your notes, add `managed: true` to its frontmatter. 
 | `create_board` | Makes a board, with the default columns unless you pass your own | `title`, `category`, `statuses` |
 | `create_board_item` | Adds a card and returns it with its id | `boardId`, `text`, `status`, `description`, `priority`, `score`, `assignee`, `externalId`, `position` |
 | `create_board_items` | Adds or updates up to 200 cards in one call | `boardId`, `cards`, `position`, `verbose` |
-| `update_board_item` | Changes a card's text, description, priority, score, human assignee, reminder or external id | `boardId`, `itemId`, `text`, `description`, `priority`, `score`, `assignee`, `reminder`, `externalId`, `verbose` |
+| `update_board_item` | Changes a card's text, description, priority, score, human assignee, reminder, recurrence or external id | `boardId`, `itemId`, `text`, `description`, `priority`, `score`, `assignee`, `reminder`, `recurrence`, `externalId`, `verbose` |
 | `move_board_item` | Moves a card to another column and records it in the card's history | `boardId`, `itemId`, `status` |
 
 The default columns are `todo`, `in_progress`, `completed` and `paused`. A column's `color` is a hex colour written `#rrggbb`, like `#3b82f6`. A new or changed colour written any other way is refused, while a colour a column already has is kept as it is. Moving a card into a column marked `autoComplete` also marks it completed, and so does creating it there. A column the board doesn't have is refused, and the error lists the ones it does. Moving a card returns that card without its history, not the whole board. `update_board_item` returns only the card's `id`, `externalId` and `status`, and `verbose: true` returns the whole card.

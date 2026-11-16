@@ -41,6 +41,18 @@ import { cardWithExternalId } from "@/app/_utils/kanban/card-tree";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { rehomeRefs } from "@/app/_server/actions/attachments/adopt";
+import { NESTED_RECURRENCE, RECURRENCE_REFUSED, ruleFrom } from "@/app/_utils/recurrence-utils";
+
+const _readRule = (raw: string | null): { rule?: Item["recurrence"]; refused?: boolean } => {
+  if (raw === null || raw === "") return {};
+  try {
+    const rule = ruleFrom(JSON.parse(raw));
+    return rule ? { rule } : { refused: true };
+  } catch (error) {
+    console.warn("[checklist-item] unreadable recurrence:", error);
+    return { refused: true };
+  }
+};
 
 const _editItem = async (
   actor: SanitisedUser,
@@ -139,6 +151,12 @@ const _editItem = async (
     const targetDate = formData.get("targetDate") as string | null;
     const startDate = formData.get("startDate") as string | null;
     const estimatedTime = formData.get("estimatedTime") as string | null;
+    const recurrenceRaw = formData.get("recurrence") as string | null;
+    const recurrence = _readRule(recurrenceRaw);
+    if (recurrence.refused) return { success: false, error: RECURRENCE_REFUSED };
+    if (recurrence.rule && !stored.items.some((item) => item.id === itemId)) {
+      return { success: false, error: NESTED_RECURRENCE };
+    }
 
     const updatedList = {
       ...stored,
@@ -158,6 +176,7 @@ const _editItem = async (
         ...(targetDate !== null && { targetDate: targetDate || undefined }),
         ...(startDate !== null && { startDate: startDate || undefined }),
         ...(estimatedTime !== null && { estimatedTime: estimatedTime ? parseFloat(estimatedTime) : undefined }),
+        ...(recurrenceRaw !== null && { recurrence: recurrence.rule }),
         lastModifiedBy: currentUser,
         lastModifiedAt: now,
       }),
@@ -279,24 +298,8 @@ const _addItem = async (
 
     const now = new Date().toISOString();
 
-    let recurrence = undefined;
-    if (recurrenceStr) {
-      try {
-        recurrence = JSON.parse(recurrenceStr);
-
-        if (recurrence && !recurrence.nextDue) {
-          const { calculateNextOccurrence } =
-            await import("@/app/_utils/recurrence-utils");
-          recurrence.nextDue = calculateNextOccurrence(
-            recurrence.rrule,
-            recurrence.dtstart,
-          );
-        }
-      } catch (e) {
-        console.error("Failed to parse recurrence:", e);
-        recurrence = undefined;
-      }
-    }
+    const recurrence = _readRule(recurrenceStr);
+    if (recurrence.refused) return { success: false, error: RECURRENCE_REFUSED };
 
     const defaultStatus = isKanbanType(stored.type)
       ? ((status || firstColumn(stored.statuses)) as TaskStatus)
@@ -342,7 +345,7 @@ const _addItem = async (
         ],
       }),
       ...(isSharedBoard && { assignee: currentUser }),
-      ...(recurrence && { recurrence }),
+      ...(recurrence.rule && { recurrence: recurrence.rule }),
     };
 
     const inlineTags = extractHashtagsFromContent(text);

@@ -42,6 +42,9 @@ export const PUT = defineRoute(
     if (body.reminder !== undefined) formData.append("reminder", JSON.stringify(body.reminder));
     if (body.description !== undefined) formData.append("description", body.description);
     if (body.externalId !== undefined) formData.append("externalId", body.externalId);
+    if (body.recurrence !== undefined) {
+      formData.append("recurrence", body.recurrence === null ? "" : JSON.stringify(body.recurrence));
+    }
 
     const result = await editItem(user, board, formData);
     if (!result.success) return refuse(result.error || "Failed to update item", 400);
