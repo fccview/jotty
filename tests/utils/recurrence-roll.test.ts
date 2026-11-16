@@ -86,10 +86,29 @@ describe("finding the next occurrence", () => {
     expect(new Date(next!).getTime()).toBeGreaterThan(Date.now());
   });
 
-  it("gives up on a series too dense to walk instead of blocking the server", () => {
-    const everyMinute = `FREQ=DAILY;BYHOUR=${[...Array(24).keys()].join(",")};BYMINUTE=${[...Array(60).keys()].join(",")}`;
+  it("refuses rules that repeat more than daily or never move forward, instead of blocking the server", () => {
+    const upTo = (count: number) => Array.from({ length: count }, (_, index) => index).join(",");
+    const everyMinute = `FREQ=DAILY;BYHOUR=${upTo(24)};BYMINUTE=${upTo(60)}`;
 
     expect(calculateNextOccurrence("FREQ=SECONDLY", "1970-01-01T00:00:00.000Z")).toBeUndefined();
     expect(calculateNextOccurrence(everyMinute, "1970-01-01T00:00:00.000Z")).toBeUndefined();
+    expect(calculateNextOccurrence("FREQ=DAILY;INTERVAL=-1", "2020-01-01T00:00:00.000Z")).toBeUndefined();
+    expect(calculateNextOccurrence("FREQ=DAILY;INTERVAL=0", "2020-01-01T00:00:00.000Z")).toBeUndefined();
+  });
+});
+
+describe("rolling a series it can't work out", () => {
+  it("keeps the current occurrence when the search runs out of steps", () => {
+    const ancient = item({ completed: true, recurrence: { ...weekly(PAST), rrule: "FREQ=DAILY", dtstart: "1800-01-01T00:00:00.000Z" } });
+
+    expect(shouldRefreshRecurringItem(ancient)).toBe(true);
+    expect(refreshRecurringItem(ancient)).toBe(ancient);
+    expect(rollDueItems([ancient])[0]).toBe(ancient);
+  });
+
+  it("never tries to roll a stored rule that could hang the search", () => {
+    const backwards = item({ completed: true, recurrence: { ...weekly(PAST), rrule: "FREQ=DAILY;INTERVAL=-1" } });
+
+    expect(shouldRefreshRecurringItem(backwards)).toBe(false);
   });
 });

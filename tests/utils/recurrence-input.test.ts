@@ -17,8 +17,25 @@ describe("recurrence input from the REST API", () => {
     expect(isRecurrenceInput({ rrule: "FREQ=HOURLY", dtstart: "2030-01-07" })).toBe(false);
     expect(isRecurrenceInput({ rrule: "freq=minutely;interval=5", dtstart: "2030-01-07" })).toBe(false);
     expect(isRecurrenceInput({ rrule: "INTERVAL=1;FREQ=SECONDLY", dtstart: "1970-01-01T00:00:00Z" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;BYHOUR=9,12,17", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;BYMINUTE=0,30", dtstart: "2030-01-07" })).toBe(false);
     expect(isRecurrenceInput({ rrule: "FREQ=DAILY;INTERVAL=2", dtstart: "2030-01-07" })).toBe(true);
     expect(isRecurrenceInput({ rrule: "FREQ=YEARLY", dtstart: "2030-01-07" })).toBe(true);
+  });
+
+  it("refuses intervals that are not positive whole numbers", () => {
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;INTERVAL=-1", dtstart: "2020-01-01T00:00:00Z" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;INTERVAL=0", dtstart: "2020-01-01" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;INTERVAL=1.5", dtstart: "2020-01-01" })).toBe(false);
+  });
+
+  it("accepts lowercase rules, weekdays included", () => {
+    expect(isRecurrenceInput({ rrule: "freq=weekly;byday=mo", dtstart: "2030-01-07" })).toBe(true);
+    expect(ruleFrom({ rrule: "freq=weekly;byday=mo,fr", dtstart: "2030-01-07T09:00:00Z" })?.rrule).toBe("FREQ=WEEKLY;BYDAY=MO,FR");
+  });
+
+  it("refuses a series that started too long ago to schedule", () => {
+    expect(ruleFrom({ rrule: "FREQ=DAILY", dtstart: "1800-01-01T00:00:00Z" })).toBeUndefined();
   });
 
   it("normalises the rule and works out the next occurrence", () => {

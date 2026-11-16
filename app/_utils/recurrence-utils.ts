@@ -86,20 +86,38 @@ export const recurrenceToMarkdown = (recurrence: RecurrenceRule): string[] => {
 
 const MAX_OCCURRENCE_STEPS = 50_000;
 
+interface Occurrence {
+  next?: string;
+  settled: boolean;
+}
+
+const _optionsOf = (rruleString: string) => {
+  try {
+    return RRule.parseString(rruleString.toUpperCase());
+  } catch (error) {
+    console.warn("Unreadable recurrence rule:", error);
+    return undefined;
+  }
+};
+
 /**
- * Calculate the next occurrence date based on the RRULE and start date
- * @param rruleString - RFC 5545 RRULE string
- * @param dtstart - Start date as ISO string
- * @param after - Calculate next occurrence after this date (defaults to now)
- * @param until - Optional end date as ISO string (stop recurring after this date)
- * @returns ISO date string of next occurrence, or undefined if no more occurrences
+ * At most one occurrence a day, moving forward, so finding the next one stays within MAX_OCCURRENCE_STEPS
  */
-export const calculateNextOccurrence = (
+export const isSchedulable = (rruleString: string): boolean => {
+  const options = _optionsOf(rruleString);
+  if (!options || options.freq === undefined || options.freq > Frequency.DAILY) return false;
+  if (options.byhour != null || options.byminute != null || options.bysecond != null) return false;
+  return options.interval === undefined || (Number.isInteger(options.interval) && options.interval > 0);
+};
+
+const _nextOccurrence = (
   rruleString: string,
   dtstart: string,
   after?: Date,
   until?: string
-): string | undefined => {
+): Occurrence => {
+  if (!isSchedulable(rruleString)) return { settled: false };
+
   try {
     const rfc5545Dtstart = isoToRFC5545(dtstart);
 
@@ -115,26 +133,42 @@ export const calculateNextOccurrence = (
 
     const afterDate = after || new Date();
     let nextDate: Date | undefined;
-    let steps = 0;
+    let outOfSteps = false;
     rule.all((date, index) => {
-      steps = index;
       if (date > afterDate) {
         nextDate = date;
         return false;
       }
-      return index < MAX_OCCURRENCE_STEPS;
+      outOfSteps = index >= MAX_OCCURRENCE_STEPS;
+      return !outOfSteps;
     });
 
-    if (!nextDate && steps >= MAX_OCCURRENCE_STEPS) {
+    if (outOfSteps) {
       console.warn(`Recurrence ${rruleString} from ${dtstart} has too many occurrences to roll forward`);
+      return { settled: false };
     }
 
-    return nextDate?.toISOString();
+    return { next: nextDate?.toISOString(), settled: true };
   } catch (error) {
     console.error("Error calculating next occurrence:", error);
-    return undefined;
+    return { settled: false };
   }
 };
+
+/**
+ * Calculate the next occurrence date based on the RRULE and start date
+ * @param rruleString - RFC 5545 RRULE string
+ * @param dtstart - Start date as ISO string
+ * @param after - Calculate next occurrence after this date (defaults to now)
+ * @param until - Optional end date as ISO string (stop recurring after this date)
+ * @returns ISO date string of next occurrence, or undefined if there are no more or it can't be worked out
+ */
+export const calculateNextOccurrence = (
+  rruleString: string,
+  dtstart: string,
+  after?: Date,
+  until?: string
+): string | undefined => _nextOccurrence(rruleString, dtstart, after, until).next;
 
 const _isDone = (item: Item): boolean =>
   Boolean(item.completed) || item.status === TaskStatus.COMPLETED;
@@ -155,14 +189,11 @@ export const shouldRefreshRecurringItem = (item: Item): boolean => {
     }
   }
 
-  if (!item.recurrence.nextDue) {
-    return true;
+  if (item.recurrence.nextDue && new Date(item.recurrence.nextDue) > new Date()) {
+    return false;
   }
 
-  const nextDueDate = new Date(item.recurrence.nextDue);
-  const now = new Date();
-
-  return nextDueDate <= now;
+  return isSchedulable(item.recurrence.rrule);
 };
 
 /**
@@ -193,12 +224,13 @@ export const refreshRecurringItem = (item: Item): Item => {
 
   const now = new Date();
 
-  const nextDue = calculateNextOccurrence(
+  const { next: nextDue, settled } = _nextOccurrence(
     item.recurrence.rrule,
     item.recurrence.dtstart,
     now,
     item.recurrence.until
   );
+  if (!settled) return item;
 
   if (item?.status !== TaskStatus.PAUSED) {
     return {
@@ -341,7 +373,7 @@ export const isValidRRule = (rruleString: string): boolean => {
 export type RecurrenceInput = Pick<RecurrenceRule, "rrule" | "dtstart" | "until">;
 
 export const RECURRENCE_REFUSED =
-  "Recurrence needs an rrule with FREQ of DAILY or longer, like FREQ=WEEKLY;INTERVAL=1, and a valid dtstart";
+  "Recurrence needs an rrule that repeats at most daily, like FREQ=WEEKLY;INTERVAL=1, with no BYHOUR, BYMINUTE or BYSECOND, a positive INTERVAL and a valid dtstart";
 
 export const NESTED_RECURRENCE = "Only top-level items can repeat";
 
@@ -352,19 +384,14 @@ const RRULE_SHAPE = /^[A-Z0-9=;,:+-]+$/i;
 
 const _isDate = (value?: string) => value === undefined || !Number.isNaN(Date.parse(value));
 
-const _isDailyOrLonger = (rrule: string) => {
-  const { freq } = RRule.parseString(rrule.toUpperCase());
-  return freq !== undefined && freq <= Frequency.DAILY;
-};
-
 export const isRecurrenceInput = (input: RecurrenceInput): boolean =>
   typeof input?.rrule === "string" &&
   typeof input.dtstart === "string" &&
   (input.until === undefined || typeof input.until === "string") &&
   RRULE_SHAPE.test(input.rrule) &&
   /(^|;)FREQ=/i.test(input.rrule) &&
-  isValidRRule(input.rrule) &&
-  _isDailyOrLonger(input.rrule) &&
+  isValidRRule(input.rrule.toUpperCase()) &&
+  isSchedulable(input.rrule) &&
   _isDate(input.dtstart) &&
   _isDate(input.until);
 
@@ -375,10 +402,13 @@ export const ruleFrom = (input: RecurrenceInput): RecurrenceRule | undefined => 
   const dtstart = new Date(input.dtstart).toISOString();
   const until = input.until ? new Date(input.until).toISOString() : undefined;
 
+  const { next: nextDue, settled } = _nextOccurrence(rrule, dtstart, undefined, until);
+  if (!settled) return undefined;
+
   return {
     rrule,
     dtstart,
     ...(until && { until }),
-    nextDue: calculateNextOccurrence(rrule, dtstart, undefined, until),
+    nextDue,
   };
 };

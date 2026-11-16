@@ -48,7 +48,7 @@ Checklist items and Kanban cards can repeat. Send `recurrence` when creating a c
 { "recurrence": { "rrule": "FREQ=WEEKLY;INTERVAL=1", "dtstart": "2026-01-05T09:00:00Z", "until": "2026-12-31T00:00:00Z" } }
 ```
 
-- `rrule` is an RFC 5545 rule without the `RRULE:` prefix and needs a `FREQ` of `DAILY` or longer, the same choices the web app offers. `until` is optional, leave it out for a series that never ends.
+- `rrule` is an RFC 5545 rule without the `RRULE:` prefix. It repeats at most once a day, the same choices the web app offers: a `FREQ` of `DAILY` or longer, no `BYHOUR`, `BYMINUTE` or `BYSECOND`, and an `INTERVAL` that is a positive whole number when you send one. Lowercase is fine. `until` is optional, leave it out for a series that never ends.
 - Jotty works out `nextDue` itself, so don't send it. Reads return `recurrence` with `nextDue`, plus `lastCompleted` once it has rolled.
 - `null` on an update stops the item repeating. Only top-level items and cards can repeat.
 - A rule Jotty can't read, or a date it can't parse, is refused with `400`.
