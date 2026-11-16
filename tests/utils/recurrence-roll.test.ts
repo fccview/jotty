@@ -1,7 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { Item } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
-import { refreshRecurringItem, rollDueItems, shouldRefreshRecurringItem } from "@/app/_utils/recurrence-utils";
+import {
+  calculateNextOccurrence,
+  refreshRecurringItem,
+  rollDueItems,
+  shouldRefreshRecurringItem,
+} from "@/app/_utils/recurrence-utils";
 
 const PAST = "2020-01-06T09:00:00.000Z";
 const FUTURE = "2999-01-06T09:00:00.000Z";
@@ -70,5 +75,21 @@ describe("rolling an item", () => {
 
     expect(first).toBe(waiting);
     expect(second.completed).toBe(false);
+  });
+});
+
+describe("finding the next occurrence", () => {
+  it("still walks a daily series that started decades ago", () => {
+    const next = calculateNextOccurrence("FREQ=DAILY", "1970-01-01T09:00:00.000Z");
+
+    expect(next).toBeDefined();
+    expect(new Date(next!).getTime()).toBeGreaterThan(Date.now());
+  });
+
+  it("gives up on a series too dense to walk instead of blocking the server", () => {
+    const everyMinute = `FREQ=DAILY;BYHOUR=${[...Array(24).keys()].join(",")};BYMINUTE=${[...Array(60).keys()].join(",")}`;
+
+    expect(calculateNextOccurrence("FREQ=SECONDLY", "1970-01-01T00:00:00.000Z")).toBeUndefined();
+    expect(calculateNextOccurrence(everyMinute, "1970-01-01T00:00:00.000Z")).toBeUndefined();
   });
 });

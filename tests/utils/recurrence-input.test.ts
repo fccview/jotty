@@ -13,6 +13,14 @@ describe("recurrence input from the REST API", () => {
     expect(isRecurrenceInput({ rrule: "FREQ=DAILY", dtstart: "2030-01-07", until: "nope" })).toBe(false);
   });
 
+  it("refuses anything that repeats more often than daily, like the web app", () => {
+    expect(isRecurrenceInput({ rrule: "FREQ=HOURLY", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "freq=minutely;interval=5", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "INTERVAL=1;FREQ=SECONDLY", dtstart: "1970-01-01T00:00:00Z" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;INTERVAL=2", dtstart: "2030-01-07" })).toBe(true);
+    expect(isRecurrenceInput({ rrule: "FREQ=YEARLY", dtstart: "2030-01-07" })).toBe(true);
+  });
+
   it("normalises the rule and works out the next occurrence", () => {
     const rule = ruleFrom({ rrule: "freq=daily", dtstart: "2030-01-07T09:00:00Z", until: "2030-02-01T00:00:00Z" });
 

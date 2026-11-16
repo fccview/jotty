@@ -109,6 +109,15 @@ describe("rolling recurring items on read", () => {
     expect(mockWrite).not.toHaveBeenCalled();
   });
 
+  it("answers with the list as it was re-read, not a mix of two revisions", async () => {
+    stored = { ...chores(true), title: "Renamed chores", tags: ["home"] };
+
+    const rolled = await rollRecurring({ ...chores(true), category: "Shared/Home", isShared: true }, EDITOR);
+
+    expect(rolled).toMatchObject({ title: "Renamed chores", tags: ["home"], category: "Shared/Home", isShared: true });
+    expect(rolled.items[0].completed).toBe(false);
+  });
+
   it("never writes a list whose file it can't safely stamp", async () => {
     stored = { ...chores(true), lockReason: StampRefusals.FOREIGN_UUID };
 

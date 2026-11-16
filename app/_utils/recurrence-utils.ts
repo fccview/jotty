@@ -1,4 +1,4 @@
-import { RRule } from "rrule";
+import { Frequency, RRule } from "rrule";
 import { RecurrenceRule, Item } from "@/app/_types";
 import { TaskStatus } from "../_types/enums";
 
@@ -84,6 +84,8 @@ export const recurrenceToMarkdown = (recurrence: RecurrenceRule): string[] => {
   return [`recurrence:${JSON.stringify(recurrence)}`];
 };
 
+const MAX_OCCURRENCE_STEPS = 50_000;
+
 /**
  * Calculate the next occurrence date based on the RRULE and start date
  * @param rruleString - RFC 5545 RRULE string
@@ -112,9 +114,22 @@ export const calculateNextOccurrence = (
     );
 
     const afterDate = after || new Date();
-    const nextDate = rule.after(afterDate, false);
+    let nextDate: Date | undefined;
+    let steps = 0;
+    rule.all((date, index) => {
+      steps = index;
+      if (date > afterDate) {
+        nextDate = date;
+        return false;
+      }
+      return index < MAX_OCCURRENCE_STEPS;
+    });
 
-    return nextDate ? nextDate.toISOString() : undefined;
+    if (!nextDate && steps >= MAX_OCCURRENCE_STEPS) {
+      console.warn(`Recurrence ${rruleString} from ${dtstart} has too many occurrences to roll forward`);
+    }
+
+    return nextDate?.toISOString();
   } catch (error) {
     console.error("Error calculating next occurrence:", error);
     return undefined;
@@ -326,7 +341,7 @@ export const isValidRRule = (rruleString: string): boolean => {
 export type RecurrenceInput = Pick<RecurrenceRule, "rrule" | "dtstart" | "until">;
 
 export const RECURRENCE_REFUSED =
-  "Recurrence needs an rrule with FREQ, like FREQ=WEEKLY;INTERVAL=1, and a valid dtstart";
+  "Recurrence needs an rrule with FREQ of DAILY or longer, like FREQ=WEEKLY;INTERVAL=1, and a valid dtstart";
 
 export const NESTED_RECURRENCE = "Only top-level items can repeat";
 
@@ -337,6 +352,11 @@ const RRULE_SHAPE = /^[A-Z0-9=;,:+-]+$/i;
 
 const _isDate = (value?: string) => value === undefined || !Number.isNaN(Date.parse(value));
 
+const _isDailyOrLonger = (rrule: string) => {
+  const { freq } = RRule.parseString(rrule.toUpperCase());
+  return freq !== undefined && freq <= Frequency.DAILY;
+};
+
 export const isRecurrenceInput = (input: RecurrenceInput): boolean =>
   typeof input?.rrule === "string" &&
   typeof input.dtstart === "string" &&
@@ -344,6 +364,7 @@ export const isRecurrenceInput = (input: RecurrenceInput): boolean =>
   RRULE_SHAPE.test(input.rrule) &&
   /(^|;)FREQ=/i.test(input.rrule) &&
   isValidRRule(input.rrule) &&
+  _isDailyOrLonger(input.rrule) &&
   _isDate(input.dtstart) &&
   _isDate(input.until);
 

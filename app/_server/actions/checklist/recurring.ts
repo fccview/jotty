@@ -12,7 +12,25 @@ import { rollDueItems, shouldRefreshRecurringItem } from "@/app/_utils/recurrenc
 
 const _isDue = (list: Checklist) => list.items.some(shouldRefreshRecurringItem);
 
+const FILE_FIELDS = [
+  "title",
+  "type",
+  "items",
+  "statuses",
+  "tags",
+  "sharedWith",
+  "specNote",
+  "extraMetadata",
+  "lockReason",
+  "updatedAt",
+] as const satisfies readonly (keyof Checklist)[];
+
 const _rolledView = (list: Checklist): Checklist => ({ ...list, items: rollDueItems(list.items) });
+
+const _fromFile = (list: Checklist, stored: Checklist): Checklist => ({
+  ...list,
+  ...Object.fromEntries(FILE_FIELDS.map((field) => [field, stored[field]])),
+});
 
 export const rollRecurring = async (list: Checklist, username: string): Promise<Checklist> => {
   if (!list.uuid || !_isDue(list)) return list;
@@ -24,7 +42,7 @@ export const rollRecurring = async (list: Checklist, username: string): Promise<
     const stored = await getListById(list.uuid!, list.owner);
     if (!stored) return _rolledView(list);
 
-    const latest = { ...list, items: stored.items };
+    const latest = _fromFile(list, stored);
     if (!_isDue(stored)) return latest;
     if (stored.lockReason || !stored.owner) return _rolledView(latest);
 
@@ -36,6 +54,6 @@ export const rollRecurring = async (list: Checklist, username: string): Promise<
     if (!hasChanges) return _rolledView(latest);
 
     await broadcast({ type: "checklist", action: "updated", entityId: list.uuid!, username: stored.owner });
-    return { ...list, items: checklist.items, updatedAt: checklist.updatedAt };
+    return _fromFile(list, checklist);
   });
 };
