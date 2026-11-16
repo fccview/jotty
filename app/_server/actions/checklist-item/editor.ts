@@ -36,7 +36,7 @@ import { isKanbanType } from "@/app/_types/enums";
 import { notifyUser } from "@/app/_server/actions/notifications/internal";
 import { assigneeRefusal } from "@/app/_server/actions/kanban/assignee";
 import { agentRefusal, normalAgent } from "@/app/_consts/agents";
-import { TAKEN_EXTERNAL_ID, boardColumns, firstColumn, unknownStatus } from "@/app/_consts/kanban";
+import { TAKEN_EXTERNAL_ID, boardColumns, firstColumn, isDoneColumn, unknownStatus } from "@/app/_consts/kanban";
 import { cardWithExternalId } from "@/app/_utils/kanban/card-tree";
 import { failedWith } from "@/app/_server/actions/lib/read-only-message";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
@@ -323,7 +323,7 @@ const _addItem = async (
     const newItem = {
       id: `${stored.uuid}-${Date.now()}`,
       text,
-      completed: false,
+      completed: isDoneColumn(stored.statuses, defaultStatus),
       order: insertAtBottom
         ? stored.items.reduce((max, item) => Math.max(max, item.order ?? 0), -1) + 1
         : 0,

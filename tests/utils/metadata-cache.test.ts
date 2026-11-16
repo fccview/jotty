@@ -193,6 +193,42 @@ describe("metadata cache", () => {
       expect(after).toEqual([{ id: "a", version: 9 }, { id: "b", version: 1 }]);
     });
 
+    it("makes a reader wait for a patch in flight instead of serving the stale listing", async () => {
+      const dir = tempDir();
+      const compute = vi.fn(async () => listing());
+      const refresh = vi.fn(async (paths: string[], current: Row[]) => {
+        await defer();
+        return current.map((row) => (paths.includes(path.join(dir, `${row.id}.md`)) ? { ...row, version: 2 } : row));
+      });
+
+      await getOrCompute("patch:six", dir, compute, refresh);
+      invalidatePath(path.join(dir, "a.md"));
+      const first = getOrCompute("patch:six", dir, compute, refresh);
+      const second = await getOrCompute("patch:six", dir, compute, refresh);
+
+      expect(second).toEqual([{ id: "a", version: 2 }, { id: "b", version: 1 }]);
+      expect(await first).toEqual(second);
+    });
+
+    it("patches a change queued while another patch was in flight before answering", async () => {
+      const dir = tempDir();
+      const compute = vi.fn(async () => listing());
+      const refresh = vi.fn(async (paths: string[], current: Row[]) => {
+        await defer();
+        return current.map((row) => (paths.includes(path.join(dir, `${row.id}.md`)) ? { ...row, version: row.version + 1 } : row));
+      });
+
+      await getOrCompute("patch:seven", dir, compute, refresh);
+      invalidatePath(path.join(dir, "a.md"));
+      const first = getOrCompute("patch:seven", dir, compute, refresh);
+      invalidatePath(path.join(dir, "b.md"));
+      const second = await getOrCompute("patch:seven", dir, compute, refresh);
+
+      expect(await first).toEqual([{ id: "a", version: 2 }, { id: "b", version: 1 }]);
+      expect(second).toEqual([{ id: "a", version: 2 }, { id: "b", version: 2 }]);
+      expect(compute).toHaveBeenCalledTimes(1);
+    });
+
     it("still reads everything again when a change lands mid-read and the patch cannot place it", async () => {
       const dir = tempDir();
       let runs = 0;

@@ -7,6 +7,7 @@ import { TaskStatusLabels } from "@/app/_types/enums";
 import { cn } from "@/app/_utils/global-utils";
 import { getStatusIcon } from "@/app/_utils/kanban";
 import { plainItemText } from "@/app/_utils/item-href-utils";
+import { isFullyDone } from "@/app/_utils/item-tree-utils";
 import { ProgressBar } from "@/app/_components/GlobalComponents/Statistics/ProgressBar";
 import { ChecklistItemText } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistItemText";
 
@@ -38,7 +39,7 @@ export const KanbanCardHead = ({
 }: KanbanCardHeadProps) => {
   const t = useTranslations();
   const subtasks = item.children || [];
-  const doneSubtasks = subtasks.filter((child) => child.completed).length;
+  const doneSubtasks = subtasks.filter(isFullyDone).length;
 
   return (
     <div className="space-y-2 min-w-0">

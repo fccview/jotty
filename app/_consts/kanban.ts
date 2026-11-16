@@ -48,6 +48,9 @@ export const boardColumns = (statuses?: KanbanStatus[]): KanbanStatus[] =>
 export const firstColumn = (statuses?: KanbanStatus[]): string =>
   [...boardColumns(statuses)].sort((a, b) => a.order - b.order)[0].id;
 
+export const isDoneColumn = (statuses: KanbanStatus[] | undefined, status?: string): boolean =>
+  Boolean(status && boardColumns(statuses).find((column) => column.id === status)?.autoComplete);
+
 export const unknownStatus = (statuses?: KanbanStatus[]): string =>
   `${UNKNOWN_STATUS}. Its columns are ${boardColumns(statuses).map((column) => column.id).join(", ")}`;
 

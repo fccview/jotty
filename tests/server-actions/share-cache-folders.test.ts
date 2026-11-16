@@ -208,6 +208,17 @@ describe("share caches when folders change", () => {
     expect(await mountsOf(viewer)).toEqual([folderMount(owner, "Work", EDIT)]);
   });
 
+  it("notices create being taken away from a grant that only implied it", async () => {
+    const { owner, viewer } = world();
+    const noCreate = { ...EDIT, canCreate: false };
+    writeNote(owner, "Work", "plan", nextUuid());
+    await setFolder(owner, "Work", shareWith({ [viewer]: EDIT }));
+    await warm(viewer);
+
+    await setFolder(owner, "Work", shareWith({ [viewer]: noCreate }));
+    expect(await mountsOf(viewer)).toEqual([folderMount(owner, "Work", noCreate)]);
+  });
+
   it("goes through the share actions themselves", async () => {
     const { owner, viewer } = world();
     const plan = nextUuid();

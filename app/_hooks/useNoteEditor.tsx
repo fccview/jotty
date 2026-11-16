@@ -145,8 +145,9 @@ export const useNoteEditor = ({
     shownNote.current = note;
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
 
-    if (previous !== note && extractYamlMetadata(previous.content || "").contentWithoutMetadata === contentWithoutMetadata) {
-      if (previous.title !== note.title) setTitle(note.title);
+    const sameNote = previous !== note && previous.uuid === note.uuid;
+    if (sameNote && extractYamlMetadata(previous.content || "").contentWithoutMetadata === contentWithoutMetadata) {
+      if (previous.title !== note.title) setTitle((typed) => (typed === previous.title ? note.title : typed));
       if (previous.category !== note.category) {
         const before = previous.category || UNCATEGORIZED;
         const after = note.category || UNCATEGORIZED;

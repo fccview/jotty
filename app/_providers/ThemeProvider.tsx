@@ -95,7 +95,9 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     document.documentElement.classList.remove(...allThemes);
     if (followsViewer) document.documentElement.classList.add(resolvedTheme);
 
-    if (followsViewer && customThemeColors[resolvedTheme]) {
+    const viewerColors = customThemeColors[resolvedTheme];
+
+    if (followsViewer && viewerColors) {
       const styleId = "custom-theme-styles";
       let styleElement = document.getElementById(styleId) as HTMLStyleElement;
 
@@ -105,7 +107,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         document.head.appendChild(styleElement);
       }
 
-      const cssVariables = Object.entries(customThemeColors[resolvedTheme])
+      const cssVariables = Object.entries(viewerColors)
         .map(([key, value]) => `${key}: ${value};`)
         .join("\n        ");
 
@@ -116,17 +118,13 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       `;
 
       styleElement.textContent = cssContent;
+    }
 
-      Object.keys(customThemeColors[resolvedTheme]).forEach((key) => {
+    if (viewerColors) {
+      Object.keys(viewerColors).forEach((key) => {
         document.documentElement.style.removeProperty(key);
       });
-
-      const initStyleElement = document.getElementById(
-        "custom-theme-init-styles"
-      ) as HTMLStyleElement;
-      if (initStyleElement) {
-        initStyleElement.remove();
-      }
+      document.getElementById("custom-theme-init-styles")?.remove();
     }
 
     if (customCSS) {

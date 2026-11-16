@@ -481,6 +481,7 @@
     "addNewTask": "Add new task...",
     "publiclyShared": "Publicly shared",
     "subtasks": "Subtasks",
+    "showSubtasks": "Show subtasks",
     "overallProgress": "Overall progress",
     "emptyChecklist": "This checklist is empty.",
     "enterTaskTitle": "Enter task title...",

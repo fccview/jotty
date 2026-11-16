@@ -140,13 +140,18 @@ export async function getOrCompute<T>(
   if (refresh) refreshers.set(key, refresh as Refresh);
   if (readsFolderInfo) folderReaders.add(key);
   else folderReaders.delete(key);
+
+  const inflight = pending.get(key);
+  if (inflight) {
+    const queued = Boolean(dirty.get(key)?.size);
+    const result = (await inflight) as T[];
+    if (!queued) return [...result];
+  }
+
   const changed = dirty.get(key);
   if (store.has(key) && !changed?.size) return [...(store.get(key)! as T[])];
 
-  if (pending.has(key)) {
-    const inflight = (await pending.get(key)!) as T[];
-    return [...inflight];
-  }
+  if (pending.has(key)) return [...((await pending.get(key)!) as T[])];
 
   registerKey(key, dir);
   startWatcher(dir);

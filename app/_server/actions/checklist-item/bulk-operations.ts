@@ -28,7 +28,7 @@ import { diskPath } from "@/app/_server/actions/share/target";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
 import { sessionActor } from "@/app/_server/actions/lib/actor";
-import { firstColumn } from "@/app/_consts/kanban";
+import { firstColumn, isDoneColumn } from "@/app/_consts/kanban";
 
 const _createBulkItems = async (
   formData: FormData
@@ -65,10 +65,11 @@ const _createBulkItems = async (
       ? existing.reduce((max, item) => Math.max(max, item.order ?? 0), -1) + 1
       : 0;
     const status = firstColumn(list.statuses) as TaskStatus;
+    const completed = isKanbanType(list.type) && isDoneColumn(list.statuses, status);
     const newItems = lines.map((text, index) => ({
       id: `${list.uuid}-${Date.now()}-${index}`,
       text: text.trim(),
-      completed: false,
+      completed,
       order: firstOrder + index,
       createdBy: currentUser,
       createdAt: now,

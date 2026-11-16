@@ -729,6 +729,26 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       expect(result.success).toBe(false);
     });
 
+    it("completes cards dropped into a first column that auto-completes", async () => {
+      mockGetListById.mockResolvedValue({
+        ...mockTaskChecklist,
+        statuses: [
+          { id: "shipped", label: "Shipped", order: 0, autoComplete: true },
+          { id: "todo", label: "To Do", order: 1 },
+        ],
+      });
+
+      const result = await createBulkItems(createFormData({ uuid: "test-uuid-123", itemsText: "Alpha\nBeta" }));
+
+      expect(result.success).toBe(true);
+      expect(
+        result.data?.items.filter((item) => item.status === "shipped").map((item) => [item.text, item.completed]),
+      ).toEqual([
+        ["Alpha", true],
+        ["Beta", true],
+      ]);
+    });
+
     it("should trim whitespace from items", async () => {
       const formData = createFormData({
         uuid: "test-uuid-123",

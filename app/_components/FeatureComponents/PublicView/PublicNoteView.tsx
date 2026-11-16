@@ -44,10 +44,10 @@ export const PublicNoteView = ({ note, user, links }: PublicNoteViewProps) => {
       hasContents
       actions={markdown !== null && <PublicCopyButton markdown={markdown} />}
     >
-      {note.encrypted && !decryptedContent ? (
+      {note.encrypted && decryptedContent === null ? (
         <PublicEncryptedNote content={note.content} onDecrypted={setDecryptedContent} />
       ) : (
-        <UnifiedMarkdownRenderer content={decryptedContent || note.content} className={NOTE_PROSE_CLASS} />
+        <UnifiedMarkdownRenderer content={decryptedContent ?? note.content} className={NOTE_PROSE_CLASS} />
       )}
     </PublicPaper>
   );

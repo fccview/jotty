@@ -7,6 +7,7 @@ import { KanbanGrid } from "@/app/_components/FeatureComponents/Kanban/KanbanGri
 import { KanbanColumnFrame } from "@/app/_components/FeatureComponents/Kanban/KanbanColumnFrame";
 import { KanbanCardHead } from "@/app/_components/FeatureComponents/Kanban/KanbanCardHead";
 import { KanbanCardFace, KanbanCardShell } from "@/app/_components/FeatureComponents/Kanban/KanbanCardFace";
+import { PublicSubtasks } from "./PublicSubtasks";
 
 export const PublicBoard = ({ checklist }: { checklist: Checklist }) => {
   const columns = boardColumns(checklist).map((column) => ({ id: column.status.id, ...column }));
@@ -29,6 +30,7 @@ export const PublicBoard = ({ checklist }: { checklist: Checklist }) => {
                   item={item}
                   checklist={checklist}
                   head={<KanbanCardHead item={item} statuses={statuses} />}
+                  footer={<PublicSubtasks items={item.children || []} />}
                 />
               </KanbanCardShell>
             ))}

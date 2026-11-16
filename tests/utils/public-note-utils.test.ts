@@ -13,6 +13,12 @@ describe("copyableMarkdown", () => {
     expect(copied).not.toContain("sharedWith");
   });
 
+  it("leaves out a second yaml block the page hides too", () => {
+    const file = FILE.replace("# Plans", "---\nlayout: post\n---\n# Plans");
+    const content = extractYamlMetadata(file).contentWithoutMetadata;
+    expect(copyableMarkdown({ content, encrypted: false })).toBe("# Plans\n\nHello");
+  });
+
   it("refuses to copy an encrypted note", () => {
     expect(copyableMarkdown({ content: "-----BEGIN PGP MESSAGE-----", encrypted: true })).toBeNull();
   });

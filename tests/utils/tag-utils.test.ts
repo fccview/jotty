@@ -1,4 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+vi.unmock("unified");
 import {
   normalizeTag,
   getAncestorTags,
@@ -24,6 +26,12 @@ describe("tags inside html blocks", () => {
     expect(extractHashtagsFromContent("para\n<span>\n#y")).toEqual(["y"]);
     expect(extractHashtagsFromContent("<div>a</div>\n\n#after")).toEqual(["after"]);
     expect(extractHashtagsFromContent("```\n<div>\n```\n\n#fenced")).toEqual(["fenced"]);
+  });
+
+  it("indexes tags in legacy html notes, as the editor does", () => {
+    expect(extractHashtagsFromContent("<p>legacy #old</p>")).toEqual(["old"]);
+    expect(extractHashtagsFromContent("<p>#one</p><ul><li><p>and #two</p></li></ul>")).toEqual(["one", "two"]);
+    expect(extractHashtagsFromContent("<p>skip</p><pre><code>#nope</code></pre>")).toEqual([]);
   });
 });
 

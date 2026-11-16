@@ -1,4 +1,5 @@
 import { Note, Checklist, TagsIndex, TagInfo } from "@/app/_types";
+import { isLegacyHtml } from "@/app/_utils/markdown/legacy";
 
 export type { TagsIndex, TagInfo };
 
@@ -155,7 +156,9 @@ export const extractHashtagsFromContent = (content: string): string[] => {
 
   const codeBlockRegex =
     /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>|<!--[\s\S]*?-->|<[a-zA-Z\/][^>]*>/gi;
-  const contentWithoutCode = _withoutHtmlBlocks(content.replace(FENCED_CODE, " ")).replace(codeBlockRegex, " ");
+  const withoutFences = content.replace(FENCED_CODE, " ");
+  const prose = isLegacyHtml(content) ? withoutFences : _withoutHtmlBlocks(withoutFences);
+  const contentWithoutCode = prose.replace(codeBlockRegex, " ");
 
   const closes = _closerFinder(contentWithoutCode);
   for (const match of Array.from(contentWithoutCode.matchAll(HASHTAG))) {

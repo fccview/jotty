@@ -15,7 +15,7 @@ import { extractHashtagsFromContent, normalizeTag } from "@/app/_utils/tag-utils
 import { applyStatus, completeParent } from "@/app/_utils/item-status-utils";
 import { findItem, updateItem } from "@/app/_utils/item-tree-utils";
 import { flatCards } from "@/app/_utils/kanban/card-tree";
-import { boardColumns, unknownStatus } from "@/app/_consts/kanban";
+import { boardColumns, isDoneColumn, unknownStatus } from "@/app/_consts/kanban";
 import { Checklist, Item, KanbanPriority, KanbanStatus, Result, SanitisedUser } from "@/app/_types";
 import {
   CardPlacement,
@@ -192,7 +192,7 @@ const _dealCards = async (
       const card: Item = {
         id,
         text: draft.text,
-        completed: !!columns.find((column) => column.id === status)?.autoComplete,
+        completed: isDoneColumn(columns, status),
         order: 0,
         status,
         timeEntries: [],

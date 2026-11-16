@@ -9,7 +9,7 @@ import {
   NOTES_DIR,
   CHECKLISTS_DIR,
 } from "@/app/_consts/files";
-import { mountName, parseSharedWith } from "@/app/_utils/sharing-utils";
+import { granted as holds, mountName, parseSharedWith } from "@/app/_utils/sharing-utils";
 import { currentFrontmatterOf, forgetFrontmatter } from "@/app/_server/actions/lib/frontmatter-memo";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import {
@@ -56,7 +56,7 @@ const _homeOf = (mode: Modes, username: string): string =>
   path.join(process.cwd(), userDirFor(mode, username));
 
 const _samePerms = (a: SharingPermissions, b: SharingPermissions): boolean =>
-  Object.values(PermissionTypes).every((key) => Boolean(a[key]) === Boolean(b[key]));
+  Object.values(PermissionTypes).every((key) => holds(a, key) === holds(b, key));
 
 const _alreadyMounted = (uuid: string | null, granted: SharingPermissions, mounts: SharedMount[]) =>
   uuid !== null &&

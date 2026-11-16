@@ -76,18 +76,27 @@ const zipDirectory = async (
   const stream = fs.createWriteStream(outPath);
 
   return new Promise((resolve, reject) => {
+    let failure: Error | null = null;
+
     stream.on("close", () => {
-      resolve();
+      const failed = failure;
+      if (!failed) return resolve();
+      fsp
+        .rm(outPath, { force: true })
+        .catch((error) => console.error(`Could not remove partial export ${outPath}:`, error))
+        .finally(() => reject(failed));
     });
-    archive.on("error", (err: Error) => {
+
+    const fail = (err: Error) => {
+      if (failure) return;
       console.error("Archiver error:", err);
-      reject(err);
+      failure = err;
       archive.abort();
       stream.destroy();
-      fsp.rm(outPath, { force: true }).catch((error) =>
-        console.error(`Could not remove partial export ${outPath}:`, error),
-      );
-    });
+    };
+
+    archive.on("error", fail);
+    stream.on("error", fail);
 
     archive.pipe(stream);
 
