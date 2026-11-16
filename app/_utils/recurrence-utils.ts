@@ -121,19 +121,14 @@ export const calculateNextOccurrence = (
   }
 };
 
+const _isDone = (item: Item): boolean =>
+  Boolean(item.completed) || item.status === TaskStatus.COMPLETED;
+
 /**
  * Check if a recurring item needs to be refreshed (completed and past due date)
  */
 export const shouldRefreshRecurringItem = (item: Item): boolean => {
-  let isCompleted = false;
-  if (item.status !== TaskStatus.PAUSED && item.status !== TaskStatus.TODO) {
-    isCompleted = true;
-  }
-  if (item.completed) {
-    isCompleted = true;
-  }
-
-  if (!item.recurrence || !isCompleted) {
+  if (!item.recurrence || !_isDone(item)) {
     return false;
   }
 
@@ -194,7 +189,7 @@ export const refreshRecurringItem = (item: Item): Item => {
     return {
       ...item,
       completed: false,
-      status: TaskStatus.TODO,
+      status: item.status ? TaskStatus.TODO : undefined,
       children: resetChildren(item.children),
       recurrence: {
         ...item.recurrence,
@@ -215,6 +210,9 @@ export const refreshRecurringItem = (item: Item): Item => {
     },
   };
 };
+
+export const rollDueItems = (items: Item[]): Item[] =>
+  items.map((item) => (shouldRefreshRecurringItem(item) ? refreshRecurringItem(item) : item));
 
 /**
  * Get human-readable description of a recurrence rule

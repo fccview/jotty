@@ -53,7 +53,7 @@ Checklist items and Kanban cards can repeat. Send `recurrence` when creating a c
 - `null` on an update stops the item repeating. Only top-level items and cards can repeat.
 - A rule Jotty can't read, or a date it can't parse, is refused with `400`.
 
-A completed item rolls to its next occurrence once that is due: it comes back unticked, a card goes back to `todo`, and `nextDue` moves on. That happens when you check the item, move the card, or read the checklist or board, so a script always sees the current occurrence.
+A completed item rolls to its next occurrence once that is due: it comes back unticked, a card goes back to `todo`, and `nextDue` moves on. That happens when you check the item, move the card, or read the checklist or board, so a script always sees the current occurrence. Only ticked items and cards in a completed column roll, a card that is still in progress stays where it is. The rolled item is saved when the API key owner can edit the checklist or board. Someone with read access sees the current occurrence too, but their read never changes the owner's file.
 
 ## Note files
 

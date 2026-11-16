@@ -20,7 +20,7 @@ export const GET = defineRoute(
     path: "/kanban/{boardId}",
     tag: ApiTag.KANBAN,
     summary: "Get a Kanban board",
-    description: "Also returns boards shared with the API key owner. Pass externalId to get only the card that has it. Completed recurring cards whose next occurrence is due are rolled first, as in the web app.",
+    description: "Also returns boards shared with the API key owner. Pass externalId to get only the card that has it. Completed recurring cards whose next occurrence is due come back rolled, and are saved that way when the API key owner can edit the board.",
     params: boardParams,
     query: boardGetQuery,
     responses: {
@@ -35,7 +35,7 @@ export const GET = defineRoute(
     const { board, refused } = await boardFor(request, params.boardId, user.username);
     if (refused) return refused;
 
-    return NextResponse.json({ board: transformBoard(await rollRecurring(board), ListView.FULL, query.externalId) });
+    return NextResponse.json({ board: transformBoard(await rollRecurring(board, user.username), ListView.FULL, query.externalId) });
   },
 );
 

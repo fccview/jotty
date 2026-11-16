@@ -40,6 +40,6 @@ export const PUT = defineRoute(
     const result = await stampStatus(user, formData);
     if (!result.success) return refuse(result.error || "Failed to update status", 400);
 
-    return cardChanged(result.data && (await rollRecurring(result.data)), card.id);
+    return cardChanged(result.data && (await rollRecurring(result.data, user.username)), card.id);
   },
 );
