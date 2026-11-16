@@ -95,6 +95,13 @@ describe("finding the next occurrence", () => {
     expect(calculateNextOccurrence("FREQ=DAILY;INTERVAL=-1", "2020-01-01T00:00:00.000Z")).toBeUndefined();
     expect(calculateNextOccurrence("FREQ=DAILY;INTERVAL=0", "2020-01-01T00:00:00.000Z")).toBeUndefined();
   });
+
+  it("does not scan to the end of time for a rule that never matches", () => {
+    const started = performance.now();
+
+    expect(calculateNextOccurrence("FREQ=DAILY;BYMONTH=2;BYMONTHDAY=30", "1970-01-01T00:00:00.000Z")).toBeUndefined();
+    expect(performance.now() - started).toBeLessThan(500);
+  });
 });
 
 describe("rolling a series it can't work out", () => {

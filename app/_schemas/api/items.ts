@@ -60,7 +60,7 @@ export const recurrenceSchema = z
 
 export const recurrenceBody = z
   .object({
-    rrule: z.string().describe(`${recurrenceSchema.shape.rrule.description}. Repeats at most daily: FREQ of DAILY or longer, no BYHOUR, BYMINUTE or BYSECOND, and a positive INTERVAL`),
+    rrule: z.string().describe(`${recurrenceSchema.shape.rrule.description}. Takes FREQ (DAILY to YEARLY), INTERVAL, COUNT, UNTIL, WKST and, for WEEKLY, BYDAY weekdays. The series starts from dtstart`),
     dtstart: z.string().describe("When the series starts. Any date Date.parse accepts, ISO 8601 recommended"),
     until: z.string().optional().describe("When the series stops, left out for no end"),
   })

@@ -1,4 +1,4 @@
-import { Frequency, RRule } from "rrule";
+import { ByWeekday, Frequency, Options, RRule, Weekday } from "rrule";
 import { RecurrenceRule, Item } from "@/app/_types";
 import { TaskStatus } from "../_types/enums";
 
@@ -100,14 +100,32 @@ const _optionsOf = (rruleString: string) => {
   }
 };
 
+const SCHEDULABLE_PARTS = new Set<string>([
+  "freq",
+  "interval",
+  "count",
+  "until",
+  "wkst",
+  "byweekday",
+] satisfies (keyof Options)[]);
+
+const _plainWeekdays = (byweekday: ByWeekday | ByWeekday[]) =>
+  [byweekday].flat().every((day) => !(day instanceof Weekday) || day.n == null);
+
 /**
- * At most one occurrence a day, moving forward, so finding the next one stays within MAX_OCCURRENCE_STEPS
+ * Daily to yearly, moving forward, with nothing that can filter out every date, so finding the next occurrence always ends quickly
  */
 export const isSchedulable = (rruleString: string): boolean => {
   const options = _optionsOf(rruleString);
   if (!options || options.freq === undefined || options.freq > Frequency.DAILY) return false;
-  if (options.byhour != null || options.byminute != null || options.bysecond != null) return false;
-  return options.interval === undefined || (Number.isInteger(options.interval) && options.interval > 0);
+
+  const parts = Object.entries(options).filter(([, value]) => value != null);
+  if (parts.some(([part]) => !SCHEDULABLE_PARTS.has(part))) return false;
+  if (options.byweekday != null && (options.freq !== Frequency.WEEKLY || !_plainWeekdays(options.byweekday))) {
+    return false;
+  }
+
+  return options.interval == null || (Number.isInteger(options.interval) && options.interval > 0);
 };
 
 const _nextOccurrence = (
@@ -373,7 +391,7 @@ export const isValidRRule = (rruleString: string): boolean => {
 export type RecurrenceInput = Pick<RecurrenceRule, "rrule" | "dtstart" | "until">;
 
 export const RECURRENCE_REFUSED =
-  "Recurrence needs an rrule that repeats at most daily, like FREQ=WEEKLY;INTERVAL=1, with no BYHOUR, BYMINUTE or BYSECOND, a positive INTERVAL and a valid dtstart";
+  "Recurrence needs an rrule like FREQ=WEEKLY;INTERVAL=1 using FREQ (DAILY to YEARLY), a positive INTERVAL, COUNT, UNTIL, WKST and, for WEEKLY, plain BYDAY weekdays, plus a valid dtstart";
 
 export const NESTED_RECURRENCE = "Only top-level items can repeat";
 

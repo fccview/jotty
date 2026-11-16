@@ -29,6 +29,25 @@ describe("recurrence input from the REST API", () => {
     expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;INTERVAL=1.5", dtstart: "2020-01-01" })).toBe(false);
   });
 
+  it("refuses parts that could filter out every date", () => {
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;BYMONTH=2;BYMONTHDAY=30", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=MONTHLY;BYMONTHDAY=15", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=MONTHLY;BYDAY=+6MO", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=WEEKLY;BYDAY=1MO", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;INTERVAL=7;BYDAY=TU", dtstart: "2030-01-07" })).toBe(false);
+    expect(isRecurrenceInput({ rrule: "FREQ=YEARLY;BYSETPOS=40", dtstart: "2030-01-07" })).toBe(false);
+  });
+
+  it("refuses a start date hidden inside the rule", () => {
+    expect(isRecurrenceInput({ rrule: "FREQ=DAILY;DTSTART=20310101T090000Z", dtstart: "2030-01-07T09:00:00Z" })).toBe(false);
+  });
+
+  it("accepts weekly weekdays with a count, an end and a week start", () => {
+    expect(
+      isRecurrenceInput({ rrule: "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,TH;WKST=SU;COUNT=10;UNTIL=20301231T000000Z", dtstart: "2030-01-07" }),
+    ).toBe(true);
+  });
+
   it("accepts lowercase rules, weekdays included", () => {
     expect(isRecurrenceInput({ rrule: "freq=weekly;byday=mo", dtstart: "2030-01-07" })).toBe(true);
     expect(ruleFrom({ rrule: "freq=weekly;byday=mo,fr", dtstart: "2030-01-07T09:00:00Z" })?.rrule).toBe("FREQ=WEEKLY;BYDAY=MO,FR");
