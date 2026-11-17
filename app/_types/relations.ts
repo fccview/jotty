@@ -94,3 +94,14 @@ export interface Neighbourhood {
   total: number;
   truncated: boolean;
 }
+
+export interface PublicLink {
+  uuid: string;
+  type: ItemTypes;
+  title: string;
+}
+
+export interface PublicLinks {
+  backlinks: PublicLink[];
+  links: PublicLink[];
+}

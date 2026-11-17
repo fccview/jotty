@@ -54,6 +54,7 @@ import { dropMounts } from "@/app/_server/actions/share/mounts";
 import { Modes } from "@/app/_types/enums";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const NOTE = "66666666-6666-4666-8666-666666666666";
 const LIST = "88888888-8888-4888-8888-888888888888";
@@ -103,6 +104,7 @@ afterAll(() => {
 
 beforeEach(() => {
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   mkdirSync(path.dirname(path.join(root, USERS_FILE)), { recursive: true });
   writeFileSync(

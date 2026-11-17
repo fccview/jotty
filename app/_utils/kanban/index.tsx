@@ -1,5 +1,5 @@
 import { Clock01Icon, TimeQuarterIcon } from "hugeicons-react";
-import { TaskStatus } from "@/app/_types/enums";
+import { KanbanPriorityLevel, TaskStatus } from "@/app/_types/enums";
 import { Item, KanbanPriority } from "@/app/_types";
 
 import type { CSSProperties, ReactElement } from "react";
@@ -60,6 +60,11 @@ const PRIORITY_CONFIG: Record<KanbanPriority, { dotColor: string; translationKey
   low: { dotColor: "#3b82f6", translationKey: "kanban.low", sortOrder: 3 },
   none: { dotColor: "transparent", translationKey: "kanban.none", sortOrder: 4 },
 };
+
+const SHOWN_PRIORITIES = Object.keys(PRIORITY_CONFIG).filter((key) => key !== KanbanPriorityLevel.NONE);
+
+export const shownPriority = (priority?: string): KanbanPriority | null =>
+  priority && SHOWN_PRIORITIES.includes(priority) ? (priority as KanbanPriority) : null;
 
 export const getPriorityDotColor = (priority?: KanbanPriority): string =>
   PRIORITY_CONFIG[priority || "none"].dotColor;

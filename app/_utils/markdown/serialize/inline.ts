@@ -96,6 +96,7 @@ export const serializeInline = (
           pipes: context.inTable || multiline,
           inLink,
           starMarks,
+          opened: opening.length > 0,
           blockEnd: index === nodes.length - 1 && marks.length === 0,
         });
         break;

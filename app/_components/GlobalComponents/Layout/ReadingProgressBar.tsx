@@ -64,7 +64,7 @@ export const ReadingProgressBar = ({ fixed = false }: { fixed?: boolean }) => {
     <div
       ref={containerRef}
       className={cn(
-        fixed ? "fixed bottom-1.5 left-0 right-0" : "sticky top-0 z-10 h-0",
+        fixed ? "fixed bottom-1.5 left-0 right-0 z-40" : "sticky top-0 z-10 h-0",
       )}
     >
       <div

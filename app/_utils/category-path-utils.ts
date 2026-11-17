@@ -1,4 +1,5 @@
 import { EXCLUDED_DIRS, RESERVED_DIRS } from "@/app/_consts/files";
+import { UNCATEGORIZED } from "@/app/_consts/notes";
 
 const SEPARATOR = "/";
 const TRAIL_SEPARATOR = " / ";
@@ -22,3 +23,8 @@ export const isReservedCategory = (category = ""): boolean =>
     const name = part.trim().toLowerCase();
     return index === 0 ? EXCLUDED_DIRS.includes(name) : RESERVED_DIRS.includes(name);
   });
+
+export const appendMove = (formData: FormData, picked: string, home: string): void => {
+  const destination = picked || UNCATEGORIZED;
+  if (destination !== (home || UNCATEGORIZED)) formData.append("category", destination);
+};

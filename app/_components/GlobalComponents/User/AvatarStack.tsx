@@ -37,7 +37,7 @@ export const AvatarStack = ({ usernames, limit, size, title }: AvatarStackProps)
       {usernames.length > limit && (
         <span
           className={cn(
-            "relative z-10 rounded-full bg-muted text-muted-foreground ring-2 ring-card font-mono text-center",
+            "relative z-10 rounded-full bg-muted text-muted-foreground ring-2 ring-card tabular-nums text-center",
             OVERFLOW_SIZE[size],
           )}
         >

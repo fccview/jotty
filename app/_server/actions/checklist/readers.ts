@@ -240,6 +240,7 @@ export const readListsRecursively = async (
 };
 
 export const patchListListing = (dir: string, owner: string, options: ListReadOptions = {}) =>
-  listingPatcher<ChecklistReadResult>(dir, skippedDirs(options.allowArchived), (filePath, category) =>
-    readListEntry(filePath, category, owner, options),
-  );
+  listingPatcher<ChecklistReadResult>(dir, skippedDirs(options.allowArchived), (filePath, category) => {
+    memo.forget(filePath);
+    return readListEntry(filePath, category, owner, options);
+  });

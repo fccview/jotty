@@ -1,4 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+vi.unmock("unified");
 import {
   normalizeTag,
   getAncestorTags,
@@ -11,6 +13,27 @@ import {
   buildTagTree,
   getChildTags,
 } from "@/app/_utils/tag-utils";
+
+describe("tags inside html blocks", () => {
+  it("leaves tags inside html blocks out of the index, as the view does", () => {
+    expect(extractHashtagsFromContent("<div>#foo</div>")).toEqual([]);
+    expect(extractHashtagsFromContent("<details>\n<summary>x</summary>\n#todo\n</details>")).toEqual([]);
+    expect(extractHashtagsFromContent("text\n<div>#x</div>")).toEqual([]);
+  });
+
+  it("still indexes inline html and text after a block ends", () => {
+    expect(extractHashtagsFromContent("<b>#html</b> text")).toEqual(["html"]);
+    expect(extractHashtagsFromContent("para\n<span>\n#y")).toEqual(["y"]);
+    expect(extractHashtagsFromContent("<div>a</div>\n\n#after")).toEqual(["after"]);
+    expect(extractHashtagsFromContent("```\n<div>\n```\n\n#fenced")).toEqual(["fenced"]);
+  });
+
+  it("indexes tags in legacy html notes, as the editor does", () => {
+    expect(extractHashtagsFromContent("<p>legacy #old</p>")).toEqual(["old"]);
+    expect(extractHashtagsFromContent("<p>#one</p><ul><li><p>and #two</p></li></ul>")).toEqual(["one", "two"]);
+    expect(extractHashtagsFromContent("<p>skip</p><pre><code>#nope</code></pre>")).toEqual([]);
+  });
+});
 
 describe("Tag Utils", () => {
   describe("normalizeTag", () => {
@@ -168,6 +191,86 @@ describe("Tag Utils", () => {
     it("should handle tags after parenthesis", () => {
       const content = "text (#parentag)";
       expect(extractHashtagsFromContent(content)).toContain("parentag");
+    });
+
+    it("should ignore anchors in markdown link destinations", () => {
+      const content = [
+        "* [FOREWORD](#foreword)",
+        "* [STRINGS](#strings)",
+        "    * [Trim leading and trailing white-space from string](#trim-leading-and-trailing-white-space-from-string)",
+        "",
+        "## FOREWORD",
+        "",
+        "text #todo and (#aside)",
+      ].join("\n");
+      expect(extractHashtagsFromContent(content).sort()).toEqual(["aside", "todo"]);
+    });
+
+    it("should ignore anchors in reference link definitions", () => {
+      const content = "[toc]: #foreword\n[^note]: #footnotetag\n\nsee [toc] #real";
+      expect(extractHashtagsFromContent(content).sort()).toEqual(["footnotetag", "real"]);
+    });
+
+    it("should ignore anchors after whitespace or a line break in link syntax", () => {
+      const content = "a [x]( #spaced)\n[r]:\n  #nextline\n  [i]: #indented\nStatus [beta]: #feature";
+      expect(extractHashtagsFromContent(content)).toEqual(["feature"]);
+    });
+
+    it("should stay fast on long whitespace runs", () => {
+      const content = `](${" ".repeat(100000)}#late ${"\t".repeat(100000)} #later`;
+      const started = performance.now();
+      expect(extractHashtagsFromContent(content)).toEqual(["late", "later"]);
+      expect(performance.now() - started).toBeLessThan(1000);
+    });
+
+    it("should ignore anchors inside urls", () => {
+      const content = "https://github.com/user/repo#readme and https://example.com/#/route #real";
+      expect(extractHashtagsFromContent(content)).toEqual(["real"]);
+    });
+
+    it("should still find a tag inside link text", () => {
+      expect(extractHashtagsFromContent("[see #linked](#anchor)")).toEqual(["linked"]);
+    });
+
+    it.each([
+      ["**#inside**", ["inside"]],
+      ["text **#bold** more", ["bold"]],
+      ["(*#aside*)", ["aside"]],
+      ["***#both***", ["both"]],
+      ["~~#struck~~", ["struck"]],
+      ["_#under_", ["under"]],
+      ["__#strong__ and _#a_b_", ["strong", "a_b"]],
+      ["**_#mixed_**", ["mixed"]],
+      ["**#inside more**", ["inside"]],
+    ])("should extract a tag opening emphasis in %s", (content, tags) => {
+      expect(extractHashtagsFromContent(content)).toEqual(tags);
+    });
+
+    it.each([
+      "**bold**#glued",
+      "a**#x**",
+      "word_#x_",
+      "****#four****",
+      "[a](**#x**)",
+      "rate *#foo here",
+      "approx ~#foo",
+      "**#open\n\nnever closed**",
+    ])("should not extract a tag from %s", (content) => {
+      expect(extractHashtagsFromContent(content)).toEqual([]);
+    });
+
+    it("should stay fast on many unclosed emphasis leads", () => {
+      const content = "rate *#foo ".repeat(50000);
+      const started = performance.now();
+      expect(extractHashtagsFromContent(content)).toEqual([]);
+      expect(performance.now() - started).toBeLessThan(1000);
+    });
+
+    it("should stay fast on long emphasis runs", () => {
+      const content = `${"*".repeat(100000)}#late ${" *".repeat(100000)} **#later**`;
+      const started = performance.now();
+      expect(extractHashtagsFromContent(content)).toEqual(["later"]);
+      expect(performance.now() - started).toBeLessThan(1000);
     });
 
     it("should extract tags with underscores", () => {
@@ -464,6 +567,14 @@ describe("Tag Utils", () => {
       const children = getChildTags(index, "nonexistent");
 
       expect(children).toEqual([]);
+    });
+  });
+
+  describe("code inside HTML blocks", () => {
+    it("skips hashtags in a pre block that has a blank line inside an HTML block", () => {
+      const tags = extractHashtagsFromContent("<div>\n<pre>\n\n#hidden\n</pre>\n</div>\n\n#real");
+      expect(tags).toContain("real");
+      expect(tags).not.toContain("hidden");
     });
   });
 });

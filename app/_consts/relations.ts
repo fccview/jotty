@@ -1,4 +1,6 @@
 export const RELATIONS_DB_NAME = ".relations.db";
+export const relationsNodeDb = (node: string) => `.relations_${node}.db`;
+export const SQLITE_SIDECARS = ["", "-wal", "-shm"];
 export const RELATIONS_SCHEMA_VERSION = 9;
 export const LEGACY_LINK_PREFIX = "/jotty/";
 export const WIKILINK_REGEX =

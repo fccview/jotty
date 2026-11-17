@@ -54,6 +54,7 @@ import { dropMounts } from "@/app/_server/actions/share/mounts";
 import { CATEGORY_INFO_FILE, LEGACY_ORDER_FILE } from "@/app/_consts/sharing";
 import { DATA_DIR, SCHEMA_VERSION_FILE } from "@/app/_consts/files";
 import { Modes } from "@/app/_types/enums";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const USER_DIR = path.join(root, DATA_DIR, Modes.NOTES, "alice");
 const MOUNT_DIR = path.join(USER_DIR, "git", "joplin");
@@ -78,6 +79,7 @@ afterAll(() => {
 beforeEach(() => {
   unlock();
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   mockIsAdmin.mockResolvedValue(true);
   mkdirSync(MOUNT_DIR, { recursive: true });

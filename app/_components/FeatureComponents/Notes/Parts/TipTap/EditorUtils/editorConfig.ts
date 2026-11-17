@@ -22,6 +22,7 @@ import { RAW_BLOCK_VIEW, RAW_INLINE_VIEW } from "@/app/_components/FeatureCompon
 import { AtomGuard } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/AtomGuard";
 import { MarkdownPaste } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/MarkdownPaste";
 import { BoldItalicInput } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/BoldItalicInput";
+import { TagInput } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagInput";
 import { DEFAULT_DRAWIO_URL } from "@/app/_consts/diagrams";
 import { PLAIN_CODE_LANGUAGE } from "@/app/_utils/markdown/consts";
 import { MarkName, NodeName } from "@/app/_utils/markdown/serialize/types";
@@ -116,6 +117,7 @@ export const createEditorExtensions = (
       live ? kit.configure({ undoRedo: false }) : kit,
       BoldItalicInput,
       MarkdownPaste,
+      TagInput,
     ],
     [NodeName.Callout]: (callout) => [
       withView(callout),

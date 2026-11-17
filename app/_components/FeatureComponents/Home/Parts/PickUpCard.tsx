@@ -7,6 +7,8 @@ import { formatShortTime } from "@/app/_utils/date-utils";
 import { categoryTrail } from "@/app/_utils/category-path-utils";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { WidgetDismiss } from "./WidgetDismiss";
+import { KICKER_CLASS } from "@/app/_consts/styling";
+import { cn } from "@/app/_utils/global-utils";
 
 interface PickUpCardProps {
   title: string;
@@ -33,11 +35,11 @@ export const PickUpCard = ({
   return (
     <section className="jotty-pick-up group/widget bg-card border border-border rounded-jotty p-5 flex flex-col min-w-0 [overflow-wrap:anywhere]">
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground truncate">
+        <p className={cn(KICKER_CLASS, "truncate")}>
           {t("settings.homePickUp")}
         </p>
         <span className="flex shrink-0 items-center gap-1">
-          <span className="font-mono text-xs text-primary">
+          <span className="tabular-nums text-xs text-primary">
             {formatShortTime(updatedAt, t)}
           </span>
           <WidgetDismiss widget="homePickUp" className="-my-1 -mr-2" />
@@ -49,7 +51,7 @@ export const PickUpCard = ({
       >
         {title}
       </h3>
-      <p className="font-mono text-xs text-muted-foreground mt-1 truncate" title={trail}>
+      <p className="text-xs text-muted-foreground mt-1 truncate" title={trail}>
         {trail}
       </p>
       <div className="flex-1 mt-4">{children}</div>

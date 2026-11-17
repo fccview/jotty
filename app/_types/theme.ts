@@ -14,3 +14,8 @@ export interface EffectiveTheme {
   radius: string | null;
   customCss: boolean;
 }
+
+export interface PublicTheme {
+  variables: ThemeVariables;
+  darkVariables: ThemeVariables | null;
+}

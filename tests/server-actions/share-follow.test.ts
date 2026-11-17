@@ -52,6 +52,7 @@ import {
   NO_SHARED_PARENT,
   PUBLIC_USER,
 } from "@/app/_consts/sharing";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const NOTE = "91919191-9191-4191-8191-919191919191";
 const FOLDER = "Recipes";
@@ -101,6 +102,7 @@ afterAll(() => {
 beforeEach(() => {
   actor.username = "alice";
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   mkdirSync(path.dirname(path.join(root, USERS_FILE)), { recursive: true });
   writeFileSync(

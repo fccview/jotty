@@ -33,8 +33,6 @@ export const CssEditor = ({ value, onChange, language = "css" }: CssEditorProps)
       padding={16}
       className="w-full bg-muted rounded-jotty border font-mono text-md lg:text-sm leading-relaxed"
       style={{
-        fontFamily:
-          '"JetBrainsMono", "Fira Code", "Monaco", "Consolas", monospace',
         fontSize: "14px",
         lineHeight: "1.5",
         minHeight: "200px",

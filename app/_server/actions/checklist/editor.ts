@@ -284,15 +284,6 @@ const _dropList = async (
     await serverDeleteFile(filePath);
     await sweepOrphans([list.uuid!]);
 
-    try {
-      revalidatePath("/");
-      revalidatePath(`/checklist/${list.uuid}`);
-    } catch (error) {
-      console.warn(
-        "Cache revalidation failed, but data was saved successfully:",
-        error
-      );
-    }
     await logContentEvent(
       "checklist_deleted",
       "checklist",

@@ -140,4 +140,37 @@ describe("grepExtractExcerpt - sed portability", () => {
 
     expect(excerpt).toContain("No frontmatter here, just text.");
   });
+
+  it("keeps text between horizontal rules in the body", async () => {
+    const file = notePath("excerpt-rules.md");
+    writeFileSync(
+      file,
+      ["---", "uuid: excerpt-rules", "---", "---", "", "Note: buy milk", "", "---", "", "rest of note", ""].join("\n"),
+    );
+
+    const excerpt = await grepExtractExcerpt(file, 200);
+
+    expect(excerpt).toContain("Note: buy milk");
+    expect(excerpt).toContain("rest of note");
+    expect(excerpt).not.toContain("excerpt-rules");
+  });
+
+  it("keeps ruled text at the top of a file that has no frontmatter", async () => {
+    const file = notePath("excerpt-ruled-no-fm.md");
+    writeFileSync(file, "---\n\nNote: buy milk\n\n---\n\nrest of note\n");
+
+    const excerpt = await grepExtractExcerpt(file, 200);
+
+    expect(excerpt).toContain("Note: buy milk");
+    expect(excerpt).toContain("rest of note");
+  });
+
+  it("strips a frontmatter block that opens with a blank line when it holds Jotty keys", async () => {
+    const file = notePath("excerpt-loose-fm.md");
+    writeFileSync(file, "---\n\nuuid: loose-1\ntitle: Loose\n---\nloose body\n");
+
+    const excerpt = await grepExtractExcerpt(file, 200);
+
+    expect(excerpt).toBe("loose body");
+  });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Note, Category } from "@/app/_types";
 import { NoteEditor } from "@/app/_components/FeatureComponents/Notes/Parts/NoteEditor/NoteEditor";
@@ -14,6 +14,7 @@ import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { itemHref } from "@/app/_utils/global-utils";
 import { ItemTypes, Modes } from "@/app/_types/enums";
 import { useReturnPath } from "@/app/_hooks/useReturnPath";
+import { useServerItem } from "@/app/_hooks/useServerItem";
 import { CloneCategoryModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/CloneCategoryModal";
 import { SwipeNavigationWrapper } from "@/app/_components/FeatureComponents/Notes/Parts/SwipeNavigationWrapper";
 
@@ -28,22 +29,9 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const { openCreateNoteModal, openCreateCategoryModal, openSettings } =
     useShortcut();
   const { user } = useAppMode();
-  const [localNote, setLocalNote] = useState<Note>(note);
+  const [localNote, setLocalNote] = useServerItem(note);
   const [showCloneModal, setShowCloneModal] = useState(false);
   const returnPath = useReturnPath(`/?mode=${Modes.NOTES}`);
-  const prevNoteId = useRef(note.id);
-  const prevUpdatedAt = useRef(note.updatedAt);
-
-  useEffect(() => {
-    if (
-      note.id !== prevNoteId.current ||
-      note.updatedAt !== prevUpdatedAt.current
-    ) {
-      setLocalNote(note);
-      prevNoteId.current = note.id;
-      prevUpdatedAt.current = note.updatedAt;
-    }
-  }, [note]);
 
   const handleUpdate = (updatedNote: Note) => {
     setLocalNote(updatedNote);
@@ -79,13 +67,13 @@ export const NoteClient = ({ note, categories }: NoteClientProps) => {
   const handleDelete = () => {
     checkNavigation(() => {
       router.push(returnPath);
+      router.refresh();
     });
   };
 
   const viewModel = useNoteEditor({
     note: localNote,
     onUpdate: handleUpdate,
-    onBack: handleBack,
     onDelete: handleDelete,
   });
 

@@ -1,4 +1,5 @@
 import { CARD_PLAIN_RULES, stripMarkdown } from "@/app/_utils/markdown/plain-text";
+import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 
 const WORDS_PER_MINUTE = 225;
 
@@ -18,7 +19,7 @@ const tableTextOf = (content: string): string =>
     .join(" ");
 
 export const notePlainText = (content: string): string => {
-  const body = content.replace(/^---\n[\s\S]*?\n---\n/, "");
+  const body = extractYamlMetadata(content).contentWithoutMetadata;
   return `${stripMarkdown(body, CARD_PLAIN_RULES)} ${tableTextOf(body)}`;
 };
 

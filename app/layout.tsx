@@ -23,13 +23,15 @@ import { headers } from "next/headers";
 import {
   themeInitScript,
   getThemeBackgroundColor,
+  OWNER_THEME_ATTR,
 } from "./_consts/themes";
 import { THEME_COLOR_META } from "./_utils/theme-color-utils";
+import { PUBLIC_ROUTE_PREFIX } from "./_consts/sharing";
 import { loadCustomThemes } from "./_server/actions/config";
 import { getUserChecklists } from "./_server/actions/checklist/queries";
 import { getUserNotes } from "./_server/actions/note/queries";
-import { sidebarSnapshot, sidebarStampOf } from "./_server/actions/sidebar/listing";
-import type { Category, SidebarEntry } from "./_types";
+import { sidebarSnapshot } from "./_server/actions/sidebar/listing";
+import type { SidebarEntry } from "./_types";
 import { libraryStatsOf } from "./_utils/catalog-utils";
 import { buildTagsIndex } from "./_utils/tag-utils";
 
@@ -65,7 +67,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   const user = await getCurrentUser();
   const ogName = settings?.isRwMarkable ? "rwMarkable" : "jotty·page";
   const appName = settings?.appName || ogName;
-  const appVersion = new Date().getTime().toString();
+  const appVersion = (await readPackageVersion()).data ?? "";
   const appDescription =
     settings?.appDescription ||
     "A simple, fast, and lightweight checklist and notes application";
@@ -160,11 +162,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = (await headers()).get("x-pathname");
-  const isPublicRoute = pathname?.startsWith("/public");
+  const isPublicRoute = pathname?.startsWith(PUBLIC_ROUTE_PREFIX);
   const settings = await getSettings();
   const appName =
     settings?.appName || (settings?.isRwMarkable ? "rwMarkable" : "jotty·page");
   const user = await getCurrentUser();
+  const viewerTheme = isPublicRoute ? undefined : user?.preferredTheme;
   const appVersion = await readPackageVersion();
   const customThemes = await loadCustomThemes();
   const stopCheckUpdates = process.env.STOP_CHECK_UPDATES;
@@ -217,13 +220,11 @@ export default async function RootLayout({
   const checklists = checklistsResult.success
     ? checklistsResult.data || []
     : [];
-  const snapshotOf = (items: SidebarEntry[], categories: Category[]) =>
-    sidebarSnapshot(items, categories, sidebarStampOf(items, categories));
   const sidebar =
     user && !isPublicRoute
       ? {
-          [Modes.NOTES]: snapshotOf(notes as SidebarEntry[], noteCategories.data || []),
-          [Modes.CHECKLISTS]: snapshotOf(checklists as SidebarEntry[], checklistCategories.data || []),
+          [Modes.NOTES]: sidebarSnapshot(notes as SidebarEntry[], noteCategories.data || []),
+          [Modes.CHECKLISTS]: sidebarSnapshot(checklists as SidebarEntry[], checklistCategories.data || []),
         }
       : {};
 
@@ -238,7 +239,8 @@ export default async function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-rwmarkable={settings?.isRwMarkable ? "true" : "false"}
-      data-user-theme={user?.preferredTheme || ""}
+      data-user-theme={viewerTheme || ""}
+      {...(isPublicRoute && { [OWNER_THEME_ATTR]: "" })}
       style={
         {
           [ADMIN_BORDER_RADIUS_VAR]: radiusToRem(settings?.borderRadius),
@@ -266,7 +268,7 @@ export default async function RootLayout({
         <meta
           name={THEME_COLOR_META}
           content={getThemeBackgroundColor(
-            serverThemeId(settings?.isRwMarkable, user?.preferredTheme),
+            serverThemeId(settings?.isRwMarkable, viewerTheme),
           )}
         />
         <script
@@ -308,7 +310,7 @@ export default async function RootLayout({
                           noteCategories={noteCategories.data || []}
                           checklistCategories={checklistCategories.data || []}
                         >
-                          <div className="min-h-screen bg-background text-foreground transition-colors jotty-page">
+                          <div className="min-h-[100dvh] bg-background text-foreground transition-colors jotty-page">
                             <DynamicFavicon />
                             {children}
 

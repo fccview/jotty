@@ -82,7 +82,7 @@ export const NotificationItem = ({
         <span className="mt-0.5 block text-sm lg:text-xs leading-snug text-muted-foreground">
           {message}
         </span>
-        <span className="mt-1.5 flex items-center gap-2 font-mono text-[11px] text-muted-foreground/70">
+        <span className="mt-1.5 flex items-center gap-2 tabular-nums text-[11px] text-muted-foreground/70">
           <time dateTime={notification.createdAt}>
             {format.relativeTime(new Date(notification.createdAt), new Date())}
           </time>

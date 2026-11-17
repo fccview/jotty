@@ -39,10 +39,7 @@ const OverrideBar = ({ isOverridden, canSave, isSaving, onReset, onSave }: Overr
     >
       <div className="overflow-hidden">
         <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm lg:text-xs">
-          <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            {t("quickSettings.browserOnly")}
-          </span>
+          <span className="text-muted-foreground">{t("quickSettings.browserOnly")}</span>
           <button
             type="button"
             onClick={onSave}
@@ -98,7 +95,7 @@ export const QuickRow = ({
         )}
       </div>
       {value !== undefined && (
-        <span className="shrink-0 rounded-jotty jotty-value-chip px-2 py-0.5 font-mono text-sm lg:text-xs tabular-nums text-foreground">
+        <span className="shrink-0 rounded-jotty jotty-value-chip px-2 py-0.5 text-sm lg:text-xs tabular-nums text-foreground">
           {value}
         </span>
       )}

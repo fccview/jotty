@@ -45,7 +45,7 @@ export const ChecklistListItem = ({
           <span className="block font-medium text-md lg:text-sm text-foreground truncate group-hover:text-primary">
             {list.title}
           </span>
-          <span className="block font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
+          <span className="block text-[11px] text-muted-foreground mt-0.5 truncate">
             {categoryTrail(list.category, t("notes.uncategorized"))}
           </span>
         </button>
@@ -58,7 +58,7 @@ export const ChecklistListItem = ({
           </div>
         </div>
         <Tally done={completed} total={total} />
-        <span className="hidden md:inline font-mono text-[11px] text-muted-foreground w-8 text-right">
+        <span className="hidden md:inline tabular-nums text-[11px] text-muted-foreground w-8 text-right">
           {formatShortTime(list.updatedAt, t)}
         </span>
         <span className="text-muted-foreground flex items-center gap-1">

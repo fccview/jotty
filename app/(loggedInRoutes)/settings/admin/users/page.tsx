@@ -1,6 +1,5 @@
 import { AdminUsersClient } from "@/app/_components/FeatureComponents/Admin/Parts/AdminUsersClient";
-import { getAllLists } from "@/app/_server/actions/checklist/queries";
-import { getAllNotes } from "@/app/_server/actions/note/queries";
+import { adminCounts } from "@/app/_server/actions/admin/library";
 import { isAdmin, getUsername, getUsersForAdmin } from "@/app/_server/actions/users";
 import { notFound } from "next/navigation";
 
@@ -12,21 +11,13 @@ export default async function AdminUsersPage() {
         return notFound();
     }
 
-    const [usersData, listsData, docsData] = await Promise.all([
-        getUsersForAdmin(),
-        getAllLists(),
-        getAllNotes(),
-    ]);
-
-    const users = usersData;
-    const allLists = listsData.success && listsData.data ? listsData.data : [];
-    const allDocs = docsData.success && docsData.data ? docsData.data : [];
+    const users = await getUsersForAdmin();
+    const counts = await adminCounts(users.map((user) => user.username));
 
     return (
         <AdminUsersClient
             initialUsers={users}
-            initialLists={allLists}
-            initialDocs={allDocs}
+            counts={counts}
             username={username}
         />
     );

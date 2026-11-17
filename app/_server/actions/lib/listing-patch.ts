@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { readOrderFile } from "@/app/_server/actions/file";
+import { forgetFrontmatter } from "@/app/_server/actions/lib/frontmatter-memo";
 
 interface Patchable {
   id?: string;
@@ -60,6 +61,7 @@ export const listingPatcher =
         continue;
       }
 
+      forgetFrontmatter(filePath);
       const fresh = await readEntry(filePath, category);
       if (!fresh) return null;
 

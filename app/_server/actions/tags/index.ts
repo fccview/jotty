@@ -11,6 +11,7 @@ import {
   updateYamlMetadata,
 } from "@/app/_utils/yaml-metadata-utils";
 import { Modes } from "@/app/_types/enums";
+import { EXPORT_TEMP_DIR_NAME } from "@/app/_consts/files";
 import { canAccessAllContent } from "@/app/_server/actions/users";
 
 const findMarkdownFiles = async (dirPath: string): Promise<string[]> => {
@@ -24,7 +25,7 @@ const findMarkdownFiles = async (dirPath: string): Promise<string[]> => {
         const fullPath = join(currentPath, item.name);
 
         if (item.isDirectory()) {
-          if (!["temp_exports", "backups"].includes(item.name)) {
+          if (![EXPORT_TEMP_DIR_NAME, "backups"].includes(item.name)) {
             await findRecursive(fullPath);
           }
         } else if (item.isFile() && item.name.endsWith(".md")) {

@@ -54,7 +54,7 @@ export const PanelTabs = <T extends string>({
             <HugeiconsIcon icon={tab.icon} className="h-4 w-4 flex-none" />
             <span className="whitespace-nowrap">{tab.label}</span>
             {!!tab.count && (
-              <span className="font-mono text-[11px] tabular-nums opacity-70">{tab.count}</span>
+              <span className="text-[11px] tabular-nums opacity-70">{tab.count}</span>
             )}
           </button>
         );

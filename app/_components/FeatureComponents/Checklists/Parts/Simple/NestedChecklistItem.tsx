@@ -319,6 +319,7 @@ const NestedChecklistItemComponent = ({
               "rounded-jotty",
               isChild ? "px-2.5 py-1.5 lg:py-2" : "p-1.5 lg:p-2",
               completed && "opacity-80",
+              !isPublicView &&
               !permissions?.canEdit &&
               "opacity-50 cursor-not-allowed pointer-events-none",
             )}

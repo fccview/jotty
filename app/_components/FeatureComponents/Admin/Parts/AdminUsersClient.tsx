@@ -4,19 +4,18 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AdminUsers } from "@/app/_components/FeatureComponents/Admin/Parts/AdminUsers";
 import { UserManagementModal } from "@/app/_components/GlobalComponents/Modals/UserModals/UserManagementModal";
-import { SanitisedUser, Checklist, Note } from "@/app/_types";
+import { SanitisedUser, AdminCounts } from "@/app/_types";
 import { deleteUser, getUsersForAdmin } from "@/app/_server/actions/users";
 import { useToast } from "@/app/_providers/ToastProvider";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
 interface AdminUsersClientProps {
   initialUsers: SanitisedUser[];
-  initialLists: Checklist[];
-  initialDocs: Note[];
+  counts: Record<string, AdminCounts>;
   username: string;
 }
 
-export function AdminUsersClient({ initialUsers, initialLists, initialDocs, username }: AdminUsersClientProps) {
+export function AdminUsersClient({ initialUsers, counts, username }: AdminUsersClientProps) {
   const t = useTranslations();
   const { showToast } = useToast();
   const [users, setUsers] = useState<SanitisedUser[]>(initialUsers);
@@ -95,8 +94,7 @@ export function AdminUsersClient({ initialUsers, initialLists, initialDocs, user
         onAddUser={handleAddUser}
         onEditUser={handleEditUser}
         onDeleteUser={handleDeleteUser}
-        allLists={initialLists}
-        allDocs={initialDocs}
+        counts={counts}
         username={username}
         deletingUser={deletingUser}
       />

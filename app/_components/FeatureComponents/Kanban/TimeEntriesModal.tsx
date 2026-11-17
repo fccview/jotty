@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, memo } from "react";
-import { Modal, ModalVariant, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
+import { Modal, ModalWidth } from "@/app/_components/GlobalComponents/Modals/Modal";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { TimeEntry, Checklist } from "@/app/_types";
 import { Delete03Icon, FloppyDiskIcon, Cancel01Icon } from "hugeicons-react";
@@ -134,8 +134,7 @@ const TimeEntriesModalComponent = ({
         isOpen={isOpen}
         onClose={onClose}
         title={t("kanban.timeEntries")}
-        variant={ModalVariant.PANEL}
-      width={ModalWidth.WIDE}
+        width={ModalWidth.WIDE}
       >
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm text-muted-foreground border-b border-border pb-3">

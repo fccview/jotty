@@ -21,13 +21,13 @@ export interface NotePanelBodyProps {
   onEditFrontmatter?: () => void;
 }
 
-const TAB_ICONS = {
+export const PANEL_TAB_ICONS = {
   [NotePanelTabs.CONTENTS]: LeftToRightListBulletIcon,
   [NotePanelTabs.TAGS]: Tag01Icon,
   [NotePanelTabs.LINKS]: Link04Icon,
 };
 
-const TAB_LABELS = {
+export const PANEL_TAB_LABELS = {
   [NotePanelTabs.CONTENTS]: "notes.contents",
   [NotePanelTabs.TAGS]: "notes.tags",
   [NotePanelTabs.LINKS]: "notePanel.links",
@@ -68,8 +68,8 @@ export const NotePanelBody = ({
 
   const panelTabs = tabs.map((id) => ({
     id,
-    icon: TAB_ICONS[id],
-    label: t(TAB_LABELS[id]),
+    icon: PANEL_TAB_ICONS[id],
+    label: t(PANEL_TAB_LABELS[id]),
     count: counts[id],
   }));
 

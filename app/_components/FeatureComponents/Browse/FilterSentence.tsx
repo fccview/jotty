@@ -18,7 +18,7 @@ interface FilterCountProps<F extends string> {
 }
 
 const FilterCount = <F extends string>({ filter, countFor }: FilterCountProps<F>) => (
-  <span className="font-mono text-xs text-muted-foreground">{countFor(filter)}</span>
+  <span className="tabular-nums text-xs text-muted-foreground">{countFor(filter)}</span>
 );
 
 interface FilterSentenceProps<F extends string> {

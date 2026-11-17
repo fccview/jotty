@@ -356,16 +356,6 @@ const _dropNote = async (
       ).catch(() => {});
     }
 
-    try {
-      revalidatePath("/");
-      revalidatePath(`/note/${note.uuid}`);
-    } catch (error) {
-      console.warn(
-        "Cache revalidation failed, but data was saved successfully:",
-        error,
-      );
-    }
-
     await logContentEvent(
       "note_deleted",
       "note",

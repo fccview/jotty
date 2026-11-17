@@ -37,7 +37,7 @@ import { diagramProps } from "@/app/_utils/diagram-props-utils";
 import { rehypeDiagrams } from "@/app/_utils/markdown/rehype-diagrams";
 import { noteUrlTransform } from "@/app/_utils/url-transform-utils";
 import { BOUNCED_ELEMENTS } from "@/app/_consts/notes";
-import { tagOutsideCode } from "@/app/_utils/markdown-utils";
+import { remarkTags } from "@/app/_utils/markdown/parse/tags";
 import { rehypeTableWhitespace } from "@/app/_utils/rehype-table-whitespace";
 import { useInlineCodeCopy } from "@/app/_hooks/useInlineCodeCopy";
 
@@ -107,8 +107,6 @@ export const UnifiedMarkdownRenderer = ({
       ? ThemedCodeBlockRenderer
       : CodeBlockRenderer;
   const { contentWithoutMetadata } = extractYamlMetadata(content);
-
-  const processedContent = tagOutsideCode(contentWithoutMetadata);
 
   useEffect(() => {
     setIsClient(true);
@@ -198,7 +196,7 @@ export const UnifiedMarkdownRenderer = ({
         </abbr>
       );
     },
-    a({ href, children, ...props }) {
+    a({ node, href, children, ...props }) {
       const childText = String(children);
       const isFileAttachment = childText.startsWith("📎 ") && href;
       const isVideoAttachment = childText.startsWith("🎥 ") && href;
@@ -494,13 +492,13 @@ export const UnifiedMarkdownRenderer = ({
         onClick={copyInlineCode}
       >
         <ReactMarkdown
-          remarkPlugins={[remarkGfm, remarkSoftBreaks, remarkWikilinks]}
+          remarkPlugins={[remarkGfm, remarkTags, remarkSoftBreaks, remarkWikilinks]}
           rehypePlugins={[rehypeSlug, rehypeRaw, rehypeDiagrams, rehypeTableWhitespace]}
           components={components}
           urlTransform={noteUrlTransform}
           disallowedElements={BOUNCED_ELEMENTS}
         >
-          {processedContent}
+          {contentWithoutMetadata}
         </ReactMarkdown>
       </div>
       {showStats && <NoteFooterStats content={content} />}

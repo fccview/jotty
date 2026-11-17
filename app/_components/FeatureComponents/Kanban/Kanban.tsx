@@ -5,6 +5,7 @@ import { DndProvider } from "@/app/_hooks/dnd";
 import { Checklist, Item, KanbanStatus } from "@/app/_types";
 import { KanbanColumn } from "./KanbanColumn";
 import { KanbanCard } from "./KanbanCard";
+import { KanbanGrid } from "./KanbanGrid";
 import { ChecklistHeading } from "../Checklists/Parts/Common/ChecklistHeading";
 import { BulkPasteModal } from "@/app/_components/GlobalComponents/Modals/BulkPasteModal/BulkPasteModal";
 import { StatusManager } from "./StatusManager";
@@ -256,62 +257,34 @@ export const Kanban = ({ checklist, onUpdate }: KanbanBoardProps) => {
 
   const _renderColumns = useCallback(
     () => (
-      <div
-        className={
-          columns.length <= 6
-            ? "min-h-full min-w-0 kanban-grid gap-4 p-2 sm:p-4"
-            : "min-h-0 min-w-0 flex gap-4 p-2 sm:p-4"
-        }
-        style={
-          columns.length <= 6
-            ? ({
-                "--kanban-col-count": columns.length,
-                ...(customColumnWidth !== null
-                  ?
-                    {
-                      gridTemplateColumns: `repeat(${columns.length}, ${customColumnWidth}px)`,
-                    }
-                  : {}),
-              } as React.CSSProperties)
-            : undefined
-        }
-      >
-        {columns.map((column) => {
+      <KanbanGrid
+        columns={columns}
+        columnWidth={customColumnWidth}
+        renderColumn={(column) => {
           const columnItems = getItemsByStatus(column.status);
-          const items = _filterItems(columnItems);
           return (
-            <div
-              key={column.id}
-              className={columns.length > 6 ? "flex-shrink-0" : "min-w-0"}
-              style={
-                columns.length > 6
-                  ? { width: `${customColumnWidth ?? 280}px` }
+            <KanbanColumn
+              checklist={localChecklist}
+              id={column.id}
+              title={column.title}
+              items={_filterItems(columnItems)}
+              status={column.status}
+              onUpdate={handleItemUpdate}
+              onOpenDetail={(item) => setDetailItemId(item.id)}
+              isShared={isShared}
+              statusColor={statuses.find((s) => s.id === column.id)?.color}
+              statuses={statuses}
+              onAddItem={permissions?.canEdit ? (text) => handleAddItem(text, undefined, column.status) : undefined}
+              archivableCount={columnItems.length}
+              onArchiveAll={
+                permissions?.canEdit
+                  ? () => handleArchiveAll(columnItems)
                   : undefined
               }
-            >
-              <KanbanColumn
-                checklist={localChecklist}
-                id={column.id}
-                title={column.title}
-                items={items}
-                status={column.status}
-                onUpdate={handleItemUpdate}
-                onOpenDetail={(item) => setDetailItemId(item.id)}
-                isShared={isShared}
-                statusColor={statuses.find((s) => s.id === column.id)?.color}
-                statuses={statuses}
-                onAddItem={permissions?.canEdit ? (text) => handleAddItem(text, undefined, column.status) : undefined}
-                archivableCount={columnItems.length}
-                onArchiveAll={
-                  permissions?.canEdit
-                    ? () => handleArchiveAll(columnItems)
-                    : undefined
-                }
-              />
-            </div>
+            />
           );
-        })}
-      </div>
+        }}
+      />
     ),
     [
       columns,

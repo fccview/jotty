@@ -48,7 +48,7 @@ export const ChecklistGridItem = ({
       >
         {list.title}
       </button>
-      <div className="mt-auto pt-2 flex items-center justify-between gap-2 font-mono text-[11px] text-muted-foreground">
+      <div className="mt-auto pt-2 flex items-center justify-between gap-2 tabular-nums text-[11px] text-muted-foreground">
         <span className="truncate">
           {categoryLeaf(list.category, t("notes.uncategorized"))}
         </span>

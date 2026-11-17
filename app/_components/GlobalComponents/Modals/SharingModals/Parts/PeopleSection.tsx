@@ -21,6 +21,7 @@ interface PeopleSectionProps {
   setSearchQuery: (query: string) => void;
   isLoading: boolean;
   isLocked?: boolean;
+  emptyHint?: string;
 }
 
 export const PeopleSection = ({
@@ -35,6 +36,7 @@ export const PeopleSection = ({
   setSearchQuery,
   isLoading,
   isLocked,
+  emptyHint,
 }: PeopleSectionProps) => {
   const t = useTranslations();
 
@@ -78,7 +80,7 @@ export const PeopleSection = ({
           ))
         ) : (
           <p className="px-6 pb-2 text-md lg:text-sm text-muted-foreground">
-            {t("sharing.noOneYet")}
+            {emptyHint || t("sharing.noOneYet")}
           </p>
         )}
       </ShareSection>

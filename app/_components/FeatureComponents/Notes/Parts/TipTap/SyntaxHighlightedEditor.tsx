@@ -8,6 +8,7 @@ import "prismjs/components/prism-markdown";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import * as MarkdownUtils from "@/app/_utils/markdown-editor-utils";
 import { usePrismTheme } from "@/app/_hooks/usePrismThemes";
+import { useCharWidth } from "@/app/_hooks/useCharWidth";
 import { FORMAT_SHORTCUTS } from "@/app/_consts/markdown-editor-config";
 
 interface SyntaxHighlightedEditorProps {
@@ -46,7 +47,7 @@ export const SyntaxHighlightedEditor = ({
   const { user } = useAppMode();
   const editorRef = useRef<HTMLDivElement>(null);
   const codeEditorRef = useRef<CodeEditorHandle>(null);
-  const charWidthRef = useRef(0);
+  const charWidth = useCharWidth();
   const [editorWidth, setEditorWidth] = useState(0);
 
   usePrismTheme(user?.markdownTheme || "prism");
@@ -61,13 +62,6 @@ export const SyntaxHighlightedEditor = ({
   }, [content]);
 
   useEffect(() => {
-    const el = document.createElement("span");
-    el.className = "markdown-line-measure";
-    el.textContent = "x".repeat(100);
-    document.body.append(el);
-    charWidthRef.current = el.offsetWidth / 100;
-    el.remove();
-
     const updateWidth = () => {
       const pre = editorRef.current?.querySelector("pre");
       if (pre) setEditorWidth(pre.clientWidth - 32);
@@ -79,8 +73,8 @@ export const SyntaxHighlightedEditor = ({
   }, []);
 
   const calcHeight = (line: string) => {
-    if (!editorWidth || !line || !charWidthRef.current) return LINE_HEIGHT;
-    return Math.max(1, Math.ceil((line.length * charWidthRef.current) / editorWidth)) * LINE_HEIGHT;
+    if (!editorWidth || !line || !charWidth) return LINE_HEIGHT;
+    return Math.max(1, Math.ceil((line.length * charWidth) / editorWidth)) * LINE_HEIGHT;
   };
 
   const applyEdit = (
@@ -181,13 +175,13 @@ export const SyntaxHighlightedEditor = ({
           </div>
         )}
         <div className="relative flex flex-1 flex-col">
-          {showVisualGuides && charWidthRef.current > 0 && (
+          {showVisualGuides && charWidth > 0 && (
             <div className="absolute inset-0 pointer-events-none hidden lg:block" aria-hidden="true">
               {visualGuideColumns.map((column) => (
                 <div
                   key={column}
                   className="absolute top-0 bottom-0 w-px bg-primary/30"
-                  style={{ left: `${column * charWidthRef.current + 16}px` }}
+                  style={{ left: `${column * charWidth + 16}px` }}
                   title={`Column ${column}`}
                 />
               ))}

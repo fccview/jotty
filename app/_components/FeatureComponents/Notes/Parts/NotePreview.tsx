@@ -39,7 +39,7 @@ export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreview
   return (
     <article className="jotty-note-preview bg-card border border-border rounded-jotty overflow-hidden lg:sticky lg:top-0 [overflow-wrap:anywhere]">
       <div className="px-6 pt-5 pb-5 border-b border-border">
-        <p className="font-mono text-xs text-muted-foreground flex items-center gap-1.5 min-w-0" title={trail}>
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5 min-w-0" title={trail}>
           <Folder01Icon className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{trail}</span>
         </p>
@@ -89,7 +89,7 @@ export const NotePreview = ({ note, isPinned, onOpen, onTogglePin }: NotePreview
       {!isEncrypted && (note.tags || []).length > 0 && (
         <div className="px-6 py-4 border-t border-border flex flex-wrap gap-2">
           {(note.tags || []).map((tag) => (
-            <span key={tag} className="font-mono text-xs bg-primary/10 text-primary px-2 py-1 rounded-jotty">
+            <span key={tag} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-jotty">
               #{tag}
             </span>
           ))}

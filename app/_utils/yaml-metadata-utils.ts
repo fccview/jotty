@@ -78,6 +78,20 @@ export const keptMeta = (
   return { ...(stored || {}), ...(incoming || {}) };
 };
 
+const isMapping = (parsed: unknown): parsed is DocumentMetadata =>
+  typeof parsed === "object" && parsed !== null && !Array.isArray(parsed);
+
+const isFrontmatter = (
+  yamlContent: string,
+  parsed: unknown,
+): parsed is DocumentMetadata => {
+  if (!isMapping(parsed)) return false;
+
+  const opensTight = yamlContent.split(/\r?\n/, 1)[0].trim() !== "";
+
+  return opensTight || Object.keys(parsed).some((key) => JOTTY_META_KEYS.includes(key));
+};
+
 export const extractYamlMetadata = (
   content: string,
 ): {
@@ -95,14 +109,21 @@ export const extractYamlMetadata = (
 
   try {
     const yamlContent = match[1];
-    const metadata = yaml.load(yamlContent) as DocumentMetadata;
+    const metadata = yaml.load(yamlContent);
+
+    if (!isFrontmatter(yamlContent, metadata)) {
+      return {
+        metadata: {},
+        contentWithoutMetadata: content,
+      };
+    }
 
     const contentWithoutMetadata = content
       .replace(YAML_FRONTMATTER_REGEX, "")
       .trim();
 
     return {
-      metadata: metadata || {},
+      metadata,
       contentWithoutMetadata,
     };
   } catch (error) {

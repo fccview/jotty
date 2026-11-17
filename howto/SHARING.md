@@ -49,6 +49,16 @@ A folder can let somebody delete items without editing them. A single item can't
 
 ---
 
+## Folders inside a shared folder
+
+People who can open a shared folder can open the folders inside it too. The share window of an inner folder lists them under the parent's name, for example **Shared through Recipes**. Their rows are greyed out because the access belongs to the parent. To change it, open **Share this folder** on Recipes.
+
+You can also add people to an inner folder directly. They show up under **Shared with** and get that folder and everything in it, but not the parent.
+
+When somebody leaves an inner folder they reached through the parent, that folder stops following the parent. Everybody else keeps their access, now listed under **Shared with** on the inner folder, but people you add to the parent later won't reach it. Share the inner folder with them directly.
+
+---
+
 ## Public links
 
 **Public access** gives a link that anyone can open without logging in. Public links are read only.

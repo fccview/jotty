@@ -1,9 +1,13 @@
+import { TAG_BOUNDARY } from "../parse/tags";
+
 const ASCII_PUNCT = /[!-\/:-@\[-`{-~]/;
 const ALNUM = /[a-zA-Z0-9\u00c0-\uffff]/;
 const SPACE = /\s/;
 const WIKILINK = /^\[\[[^\[\]\n]+\]\]/;
 const ENTITY = /^&(#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/i;
 const BARE_URL = /(https?|ftp)(:\/\/)|(www)(\.)/gi;
+const TAG_START = /[a-zA-Z]/;
+const SPACED_ENDS = new Set([">", "`"]);
 
 export interface EscapeContext {
   lineStart: boolean;
@@ -14,10 +18,16 @@ export interface EscapeContext {
   starMarks?: boolean;
   blockEnd?: boolean;
   label?: boolean;
+  opened?: boolean;
 }
 
 const isSpace = (char: string | undefined) => char === undefined || char === "" || SPACE.test(char);
 const isAlnum = (char: string | undefined) => !!char && ALNUM.test(char);
+
+const startsTag = (next: string | undefined) => !!next && TAG_START.test(next);
+
+const tagBoundary = (prev: string | undefined, leading: boolean, opened?: boolean) =>
+  isSpace(prev) || TAG_BOUNDARY.test(prev ?? "") || (leading && (opened || SPACED_ENDS.has(prev ?? "")));
 
 const LOOSE_STAR = /(^|\s)\*(?=\s|$)/g;
 
@@ -91,6 +101,9 @@ export const escapeText = (text: string, context: EscapeContext): string => {
         break;
       case "|":
         out += context.pipes ? "\\|" : char;
+        break;
+      case "#":
+        out += !context.inLink && startsTag(next) && tagBoundary(prev, index === 0, context.opened) ? "\\#" : char;
         break;
       default:
         out += char;

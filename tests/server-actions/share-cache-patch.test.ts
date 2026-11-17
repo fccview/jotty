@@ -15,6 +15,7 @@ const { home, root } = vi.hoisted(() => {
 
 vi.unmock("fs/promises");
 
+import * as grep from "@/app/_utils/grep-utils";
 import { allShared } from "@/app/_server/actions/share/queries";
 import { mountsFor } from "@/app/_server/actions/share/mounts";
 import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
@@ -27,11 +28,21 @@ const OTHER = "6b6b6b6b-6b6b-4b6b-8b6b-6b6b6b6b6b6b";
 const notesDir = path.join(root, DATA_DIR, Modes.NOTES);
 const plan = path.join(notesDir, "alice", "Work", "plan.md");
 const other = path.join(notesDir, "alice", "Work", "other.md");
+const bobsOwn = path.join(notesDir, "bob", "Mine", "own.md");
+const BOBS = "7c7c7c7c-7c7c-4c7c-8c7c-7c7c7c7c7c7c";
 
 const write = (filePath: string, uuid: string, extra = "") => {
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, `---\nuuid: ${uuid}\ntitle: ${path.basename(filePath)}\n${extra}---\n\nbody`);
   invalidatePath(filePath);
+};
+
+const echoMidRead = (...paths: string[]) => {
+  const real = grep.grepFilesByText;
+  return vi.spyOn(grep, "grepFilesByText").mockImplementationOnce(async (...args) => {
+    paths.forEach(invalidatePath);
+    return real(...args);
+  });
 };
 
 const sharedNotes = async () => (await allShared()).notes.map((entry) => entry.uuid);
@@ -63,5 +74,48 @@ describe("share caches after a single note changes", () => {
     write(plan, PLAN);
     expect(await sharedNotes()).toEqual([]);
     expect(await bobsLooseItems()).toEqual([]);
+  });
+
+  it("keep the viewer's mounts when one of their own notes goes, and re-read them when a shared one goes", async () => {
+    write(plan, PLAN, "sharedWith: bob:r\n");
+    write(bobsOwn, BOBS);
+    const echo = echoMidRead(plan, bobsOwn);
+    expect(await bobsLooseItems()).toEqual([PLAN]);
+    echo.mockRestore();
+
+    const scans = vi.spyOn(grep, "grepFilesByText");
+
+    rmSync(bobsOwn);
+    invalidatePath(bobsOwn);
+    expect(await bobsLooseItems()).toEqual([PLAN]);
+    expect(scans).not.toHaveBeenCalled();
+
+    rmSync(plan);
+    invalidatePath(plan);
+    expect(await bobsLooseItems()).toEqual([]);
+    expect(scans).toHaveBeenCalled();
+
+    scans.mockRestore();
+  });
+
+  it("keep the viewer's mounts when a shared note is edited with the same grant, and re-read them when the grant changes", async () => {
+    write(plan, PLAN, "sharedWith: bob:r\n");
+    const echo = echoMidRead(plan);
+    expect(await bobsLooseItems()).toEqual([PLAN]);
+    echo.mockRestore();
+
+    const scans = vi.spyOn(grep, "grepFilesByText");
+
+    write(plan, PLAN, "sharedWith: bob:r\ntags:\n  - edited\n");
+    expect(await bobsLooseItems()).toEqual([PLAN]);
+    expect(scans).not.toHaveBeenCalled();
+
+    write(plan, PLAN, "sharedWith: bob:rw\n");
+    const [mount] = await mountsFor(Modes.NOTES, "bob");
+    expect(mount.itemUuids).toEqual([PLAN]);
+    expect(mount.permissions.canEdit).toBe(true);
+    expect(scans).toHaveBeenCalled();
+
+    scans.mockRestore();
   });
 });

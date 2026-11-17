@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import { randomUUID } from "crypto";
 import { execFile } from "child_process";
 import { promisify } from "util";
-import { DATA_DIR } from "@/app/_consts/files";
+import { DATA_DIR, LOCKS_DIR_NAME } from "@/app/_consts/files";
 import {
   ATTACHMENTS_JOURNAL,
   ATTACHMENTS_RUN_LOCK,
@@ -111,7 +111,7 @@ export const journalPath = (): string =>
   path.join(dataRoot(), MIGRATIONS_DIR_NAME, ATTACHMENTS_JOURNAL);
 
 const _lockPath = async (): Promise<string> => {
-  const lockPath = path.join(dataRoot(), ".locks", ATTACHMENTS_RUN_LOCK);
+  const lockPath = path.join(dataRoot(), LOCKS_DIR_NAME, ATTACHMENTS_RUN_LOCK);
   await fs.mkdir(path.dirname(lockPath), { recursive: true });
   await fs.appendFile(lockPath, "");
   return lockPath;

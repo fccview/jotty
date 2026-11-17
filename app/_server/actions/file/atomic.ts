@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { extractYamlMetadata, toIso } from "@/app/_utils/yaml-metadata-utils";
+import { ATOMIC_TMP_EXT } from "@/app/_consts/files";
 
 const FRONTMATTER_OPEN = /^(\uFEFF?---\r?\n)/;
 
@@ -17,7 +18,7 @@ export const atomicWrite = async (filePath: string, content: string) => {
   const target = await _realTarget(filePath);
   const tmpPath = path.join(
     path.dirname(target),
-    `.${path.basename(target)}.${randomUUID()}.tmp`,
+    `.${path.basename(target)}.${randomUUID()}${ATOMIC_TMP_EXT}`,
   );
 
   try {

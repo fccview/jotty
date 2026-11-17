@@ -14,7 +14,7 @@ export const POST = async (request: NextRequest) => {
 
   const result =
     body.op === SidebarOps.ROWS
-      ? await getSidebarRows(body.mode, body.category, body.offset, String(body.stamp || ""))
+      ? await getSidebarRows(body.mode, body.category, body.offset, String(body.stamp || ""), body.stamped === true)
       : body.op === SidebarOps.LOCATE
         ? await locateSidebarItem(body.mode, body.uuid)
         : body.op === SidebarOps.SEARCH

@@ -63,3 +63,20 @@ export const statMarkdown = async (
     return null;
   }
 };
+
+export const countMarkdown = async (dir: string, allowArchived = false): Promise<number> => {
+  const skipped = new Set(skippedDirs(allowArchived));
+  const root = path.resolve(dir);
+  try {
+    const entries = await fs.readdir(root, { recursive: true, withFileTypes: true });
+    return entries.filter(
+      (entry) =>
+        entry.isFile() &&
+        entry.name.endsWith(MARKDOWN) &&
+        !path.relative(root, entry.parentPath).split(path.sep).some((part) => skipped.has(part)),
+    ).length;
+  } catch (error) {
+    if (!_isMissing(error)) console.error(`Could not count markdown files in ${dir}:`, error);
+    return 0;
+  }
+};

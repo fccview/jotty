@@ -202,6 +202,16 @@ describe("regressions", () => {
     expectRoundtrip(markdown);
     expect(blockTypes(open(markdown).json)).toEqual(["paragraph", "paragraph", "paragraph"]);
   });
+
+  it("keeps markdown anchor links as links instead of tags", () => {
+    const markdown = "* [FOREWORD](#foreword)\n    * [Trim white-space](#trim-white-space)\n\ntext #todo";
+    expectRoundtrip(markdown);
+    expect(freshSave(markdown)).toBe("- [FOREWORD](#foreword)\n  - [Trim white-space](#trim-white-space)\n\ntext #todo");
+    const { json } = open(markdown);
+    const hrefs = findAll(json, "text").flatMap((node) => (node.marks ?? []).map((mark) => mark.attrs?.href));
+    expect(hrefs).toEqual(["#foreword", "#trim-white-space"]);
+    expect(findAll(json, "tagLink").map((node) => node.attrs?.tag)).toEqual(["todo"]);
+  });
 });
 
 describe("generator findings", () => {

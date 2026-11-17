@@ -29,6 +29,7 @@ import { categoriesFor } from "@/app/_server/actions/category/tree";
 import { getUserChecklists } from "@/app/_server/actions/checklist/queries";
 import { getUserNotes } from "@/app/_server/actions/note/queries";
 import { dropMounts, mountsFor } from "@/app/_server/actions/share/mounts";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 import { canReach } from "@/app/_server/actions/share/queries";
 import {
   ItemTypes,
@@ -87,6 +88,7 @@ afterAll(() => {
 
 beforeEach(() => {
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   dropMounts(Modes.CHECKLISTS);
 });

@@ -103,10 +103,22 @@ export interface ItemShares {
   sharedParent?: string;
 }
 
+export interface GrantSource {
+  category: string;
+  users: Record<string, SharingPermissions>;
+}
+
+export interface InheritedShare {
+  category: string;
+  users: Record<string, SharingPermissions>;
+  isPublic: boolean;
+}
+
 export interface FolderShares {
   users: Record<string, SharingPermissions>;
   isPublic: boolean;
   inherit: boolean;
+  inherited: InheritedShare[];
   uuid?: string;
 }
 

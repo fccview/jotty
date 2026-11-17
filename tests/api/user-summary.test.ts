@@ -199,6 +199,7 @@ describe("User & Summary API", () => {
 
       expect(response.status).toBe(200)
       expect(data.summary.username).toBe("otheruser")
+      expect(mockGetUserChecklists).toHaveBeenCalledWith({ username: "otheruser", requester: adminUser.username })
     })
 
     it("should return 403 when non-admin queries other users", async () => {

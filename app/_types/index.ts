@@ -77,12 +77,14 @@ export type { AdjacentNotes, ItemShelf, LibraryStats, WikiAsk, WikiHit } from ".
 export type { BrowsePage, BrowseQuery } from "./browse";
 export type {
   FolderStats,
+  StampedFolderStats,
   SidebarAnchor,
   SidebarEntry,
   SidebarPage,
   SidebarRow,
   SidebarSearch,
   SidebarSnapshot,
+  LibrarySnapshot,
   SidebarSnapshots,
   SidebarSpot,
 } from "./sidebar";
@@ -130,3 +132,5 @@ export type {
 } from "./dnd";
 
 export type { AppNotification, AppNotificationData, NotificationType } from "./notifications";
+
+export type { AdminRow, AdminLibrary, AdminCounts } from "./admin";

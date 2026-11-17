@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mockRevalidatePath, resetAllMocks, createFormData } from "../setup";
 import { INVALID_AGENT } from "@/app/_consts/agents";
+import { RECURRENCE_PRESETS, RECURRENCE_REFUSED, createRecurrenceFromPreset } from "@/app/_utils/recurrence-utils";
 
 const mockGetUserModeDir = vi.fn();
 const mockEnsureDir = vi.fn();
@@ -324,6 +325,38 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
 
       expect(result.success).toBe(true);
       expect(result.data?.description).toBe("Item description");
+    });
+
+    it("saves every repeat the web app offers", async () => {
+      const presets = Object.values(RECURRENCE_PRESETS).filter((preset) => preset.value);
+
+      for (const preset of presets) {
+        const recurrence = createRecurrenceFromPreset(preset.value, new Date("2030-01-07T00:00:00Z"));
+        const formData = createFormData({
+          uuid: "test-uuid-123",
+          text: `Repeats ${preset.label}`,
+          recurrence: JSON.stringify(recurrence),
+        });
+
+        const result = await createItem(mockChecklist, formData);
+
+        expect(result.success, preset.label).toBe(true);
+        expect(result.data?.recurrence, preset.label).toMatchObject({ rrule: preset.value, dtstart: recurrence!.dtstart });
+        expect(result.data?.recurrence?.nextDue, preset.label).toBeDefined();
+      }
+    });
+
+    it("refuses a repeat the app can't schedule instead of saving it", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        text: "Every second",
+        recurrence: JSON.stringify({ rrule: "FREQ=SECONDLY", dtstart: "1970-01-01T00:00:00Z" }),
+      });
+
+      const result = await createItem(mockChecklist, formData);
+
+      expect(result).toMatchObject({ success: false, error: RECURRENCE_REFUSED });
+      expect(mockServerWriteFile).not.toHaveBeenCalled();
     });
 
     it("should return error when permission denied", async () => {
@@ -696,6 +729,26 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       expect(result.success).toBe(false);
     });
 
+    it("completes cards dropped into a first column that auto-completes", async () => {
+      mockGetListById.mockResolvedValue({
+        ...mockTaskChecklist,
+        statuses: [
+          { id: "shipped", label: "Shipped", order: 0, autoComplete: true },
+          { id: "todo", label: "To Do", order: 1 },
+        ],
+      });
+
+      const result = await createBulkItems(createFormData({ uuid: "test-uuid-123", itemsText: "Alpha\nBeta" }));
+
+      expect(result.success).toBe(true);
+      expect(
+        result.data?.items.filter((item) => item.status === "shipped").map((item) => [item.text, item.completed]),
+      ).toEqual([
+        ["Alpha", true],
+        ["Beta", true],
+      ]);
+    });
+
     it("should trim whitespace from items", async () => {
       const formData = createFormData({
         uuid: "test-uuid-123",
@@ -706,6 +759,92 @@ describe("Checklist Item Actions - Comprehensive Tests", () => {
       const result = await createBulkItems(formData);
 
       expect(result.success).toBe(true);
+    });
+
+    it("should prepend items in entered order by default", async () => {
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha\nBeta",
+      });
+
+      const result = await createBulkItems(formData);
+
+      expect(result.success).toBe(true);
+      expect(
+        result.data?.items.map((item) => [item.text, item.order]),
+      ).toEqual([
+        ["Alpha", 0],
+        ["Beta", 1],
+        ["First item", 2],
+        ["Second item", 3],
+        ["Third item", 4],
+      ]);
+    });
+
+    it("should append items in entered order when newItemInsertion is 'bottom'", async () => {
+      mockFindUserRecord.mockResolvedValue({
+        username: "testuser",
+        newItemInsertion: "bottom",
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha\nBeta",
+      });
+
+      const result = await createBulkItems(formData);
+
+      expect(result.success).toBe(true);
+      expect(
+        result.data?.items.map((item) => [item.text, item.order]),
+      ).toEqual([
+        ["First item", 0],
+        ["Second item", 1],
+        ["Third item", 2],
+        ["Alpha", 3],
+        ["Beta", 4],
+      ]);
+      expect(mockFindUserRecord).toHaveBeenCalledWith("testuser");
+    });
+
+    it("should put bulk cards in the board's first column", async () => {
+      mockGetListById.mockResolvedValue({
+        ...mockTaskChecklist,
+        statuses: [
+          { id: "doing", label: "Doing", color: "blue", order: 1 },
+          { id: "backlog", label: "Backlog", color: "gray", order: 0 },
+        ],
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha\nBeta",
+      });
+
+      const result = await createBulkItems(formData);
+      const added = result.data?.items.filter((item) => ["Alpha", "Beta"].includes(item.text));
+
+      expect(result.success).toBe(true);
+      expect(added?.map((item) => item.status)).toEqual(["backlog", "backlog"]);
+    });
+
+    it("should not write NaN orders when older items have no order", async () => {
+      mockGetListById.mockResolvedValue({
+        ...mockChecklist,
+        items: [{ id: "old", text: "Old item", completed: false }],
+      });
+
+      const formData = createFormData({
+        uuid: "test-uuid-123",
+        itemsText: "Alpha",
+      });
+
+      const result = await createBulkItems(formData);
+
+      expect(result.data?.items.map((item) => [item.text, item.order])).toEqual([
+        ["Alpha", 0],
+        ["Old item", 1],
+      ]);
     });
   });
 

@@ -2,9 +2,20 @@ type PlainRule = readonly [RegExp, string | ((match: string, ...groups: string[]
 
 const CODE_FENCE = /```[\s\S]*?```/g;
 const HTML_TAG = /<[^>]+>/g;
+const ESCAPED_MARK = "\u0000";
+
+const HOLD_ESCAPES: PlainRule = [
+  /\\([!-\/:-@[-`{-~])/g,
+  (_, char: string) => `${ESCAPED_MARK}${char.charCodeAt(0)}${ESCAPED_MARK}`,
+];
+const RELEASE_ESCAPES: PlainRule = [
+  new RegExp(`${ESCAPED_MARK}(\\d+)${ESCAPED_MARK}`, "g"),
+  (_, code: string) => String.fromCharCode(Number(code)),
+];
 
 export const CARD_PLAIN_RULES: readonly PlainRule[] = [
   [CODE_FENCE, " "],
+  HOLD_ESCAPES,
   [/`[^`]+`/g, " "],
   [/!\[[^\]]*\]\([^)]+\)/g, " "],
   [/\[([^\]]+)\]\([^)]+\)/g, "$1"],
@@ -19,16 +30,19 @@ export const CARD_PLAIN_RULES: readonly PlainRule[] = [
   [/^[\s]*\d+\.\s+/gm, ""],
   [/^[\s]*-?\s*\[[ xX]\]\s+/gm, ""],
   [/\[\s*\]\([^)]+\)/g, " "],
+  RELEASE_ESCAPES,
 ];
 
 export const EXCERPT_PLAIN_RULES: readonly PlainRule[] = [
   [CODE_FENCE, " "],
+  HOLD_ESCAPES,
   [HTML_TAG, " "],
   [/!?\[([^\]]*)\]\([^)]*\)/g, "$1"],
   [/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, target, alias) => alias || target],
   [/^\s{0,3}(#{1,6}|>|[-*+]|\d+\.)\s+/gm, ""],
   [/[*_`~]/g, ""],
   [/\s+/g, " "],
+  RELEASE_ESCAPES,
 ];
 
 export const stripMarkdown = (content: string, rules: readonly PlainRule[]): string =>

@@ -73,6 +73,7 @@ import { SpecStatus } from "@/app/_consts/agents";
 import { Modes } from "@/app/_types/enums";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
 import type { SanitisedUser } from "@/app/_types";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const SHARED_BOARD = "a1a1a1a1-1111-4111-8111-111111111111";
 const SOLO_BOARD = "b2b2b2b2-2222-4222-8222-222222222222";
@@ -193,6 +194,7 @@ const lineOf = (file: string, text: string) =>
 
 beforeAll(() => {
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   dropMounts(Modes.CHECKLISTS);
   seed();

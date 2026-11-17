@@ -48,7 +48,7 @@ export const NoteCard = ({
       className="jotty-note-card group cursor-pointer bg-card border border-border rounded-jotty overflow-hidden transition-colors duration-200 hover:border-primary/50 flex flex-col [overflow-wrap:anywhere]"
     >
       <div className="flex items-center justify-between gap-2 pl-4 pr-2 pt-3 min-h-7">
-        <span className="font-mono text-[11px] text-muted-foreground truncate">
+        <span className="text-[11px] text-muted-foreground truncate">
           {categoryTrail(note.category, t("notes.uncategorized"))}
         </span>
         <span className="flex items-center gap-0.5 shrink-0">
@@ -59,7 +59,7 @@ export const NoteCard = ({
               className="p-1"
             />
           )}
-          <span className="font-mono text-[11px] text-muted-foreground pr-2">
+          <span className="tabular-nums text-[11px] text-muted-foreground pr-2">
             {formatShortTime(note.updatedAt, t)}
           </span>
         </span>
@@ -98,7 +98,7 @@ export const NoteCard = ({
         <span className="flex items-center gap-2 min-w-0">
           {!isEncrypted &&
             (note.tags || []).slice(0, CARD_TAG_LIMIT).map((tag) => (
-              <span key={tag} className="font-mono text-primary truncate">
+              <span key={tag} className="text-primary truncate">
                 #{tag}
               </span>
             ))}

@@ -4,6 +4,7 @@ import { defineRoute, refuse } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
 import { ERRORS } from "@/app/_schemas/api/common";
 import { BOARD_REFUSED, cardParams, cardStatusBody, cardChangedSchema } from "@/app/_schemas/api/kanban";
+import { rollRecurring } from "@/app/_server/actions/checklist/recurring";
 import { cardFor, cardChanged } from "@/app/_utils/kanban/api-board";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ export const PUT = defineRoute(
     path: "/kanban/{boardId}/items/{itemId}/status",
     tag: ApiTag.KANBAN,
     summary: "Move a card to another column",
-    description: "Records the change in the card's history. Moving into a column with autoComplete marks the card completed. Needs edit permission.",
+    description: "Records the change in the card's history. Moving into a column with autoComplete marks the card completed. A recurring card whose next occurrence is already due rolls to it straight away, so it comes back in todo. Needs edit permission.",
     params: cardParams,
     body: cardStatusBody,
     responses: {
@@ -39,6 +40,6 @@ export const PUT = defineRoute(
     const result = await stampStatus(user, formData);
     if (!result.success) return refuse(result.error || "Failed to update status", 400);
 
-    return cardChanged(result.data, card.id);
+    return cardChanged(result.data && (await rollRecurring(result.data, user.username)), card.id);
   },
 );

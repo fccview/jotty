@@ -8,6 +8,7 @@ import { FeedbackMessage } from "@/app/_components/GlobalComponents/Feedback/Fee
 import { useFolderShare } from "@/app/_hooks/useFolderShare";
 import { Modes } from "@/app/_types/enums";
 import { PeopleSection } from "./Parts/PeopleSection";
+import { InheritedSection } from "./Parts/InheritedSection";
 import { FOLDER_CHIPS } from "./Parts/PermissionChips";
 import { ShareSection } from "./Parts/ShareSection";
 import { ShareToggleRow } from "./Parts/ShareToggleRow";
@@ -33,6 +34,7 @@ export const FolderShareModal = ({
     error,
     grants,
     sharees,
+    inherited,
     isPublic,
     searchQuery,
     setSearchQuery,
@@ -66,6 +68,16 @@ export const FolderShareModal = ({
           <FeedbackMessage error={error} success={null} />
         </div>
       )}
+      {inherited.map(({ category, isPublic: isPublicParent, people }, index) => (
+        <InheritedSection
+          key={category}
+          id={`share-section-inherited-${index}`}
+          category={category}
+          isPublic={isPublicParent}
+          people={people}
+          chips={FOLDER_CHIPS}
+        />
+      ))}
       <PeopleSection
         sharees={sharees}
         candidates={candidates}
@@ -77,6 +89,7 @@ export const FolderShareModal = ({
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         isLoading={isLoading}
+        emptyHint={inherited.length > 0 ? t("sharing.noOneDirectly") : undefined}
       />
       <ShareSection id="share-section-public" title={t("sharing.publicLinkTab")}>
         <div className="px-6 py-1">

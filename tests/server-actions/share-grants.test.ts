@@ -57,6 +57,7 @@ import { CATEGORY_INFO_FILE, PUBLIC_USER } from "@/app/_consts/sharing";
 import { DATA_DIR, USERS_FILE } from "@/app/_consts/files";
 import { Modes } from "@/app/_types/enums";
 import type { SanitisedUser, SharingPermissions } from "@/app/_types";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const NOTE = "5a5a5a5a-5a5a-4a5a-8a5a-5a5a5a5a5a5a";
 const ALICE: SanitisedUser = {
@@ -92,6 +93,7 @@ afterAll(() => {
 
 beforeEach(() => {
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   mkdirSync(path.dirname(path.join(root, USERS_FILE)), { recursive: true });
   writeFileSync(

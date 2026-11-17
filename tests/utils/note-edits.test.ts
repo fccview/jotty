@@ -73,4 +73,54 @@ describe("hashtags", () => {
   it("keeps other tags on a shared tag line", () => {
     expect(dropHashtags("Body\n\n#garden #work\n", ["garden"])).toBe("Body\n\n#work\n");
   });
+
+  it("leaves markdown anchor links alone when dropping a tag of the same name", () => {
+    const body = "* [Garden](#garden)\n\n[ref]: #garden\n\n## Garden #garden\n";
+    expect(dropHashtags(body, ["garden"])).toBe("* [Garden](#garden)\n\n[ref]: #garden\n\n## Garden\n");
+  });
+
+  it("leaves anchors on the line after a link definition or destination alone", () => {
+    const body = "[ref]:\n  #garden\n\n[Garden](\n#garden)\n\n#garden\n";
+    expect(dropHashtags(body, ["garden"])).toBe("[ref]:\n  #garden\n\n[Garden](\n#garden)\n");
+  });
+
+  it("keeps bold closed when the tag sits right before the closer", () => {
+    expect(dropHashtags("**bold #tag**\n", ["tag"])).toBe("**bold**\n");
+  });
+
+  it("drops a bold tag whose closer is on a later line of the paragraph", () => {
+    expect(dropHashtags("**#tag\nmore**\n", ["tag"])).toBe("**more**\n");
+  });
+
+  it("still drops a tag written after a bracketed word and colon in prose", () => {
+    expect(dropHashtags("Status [beta]: #garden\n", ["garden"])).toBe("Status [beta]:\n");
+  });
+
+  it.each([
+    ["**#garden**\n", ""],
+    ["Plant **#garden** now\n", "Plant now\n"],
+    ["(*#garden*) note\n", "() note\n"],
+    ["_#garden_ and ~~#garden~~\n", "and\n"],
+    ["**_#garden_** x\n", "x\n"],
+    ["**#garden more**\n", "**more**\n"],
+    ["***#garden** x*\n", "*x*\n"],
+    ["*#garden*text\n", "text\n"],
+  ])("removes an emphasis wrapped tag from %j", (body, expected) => {
+    expect(dropHashtags(body, ["garden"])).toBe(expected);
+  });
+
+  it.each([
+    "**bold**#garden\n",
+    "a**#garden**\n",
+    "_#garden_patch_\n",
+    "#garden_\n",
+    "_#garden_x\n",
+    "rate *#garden here\n",
+  ])("leaves %j alone", (body) => {
+    expect(dropHashtags(body, ["garden"])).toBe(body);
+  });
+
+  it("does not count an anchor link as a tag already present", () => {
+    expect(addHashtags("[Garden](#garden)\n", ["garden"])).toBe("[Garden](#garden)\n\n#garden\n");
+  });
 });

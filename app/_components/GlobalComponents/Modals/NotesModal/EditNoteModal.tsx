@@ -13,6 +13,7 @@ import { ItemTypes } from "@/app/_types/enums";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { Input } from "@/app/_components/GlobalComponents/FormElements/Input";
 import { useTranslations } from "next-intl";
+import { appendMove } from "@/app/_utils/category-path-utils";
 
 interface EditNoteModalProps {
   note: Note;
@@ -89,7 +90,7 @@ export const EditNoteModal = ({
     }
 
     if (isOwner) {
-      formData.append("category", category || "");
+      appendMove(formData, category, note.category || "");
     } else if (unarchive) {
       formData.append("category", category || "Uncategorized");
     }

@@ -9,7 +9,7 @@ export const Tally = ({ done, total }: { done: number; total: number }) => {
 
   return (
     <span
-      className="font-mono text-sm font-medium text-foreground shrink-0 whitespace-nowrap"
+      className="tabular-nums text-sm font-medium text-foreground shrink-0 whitespace-nowrap"
       title={t("browse.tickedOf", { done, total })}
     >
       {compact(done)}

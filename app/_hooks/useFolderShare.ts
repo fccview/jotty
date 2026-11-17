@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { SharingPermissions } from "@/app/_types";
+import { InheritedShare } from "@/app/_types/sharing";
 import { Modes } from "@/app/_types/enums";
 import {
   shareFolder,
@@ -29,11 +31,13 @@ export const useFolderShare = ({
   mode,
   categoryPath,
 }: FolderShareArgs) => {
+  const t = useTranslations();
   const { user, usersPublicData } = useAppMode();
   const owner = user?.username || "";
 
   const [categoryUuid, setCategoryUuid] = useState("");
   const [grants, setGrants] = useState<Record<string, SharingPermissions>>({});
+  const [inheritedShares, setInheritedShares] = useState<InheritedShare[]>([]);
   const [isPublic, setIsPublic] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState<{
@@ -50,15 +54,20 @@ export const useFolderShare = ({
       const shares = await folderShares(mode, categoryPath);
 
       setGrants(shares.users);
+      setInheritedShares(shares.inherited);
       setIsPublic(shares.isPublic);
       setCategoryUuid(shares.uuid || "");
     } catch (error) {
       console.error("Failed to load folder sharing:", error);
-      setStatus({ isLoading: false, error: "Failed to load folder sharing" });
+      setGrants({});
+      setInheritedShares([]);
+      setIsPublic(false);
+      setCategoryUuid("");
+      setStatus({ isLoading: false, error: t("sharing.loadFailed") });
     } finally {
       setStatus((prev) => ({ ...prev, isLoading: false }));
     }
-  }, [isOpen, mode, categoryPath]);
+  }, [isOpen, mode, categoryPath, t]);
 
   useEffect(() => {
     reload();
@@ -66,7 +75,7 @@ export const useFolderShare = ({
 
   const runAction = async (action: () => Promise<{ error?: string }>) => {
     if (!categoryUuid) {
-      setStatus({ isLoading: false, error: "Folder is not ready yet" });
+      setStatus({ isLoading: false, error: t("sharing.folderNotReady") });
       return;
     }
 
@@ -83,7 +92,7 @@ export const useFolderShare = ({
       await reload();
     } catch (error) {
       console.error("Folder sharing action failed:", error);
-      setStatus({ isLoading: false, error: "Something went wrong" });
+      setStatus({ isLoading: false, error: t("errors.anUnknownErrorOccurred") });
     } finally {
       setStatus((prev) => ({ ...prev, isLoading: false }));
     }
@@ -130,6 +139,26 @@ export const useFolderShare = ({
     [people, grants],
   );
 
+  const inherited = useMemo(() => {
+    const avatars = new Map(
+      people.map(({ username, avatarUrl }) => [username, avatarUrl]),
+    );
+
+    return inheritedShares
+      .map(({ category, users, isPublic }) => ({
+        category,
+        isPublic,
+        people: Object.entries(users)
+          .filter(([username]) => username !== owner)
+          .map(([username, permissions]) => ({
+            username,
+            avatarUrl: avatars.get(username),
+            permissions,
+          })),
+      }))
+      .filter((share) => share.people.length > 0 || share.isPublic);
+  }, [inheritedShares, people, owner]);
+
   const candidates = useMemo(
     () =>
       people.filter(
@@ -144,6 +173,7 @@ export const useFolderShare = ({
     ...status,
     grants,
     sharees,
+    inherited,
     isPublic,
     searchQuery,
     setSearchQuery,

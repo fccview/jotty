@@ -55,6 +55,7 @@ import { Modes } from "@/app/_types/enums";
 import { DATA_DIR } from "@/app/_consts/files";
 import { CATEGORY_INFO_FILE } from "@/app/_consts/sharing";
 import { SanitisedUser } from "@/app/_types";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const FULL = { canRead: true, canEdit: true, canDelete: true, canCreate: true };
 const SHARED_NOTE = "66666666-6666-4666-8666-666666666666";
@@ -100,6 +101,7 @@ afterAll(() => {
 
 beforeEach(async () => {
   rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+  invalidatePath(path.join(root, DATA_DIR));
   dropMounts(Modes.NOTES);
   dropMounts(Modes.CHECKLISTS);
 

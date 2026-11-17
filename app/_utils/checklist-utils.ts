@@ -214,7 +214,7 @@ export const parseMarkdown = (
             ...(reminder ? { reminder } : {}),
           };
         } else {
-          let itemText = text.replace(/∣/g, "|");
+          let itemText = text;
           let itemMetadata: Record<string, any> = {};
           let description: string | undefined;
 
@@ -237,6 +237,7 @@ export const parseMarkdown = (
 
             recurrence = parseRecurrenceFromMarkdown(parts.slice(1));
           }
+          itemText = itemText.replace(/∣/g, "|");
 
           item = {
             id: itemMetadata.id || generateItemId(parentLevel),

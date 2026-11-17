@@ -2,6 +2,7 @@
 
 import { usePermissions } from "@/app/_providers/PermissionsProvider";
 import { useTranslations } from "next-intl";
+import { cn } from "@/app/_utils/global-utils";
 import { useState } from "react";
 import { ConfirmModal } from "@/app/_components/GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
@@ -9,8 +10,9 @@ interface checklistItemsWrapperProps {
   title: string;
   count: number;
   children: React.ReactNode;
-  onBulkToggle: () => void;
-  isLoading: boolean;
+  onBulkToggle?: () => void;
+  isLoading?: boolean;
+  readOnly?: boolean;
   isCompleted?: boolean;
   onClearAll?: () => void;
   actions?: React.ReactNode;
@@ -21,7 +23,8 @@ export const ChecklistItemsWrapper = ({
   count,
   children,
   onBulkToggle,
-  isLoading,
+  isLoading = false,
+  readOnly = false,
   isCompleted = false,
   onClearAll,
   actions,
@@ -38,7 +41,7 @@ export const ChecklistItemsWrapper = ({
   };
 
   const handleConfirmBulkToggle = () => {
-    onBulkToggle();
+    onBulkToggle?.();
   };
 
   const handleClearAllClick = () => {
@@ -55,7 +58,7 @@ export const ChecklistItemsWrapper = ({
 
   return (
     <>
-      <div className="bg-card border-b border-border pb-4 lg:border-0 min-h-[40vh]">
+      <div className={cn("bg-card border-b border-border pb-4 lg:border-0", !readOnly && "min-h-[40vh]")}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <div
@@ -67,7 +70,7 @@ export const ChecklistItemsWrapper = ({
               <span className="ml-2 text-md lg:text-sm text-muted-foreground">{t('common.saving')}</span>
             )}
           </h3>
-          {permissions?.canEdit && count > 0 && (
+          {!readOnly && permissions?.canEdit && count > 0 && (
             <div className="flex items-center gap-2">
               {actions}
               {onClearAll && (

@@ -1,15 +1,15 @@
 "use client";
 
-import { useMemo, memo, useState, useRef, useEffect } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
 import { ItemLinkPopup } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ItemLinkPopup";
 import { useDropList } from "@/app/_hooks/dnd";
 import { Item, Checklist, KanbanStatus } from "@/app/_types";
 import { KanbanCard } from "./KanbanCard";
-import { cn } from "@/app/_utils/global-utils";
+import { KanbanColumnFrame } from "./KanbanColumnFrame";
 import { statusColor as columnColor } from "@/app/_consts/kanban";
 import { useTranslations } from "next-intl";
-import { TaskDaily01Icon, Add01Icon, Archive02Icon } from "hugeicons-react";
+import { Add01Icon, Archive02Icon } from "hugeicons-react";
 import { Input } from "../../GlobalComponents/FormElements/Input";
 import { ConfirmModal } from "../../GlobalComponents/Modals/ConfirmationModals/ConfirmModal";
 
@@ -108,25 +108,6 @@ const KanbanColumnComponent = ({
 
   const color = columnColor({ id: status, color: statusColor });
 
-  const { borderColor, bgColor } = useMemo(() => {
-    const _hexToRgb = (hex: string) => {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result
-        ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16),
-          }
-        : null;
-    };
-
-    const rgb = _hexToRgb(color);
-    return {
-      borderColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` : color,
-      bgColor: rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)` : color,
-    };
-  }, [color]);
-
   const handleInlineSubmit = async (text: string) => {
     if (!onAddItem) return;
     setIsAddingItem(true);
@@ -145,94 +126,67 @@ const KanbanColumnComponent = ({
     }
   };
 
-  return (
-    <div className="flex flex-col h-full my-4 lg:my-0 min-w-0">
-      <div className="flex items-center justify-between mb-3 min-w-0">
-        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-          <div
-            className="w-3 h-3 rounded-full shrink-0"
-            style={{ backgroundColor: color }}
-          />
-          <h3 className="font-medium text-md lg:text-sm text-foreground truncate">
-            {title}
-          </h3>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          {onAddItem && !isAutoComplete && (
-            <button
-              onClick={() => setShowInlineInput(true)}
-              title={t("kanban.addItemToColumn", { column: title })}
-              aria-label={t("kanban.addItemToColumn", { column: title })}
-              disabled={isAddingItem || showInlineInput}
-              className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Add01Icon className="h-3.5 w-3.5" />
-            </button>
-          )}
-          {onArchiveAll && isAutoComplete && (
-            <button
-              onClick={() => setShowArchiveAllModal(true)}
-              title={t("kanban.archiveAllItemsInColumn", { column: title })}
-              aria-label={t("kanban.archiveAllItemsInColumn", { column: title })}
-              disabled={archivableCount === 0 || isArchiving}
-              className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Archive02Icon className="h-3.5 w-3.5" />
-            </button>
-          )}
-          <span className="text-md lg:text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-            {items.length}
-          </span>
-        </div>
-      </div>
+  const actions = (
+    <>
+      {onAddItem && !isAutoComplete && (
+        <button
+          onClick={() => setShowInlineInput(true)}
+          title={t("kanban.addItemToColumn", { column: title })}
+          aria-label={t("kanban.addItemToColumn", { column: title })}
+          disabled={isAddingItem || showInlineInput}
+          className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Add01Icon className="h-3.5 w-3.5" />
+        </button>
+      )}
+      {onArchiveAll && isAutoComplete && (
+        <button
+          onClick={() => setShowArchiveAllModal(true)}
+          title={t("kanban.archiveAllItemsInColumn", { column: title })}
+          aria-label={t("kanban.archiveAllItemsInColumn", { column: title })}
+          disabled={archivableCount === 0 || isArchiving}
+          className="flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Archive02Icon className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </>
+  );
 
-      <div
-        ref={setNodeRef}
-        aria-label={`${title} column`}
-        className={cn(
-          "flex-1 min-w-0 rounded-jotty border-2 border-dashed p-3 min-h-[200px] transition-colors duration-200",
-          isOver && "border-primary/70 bg-primary/10 shadow-md",
-        )}
-        style={{
-          borderColor: isOver ? undefined : borderColor,
-          backgroundColor: isOver ? undefined : bgColor,
-          paddingBottom: padBottom
-            ? `calc(0.75rem + ${padBottom}px)`
-            : undefined,
-        }}
+  return (
+    <>
+      <KanbanColumnFrame
+        title={title}
+        color={color}
+        count={items.length}
+        isEmpty={items.length === 0 && !showInlineInput}
+        actions={actions}
+        dropRef={setNodeRef}
+        isOver={isOver}
+        padBottom={padBottom}
       >
-        <div className="space-y-2">
-          {showInlineInput && (
-            <InlineAddInput
-              onSubmit={handleInlineSubmit}
-              onCancel={() => setShowInlineInput(false)}
-              placeholder={t("kanban.addItemPlaceholder")}
-            />
-          )}
-          {items.map((item, index) => (
-            <KanbanCard
-              checklist={checklist}
-              key={item.id}
-              item={item}
-              index={index}
-              listId={status}
-              onUpdate={onUpdate}
-              onOpenDetail={onOpenDetail}
-              isShared={isShared}
-              statuses={statuses}
-              statusColor={statusColor}
-            />
-          ))}
-          {items.length === 0 && !showInlineInput && (
-            <div className="flex flex-col items-center justify-center text-muted-foreground/50 py-8 gap-2">
-              <TaskDaily01Icon className="h-8 w-8" />
-              <span className="text-md lg:text-sm">
-                {t("checklists.noTasks")}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
+        {showInlineInput && (
+          <InlineAddInput
+            onSubmit={handleInlineSubmit}
+            onCancel={() => setShowInlineInput(false)}
+            placeholder={t("kanban.addItemPlaceholder")}
+          />
+        )}
+        {items.map((item, index) => (
+          <KanbanCard
+            checklist={checklist}
+            key={item.id}
+            item={item}
+            index={index}
+            listId={status}
+            onUpdate={onUpdate}
+            onOpenDetail={onOpenDetail}
+            isShared={isShared}
+            statuses={statuses}
+            statusColor={statusColor}
+          />
+        ))}
+      </KanbanColumnFrame>
       <ConfirmModal
         isOpen={showArchiveAllModal}
         onClose={() => setShowArchiveAllModal(false)}
@@ -245,7 +199,7 @@ const KanbanColumnComponent = ({
         confirmText={t("common.archive")}
         variant="destructive"
       />
-    </div>
+    </>
   );
 };
 

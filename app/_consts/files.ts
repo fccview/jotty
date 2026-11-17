@@ -60,7 +60,10 @@ export const NOTES_DIR = (username: string) =>
 export const USERS_FILE = path.join("data", "users", "users.json");
 export const SESSIONS_FILE = path.join(USERS_DIR, "sessions.json");
 export const SESSION_DATA_FILE = path.join(USERS_DIR, "session-data.json");
-export const EXPORT_TEMP_DIR = path.join(DATA_DIR, "temp_exports");
+export const EXPORT_TEMP_DIR_NAME = "temp_exports";
+export const EXPORT_TEMP_DIR = path.join(DATA_DIR, EXPORT_TEMP_DIR_NAME);
+export const LOCKS_DIR_NAME = ".locks";
+export const ATOMIC_TMP_EXT = ".tmp";
 
 export const SHARING_SCHEMA_VERSION = 2;
 export const ATTACHMENTS_SCHEMA_VERSION = 3;

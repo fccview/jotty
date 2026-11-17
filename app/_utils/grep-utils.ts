@@ -18,7 +18,7 @@ import { TEMPLATES_DIR_NAME } from "@/app/_consts/files";
 import fs from "fs/promises";
 import { StringDecoder } from "string_decoder";
 import yaml from "js-yaml";
-import { extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
+import { JOTTY_META_KEYS, extractYamlMetadata } from "@/app/_utils/yaml-metadata-utils";
 import { isPathUuid, pathUuid, uuidOf } from "@/app/_server/actions/lib/read-only";
 import { boxedShell } from "@/app/_utils/shell-utils";
 import { isPathSafe } from "@/app/_utils/path-utils";
@@ -172,23 +172,26 @@ const _listedPaths = async (dir: string, uuid: string): Promise<string[]> => {
   }
 };
 
+const _isPresent = (filePath: string): Promise<boolean> =>
+  fs.stat(filePath).then(
+    () => true,
+    () => false,
+  );
+
+const _verified = async (uuid: string, found: GrepFileResult): Promise<GrepFileResult | null> =>
+  (await _isPresent(found.filePath)) && (await _answersTo(uuid, found)) ? found : null;
+
 const _fromListing = async (dir: string, uuid: string): Promise<GrepFileResult | null> => {
   const root = path.resolve(dir);
   const listed = await _listedPaths(root, uuid);
   if (listed.length !== 1 || !isPathSafe(root, listed[0])) return null;
-  const found = _resultFor(root, listed[0]);
-  return (await _answersTo(uuid, found)) ? found : null;
+  return _verified(uuid, _resultFor(root, listed[0]));
 };
 
 const _fromIndex = async (dir: string, uuid: string): Promise<GrepFileResult | null> => {
   const claimants = await _indexedClaimants(dir, uuid);
   if (claimants.length !== 1) return null;
-  const found = _resultFor(dir, claimants[0]);
-  const present = await fs.stat(found.filePath).then(
-    () => true,
-    () => false,
-  );
-  return present && (await _answersTo(uuid, found)) ? found : null;
+  return _verified(uuid, _resultFor(dir, claimants[0]));
 };
 
 export const grepFindFileByUuid = async (
@@ -548,6 +551,14 @@ export const grepSearchContent = async (
 
 const FENCE = "```";
 const EXCERPT_BUFFER = 2048;
+const OWNED_KEY_LINE = `^(${JOTTY_META_KEYS.join("|")}):`;
+const BODY_AFTER_FRONTMATTER = [
+  `NR==1&&$0=="---"{fm=1;next}`,
+  `fm==1&&$0=="---"{fm=2;if(!(keyed||owned)){print "---";for(i=1;i<=n;i++)print buf[i];print "---"}next}`,
+  `fm==1{buf[++n]=$0;if(n==1&&$0~/^[^ \\t#-][^:]*:/)keyed=1;if($0~/${OWNED_KEY_LINE}/)owned=1;next}`,
+  `{print}`,
+  `END{if(fm==1){print "---";for(i=1;i<=n;i++)print buf[i]}}`,
+].join(" ");
 
 const fullCodeBlock = (text: string, length: number): string => {
   if (text.length <= length) return text.trim();
@@ -571,7 +582,7 @@ export const grepExtractExcerpt = async (
   try {
     const cap = length + EXCERPT_BUFFER;
     const stdout = await boxedShell(
-      `sed '1{/^---$/!{p;d;};}; /^---$/,/^---$/d' "$1" 2>/dev/null | head -c "$2" || true`,
+      `awk '${BODY_AFTER_FRONTMATTER}' "$1" 2>/dev/null | head -c "$2" || true`,
       [filePath, String(cap)],
     );
     return fullCodeBlock(stdout, length);

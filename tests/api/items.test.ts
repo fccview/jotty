@@ -24,6 +24,7 @@ import { DELETE, PATCH } from "@/app/api/checklists/[listId]/items/[itemIndex]/r
 import { PUT as REORDER } from "@/app/api/checklists/[listId]/items/reorder/route"
 import { PUT as SORT } from "@/app/api/checklists/[listId]/items/sort/route"
 import { KANBAN_UNSORTABLE, Sorted } from "@/app/_server/actions/checklist-item/sorter"
+import { NESTED_RECURRENCE, RECURRENCE_REFUSED } from "@/app/_utils/recurrence-utils"
 
 describe("Checklist Items API", () => {
   const mockList = {
@@ -80,6 +81,34 @@ describe("Checklist Items API", () => {
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
+    })
+
+    it("refuses a recurrence it can't schedule instead of dropping it", async () => {
+      mockGetListById.mockResolvedValue(mockList)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
+        text: "Ancient chore",
+        recurrence: { rrule: "FREQ=MONTHLY", dtstart: "0999-01-01T00:00:00Z" },
+      })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe(RECURRENCE_REFUSED)
+      expect(mockAddItem).not.toHaveBeenCalled()
+    })
+
+    it("refuses a recurrence on a sub-item instead of dropping it", async () => {
+      mockGetListById.mockResolvedValue(mockList)
+
+      const request = createMockRequest("POST", "http://localhost:3000/api/checklists/uuid-1/items", {
+        text: "Child chore",
+        parentIndex: "0",
+        recurrence: { rrule: "FREQ=DAILY", dtstart: "2030-01-07T09:00:00Z" },
+      })
+      const response = await POST(request, { params: Promise.resolve({ listId: "uuid-1" }) })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe(NESTED_RECURRENCE)
     })
 
     it("should create a task item with status", async () => {
@@ -488,6 +517,36 @@ describe("Checklist Items API", () => {
 
       expect(response.status).toBe(400)
       expect((await getResponseJson(response)).error).toBe("Invalid item index")
+    })
+
+    it("passes a recurrence through and null stops it", async () => {
+      mockGetListById.mockResolvedValue(mockList)
+      mockEditItem.mockResolvedValue({ success: true })
+      const recurrence = { rrule: "FREQ=WEEKLY;INTERVAL=1", dtstart: "2030-01-07T09:00:00Z" }
+
+      expect((await patch({ recurrence })).status).toBe(200)
+      expect(JSON.parse((mockEditItem.mock.calls[0][2] as FormData).get("recurrence") as string)).toEqual(recurrence)
+
+      expect((await patch({ recurrence: null })).status).toBe(200)
+      expect((mockEditItem.mock.calls[1][2] as FormData).get("recurrence")).toBe("")
+    })
+
+    it("refuses a recurrence without FREQ", async () => {
+      const response = await patch({ recurrence: { rrule: "INTERVAL=2", dtstart: "2030-01-07" } })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe(RECURRENCE_REFUSED)
+      expect(mockEditItem).not.toHaveBeenCalled()
+    })
+
+    it("answers 400 when the item can't repeat", async () => {
+      mockGetListById.mockResolvedValue(mockList)
+      mockEditItem.mockResolvedValue({ success: false, error: NESTED_RECURRENCE })
+
+      const response = await patch({ recurrence: { rrule: "FREQ=DAILY", dtstart: "2030-01-07" } })
+
+      expect(response.status).toBe(400)
+      expect((await getResponseJson(response)).error).toBe(NESTED_RECURRENCE)
     })
   })
 

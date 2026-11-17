@@ -1,4 +1,4 @@
-import { Item, KanbanPriority, StatusChange, TimeEntry } from "@/app/_types";
+import { Item, KanbanPriority, KanbanReminder, RecurrenceRule, StatusChange, TimeEntry } from "@/app/_types";
 import { TaskStatus } from "@/app/_types/enums";
 
 export interface ApiItem {
@@ -20,6 +20,8 @@ export interface ApiItem {
   lastModifiedBy?: string;
   lastModifiedAt?: string;
   history?: StatusChange[];
+  reminder?: KanbanReminder;
+  recurrence?: RecurrenceRule;
   children?: ApiItem[];
 }
 
@@ -61,6 +63,8 @@ export const toApiItem = (
   if (item.lastModifiedAt !== undefined)
     apiItem.lastModifiedAt = item.lastModifiedAt;
   if (item.history !== undefined) apiItem.history = item.history;
+  if (item.reminder !== undefined) apiItem.reminder = item.reminder;
+  if (item.recurrence !== undefined) apiItem.recurrence = item.recurrence;
 
   if (item.children && item.children.length > 0) {
     apiItem.children = item.children.map((child, childIndex) =>

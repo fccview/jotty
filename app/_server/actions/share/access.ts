@@ -1,7 +1,12 @@
 import path from "path";
 import { Modes, PermissionTypes } from "@/app/_types/enums";
 import { SharingPermissions } from "@/app/_types/core";
-import { CategoryInfo, EffectiveAccess, SharedMount } from "@/app/_types/sharing";
+import {
+  CategoryInfo,
+  EffectiveAccess,
+  GrantSource,
+  SharedMount,
+} from "@/app/_types/sharing";
 import { DATA_DIR } from "@/app/_consts/files";
 import {
   PUBLIC_USER,
@@ -74,13 +79,19 @@ const _narrowest = (
   canCreate: Boolean(a.canCreate && b.canCreate),
 });
 
+interface ChainGrants {
+  users: Record<string, SharingPermissions>;
+  via?: string;
+  sources: GrantSource[];
+}
+
 const _chainGrants = async (
   userDir: string,
   startDir: string,
-): Promise<{ users: Record<string, SharingPermissions>; via?: string }> => {
+): Promise<ChainGrants> => {
   const users: Record<string, SharingPermissions> = {};
+  const sources: GrantSource[] = [];
   let current = startDir;
-  let via: string | undefined;
 
   while (isPathSafe(userDir, current)) {
     const info = await readCatInfo(current);
@@ -88,7 +99,10 @@ const _chainGrants = async (
 
     if (sharing?.users && Object.keys(sharing.users).length > 0) {
       _merge(users, sharing.users);
-      via = via || path.relative(userDir, current) || undefined;
+      sources.push({
+        category: path.relative(userDir, current),
+        users: sharing.users,
+      });
     }
 
     if (sharing?.inherit === false) break;
@@ -97,7 +111,7 @@ const _chainGrants = async (
     current = path.dirname(current);
   }
 
-  return { users, via };
+  return { users, via: sources[0]?.category || undefined, sources };
 };
 
 export const resolveAccess = async (
@@ -143,11 +157,11 @@ export const resolveAccess = async (
 export const catAccess = async (
   mode: Modes,
   categoryDir: string,
-): Promise<EffectiveAccess | null> => {
+): Promise<(EffectiveAccess & { sources: GrantSource[] }) | null> => {
   const location = _locate(mode, path.join(categoryDir, "placeholder"));
   if (!location) return null;
 
-  const { users, via } = await _chainGrants(location.userDir, categoryDir);
+  const { users, via, sources } = await _chainGrants(location.userDir, categoryDir);
 
   return {
     owner: location.owner,
@@ -155,6 +169,7 @@ export const catAccess = async (
     isPublic: Boolean(users[PUBLIC_USER]),
     inherited: true,
     viaCategory: via,
+    sources,
   };
 };
 

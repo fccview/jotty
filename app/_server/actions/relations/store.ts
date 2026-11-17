@@ -5,6 +5,8 @@ import { isMainThread } from "node:worker_threads";
 import { DATA_DIR } from "@/app/_consts/files";
 import {
   RELATIONS_DB_NAME,
+  relationsNodeDb,
+  SQLITE_SIDECARS,
   RELATIONS_SCHEMA_VERSION,
   RelationsStatus,
 } from "@/app/_consts/relations";
@@ -92,7 +94,7 @@ const SCHEMA = `
 
 const relationsName = () => {
   const node = clusterNode();
-  return node ? `.relations_${node}.db` : RELATIONS_DB_NAME;
+  return node ? relationsNodeDb(node) : RELATIONS_DB_NAME;
 };
 
 export const relationsFile = (): string =>
@@ -100,7 +102,7 @@ export const relationsFile = (): string =>
   path.join(process.cwd(), DATA_DIR, relationsName());
 
 const _discard = (file: string) => {
-  for (const suffix of ["", "-wal", "-shm"]) {
+  for (const suffix of SQLITE_SIDECARS) {
     try {
       fs.rmSync(`${file}${suffix}`, { force: true });
     } catch (error) {

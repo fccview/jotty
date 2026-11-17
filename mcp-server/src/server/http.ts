@@ -5,11 +5,10 @@ import { logger } from "../utils/logger.ts";
 import { API_KEY_HEADER, createGuard, deniedResponse } from "./auth.ts";
 import { createOriginCheck, exposureRefusal } from "./exposure.ts";
 import { createMcpServer, SERVER_NAME, SERVER_VERSION } from "./mcp.ts";
-import { createSessionPool, type SessionPool } from "./sessions.ts";
+import { createSessionPool, MAX_BODY_BYTES, type SessionPool } from "./sessions.ts";
 
 const LOG_NS = "http";
 const BUN_MAX_IDLE_SECONDS = 255;
-const MAX_BODY_BYTES = 10 * 1024 * 1024;
 
 export enum HttpPath {
   Mcp = "/mcp",

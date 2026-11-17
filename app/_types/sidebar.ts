@@ -10,16 +10,25 @@ export interface FolderStats {
   total: number;
 }
 
+export interface StampedFolderStats extends FolderStats {
+  stamp: string;
+}
+
 export interface SidebarSnapshot {
   stamp: string;
   folders: Record<string, FolderStats>;
   rows: Record<string, SidebarEntry[]>;
 }
 
-export type SidebarSnapshots = Partial<Record<"notes" | "checklists", SidebarSnapshot>>;
+export interface LibrarySnapshot extends SidebarSnapshot {
+  folders: Record<string, StampedFolderStats>;
+}
+
+export type SidebarSnapshots = Partial<Record<"notes" | "checklists", LibrarySnapshot>>;
 
 export interface SidebarPage {
   stamp: string;
+  folderStamp?: string;
   total: number;
   rows: SidebarEntry[];
 }

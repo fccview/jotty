@@ -53,6 +53,7 @@ import { DATA_DIR, TEMPLATES_DIR_NAME } from "@/app/_consts/files";
 import { TEMPLATE_ID_FIELD } from "@/app/_consts/templates";
 import { Modes } from "@/app/_types/enums";
 import { SanitisedUser } from "@/app/_types";
+import { invalidatePath } from "@/app/_server/actions/lib/metadata-cache";
 
 const MEETING = "11111111-1111-4111-8111-111111111111";
 const DIARY = "22222222-2222-4222-8222-222222222222";
@@ -113,6 +114,7 @@ describe("note templates", () => {
   beforeEach(() => {
     session.username = "alice";
     rmSync(path.join(root, DATA_DIR), { recursive: true, force: true });
+    invalidatePath(path.join(root, DATA_DIR));
     writeNote("alice", "Work", "Meeting", MEETING, "# {{title}}\n\nBy {{user}} on {{date}}");
     writeNote("alice", "Personal", "Diary", DIARY, "dear diary", ["encrypted: true"]);
     writeNote("alice", TEMPLATES_DIR_NAME, "Standup", ALICE_TEMPLATE, "## {{ title }}\n- yesterday\n- today, {{user}}");

@@ -45,6 +45,7 @@ const CASES: [string, string, string][] = [
   ["mermaid", '<div data-mermaid="" data-mermaid-content="graph TD; A-->B"></div>', "```mermaid\ngraph TD; A-->B\n```"],
   ["tables", "<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>", "| A   | B   |\n| --- | --- |\n| 1   | 2   |"],
   ["rules and hard breaks", "<p>a</p><hr><p>b<br>c</p>", "a\n\n---\n\nb  \nc"],
+  ["hashtags as the editor would tag them", '<p>web #clipped, C# and (#aside) a#b <code>#code</code> <a href="https://example.com">#linked</a> <strong>#bold</strong> #café</p>', "web #clipped, C# and (#aside) a#b `#code` [#linked](https://example.com) **#bold** \\#café"],
   ["whole pages without scripts", "<html><head><title>x</title><script>alert(1)</script></head><body><h1>Page</h1><p>body</p></body></html>", "# Page\n\nbody"],
 ];
 

@@ -63,7 +63,7 @@ export const RangeSlider = ({
       style={{ "--range-fill": rangeFill(value, min, max) } as CSSProperties}
     />
     {showValue && (
-      <span className="min-w-[4.5rem] shrink-0 truncate rounded-jotty jotty-value-chip px-2 py-0.5 text-center font-mono text-sm lg:text-xs tabular-nums text-foreground">
+      <span className="min-w-[4.5rem] shrink-0 truncate rounded-jotty jotty-value-chip px-2 py-0.5 text-center text-sm lg:text-xs tabular-nums text-foreground">
         {valueText}
       </span>
     )}

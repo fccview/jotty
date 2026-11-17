@@ -1,19 +1,15 @@
 import { redirect, permanentRedirect } from "next/navigation";
-import { getListById } from "@/app/_server/actions/checklist/queries";
 import { isUuid } from "@/app/_consts/identity";
 import { PublicChecklistView } from "@/app/_components/FeatureComponents/PublicView/PublicChecklistView";
 import { CheckForNeedsMigration } from "@/app/_server/actions/note";
-import { getCurrentUser } from "@/app/_server/actions/users";
-import { findUserRecord } from "@/app/_server/actions/users/records";
 import type { Metadata } from "next";
 import { Modes, ItemTypes } from "@/app/_types/enums";
 import { getMedatadaTitle } from "@/app/_server/actions/config";
 import { UNCATEGORIZED } from "@/app/_consts/notes";
-import { isPublicItem } from "@/app/_server/actions/share/queries";
 import { MetadataProvider } from "@/app/_providers/MetadataProvider";
 import { PermissionsProvider } from "@/app/_providers/PermissionsProvider";
-import { sanitizeUserForPublic } from "@/app/_utils/user-sanitize-utils";
-import { isLegacyUrl } from "@/app/_consts/attachments";
+import { OwnerTheme } from "@/app/_components/FeatureComponents/PublicView/Parts/OwnerTheme";
+import { loadPublicChecklist } from "@/app/_server/actions/checklist/public-view";
 import { decodeSegment } from "@/app/_utils/global-utils";
 
 interface PublicChecklistPageProps {
@@ -56,50 +52,35 @@ export default async function PublicChecklistPage(
     redirect("/");
   }
 
-  const checklist = await getListById(uuid);
+  const payload = await loadPublicChecklist(uuid);
 
-  if (!checklist) {
+  if (!payload) {
     redirect("/");
   }
 
-  const userRecord = await findUserRecord(checklist.owner!);
-  const user = sanitizeUserForPublic(
-    userRecord,
-    !isLegacyUrl(userRecord?.avatarUrl),
+  const { checklist, user, theme, links, ownerShowsEmojis } = payload;
+  const metadata = {
+    id: checklist.id,
+    uuid: checklist.uuid,
+    title: checklist.title,
+    category: checklist.category || UNCATEGORIZED,
+    owner: checklist.owner,
+    createdAt: checklist.createdAt,
+    updatedAt: checklist.updatedAt,
+    type: "checklist" as const,
+  };
+
+  return (
+    <MetadataProvider metadata={metadata}>
+      <PermissionsProvider item={checklist}>
+        <OwnerTheme theme={theme} />
+        <PublicChecklistView
+          checklist={checklist}
+          user={user}
+          links={links}
+          ownerShowsEmojis={ownerShowsEmojis}
+        />
+      </PermissionsProvider>
+    </MetadataProvider>
   );
-  const ownerShowsEmojis = userRecord?.showChecklistEmojis !== "disable";
-
-  const isPubliclyShared = await isPublicItem(
-    checklist.uuid!,
-    ItemTypes.CHECKLIST,
-  );
-  const currentUser = await getCurrentUser();
-  const isOwner = currentUser?.username === checklist.owner;
-
-  if (isPubliclyShared || isOwner) {
-    const metadata = {
-      id: checklist.id,
-      uuid: checklist.uuid,
-      title: checklist.title,
-      category: checklist.category || UNCATEGORIZED,
-      owner: checklist.owner,
-      createdAt: checklist.createdAt,
-      updatedAt: checklist.updatedAt,
-      type: "checklist" as const,
-    };
-
-    return (
-      <MetadataProvider metadata={metadata}>
-        <PermissionsProvider item={checklist}>
-          <PublicChecklistView
-            checklist={checklist}
-            user={user}
-            ownerShowsEmojis={ownerShowsEmojis}
-          />
-        </PermissionsProvider>
-      </MetadataProvider>
-    );
-  }
-
-  redirect("/");
 }

@@ -75,7 +75,7 @@ export const GET = defineRoute(
       return refuse(notesResult.error || "Failed to fetch notes", 500);
     }
 
-    const listsResult = (await getUserChecklists({ username })) as Result<Checklist[]>;
+    const listsResult = (await getUserChecklists({ username, requester: user.username })) as Result<Checklist[]>;
     if (!listsResult.success || !listsResult.data) {
       return refuse(listsResult.error || "Failed to fetch checklists", 500);
     }

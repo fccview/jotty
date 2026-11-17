@@ -1,3 +1,5 @@
+const { fontFamily } = require('tailwindcss/defaultTheme');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
@@ -7,6 +9,9 @@ module.exports = {
     ],
     theme: {
         extend: {
+            fontFamily: {
+                mono: ['"Google Sans Code Variable"', ...fontFamily.mono],
+            },
             minWidth: ({ theme }) => theme('spacing'),
             maxWidth: ({ theme }) => theme('spacing'),
             colors: {

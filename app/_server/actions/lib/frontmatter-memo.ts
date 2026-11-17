@@ -24,6 +24,8 @@ export const frontmatterOf = async (
   return stamp ? memo.remember(filePath, stamp, metadata) : metadata;
 };
 
+export const forgetFrontmatter = (filePath: string) => memo.forget(filePath);
+
 export const currentFrontmatterOf = async (filePath: string): Promise<Frontmatter | null> => {
   const stats = await fs.stat(filePath).catch((error: NodeJS.ErrnoException) => {
     if (error.code !== "ENOENT") console.error("Could not stat for frontmatter:", filePath, error);

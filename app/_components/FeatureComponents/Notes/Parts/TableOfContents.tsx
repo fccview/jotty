@@ -13,6 +13,16 @@ const ACTIVE_OFFSET = 24;
 const USER_SCROLL_EVENTS = ["wheel", "touchstart", "keydown"] as const;
 const SETTLE_MS = 150;
 
+type Scroller = HTMLElement | Window;
+
+const scrollerOf = (el: HTMLElement): Scroller => el.closest<HTMLElement>(SCROLL_ROOT) ?? window;
+
+const scrollerTop = (scroller: Scroller) =>
+  scroller instanceof HTMLElement ? scroller.getBoundingClientRect().top : 0;
+
+const scrolledBy = (scroller: Scroller) =>
+  scroller instanceof HTMLElement ? scroller.scrollTop : scroller.scrollY;
+
 const ownHeadings = (root: ParentNode): HTMLElement[] =>
   Array.from(root.querySelectorAll<HTMLElement>(HEADINGS)).filter(
     (heading) => !heading.closest(LINK_PREVIEW),
@@ -114,27 +124,27 @@ const useTableOfContents = (content?: string, isEditing?: boolean) => {
       const targets = headings
         .map((heading) => ({ id: heading.id, el: findHeadingEl(heading.id, heading.text) }))
         .filter((target): target is { id: string; el: HTMLElement } => Boolean(target.el));
-      const container = targets[0]?.el.closest(SCROLL_ROOT);
-      if (!container) return;
+      if (!targets.length) return;
+      const container = scrollerOf(targets[0].el);
 
       let frame = 0;
       let settling: ReturnType<typeof setTimeout> | undefined;
       settle.current = () => {
         clearTimeout(settling);
         settling = setTimeout(() => {
-          if (pinned.current) pinned.current.top = container.scrollTop;
+          if (pinned.current) pinned.current.top = scrolledBy(container);
         }, SETTLE_MS);
       };
       const update = () => {
         frame = 0;
         if (pinned.current) return;
-        const line = container.getBoundingClientRect().top + ACTIVE_OFFSET;
+        const line = scrollerTop(container) + ACTIVE_OFFSET;
         const passed = targets.filter(({ el }) => el.getBoundingClientRect().top <= line);
         setActiveHeading(passed.length ? passed[passed.length - 1].id : null);
       };
       const onScroll = () => {
         const held = pinned.current;
-        if (held?.top != null && Math.abs(container.scrollTop - held.top) > 1) pinned.current = null;
+        if (held?.top != null && Math.abs(scrolledBy(container) - held.top) > 1) pinned.current = null;
         else if (held) settle.current();
         if (!frame) frame = requestAnimationFrame(update);
       };

@@ -1,6 +1,7 @@
 import { Extension } from "@tiptap/core";
 import { Fragment, Slice, type Node as PmNode, type ResolvedPos, type Schema } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
 import { loadMarkdown } from "@/app/_utils/markdown/session";
 import { htmlToNodes } from "@/app/_utils/markdown/editor-bridge";
 
@@ -47,6 +48,10 @@ const insideCode = ($context: ResolvedPos) =>
 
 export const markdownPasteKey = new PluginKey("markdownPaste");
 
+const markdownPastes = new WeakSet<EditorView>();
+
+export const pastedMarkdown = (view: EditorView) => markdownPastes.has(view);
+
 export const MarkdownPaste = Extension.create({
   name: "markdownPaste",
 
@@ -66,9 +71,11 @@ export const MarkdownPaste = Extension.create({
             }
             return parsed ?? DEFAULT_PARSING;
           },
-          transformPasted: (slice) => {
+          transformPasted: (slice, view) => {
             const ours = parsed;
             parsed = null;
+            if (ours) markdownPastes.add(view);
+            else markdownPastes.delete(view);
             return ours ?? slice;
           },
         },

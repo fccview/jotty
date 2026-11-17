@@ -100,6 +100,7 @@ svg {
 @layer base {
   :root {
     --jotty-radius-effective: var(--jotty-radius, var(--jotty-radius-user, var(--jotty-radius-admin, 0.25rem)));
+    --jotty-modal-z: 9999;
   }
 
   * {
@@ -129,7 +130,7 @@ svg {
 
 @media (min-width: 1024px) {
   .kanban-grid {
-    grid-template-columns: repeat(var(--kanban-col-count), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--kanban-col-count), minmax(var(--kanban-col-min, 0px), 1fr));
   }
 }
 
@@ -776,7 +777,7 @@ p > code::after,
   text-shadow: none !important;
   box-shadow: none !important;
   filter: none !important;
-  font-family: "Google Sans Code Variable" !important;
+  font-family: "Google Sans Code Variable", monospace !important;
 }
 
 .code-block-container pre {
@@ -1097,7 +1098,7 @@ pre.text-foreground *,
 pre.text-foreground span,
 .font-mono textarea {
   font-family:
-    "JetBrainsMono", "Fira Code", "Monaco", "Consolas", monospace !important;
+    "Google Sans Code Variable", monospace !important;
   font-size: 14px !important;
   font-weight: normal !important;
   font-style: normal !important;
@@ -1323,16 +1324,6 @@ pre.text-foreground span,
   }
 }
 
-@keyframes jotty-pulse-connected {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 @keyframes jotty-draw {
   0% {
     stroke-dashoffset: 1;
@@ -1385,7 +1376,7 @@ pre.text-foreground span,
 .markdown-code-editor,
 .markdown-code-editor * {
   font-family:
-    Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace !important;
+    "Google Sans Code Variable", monospace !important;
   font-size: 14px !important;
   line-height: 21px !important;
 }
@@ -1395,7 +1386,7 @@ pre.text-foreground span,
 }
 
 .markdown-line-numbers {
-  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-family: "Google Sans Code Variable", monospace;
   font-size: 14px;
   line-height: 21px;
 }
@@ -1405,7 +1396,7 @@ pre.text-foreground span,
   visibility: hidden;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-family: "Google Sans Code Variable", monospace;
   font-size: 14px;
   line-height: 21px;
 }
@@ -1515,4 +1506,12 @@ pre.text-foreground span,
 
 .jotty-home-hero {
   background-color: color-mix(in oklab, rgb(var(--primary)) 78%, black);
+}
+
+body > .excalidraw-modal-container {
+  --zIndex-modal: calc(var(--jotty-modal-z) + 1);
+}
+
+body > .excalidraw-tooltip {
+  --zIndex-popup: calc(var(--jotty-modal-z) + 2);
 }

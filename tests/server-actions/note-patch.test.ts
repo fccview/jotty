@@ -102,7 +102,11 @@ describe("patchNoteListing", () => {
   it("gives up when the note's uuid changed under it", async () => {
     const aPath = put("Work/a.md", note(A, "Alpha"));
     const listing = await readNotesRecursively(dir, "alice", OPTIONS);
+    const before = nodeFs.statSync(aPath);
     nodeFs.writeFileSync(aPath, note(B, "Alpha"));
+    const real = mockFs.stat.getMockImplementation()!;
+    mockFs.stat.mockImplementation(((target: string) =>
+      target === aPath ? Promise.resolve(before) : real(target)) as never);
 
     expect(await patchNoteListing(dir, "alice", OPTIONS)([aPath], listing)).toBeNull();
   });
