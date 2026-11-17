@@ -308,3 +308,45 @@ describe("note frontmatter preservation", () => {
     });
   });
 });
+
+describe("body content that only looks like frontmatter", () => {
+  const RULED_BODY = "---\n\nNote: buy milk\n\n---\n\nrest of note";
+
+  it("keeps a key-like line between two horizontal rules in the body", () => {
+    const { metadata, contentWithoutMetadata } = extractYamlMetadata(RULED_BODY);
+    expect(metadata).toEqual({});
+    expect(contentWithoutMetadata).toBe(RULED_BODY);
+  });
+
+  it("keeps a plain paragraph between two horizontal rules in the body", () => {
+    const body = "---\n\nJust a paragraph\n\n---\n\nrest";
+    const { metadata, contentWithoutMetadata } = extractYamlMetadata(body);
+    expect(metadata).toEqual({});
+    expect(contentWithoutMetadata).toBe(body);
+  });
+
+  it("keeps two consecutive horizontal rules", () => {
+    const body = "---\n\n---\n\ntext";
+    expect(extractYamlMetadata(body).contentWithoutMetadata).toBe(body);
+  });
+
+  it("does not move ruled body text into the frontmatter on save", () => {
+    const stored = `---\nuuid: ruled-note\ntitle: Ruled\n---\n${RULED_BODY}`;
+    const body = extractYamlMetadata(stored).contentWithoutMetadata;
+    expect(body).toBe(RULED_BODY);
+    expect(strayMeta(extractYamlMetadata(body).metadata)).toBeUndefined();
+  });
+
+  it("still reads a frontmatter block that opens with a blank line when it holds Jotty keys", () => {
+    const { metadata, contentWithoutMetadata } = extractYamlMetadata(
+      "---\n\nuuid: loose-note\ntitle: Loose\n---\nBody",
+    );
+    expect(metadata).toEqual({ uuid: "loose-note", title: "Loose" });
+    expect(contentWithoutMetadata).toBe("Body");
+  });
+
+  it("ignores a block that is not a YAML mapping", () => {
+    const body = "---\n- one\n- two\n---\ntext";
+    expect(extractYamlMetadata(body)).toEqual({ metadata: {}, contentWithoutMetadata: body });
+  });
+});

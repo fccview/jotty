@@ -140,4 +140,18 @@ describe("grepExtractExcerpt - sed portability", () => {
 
     expect(excerpt).toContain("No frontmatter here, just text.");
   });
+
+  it("keeps text between horizontal rules in the body", async () => {
+    const file = notePath("excerpt-rules.md");
+    writeFileSync(
+      file,
+      ["---", "uuid: excerpt-rules", "---", "---", "", "Note: buy milk", "", "---", "", "rest of note", ""].join("\n"),
+    );
+
+    const excerpt = await grepExtractExcerpt(file, 200);
+
+    expect(excerpt).toContain("Note: buy milk");
+    expect(excerpt).toContain("rest of note");
+    expect(excerpt).not.toContain("excerpt-rules");
+  });
 });

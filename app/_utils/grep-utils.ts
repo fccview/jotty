@@ -574,7 +574,7 @@ export const grepExtractExcerpt = async (
   try {
     const cap = length + EXCERPT_BUFFER;
     const stdout = await boxedShell(
-      `sed '1{/^---$/!{p;d;};}; /^---$/,/^---$/d' "$1" 2>/dev/null | head -c "$2" || true`,
+      `awk 'NR==1&&$0=="---"{fm=1;next} fm{if($0=="---")fm=0;next} {print}' "$1" 2>/dev/null | head -c "$2" || true`,
       [filePath, String(cap)],
     );
     return fullCodeBlock(stdout, length);
