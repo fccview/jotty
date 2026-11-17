@@ -8,9 +8,9 @@ import { checkAndRefreshRecurringItems } from "@/app/_server/actions/checklist/p
 import { canReach } from "@/app/_server/actions/share/queries";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { itemLane, runQueued } from "@/app/_server/actions/lib/concurrency";
-import { rollDueItems, shouldRefreshRecurringItem } from "@/app/_utils/recurrence-utils";
+import { hasDueRecurringItem, rollDueItems } from "@/app/_utils/recurrence-utils";
 
-const _isDue = (list: Checklist) => list.items.some(shouldRefreshRecurringItem);
+const _isDue = (list: Checklist) => hasDueRecurringItem(list.items);
 
 const FILE_FIELDS = [
   "title",
@@ -25,7 +25,7 @@ const FILE_FIELDS = [
   "updatedAt",
 ] as const satisfies readonly (keyof Checklist)[];
 
-const _rolledView = (list: Checklist): Checklist => ({ ...list, items: rollDueItems(list.items) });
+const _rolledView = (list: Checklist): Checklist => ({ ...list, items: rollDueItems(list.items, list.statuses) });
 
 const _fromFile = (list: Checklist, stored: Checklist): Checklist => ({
   ...list,

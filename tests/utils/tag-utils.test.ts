@@ -569,4 +569,12 @@ describe("Tag Utils", () => {
       expect(children).toEqual([]);
     });
   });
+
+  describe("code inside HTML blocks", () => {
+    it("skips hashtags in a pre block that has a blank line inside an HTML block", () => {
+      const tags = extractHashtagsFromContent("<div>\n<pre>\n\n#hidden\n</pre>\n</div>\n\n#real");
+      expect(tags).toContain("real");
+      expect(tags).not.toContain("hidden");
+    });
+  });
 });

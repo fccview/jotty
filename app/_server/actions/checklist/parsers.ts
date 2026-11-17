@@ -15,7 +15,7 @@ export const checkAndRefreshRecurringItems = async (
   checklist: Checklist,
   filePath: string,
 ): Promise<{ checklist: Checklist; hasChanges: boolean }> => {
-  const updatedItems = rollDueItems(checklist.items);
+  const updatedItems = rollDueItems(checklist.items, checklist.statuses);
   const hasChanges = updatedItems.some((item, index) => item !== checklist.items[index]);
 
   if (!hasChanges) {

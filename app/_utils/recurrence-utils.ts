@@ -1,6 +1,7 @@
 import { ByWeekday, Frequency, Options, RRule, Weekday } from "rrule";
-import { RecurrenceRule, Item } from "@/app/_types";
+import { RecurrenceRule, Item, KanbanStatus } from "@/app/_types";
 import { TaskStatus } from "../_types/enums";
+import { firstColumn } from "@/app/_consts/kanban";
 
 /**
  * Convert ISO 8601 date string to RFC 5545 compact format
@@ -238,23 +239,26 @@ export const shouldRefreshRecurringItem = (item: Item): boolean => {
  * @param children - Array of child items to reset
  * @returns Array of reset children, or undefined if no children
  */
-const resetChildren = (children?: Item[]): Item[] | undefined => {
+const resetChildren = (children: Item[] | undefined, resetStatus: string): Item[] | undefined => {
   if (!children || children.length === 0) return children;
 
   return children.map(child => ({
     ...child,
     completed: false,
-    status: child.status ? TaskStatus.TODO : undefined,
-    children: resetChildren(child.children),
+    status: child.status ? resetStatus : undefined,
+    children: resetChildren(child.children, resetStatus),
   }));
 };
+
+const _isPast = (iso: string | undefined, now: Date): boolean =>
+  Boolean(iso) && new Date(iso!) <= now;
 
 /**
  * Refresh a recurring item by creating a new instance
  * @param item - The completed recurring item
  * @returns Updated item with new nextDue date and uncompleted status
  */
-export const refreshRecurringItem = (item: Item): Item => {
+export const refreshRecurringItem = (item: Item, resetStatus: string = firstColumn()): Item => {
   if (!item.recurrence) {
     return item;
   }
@@ -268,26 +272,17 @@ export const refreshRecurringItem = (item: Item): Item => {
     item.recurrence.until
   );
   if (!settled) return item;
-  if (!nextDue) return { ...item, recurrence: { ...item.recurrence, nextDue: undefined } };
-
-  if (item?.status !== TaskStatus.PAUSED) {
-    return {
-      ...item,
-      completed: false,
-      status: item.status ? TaskStatus.TODO : undefined,
-      children: resetChildren(item.children),
-      recurrence: {
-        ...item.recurrence,
-        nextDue,
-        lastCompleted: now.toISOString(),
-      },
-    };
+  if (!nextDue && !_isPast(item.recurrence.nextDue, now)) {
+    return { ...item, recurrence: { ...item.recurrence, nextDue: undefined } };
   }
+
+  const keepsStatus = !item.status || item.status === TaskStatus.PAUSED;
 
   return {
     ...item,
     completed: false,
-    children: resetChildren(item.children),
+    status: keepsStatus ? item.status : resetStatus,
+    children: resetChildren(item.children, resetStatus),
     recurrence: {
       ...item.recurrence,
       nextDue,
@@ -296,8 +291,21 @@ export const refreshRecurringItem = (item: Item): Item => {
   };
 };
 
-export const rollDueItems = (items: Item[]): Item[] =>
-  items.map((item) => (shouldRefreshRecurringItem(item) ? refreshRecurringItem(item) : item));
+export const hasDueRecurringItem = (items: Item[]): boolean =>
+  items.some((item) => shouldRefreshRecurringItem(item) || hasDueRecurringItem(item.children ?? []));
+
+const _rollTree = (items: Item[], resetStatus: string): Item[] =>
+  items.map((item) => {
+    const rolled = shouldRefreshRecurringItem(item) ? refreshRecurringItem(item, resetStatus) : item;
+    const original = rolled.children;
+    if (!original?.length) return rolled;
+
+    const children = _rollTree(original, resetStatus);
+    return children.some((child, index) => child !== original[index]) ? { ...rolled, children } : rolled;
+  });
+
+export const rollDueItems = (items: Item[], statuses?: KanbanStatus[]): Item[] =>
+  _rollTree(items, firstColumn(statuses));
 
 /**
  * Get human-readable description of a recurrence rule
@@ -441,7 +449,7 @@ export const ruleFrom = (input: RecurrenceInput): RecurrenceRule | undefined => 
   const until = input.until ? new Date(input.until).toISOString() : undefined;
 
   const { next: nextDue, settled } = _nextOccurrence(rrule, dtstart, undefined, until);
-  if (!settled) return undefined;
+  if (!settled || !nextDue) return undefined;
 
   return {
     rrule,

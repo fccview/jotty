@@ -81,6 +81,11 @@ describe("recurrence input from the REST API", () => {
     expect(rule?.nextDue).toBeDefined();
   });
 
+  it("refuses a series that never has an occurrence", () => {
+    expect(ruleFrom({ rrule: "FREQ=DAILY", dtstart: "2030-01-01T09:00:00Z", until: "2029-12-31T00:00:00Z" })).toBeUndefined();
+    expect(ruleFrom({ rrule: "FREQ=DAILY;COUNT=1", dtstart: "2020-01-01T09:00:00Z" })).toBeUndefined();
+  });
+
   it("leaves until out when the series never stops", () => {
     expect(ruleFrom({ rrule: "FREQ=MONTHLY", dtstart: "2030-01-07T09:00:00Z" })).not.toHaveProperty("until");
   });

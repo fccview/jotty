@@ -146,18 +146,17 @@ export const useNoteEditor = ({
     const { contentWithoutMetadata } = extractYamlMetadata(note.content || "");
 
     const sameNote = previous !== note && previous.uuid === note.uuid;
-    if (sameNote && extractYamlMetadata(previous.content || "").contentWithoutMetadata === contentWithoutMetadata) {
-      if (previous.title !== note.title) setTitle((typed) => (typed === previous.title ? note.title : typed));
-      if (previous.category !== note.category) {
-        const before = previous.category || UNCATEGORIZED;
-        const after = note.category || UNCATEGORIZED;
-        setCategory((picked) => (picked === before ? after : picked));
-      }
-      return;
+    if (sameNote) {
+      const before = previous.category || UNCATEGORIZED;
+      const after = note.category || UNCATEGORIZED;
+      setTitle((typed) => (typed === previous.title ? note.title : typed));
+      setCategory((picked) => (picked === before ? after : picked));
+      if (extractYamlMetadata(previous.content || "").contentWithoutMetadata === contentWithoutMetadata) return;
+    } else {
+      setTitle(note.title);
+      setCategory(note.category || UNCATEGORIZED);
     }
 
-    setTitle(note.title);
-    setCategory(note.category || UNCATEGORIZED);
     setContentIsDirty(false);
     setEditorContent(contentWithoutMetadata);
     setIsMarkdownMode(Boolean(note.encrypted) || isMinimalMode || defaultEditorIsMarkdown);

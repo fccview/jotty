@@ -120,6 +120,7 @@ const _unwrapped = (lead: string, name: string) => {
 };
 
 const FENCED_CODE = /```[\s\S]*?```/g;
+const CODE_ELEMENTS = /<pre[^>]*>[\s\S]*?<\/pre>|<code[^>]*>[\s\S]*?<\/code>/gi;
 const HTML_BLOCK_NAMES =
   "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul";
 const HTML_BLOCK_START = new RegExp(String.raw`^ {0,3}<\/?(?:${HTML_BLOCK_NAMES})(?:\s|\/?>|$)`, "i");
@@ -156,8 +157,8 @@ export const extractHashtagsFromContent = (content: string): string[] => {
 
   const codeBlockRegex =
     /```[\s\S]*?```|`[^`]+`|<code[^>]*>[\s\S]*?<\/code>|<pre[^>]*>[\s\S]*?<\/pre>|<!--[\s\S]*?-->|<[a-zA-Z\/][^>]*>/gi;
-  const withoutFences = content.replace(FENCED_CODE, " ");
-  const prose = isLegacyHtml(content) ? withoutFences : _withoutHtmlBlocks(withoutFences);
+  const withoutCode = content.replace(FENCED_CODE, " ").replace(CODE_ELEMENTS, " ");
+  const prose = isLegacyHtml(content) ? withoutCode : _withoutHtmlBlocks(withoutCode);
   const contentWithoutCode = prose.replace(codeBlockRegex, " ");
 
   const closes = _closerFinder(contentWithoutCode);

@@ -63,6 +63,7 @@ vi.mock("@/app/_utils/filename-utils", () => ({
 }));
 
 vi.mock("@/app/_utils/yaml-metadata-utils", () => ({
+  JOTTY_META_KEYS: ["uuid", "title", "tags"],
   generateUuid: vi.fn().mockReturnValue("test-uuid-123"),
   generateYamlFrontmatter: vi
     .fn()

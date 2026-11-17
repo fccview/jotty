@@ -4,6 +4,7 @@ import { TaskStatus } from "@/app/_types/enums";
 import { RRule } from "rrule";
 import {
   calculateNextOccurrence,
+  hasDueRecurringItem,
   isoToRFC5545,
   refreshRecurringItem,
   rollDueItems,
@@ -70,6 +71,36 @@ describe("rolling an item", () => {
     expect(refreshRecurringItem(item({ status: TaskStatus.COMPLETED, completed: true })).status).toBe(TaskStatus.TODO);
   });
 
+  it("sends a completed card and its subtasks back to the board's first column", () => {
+    const statuses = [
+      { id: "backlog", label: "Backlog", order: 0 },
+      { id: "shipped", label: "Shipped", order: 1, autoComplete: true },
+    ];
+    const subtask = item({ id: "sub", status: "shipped", completed: true, recurrence: undefined });
+    const [rolled] = rollDueItems([item({ status: "shipped", completed: true, children: [subtask] })], statuses);
+
+    expect(rolled.status).toBe("backlog");
+    expect(rolled.children?.[0].status).toBe("backlog");
+    expect(rolled.children?.[0].completed).toBe(false);
+  });
+
+  it("keeps a paused card paused when it rolls", () => {
+    expect(refreshRecurringItem(item({ status: TaskStatus.PAUSED, completed: true })).status).toBe(TaskStatus.PAUSED);
+  });
+
+  it("rolls a due recurring item nested under a parent that is not due", () => {
+    const child = item({ id: "child", completed: true });
+    const parent = item({ id: "parent", recurrence: undefined, children: [child] });
+    const untouched = item({ id: "plain", recurrence: undefined });
+
+    expect(hasDueRecurringItem([parent])).toBe(true);
+    const [rolledParent, same] = rollDueItems([parent, untouched]);
+
+    expect(rolledParent).not.toBe(parent);
+    expect(rolledParent.children?.[0].completed).toBe(false);
+    expect(same).toBe(untouched);
+  });
+
   it("only touches the items that are due", () => {
     const waiting = item({ id: "waiting" });
     const due = item({ id: "due", completed: true });
@@ -131,13 +162,32 @@ describe("rolling a series it can't work out", () => {
     expect(refreshRecurringItem(unreadable)).toBe(unreadable);
   });
 
-  it("keeps a finished series completed and stops treating it as due", () => {
+  it("opens the last occurrence once, then keeps the finished series completed", () => {
     const once = item({ completed: true, recurrence: { ...weekly(PAST), rrule: "FREQ=DAILY;COUNT=1" } });
-    const finished = refreshRecurringItem(once);
+    const last = refreshRecurringItem(once);
 
-    expect(finished.completed).toBe(true);
-    expect(finished.recurrence?.nextDue).toBeUndefined();
+    expect(last.completed).toBe(false);
+    expect(last.recurrence?.nextDue).toBeUndefined();
+
+    const finished = { ...last, completed: true };
     expect(shouldRefreshRecurringItem(finished)).toBe(false);
+    expect(rollDueItems([finished])[0]).toBe(finished);
+  });
+
+  it("opens the second occurrence of a two-day series once it is due", () => {
+    const twoDays = { rrule: "FREQ=DAILY;COUNT=2", dtstart: "2020-01-06T09:00:00.000Z", nextDue: "2020-01-07T09:00:00.000Z" };
+    const [second] = rollDueItems([item({ completed: true, recurrence: twoDays })]);
+
+    expect(second.completed).toBe(false);
+    expect(second.recurrence?.nextDue).toBeUndefined();
+  });
+
+  it("clears nextDue without reopening when the stored occurrence is not due yet", () => {
+    const later = item({ completed: true, recurrence: { ...weekly(FUTURE), rrule: "FREQ=DAILY;COUNT=1" } });
+    const kept = refreshRecurringItem(later);
+
+    expect(kept.completed).toBe(true);
+    expect(kept.recurrence?.nextDue).toBeUndefined();
   });
 
   it("never tries to roll a stored rule that could hang the search", () => {
