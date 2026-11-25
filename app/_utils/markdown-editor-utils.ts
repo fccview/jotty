@@ -403,10 +403,10 @@ export const insertOrderedList = (textarea: HTMLTextAreaElement): string =>
   });
 
 export const insertTaskList = (textarea: HTMLTextAreaElement): string =>
-  processLineSelection(textarea, /^-\s\[[ x]\]\s/, (line, _, allMatch) => {
+  processLineSelection(textarea, /^-\s\[[ xX]\]\s/, (line, _, allMatch) => {
     if (line.trim() === "") return line;
-    if (allMatch) return line.replace(/^-\s\[[ x]\]\s/, "");
-    const clean = line.replace(/^-\s(\[[ x]\]\s)?/, "");
+    if (allMatch) return line.replace(/^-\s\[[ xX]\]\s/, "");
+    const clean = line.replace(/^-\s(\[[ xX]\]\s)?/, "");
     return `- [ ] ${clean}`;
   });
 
