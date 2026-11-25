@@ -111,7 +111,7 @@ The manifest controls how jotty·page looks when someone installs it as an app: 
 }
 ```
 
-3. Save the file and refresh your PWA. jotty·page reads the file on every request, so there's nothing to restart.
+3. Save the file and refresh your PWA. jotty·page reads the file on every request, so there's nothing to restart. Browsers may keep the previous manifest for up to an hour because the manifest response is cached, so an edit can take a while to show up. If a shared cache sits in front of your instance you may need to invalidate it there too.
 
 If this file exists, jotty·page serves it as is and ignores the app name, description and icons set in the admin settings. If the file isn't valid JSON, jotty·page ignores it and serves its own manifest instead.
 

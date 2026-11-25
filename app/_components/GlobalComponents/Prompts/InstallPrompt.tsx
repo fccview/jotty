@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Download01Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
 import { useTranslations } from "next-intl";
@@ -19,8 +19,6 @@ type InstallPromptEvent = Event & {
   userChoice: Promise<InstallChoice>;
 };
 
-const AUTO_PROMPT_DELAY = 30000;
-
 export const InstallPrompt = () => {
   const t = useTranslations();
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(
@@ -29,8 +27,6 @@ export const InstallPrompt = () => {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isFirefox, setIsFirefox] = useState(false);
-  const promptRef = useRef<InstallPromptEvent | null>(null);
-  const autoPromptTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -40,10 +36,13 @@ export const InstallPrompt = () => {
     const installedByIos =
       (window.navigator as Navigator & { standalone?: boolean }).standalone ===
       true;
-    const installedByFlag =
-      localStorage.getItem(PWA_INSTALLED_KEY) === "true";
 
-    if (installedByDisplay || installedByIos || installedByFlag) {
+    if (installedByDisplay || installedByIos) {
+      setIsInstalled(true);
+      return;
+    }
+
+    if (localStorage.getItem(PWA_INSTALLED_KEY) === "true") {
       setIsInstalled(true);
       return;
     }
@@ -61,32 +60,14 @@ export const InstallPrompt = () => {
     const markInstalled = () => {
       setIsInstalled(true);
       localStorage.setItem(PWA_INSTALLED_KEY, "true");
-      promptRef.current = null;
       setPromptEvent(null);
       setShowInstallPrompt(false);
     };
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      const installEvent = e as InstallPromptEvent;
-      promptRef.current = installEvent;
-      setPromptEvent(installEvent);
+      setPromptEvent(e as InstallPromptEvent);
       setShowInstallPrompt(true);
-
-      autoPromptTimeoutRef.current = setTimeout(() => {
-        const pending = promptRef.current;
-        if (!pending) return;
-        pending.prompt();
-        pending.userChoice.then((choice) => {
-          if (choice.outcome === "accepted") {
-            markInstalled();
-          } else {
-            promptRef.current = null;
-            setPromptEvent(null);
-            setShowInstallPrompt(false);
-          }
-        });
-      }, AUTO_PROMPT_DELAY);
     };
 
     const handleAppInstalled = () => {
@@ -102,20 +83,10 @@ export const InstallPrompt = () => {
         handleBeforeInstallPrompt,
       );
       window.removeEventListener("appinstalled", handleAppInstalled);
-
-      if (autoPromptTimeoutRef.current) {
-        clearTimeout(autoPromptTimeoutRef.current);
-        autoPromptTimeoutRef.current = null;
-      }
     };
   }, []);
 
   const handleInstallClick = async () => {
-    if (autoPromptTimeoutRef.current) {
-      clearTimeout(autoPromptTimeoutRef.current);
-      autoPromptTimeoutRef.current = null;
-    }
-
     if (isFirefox) return;
 
     if (promptEvent) {
@@ -127,7 +98,6 @@ export const InstallPrompt = () => {
         localStorage.setItem(PWA_INSTALLED_KEY, "true");
       }
 
-      promptRef.current = null;
       setPromptEvent(null);
     }
 
@@ -135,11 +105,6 @@ export const InstallPrompt = () => {
   };
 
   const handleDismiss = () => {
-    if (autoPromptTimeoutRef.current) {
-      clearTimeout(autoPromptTimeoutRef.current);
-      autoPromptTimeoutRef.current = null;
-    }
-
     setShowInstallPrompt(false);
     localStorage.setItem(PWA_DISMISSED_KEY, "true");
   };
