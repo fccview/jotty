@@ -5,43 +5,63 @@ import path from "path";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const manifestHeaders = {
+    "Content-Type": "application/manifest+json",
+    "Cache-Control": "public, max-age=3600",
+  };
+
   const overrideManifest = await readJsonFile(
     path.join("config", "site.webmanifest")
   );
 
   if (overrideManifest !== null) {
-    return NextResponse.json(overrideManifest);
+    return NextResponse.json(overrideManifest, { headers: manifestHeaders });
   }
 
   const manifest = await readJsonFile(path.join("data", "site.webmanifest"));
 
   if (manifest !== null) {
-    return NextResponse.json(manifest);
+    return NextResponse.json(manifest, { headers: manifestHeaders });
   }
 
   return NextResponse.json(
     {
+      id: "/",
       name: "jotty·page",
       short_name: "jotty·page",
       description:
         "A simple, fast, and lightweight checklist and notes application",
       start_url: "/",
+      scope: "/",
       display: "standalone",
       background_color: "#f0fdfa",
       theme_color: "#f0fdfa",
-      orientation: "portrait-primary",
+      orientation: "any",
+      categories: ["productivity", "utilities"],
       icons: [
         {
           src: "/app-icons/android-chrome-192x192.png",
           sizes: "192x192",
           type: "image/png",
-          purpose: "any maskable",
+          purpose: "any",
+        },
+        {
+          src: "/app-icons/android-chrome-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
+          purpose: "maskable",
         },
         {
           src: "/app-icons/android-chrome-512x512.png",
           sizes: "512x512",
           type: "image/png",
-          purpose: "any maskable",
+          purpose: "any",
+        },
+        {
+          src: "/app-icons/android-chrome-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable",
         },
         {
           src: "/app-icons/favicon-16x16.png",
@@ -61,6 +81,6 @@ export async function GET() {
       ],
       version: "1762164104517",
     },
-    { status: 200 }
+    { status: 200, headers: manifestHeaders }
   );
 }

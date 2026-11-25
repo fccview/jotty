@@ -83,7 +83,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
     settings?.["192x192Icon"] || "/app-icons/android-chrome-192x192.png";
 
   const themeColor = getThemeBackgroundColor(
-    serverThemeId(settings?.isRwMarkable, user?.preferredTheme),
+    serverThemeId(settings?.isRwMarkable),
   );
 
   const manifest = JSON.parse(

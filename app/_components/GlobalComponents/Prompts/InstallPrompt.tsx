@@ -3,71 +3,94 @@
 import { useState, useEffect, useRef } from "react";
 import { Download01Icon, MultiplicationSignIcon } from "hugeicons-react";
 import { Button } from "@/app/_components/GlobalComponents/Buttons/Button";
-import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { useTranslations } from "next-intl";
+import {
+  PWA_DISMISSED_KEY,
+  PWA_INSTALLED_KEY,
+  isFirefoxAndroid,
+} from "@/app/_utils/pwa-utils";
+
+type InstallChoice = {
+  outcome: string;
+};
+
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<InstallChoice>;
+};
+
+const AUTO_PROMPT_DELAY = 30000;
 
 export const InstallPrompt = () => {
   const t = useTranslations();
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(
+    null,
+  );
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const { isRwMarkable } = useAppMode();
+  const [isFirefox, setIsFirefox] = useState(false);
+  const promptRef = useRef<InstallPromptEvent | null>(null);
   const autoPromptTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const checkIfInstalled = () => {
-      if (window.matchMedia("(display-mode: standalone)").matches) {
-        return true;
-      }
+    const installedByDisplay =
+      window.matchMedia("(display-mode: standalone)").matches;
+    const installedByIos =
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+      true;
+    const installedByFlag =
+      localStorage.getItem(PWA_INSTALLED_KEY) === "true";
 
-      if ((window.navigator as any).standalone === true) {
-        return true;
-      }
-
-      const wasInstalled = localStorage.getItem("pwa-installed") === "true";
-      if (wasInstalled) {
-        return true;
-      }
-
-      return false;
-    };
-
-    if (checkIfInstalled()) {
+    if (installedByDisplay || installedByIos || installedByFlag) {
       setIsInstalled(true);
       return;
     }
 
-    const dismissed = localStorage.getItem("pwa-prompt-dismissed");
-    if (dismissed) {
+    if (localStorage.getItem(PWA_DISMISSED_KEY)) {
       return;
     }
 
-    const handleAppInstalled = () => {
+    if (isFirefoxAndroid()) {
+      setIsFirefox(true);
+      setShowInstallPrompt(true);
+      return;
+    }
+
+    const markInstalled = () => {
       setIsInstalled(true);
-      localStorage.setItem("pwa-installed", "true");
-      setDeferredPrompt(null);
+      localStorage.setItem(PWA_INSTALLED_KEY, "true");
+      promptRef.current = null;
+      setPromptEvent(null);
       setShowInstallPrompt(false);
     };
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      const installEvent = e as InstallPromptEvent;
+      promptRef.current = installEvent;
+      setPromptEvent(installEvent);
       setShowInstallPrompt(true);
 
       autoPromptTimeoutRef.current = setTimeout(() => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then((choiceResult: any) => {
-            if (choiceResult.outcome === "accepted") {
-              handleAppInstalled();
-            }
-            setDeferredPrompt(null);
+        const pending = promptRef.current;
+        if (!pending) return;
+        pending.prompt();
+        pending.userChoice.then((choice) => {
+          if (choice.outcome === "accepted") {
+            markInstalled();
+          } else {
+            promptRef.current = null;
+            setPromptEvent(null);
             setShowInstallPrompt(false);
-          });
-        }
-      }, 30000);
+          }
+        });
+      }, AUTO_PROMPT_DELAY);
+    };
+
+    const handleAppInstalled = () => {
+      markInstalled();
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -76,7 +99,7 @@ export const InstallPrompt = () => {
     return () => {
       window.removeEventListener(
         "beforeinstallprompt",
-        handleBeforeInstallPrompt
+        handleBeforeInstallPrompt,
       );
       window.removeEventListener("appinstalled", handleAppInstalled);
 
@@ -93,16 +116,19 @@ export const InstallPrompt = () => {
       autoPromptTimeoutRef.current = null;
     }
 
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
+    if (isFirefox) return;
 
-      if (outcome === "accepted") {
+    if (promptEvent) {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+
+      if (choice.outcome === "accepted") {
         setIsInstalled(true);
-        localStorage.setItem("pwa-installed", "true");
+        localStorage.setItem(PWA_INSTALLED_KEY, "true");
       }
 
-      setDeferredPrompt(null);
+      promptRef.current = null;
+      setPromptEvent(null);
     }
 
     setShowInstallPrompt(false);
@@ -115,7 +141,7 @@ export const InstallPrompt = () => {
     }
 
     setShowInstallPrompt(false);
-    localStorage.setItem("pwa-prompt-dismissed", "true");
+    localStorage.setItem(PWA_DISMISSED_KEY, "true");
   };
 
   if (isInstalled || !showInstallPrompt) {
@@ -134,11 +160,22 @@ export const InstallPrompt = () => {
           </div>
           <div>
             <h3 className="font-medium text-foreground hover:underline">
-              Install {isRwMarkable ? "rwMarkable" : "jotty·page"}
+              {isFirefox
+                ? t("pwa.installPromptManualTitle")
+                : t("pwa.installPromptTitle")}
             </h3>
             <p className="text-md lg:text-sm text-muted-foreground">
-              Add to your home screen for quick access
+              {isFirefox
+                ? t("pwa.installPromptManualMessage")
+                : t("pwa.installPromptMessage")}
             </p>
+            {isFirefox && (
+              <ol className="mt-2 list-decimal list-inside text-md lg:text-sm text-muted-foreground">
+                <li>{t("pwa.installPromptManualStepOne")}</li>
+                <li>{t("pwa.installPromptManualStepTwo")}</li>
+                <li>{t("pwa.installPromptManualStepThree")}</li>
+              </ol>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">

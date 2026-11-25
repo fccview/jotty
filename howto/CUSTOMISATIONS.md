@@ -14,11 +14,29 @@ Open jotty·page over https in a browser that supports PWAs and you'll get an in
 
 No prompt? You can install it yourself.
 
-#### On mobile (iOS Safari/Chrome)
+#### On Android (Firefox)
+
+Firefox is a first-class install target. It does not use the automatic install banner.
+
+1. Open jotty·page in Firefox over `https`.
+2. Tap the **Menu** button (three dots).
+3. Pick **"Add app to home screen"**. If you only see **"Add to Home screen"**, Firefox did not recognise the manifest, usually because the page was not served over `https` or the manifest or its icons failed to load.
+4. Drag the icon into place or tap **Add automatically**.
+
+Firefox adds a Firefox-badged shortcut that opens in its standalone app view with its own recents entry. Removing Firefox removes its web apps with it.
+
+#### On Android (Chrome)
+
+1. Open jotty·page in Chrome over `https`.
+2. Tap the **Menu** button.
+3. Pick **"Add to Home screen"**, then **Install**.
+4. Confirm.
+
+#### On iOS (Safari/Chrome)
 
 1. Open jotty·page in your browser.
-2. Tap the **Share** button (iOS) or the **Menu** button (Android).
-3. Pick **"Add to Home Screen"** (iOS) or **"Add to Home screen"** (Android).
+2. Tap the **Share** button.
+3. Pick **"Add to Home Screen"**.
 4. Confirm.
 
 #### On desktop (Chrome/Edge)
@@ -44,7 +62,9 @@ The manifest controls how jotty·page looks when someone installs it as an app: 
   "name": "My Custom App Name",
   "short_name": "Custom App",
   "description": "A custom description for my PWA",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
@@ -57,13 +77,25 @@ The manifest controls how jotty·page looks when someone installs it as an app: 
       "src": "/custom-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/custom-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/custom-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/custom-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [

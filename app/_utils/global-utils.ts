@@ -114,26 +114,41 @@ export const generateWebManifest = (
   appVersion: string
 ): string => {
   return JSON.stringify({
+    id: "/",
     name: appName,
     short_name: appName,
     description: appDescription,
     start_url: "/",
+    scope: "/",
     display: "standalone",
     background_color: themeColor,
     theme_color: themeColor,
-    orientation: "portrait-primary",
+    orientation: "any",
+    categories: ["productivity", "utilities"],
     icons: [
       {
         src: app192x192Icon || "/app-icons/android-chrome-192x192.png",
         sizes: "192x192",
         type: "image/png",
-        purpose: "any maskable",
+        purpose: "any",
+      },
+      {
+        src: app192x192Icon || "/app-icons/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
       },
       {
         src: app512x512Icon || "/app-icons/android-chrome-512x512.png",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any maskable",
+        purpose: "any",
+      },
+      {
+        src: app512x512Icon || "/app-icons/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
       {
         src: app16x16Icon,

@@ -1303,6 +1303,11 @@
   "pwa": {
     "installPromptTitle": "Install App",
     "installPromptMessage": "Install Jotty on your device so it opens like an app",
+    "installPromptManualTitle": "Add Jotty to your home screen",
+    "installPromptManualMessage": "Firefox installs this app from its menu",
+    "installPromptManualStepOne": "Tap the menu (three dots)",
+    "installPromptManualStepTwo": "Tap Add app to home screen",
+    "installPromptManualStepThree": "Confirm with Add automatically",
     "installButton": "Install",
     "updateAvailable": "Update Available",
     "updateMessage": "A new version is available",
