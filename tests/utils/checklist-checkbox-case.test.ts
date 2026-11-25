@@ -18,5 +18,20 @@ describe("checklist item checked with an uppercase X", () => {
 
       expect(eggs).toMatchObject({ text: "eggs", completed: true });
     });
+
+    it(`keeps checkbox text after the marker in the ${side} parser`, () => {
+      const [item] = parse("- [ ] Find - [X] in source\n");
+
+      expect(item).toMatchObject({
+        text: "Find - [X] in source",
+        completed: false,
+      });
+    });
+
+    it(`cleans a doubled marker in the ${side} parser`, () => {
+      const [item] = parse("- [ ] - [X] eggs\n");
+
+      expect(item).toMatchObject({ text: "eggs", completed: false });
+    });
   });
 });

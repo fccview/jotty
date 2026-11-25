@@ -19,7 +19,10 @@ import {
   LIST_META_KEYS,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
-import { checklistIndentLevels } from "./client-parser-utils";
+import {
+  checklistIndentLevels,
+  LEADING_CHECKBOXES,
+} from "./client-parser-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { AGENT_SEGMENT } from "@/app/_consts/agents";
 
@@ -121,8 +124,7 @@ export const parseMarkdown = (
         const firstCheckboxMatch = itemLine.match(/-\s*\[([xX ])\]/);
         if (firstCheckboxMatch) {
           completed = firstCheckboxMatch[1] !== " ";
-          cleanLine = itemLine.replace(/-\s*\[[xX ]\]/g, "").trim();
-          cleanLine = cleanLine.replace(/\s*-\s*\[[xX ]\]/g, "").trim();
+          cleanLine = itemLine.replace(LEADING_CHECKBOXES, "").trim();
         }
 
         let text = cleanLine;

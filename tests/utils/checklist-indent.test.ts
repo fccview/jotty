@@ -55,7 +55,7 @@ describe("checklist sub-items written with other indents", () => {
 
     it(`${side}: keeps items when the first line is indented`, () => {
       const markdown = "  - [ ] a\n    - [ ] b\n  - [ ] c\n";
-      expect(shape(parse(markdown))).toEqual([["a", [["b", []], ["c", []]]]]);
+      expect(shape(parse(markdown))).toEqual([["a", [["b", []]]], ["c", []]]);
     });
 
     it(`${side}: keeps items that jump more than one level`, () => {
@@ -63,6 +63,13 @@ describe("checklist sub-items written with other indents", () => {
       expect(shape(parse(markdown))).toEqual([
         ["a", [["b", [["c", []]]]]],
         ["d", []],
+      ]);
+    });
+
+    it(`${side}: keeps equally indented items as siblings after a jump`, () => {
+      const markdown = "- [ ] a\n  - [ ] b\n        - [ ] c\n        - [ ] d\n";
+      expect(shape(parse(markdown))).toEqual([
+        ["a", [["b", [["c", []], ["d", []]]]]],
       ]);
     });
 

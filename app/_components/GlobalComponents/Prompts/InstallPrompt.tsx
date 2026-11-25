@@ -107,38 +107,49 @@ export const InstallPrompt = () => {
     return null;
   }
 
+  const installIcon = (
+    <span className="p-2 bg-primary rounded-jotty flex items-center justify-center">
+      <Download01Icon className="h-5 w-5 text-primary-foreground" />
+    </span>
+  );
+
   return (
     <div className="fixed bottom-4 left-[2vw] lg:left-auto lg:right-4 z-50 bg-background border border-border rounded-jotty shadow-lg p-4 w-[96vw] lg:w-[300px]">
       <div className="flex items-center justify-between">
-        <div
-          className={`flex items-center gap-3 ${isFirefox ? "" : "cursor-pointer"}`}
-          onClick={isFirefox ? undefined : handleInstallClick}
-        >
-          <div className="p-2 bg-primary rounded-jotty flex items-center justify-center">
-            <Download01Icon className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h3
-              className={`font-medium text-foreground ${isFirefox ? "" : "hover:underline"}`}
-            >
-              {isFirefox
-                ? t("pwa.installPromptManualTitle")
-                : t("pwa.installPromptTitle")}
-            </h3>
-            <p className="text-md lg:text-sm text-muted-foreground">
-              {isFirefox
-                ? t("pwa.installPromptManualMessage")
-                : t("pwa.installPromptMessage")}
-            </p>
-            {isFirefox && (
+        {isFirefox ? (
+          <div className="flex items-center gap-3">
+            {installIcon}
+            <div>
+              <h3 className="font-medium text-foreground">
+                {t("pwa.installPromptManualTitle")}
+              </h3>
+              <p className="text-md lg:text-sm text-muted-foreground">
+                {t("pwa.installPromptManualMessage")}
+              </p>
               <ol className="mt-2 list-decimal list-inside text-md lg:text-sm text-muted-foreground">
                 <li>{t("pwa.installPromptManualStepOne")}</li>
                 <li>{t("pwa.installPromptManualStepTwo")}</li>
                 <li>{t("pwa.installPromptManualStepThree")}</li>
               </ol>
-            )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleInstallClick}
+            className="group flex items-center gap-3 text-left cursor-pointer"
+          >
+            {installIcon}
+            <span>
+              <span className="block font-medium text-foreground group-hover:underline">
+                {t("pwa.installPromptTitle")}
+              </span>
+              <span className="block text-md lg:text-sm text-muted-foreground">
+                {t("pwa.installPromptMessage")}
+              </span>
+            </span>
+          </button>
+        )}
         <div className="flex items-center gap-2">
           <Button
             onClick={handleDismiss}

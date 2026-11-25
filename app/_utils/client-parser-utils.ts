@@ -23,6 +23,7 @@ import { titleOf } from "./title-utils";
 const TAB_AS_SPACES = "    ";
 const INDENT_UNIT = 2;
 const MAX_LEGACY_INDENT = 3;
+export const LEADING_CHECKBOXES = /^\s*(?:-\s*\[[xX ]\]\s*)+/;
 
 const indentWidth = (line: string): number =>
   (line.match(/^\s*/)?.[0] ?? "").replace(/\t/g, TAB_AS_SPACES).length;
@@ -34,10 +35,13 @@ export const checklistIndentLevels = (lines: string[]): number[] => {
   const widths = lines.map(indentWidth);
   const smallest = smallestIndent(widths);
   const unit = smallest > MAX_LEGACY_INDENT ? smallest : INDENT_UNIT;
-  let previous = -1;
+  const stack: { step: number; level: number }[] = [];
   return widths.map((width) => {
-    previous = Math.min(Math.floor(width / unit), previous + 1);
-    return previous;
+    const step = Math.floor(width / unit);
+    while (stack.length && stack[stack.length - 1].step >= step) stack.pop();
+    const level = stack.length ? stack[stack.length - 1].level + 1 : 0;
+    stack.push({ step, level });
+    return level;
   });
 };
 
@@ -121,8 +125,7 @@ export const parseChecklistContent = (
         const firstCheckboxMatch = itemLine.match(/-\s*\[([xX ])\]/);
         if (firstCheckboxMatch) {
           completed = firstCheckboxMatch[1] !== " ";
-          cleanLine = itemLine.replace(/-\s*\[[xX ]\]/g, "").trim();
-          cleanLine = cleanLine.replace(/\s*-\s*\[[xX ]\]/g, "").trim();
+          cleanLine = itemLine.replace(LEADING_CHECKBOXES, "").trim();
         }
 
         let text = cleanLine;
