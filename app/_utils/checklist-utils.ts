@@ -19,6 +19,10 @@ import {
   LIST_META_KEYS,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
+import {
+  checklistIndentLevels,
+  LEADING_CHECKBOXES,
+} from "./client-parser-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { AGENT_SEGMENT } from "@/app/_consts/agents";
 
@@ -67,6 +71,7 @@ export const parseMarkdown = (
   const itemLines = lines.filter(
     (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line),
   );
+  const indentLevels = checklistIndentLevels(itemLines);
 
   let globalItemCounter = 0;
   const generateItemId = (level: number): string => {
@@ -110,20 +115,16 @@ export const parseMarkdown = (
         break;
       }
 
-      const indentMatch = itemLine.match(/^(\s*)- \[/);
-      const indentLevel = indentMatch
-        ? Math.floor(indentMatch[1].length / 2)
-        : 0;
+      const indentLevel = indentLevels[currentIndex];
 
       if (indentLevel === parentLevel) {
         let cleanLine = itemLine;
         let completed = false;
 
-        const firstCheckboxMatch = itemLine.match(/-\s*\[([x ])\]/);
+        const firstCheckboxMatch = itemLine.match(/-\s*\[([xX ])\]/);
         if (firstCheckboxMatch) {
-          completed = firstCheckboxMatch[1] === "x";
-          cleanLine = itemLine.replace(/-\s*\[[x ]\]/g, "").trim();
-          cleanLine = cleanLine.replace(/\s*-\s*\[[x ]\]/g, "").trim();
+          completed = firstCheckboxMatch[1] !== " ";
+          cleanLine = itemLine.replace(LEADING_CHECKBOXES, "").trim();
         }
 
         let text = cleanLine;

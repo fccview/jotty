@@ -9,12 +9,15 @@ jobs:
     name: Validate Target Branch
     runs-on: ubuntu-latest
     steps:
+      # Branch names come from the PR author, so they reach the shell as environment variables, never as script text.
       - name: YOU SHALL NOT PASS
         if: github.base_ref == 'main'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [ "${{ github.head_ref }}" != "develop" ]; then
+          if [ "$HEAD_REF" != "develop" ]; then
             echo "ERROR: Pull requests to 'main' are not allowed."
-            echo "Current source branch: ${{ github.head_ref }}"
+            echo "Current source branch: $HEAD_REF"
             echo ""
             echo "Please create a PR to 'develop' first, this will become a release candidate when merged into 'main' by a maintainer"
             exit 1
@@ -22,10 +25,13 @@ jobs:
           echo "Valid PR: develop → main"
 
       - name: PR info
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
           echo "PR validation passed"
-          echo "Source: ${{ github.head_ref }}"
-          echo "Target: ${{ github.base_ref }}"
+          echo "Source: $HEAD_REF"
+          echo "Target: $BASE_REF"
 
   tests:
     name: Tests now - BOOORING

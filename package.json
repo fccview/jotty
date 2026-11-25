@@ -1,6 +1,6 @@
 {
   "name": "jotty.page",
-  "version": "1.30.0",
+  "version": "1.31.0-beta.1",
   "private": true,
   "engines": {
     "node": ">=24.0.0"
@@ -76,7 +76,7 @@
     "libsodium-wrappers-sumo": "0.7.15",
     "mdast-util-find-and-replace": "3.0.2",
     "mermaid": "11.17.2",
-    "next": "16.4.1",
+    "next": "16.4.6",
     "next-intl": "4.9.2",
     "next-themes": "0.2.1",
     "openpgp": "6.3.0",
@@ -176,7 +176,7 @@
     "@vitest/coverage-v8": "4.1.12",
     "autoprefixer": "10.0.1",
     "eslint": "9",
-    "eslint-config-next": "16.4.1",
+    "eslint-config-next": "16.4.6",
     "postcss": "8.5.26",
     "serwist": "9.5.4",
     "tailwindcss": "3.3.0",

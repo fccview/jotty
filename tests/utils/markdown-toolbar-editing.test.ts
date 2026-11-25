@@ -3,6 +3,7 @@ import {
   insertBulletList,
   insertCodeBlock,
   insertOrderedList,
+  insertTaskList,
   insertHeading,
   insertMermaid,
   markdownFormatsAt,
@@ -65,6 +66,14 @@ describe("markdown toolbar list toggles", () => {
     ["a\n|b", "a\n1. |b"],
   ])("ordered toggles %j to %j", (input, expected) => {
     expect(apply(input, insertOrderedList)).toBe(expected);
+  });
+
+  it.each([
+    ["it|em", "- [ ] it|em"],
+    ["- [x] it|em", "it|em"],
+    ["- [X] it|em", "it|em"],
+  ])("task toggles %j to %j", (input, expected) => {
+    expect(apply(input, insertTaskList)).toBe(expected);
   });
 
   it("toggles a heading without moving the caret off its word", () => {

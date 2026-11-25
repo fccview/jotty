@@ -20,6 +20,31 @@ import {
 } from "./yaml-metadata-utils";
 import { titleOf } from "./title-utils";
 
+const TAB_AS_SPACES = "    ";
+const INDENT_UNIT = 2;
+const MAX_LEGACY_INDENT = 3;
+export const LEADING_CHECKBOXES = /^\s*(?:-\s*\[[xX ]\]\s*)+/;
+
+const indentWidth = (line: string): number =>
+  (line.match(/^\s*/)?.[0] ?? "").replace(/\t/g, TAB_AS_SPACES).length;
+
+const smallestIndent = (widths: number[]): number =>
+  widths.reduce((min, w) => (w > 0 && (!min || w < min) ? w : min), 0);
+
+export const checklistIndentLevels = (lines: string[]): number[] => {
+  const widths = lines.map(indentWidth);
+  const smallest = smallestIndent(widths);
+  const unit = smallest > MAX_LEGACY_INDENT ? smallest : INDENT_UNIT;
+  const stack: { step: number; level: number }[] = [];
+  return widths.map((width) => {
+    const step = Math.floor(width / unit);
+    while (stack.length && stack[stack.length - 1].step >= step) stack.pop();
+    const level = stack.length ? stack[stack.length - 1].level + 1 : 0;
+    stack.push({ step, level });
+    return level;
+  });
+};
+
 export const parseChecklistContent = (
   rawContent: string,
   id: string,
@@ -48,6 +73,7 @@ export const parseChecklistContent = (
   const itemLines = lines.filter(
     (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line),
   );
+  const indentLevels = checklistIndentLevels(itemLines);
 
   let globalItemCounter = 0;
   const generateItemId = (level: number): string =>
@@ -90,20 +116,16 @@ export const parseChecklistContent = (
         break;
       }
 
-      const indentMatch = itemLine.match(/^(\s*)- \[/);
-      const indentLevel = indentMatch
-        ? Math.floor(indentMatch[1].length / 2)
-        : 0;
+      const indentLevel = indentLevels[currentIndex];
 
       if (indentLevel === parentLevel) {
         let cleanLine = itemLine;
         let completed = false;
 
-        const firstCheckboxMatch = itemLine.match(/-\s*\[([x ])\]/);
+        const firstCheckboxMatch = itemLine.match(/-\s*\[([xX ])\]/);
         if (firstCheckboxMatch) {
-          completed = firstCheckboxMatch[1] === "x";
-          cleanLine = itemLine.replace(/-\s*\[[x ]\]/g, "").trim();
-          cleanLine = cleanLine.replace(/\s*-\s*\[[x ]\]/g, "").trim();
+          completed = firstCheckboxMatch[1] !== " ";
+          cleanLine = itemLine.replace(LEADING_CHECKBOXES, "").trim();
         }
 
         let text = cleanLine;
