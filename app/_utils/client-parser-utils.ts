@@ -20,6 +20,22 @@ import {
 } from "./yaml-metadata-utils";
 import { titleOf } from "./title-utils";
 
+/**
+ * Nesting level of each checklist line, from its indent relative to the lines
+ * above it, so 2 spaces, 4 spaces and tabs all nest one level per step.
+ */
+export const checklistIndentLevels = (lines: string[]): number[] => {
+  const indents: number[] = [];
+  return lines.map((line) => {
+    if (!/^\s*- \[/.test(line)) return 0;
+    const width = (line.match(/^\s*/)?.[0] ?? "").replace(/\t/g, "    ").length;
+    while (indents.length && indents[indents.length - 1] > width) indents.pop();
+    if (!indents.length || indents[indents.length - 1] < width)
+      indents.push(width);
+    return indents.length - 1;
+  });
+};
+
 export const parseChecklistContent = (
   rawContent: string,
   id: string,
@@ -90,10 +106,7 @@ export const parseChecklistContent = (
         break;
       }
 
-      const indentMatch = itemLine.match(/^(\s*)- \[/);
-      const indentLevel = indentMatch
-        ? Math.floor(indentMatch[1].length / 2)
-        : 0;
+      const indentLevel = indentLevels[currentIndex];
 
       if (indentLevel === parentLevel) {
         let cleanLine = itemLine;
@@ -264,6 +277,7 @@ export const parseChecklistContent = (
     return { items, nextIndex: currentIndex };
   };
 
+  const indentLevels = checklistIndentLevels(itemLines);
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
 
   const dedupeItemIds = (itemList: Item[], seen: Set<string>): void => {

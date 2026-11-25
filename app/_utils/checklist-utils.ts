@@ -19,6 +19,7 @@ import {
   LIST_META_KEYS,
 } from "./yaml-metadata-utils";
 import { extractHashtagsFromContent, normalizeTag } from "./tag-utils";
+import { checklistIndentLevels } from "./client-parser-utils";
 import { SHARED_WITH_KEY } from "@/app/_consts/sharing";
 import { AGENT_SEGMENT } from "@/app/_consts/agents";
 
@@ -110,10 +111,7 @@ export const parseMarkdown = (
         break;
       }
 
-      const indentMatch = itemLine.match(/^(\s*)- \[/);
-      const indentLevel = indentMatch
-        ? Math.floor(indentMatch[1].length / 2)
-        : 0;
+      const indentLevel = indentLevels[currentIndex];
 
       if (indentLevel === parentLevel) {
         let cleanLine = itemLine;
@@ -278,6 +276,7 @@ export const parseMarkdown = (
     return { items, nextIndex: currentIndex };
   };
 
+  const indentLevels = checklistIndentLevels(itemLines);
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
 
   let statuses = undefined;
