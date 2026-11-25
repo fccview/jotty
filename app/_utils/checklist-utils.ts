@@ -68,6 +68,7 @@ export const parseMarkdown = (
   const itemLines = lines.filter(
     (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line),
   );
+  const indentLevels = checklistIndentLevels(itemLines);
 
   let globalItemCounter = 0;
   const generateItemId = (level: number): string => {
@@ -276,7 +277,6 @@ export const parseMarkdown = (
     return { items, nextIndex: currentIndex };
   };
 
-  const indentLevels = checklistIndentLevels(itemLines);
   const { items } = buildNestedItems(itemLines, 0, 0, 0);
 
   let statuses = undefined;
