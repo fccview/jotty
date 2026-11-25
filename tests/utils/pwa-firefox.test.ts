@@ -33,36 +33,18 @@ describe("generateWebManifest firefox installability", () => {
   });
 
   it("ships separate any and maskable icons at 192 and 512", () => {
-    const manifest = baseManifest();
-    const large = manifest.icons.filter(
-      (icon: { sizes: string; purpose?: string }) =>
-        ["192x192", "512x512"].includes(icon.sizes) &&
-        (icon.purpose === "any" || icon.purpose === "maskable"),
+    const icons: { sizes: string; purpose?: string }[] = baseManifest().icons;
+    const pairs = icons.map((icon) => `${icon.sizes}:${icon.purpose}`);
+    expect(pairs).toEqual(
+      expect.arrayContaining([
+        "192x192:any",
+        "192x192:maskable",
+        "512x512:any",
+        "512x512:maskable",
+      ]),
     );
-    expect(
-      large.some(
-        (icon: { sizes: string; purpose?: string }) =>
-          icon.sizes === "192x192" && icon.purpose === "any",
-      ),
-    ).toBe(true);
-    expect(
-      large.some(
-        (icon: { sizes: string; purpose?: string }) =>
-          icon.sizes === "192x192" && icon.purpose === "maskable",
-      ),
-    ).toBe(true);
-    expect(
-      large.some(
-        (icon: { sizes: string; purpose?: string }) =>
-          icon.sizes === "512x512" && icon.purpose === "any",
-      ),
-    ).toBe(true);
-    expect(
-      large.some(
-        (icon: { sizes: string; purpose?: string }) =>
-          icon.sizes === "512x512" && icon.purpose === "maskable",
-      ),
-    ).toBe(true);
+    expect(pairs).not.toContain("192x192:any maskable");
+    expect(pairs).not.toContain("512x512:any maskable");
   });
 });
 

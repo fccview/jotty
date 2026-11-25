@@ -119,11 +119,11 @@ If this file exists, jotty·page serves it as is and ignores the app name, descr
 
 ### The splash screen keeps its install-time colours
 
-When you install the PWA, it saves the current theme colours and uses them for the splash screen. So:
+When you install the PWA, it saves the manifest colours and uses them for the splash screen. So:
 
-- the splash screen background matches whatever theme you had when you installed it
-- **changing your theme later does NOT update the splash screen**
-- to get a new splash screen colour, uninstall the PWA and install it again
+- the splash screen uses the instance's default dark background, not your personal theme, so every user gets the same colour
+- the browser bar inside the app still follows your own theme
+- to change the splash screen colour, set `background_color` and `theme_color` in a custom manifest, then uninstall the PWA and install it again
 
 ### New icons need a reinstall
 

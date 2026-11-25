@@ -64,7 +64,6 @@ const serverThemeId = (isRwMarkable?: boolean, preferredTheme?: string) =>
 
 export const generateMetadata = async (): Promise<Metadata> => {
   const settings = await getSettings();
-  const user = await getCurrentUser();
   const ogName = settings?.isRwMarkable ? "rwMarkable" : "jotty·page";
   const appName = settings?.appName || ogName;
   const appVersion = (await readPackageVersion()).data ?? "";

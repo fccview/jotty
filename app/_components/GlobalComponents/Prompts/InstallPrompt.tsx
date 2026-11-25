@@ -11,7 +11,7 @@ import {
 } from "@/app/_utils/pwa-utils";
 
 type InstallChoice = {
-  outcome: string;
+  outcome: "accepted" | "dismissed";
 };
 
 type InstallPromptEvent = Event & {
@@ -57,13 +57,6 @@ export const InstallPrompt = () => {
       return;
     }
 
-    const markInstalled = () => {
-      setIsInstalled(true);
-      localStorage.setItem(PWA_INSTALLED_KEY, "true");
-      setPromptEvent(null);
-      setShowInstallPrompt(false);
-    };
-
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setPromptEvent(e as InstallPromptEvent);
@@ -71,7 +64,10 @@ export const InstallPrompt = () => {
     };
 
     const handleAppInstalled = () => {
-      markInstalled();
+      setIsInstalled(true);
+      localStorage.setItem(PWA_INSTALLED_KEY, "true");
+      setPromptEvent(null);
+      setShowInstallPrompt(false);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -87,8 +83,6 @@ export const InstallPrompt = () => {
   }, []);
 
   const handleInstallClick = async () => {
-    if (isFirefox) return;
-
     if (promptEvent) {
       await promptEvent.prompt();
       const choice = await promptEvent.userChoice;
@@ -117,14 +111,16 @@ export const InstallPrompt = () => {
     <div className="fixed bottom-4 left-[2vw] lg:left-auto lg:right-4 z-50 bg-background border border-border rounded-jotty shadow-lg p-4 w-[96vw] lg:w-[300px]">
       <div className="flex items-center justify-between">
         <div
-          className="flex items-center gap-3 cursor-pointer"
-          onClick={handleInstallClick}
+          className={`flex items-center gap-3 ${isFirefox ? "" : "cursor-pointer"}`}
+          onClick={isFirefox ? undefined : handleInstallClick}
         >
           <div className="p-2 bg-primary rounded-jotty flex items-center justify-center">
             <Download01Icon className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h3 className="font-medium text-foreground hover:underline">
+            <h3
+              className={`font-medium text-foreground ${isFirefox ? "" : "hover:underline"}`}
+            >
               {isFirefox
                 ? t("pwa.installPromptManualTitle")
                 : t("pwa.installPromptTitle")}
