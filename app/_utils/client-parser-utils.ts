@@ -99,11 +99,11 @@ export const parseChecklistContent = (
         let cleanLine = itemLine;
         let completed = false;
 
-        const firstCheckboxMatch = itemLine.match(/-\s*\[([x ])\]/);
+        const firstCheckboxMatch = itemLine.match(/-\s*\[([xX ])\]/);
         if (firstCheckboxMatch) {
-          completed = firstCheckboxMatch[1] === "x";
-          cleanLine = itemLine.replace(/-\s*\[[x ]\]/g, "").trim();
-          cleanLine = cleanLine.replace(/\s*-\s*\[[x ]\]/g, "").trim();
+          completed = firstCheckboxMatch[1] !== " ";
+          cleanLine = itemLine.replace(/-\s*\[[xX ]\]/g, "").trim();
+          cleanLine = cleanLine.replace(/\s*-\s*\[[xX ]\]/g, "").trim();
         }
 
         let text = cleanLine;
