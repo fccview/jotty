@@ -20,6 +20,27 @@ import {
 } from "./yaml-metadata-utils";
 import { titleOf } from "./title-utils";
 
+const TAB_AS_SPACES = "    ";
+const INDENT_UNIT = 2;
+const MAX_LEGACY_INDENT = 3;
+
+const indentWidth = (line: string): number =>
+  (line.match(/^\s*/)?.[0] ?? "").replace(/\t/g, TAB_AS_SPACES).length;
+
+const smallestIndent = (widths: number[]): number =>
+  widths.reduce((min, w) => (w > 0 && (!min || w < min) ? w : min), 0);
+
+export const checklistIndentLevels = (lines: string[]): number[] => {
+  const widths = lines.map(indentWidth);
+  const smallest = smallestIndent(widths);
+  const unit = smallest > MAX_LEGACY_INDENT ? smallest : INDENT_UNIT;
+  let previous = -1;
+  return widths.map((width) => {
+    previous = Math.min(Math.floor(width / unit), previous + 1);
+    return previous;
+  });
+};
+
 export const parseChecklistContent = (
   rawContent: string,
   id: string,
@@ -48,6 +69,7 @@ export const parseChecklistContent = (
   const itemLines = lines.filter(
     (line) => line.trim().startsWith("- [") || /^\s*- \[/.test(line),
   );
+  const indentLevels = checklistIndentLevels(itemLines);
 
   let globalItemCounter = 0;
   const generateItemId = (level: number): string =>
@@ -90,10 +112,7 @@ export const parseChecklistContent = (
         break;
       }
 
-      const indentMatch = itemLine.match(/^(\s*)- \[/);
-      const indentLevel = indentMatch
-        ? Math.floor(indentMatch[1].length / 2)
-        : 0;
+      const indentLevel = indentLevels[currentIndex];
 
       if (indentLevel === parentLevel) {
         let cleanLine = itemLine;
