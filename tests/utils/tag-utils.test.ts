@@ -13,6 +13,7 @@ import {
   buildTagTree,
   getChildTags,
 } from "@/app/_utils/tag-utils";
+import { TAG_AT_END } from "@/app/_utils/markdown/parse/tags";
 
 describe("tags inside html blocks", () => {
   it("leaves tags inside html blocks out of the index, as the view does", () => {
@@ -581,5 +582,19 @@ describe("Tag Utils", () => {
       expect(tags).toContain("real");
       expect(tags).not.toContain("hidden");
     });
+  });
+});
+
+describe("TAG_AT_END", () => {
+  it.each([
+    ["#工作", "工作"],
+    ["今日は #工作", "工作"],
+    ["(#aside", "aside"],
+  ])("suggests for %s", (text, tag) => {
+    expect(text.match(TAG_AT_END)?.[1]).toBe(tag);
+  });
+
+  it.each(["今日は#工作", "a#b"])("does not suggest for %s, which the index would not tag", (text) => {
+    expect(text.match(TAG_AT_END)).toBeNull();
   });
 });

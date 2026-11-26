@@ -210,6 +210,10 @@ describe("escaped hashes in the rich editor", () => {
     expect(typedInto("plain \\#escaped", "plain", " text")).toBe("plain text \\#escaped");
   });
 
+  it("keeps an escaped hash before a letter outside the BMP escaped", () => {
+    expect(typedInto("plain \\#𠮷野家", "plain", " text")).toBe("plain text \\#𠮷野家");
+  });
+
   it("does not turn an escaped hash into a tag when the caret passes through it", () => {
     const saved = editAndSave("plain \\#escaped\n\nother", (instance) => {
       caretAfter(instance, "#escaped");

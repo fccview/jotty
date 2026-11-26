@@ -3,8 +3,8 @@ import { findAndReplace, type RegExpMatchObject } from "mdast-util-find-and-repl
 
 export const TAG_NAME = String.raw`\p{L}[\p{L}\p{N}\p{M}_/-]*`;
 export const TAG_PATTERN = new RegExp(`#(${TAG_NAME})`, "gu");
-export const TAG_AT_END = new RegExp(`#(${TAG_NAME})$`, "u");
 export const TAG_BOUNDARY = /[\s(]/;
+export const TAG_AT_END = new RegExp(`(?:^|${TAG_BOUNDARY.source})#(${TAG_NAME})$`, "u");
 const ESCAPE = "\\";
 const SPACED_SIBLINGS = new Set(["break", "html", "inlineCode"]);
 const WRAPPERS = new Set(["strong", "emphasis", "delete"]);

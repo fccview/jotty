@@ -67,6 +67,10 @@ describe("hashtags", () => {
     expect(dropHashtags("Body #médical #médicale #工作\n", ["médical", "工作"])).toBe("Body #médicale\n");
   });
 
+  it("drops only tags the index would call the same name", () => {
+    expect(dropHashtags("Body #ſ #S\n", ["s"])).toBe("Body #ſ\n");
+  });
+
   it("appends a tag line, or extends an existing one, keeping the ending", () => {
     expect(addHashtags("Notes here.\n", ["garden"])).toBe("Notes here.\n\n#garden\n");
     expect(addHashtags("Notes\r\n\r\n#garden\r\n", ["work"])).toBe("Notes\r\n\r\n#garden #work\r\n");

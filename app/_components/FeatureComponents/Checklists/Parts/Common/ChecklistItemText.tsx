@@ -2,7 +2,7 @@
 
 import { Fragment, ReactNode, SyntheticEvent } from "react";
 import { WIKI_EMBED_MARK, WIKILINK_REGEX } from "@/app/_consts/relations";
-import { TAG_PATTERN } from "@/app/_utils/markdown/parse/tags";
+import { TAG_BOUNDARY, TAG_PATTERN } from "@/app/_utils/markdown/parse/tags";
 import { currentOrigins, parseItemHref } from "@/app/_utils/item-href-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
@@ -66,7 +66,7 @@ export const ChecklistItemText = ({
           showCategory={!compact}
         />
       );
-    } else if (tag !== undefined && tagsEnabled) {
+    } else if (tag !== undefined && tagsEnabled && (at === 0 || TAG_BOUNDARY.test(text[at - 1]))) {
       piece = <TagLinkViewComponent tag={tag} />;
     }
 

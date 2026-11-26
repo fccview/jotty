@@ -6,7 +6,7 @@ const SPACE = /\s/;
 const WIKILINK = /^\[\[[^\[\]\n]+\]\]/;
 const ENTITY = /^&(#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/i;
 const BARE_URL = /(https?|ftp)(:\/\/)|(www)(\.)/gi;
-const TAG_START = new RegExp("\\p{L}", "u");
+const TAG_START = new RegExp("^\\p{L}", "u");
 const SPACED_ENDS = new Set([">", "`"]);
 
 export interface EscapeContext {
@@ -24,7 +24,8 @@ export interface EscapeContext {
 const isSpace = (char: string | undefined) => char === undefined || char === "" || SPACE.test(char);
 const isAlnum = (char: string | undefined) => !!char && ALNUM.test(char);
 
-const startsTag = (next: string | undefined) => !!next && TAG_START.test(next);
+const startsTag = (text: string, index: number, after: string) =>
+  TAG_START.test(index === text.length - 1 ? after : text.slice(index + 1));
 
 const tagBoundary = (prev: string | undefined, leading: boolean, opened?: boolean) =>
   isSpace(prev) || TAG_BOUNDARY.test(prev ?? "") || (leading && (opened || SPACED_ENDS.has(prev ?? "")));
@@ -103,7 +104,7 @@ export const escapeText = (text: string, context: EscapeContext): string => {
         out += context.pipes ? "\\|" : char;
         break;
       case "#":
-        out += !context.inLink && startsTag(next) && tagBoundary(prev, index === 0, context.opened) ? "\\#" : char;
+        out += !context.inLink && startsTag(text, index, context.after) && tagBoundary(prev, index === 0, context.opened) ? "\\#" : char;
         break;
       default:
         out += char;

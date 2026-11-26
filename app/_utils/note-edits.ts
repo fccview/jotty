@@ -51,8 +51,14 @@ export const cleanTag = (tag: string): string | null => {
   return TAG_ONLY.test(name) ? name.toLowerCase() : null;
 };
 
+const _caseless = (tag: string): string =>
+  Array.from(tag, (char) => {
+    const upper = char.toUpperCase();
+    return upper !== char && upper.length === 1 ? `[${char}${upper}]` : char;
+  }).join("");
+
 const _tagPattern = (tag: string): RegExp =>
-  new RegExp(`${TAG_LEAD}#${tag}(?![\\p{L}\\p{N}\\p{M}/-])([*_~]{0,3})([ \\t]?)`, "giu");
+  new RegExp(`${TAG_LEAD}#${_caseless(tag)}(?![\\p{L}\\p{N}\\p{M}/-])([*_~]{0,3})([ \\t]?)`, "gu");
 
 const _mirrored = (marks: string, close: string): number => {
   let count = 0;
