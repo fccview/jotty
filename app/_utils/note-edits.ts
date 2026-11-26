@@ -1,4 +1,5 @@
 import { defangHtml } from "@/app/_utils/markdown-utils";
+import { TAG_NAME } from "@/app/_utils/markdown/parse/tags";
 import { closesEmphasis, emphasisOf, extractHashtagsFromContent, TAG_LEAD } from "@/app/_utils/tag-utils";
 import { dropLine, joinLines, Line, splitLines } from "@/app/_utils/text-lines";
 
@@ -7,14 +8,14 @@ export const FIND_AMBIGUOUS = "The find text matches more than once. Include mor
 export const TAG_INVALID = "Tags start with a letter and use letters, digits, _, - or /";
 
 const CRLF = "\r\n";
-const TAG_NAME = /^[a-zA-Z][a-zA-Z0-9_/-]*$/;
+const TAG_ONLY = new RegExp(`^${TAG_NAME}$`, "u");
 const FENCE = /^\s*(```|~~~)/;
 const INLINE_CODE = /(`[^`]*`)/;
-const TAG_ONLY_LINE = /^\s*(?:#[a-zA-Z][a-zA-Z0-9_/-]*\s*)+$/;
+const TAG_ONLY_LINE = new RegExp(String.raw`^\s*(?:#${TAG_NAME}\s*)+$`, "u");
 const OPENS_DESTINATION = /(?:^ {0,3}\[[^\]^\n][^\]\n]*\]:|\]\()[ \t]{0,3}$/;
 const LEADING_ANCHOR = /^[ \t]{0,3}#[^\s)]*/;
 const UNDERSCORE = "_";
-const WORD_CHAR = /[a-zA-Z0-9]/;
+const WORD_CHAR = new RegExp("[\\p{L}\\p{N}\\p{M}]", "u");
 const SPACE_LEAD = /^[ \t]$/;
 const PARAGRAPH_JOIN = "\n";
 const DANGLING_MARKS = /^[ \t]*([*_~]{1,3})$/;
@@ -47,11 +48,17 @@ export const findReplace = (body: string, find: string, replace: string): TextEd
 
 export const cleanTag = (tag: string): string | null => {
   const name = tag.trim().replace(/^#/, "");
-  return TAG_NAME.test(name) ? name.toLowerCase() : null;
+  return TAG_ONLY.test(name) ? name.toLowerCase() : null;
 };
 
+const _caseless = (tag: string): string =>
+  Array.from(tag, (char) => {
+    const upper = char.toUpperCase();
+    return upper !== char && upper.length === 1 ? `[${char}${upper}]` : char;
+  }).join("");
+
 const _tagPattern = (tag: string): RegExp =>
-  new RegExp(`${TAG_LEAD}#${tag.replace(/[/-]/g, "\\$&")}(?![a-zA-Z0-9/-])([*_~]{0,3})([ \\t]?)`, "gi");
+  new RegExp(`${TAG_LEAD}#${_caseless(tag)}(?![\\p{L}\\p{N}\\p{M}/-])([*_~]{0,3})([ \\t]?)`, "gu");
 
 const _mirrored = (marks: string, close: string): number => {
   let count = 0;

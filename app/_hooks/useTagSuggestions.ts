@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo, RefObject } from "react";
+import { TAG_AT_END } from "@/app/_utils/markdown/parse/tags";
 
 function getHashtagQuery(text: string): string | null {
-  const full = text.match(/#([a-zA-Z][a-zA-Z0-9_/-]*)$/);
+  const full = text.match(TAG_AT_END);
   if (full) return full[1];
   const bare = text.match(/#$/);
   return bare ? "" : null;

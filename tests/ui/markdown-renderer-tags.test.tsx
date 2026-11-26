@@ -14,6 +14,7 @@ vi.mock("@/app/_components/FeatureComponents/Tags/TagLinkComponent", () => ({
 import { act } from "react";
 import { createRoot, Root } from "react-dom/client";
 import { UnifiedMarkdownRenderer } from "@/app/_components/FeatureComponents/Notes/Parts/UnifiedMarkdownRenderer";
+import { ChecklistItemText } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/ChecklistItemText";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -70,6 +71,13 @@ describe("UnifiedMarkdownRenderer tags", () => {
     expect(pills).toEqual(["tag"]);
   });
 
+  it("tags hashtags written in any script", async () => {
+    const view = await render("#médical and #工作 and #नेपाली");
+    const pills = Array.from(view.querySelectorAll("[data-pill]")).map((pill) => pill.getAttribute("data-pill"));
+
+    expect(pills).toEqual(["médical", "工作", "नेपाली"]);
+  });
+
   it("skips a hashtag that opens bold glued to the word before it", async () => {
     const view = await render("foo**#bar** and **#ok** and _#fine_");
     const pills = Array.from(view.querySelectorAll("[data-pill]")).map((pill) => pill.getAttribute("data-pill"));
@@ -82,5 +90,25 @@ describe("UnifiedMarkdownRenderer tags", () => {
     const pills = Array.from(view.querySelectorAll("[data-pill]")).map((pill) => pill.getAttribute("data-pill"));
 
     expect(pills).toEqual(["real", "inside", "html", "coded"]);
+  });
+});
+
+describe("ChecklistItemText tags", () => {
+  beforeEach(() => {
+    host = document.createElement("div");
+    document.body.appendChild(host);
+    root = createRoot(host);
+  });
+
+  afterEach(async () => {
+    await act(async () => root.unmount());
+    host.remove();
+  });
+
+  it("only pills hashtags with a boundary before them, as the index does", async () => {
+    await act(async () => root.render(<ChecklistItemText text="#工作 今日は#工作 a#b (#aside)" tagsEnabled />));
+    const pills = Array.from(host.querySelectorAll("[data-pill]")).map((pill) => pill.getAttribute("data-pill"));
+
+    expect(pills).toEqual(["工作", "aside"]);
   });
 });

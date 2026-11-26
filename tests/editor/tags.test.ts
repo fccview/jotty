@@ -169,9 +169,22 @@ describe("typing a hashtag in the rich editor", () => {
   it.each([
     ["glued to a word", "a#b ", "helloa#b  world"],
     ["a number", " #1 ", "hello #1  world"],
-    ["a word running into accents", " #café ", "hello \\#café  world"],
   ])("leaves a hash %s as text", (_name, typed, saved) => {
     expect(typedInto("hello  world", "hello", typed)).toBe(saved);
+  });
+
+  it.each([
+    ["accents", " #café next", "café"],
+    ["kanji", " #工作 next", "工作"],
+    ["kana", " #タグ next", "タグ"],
+    ["combining marks", " #नेपाली next", "नेपाली"],
+  ])("tags a word written with %s", (_name, typed, tag) => {
+    const saved = editAndSave("hello", (instance) => {
+      caretAfter(instance, "hello");
+      typeText(instance, typed);
+      expect(tagsOf(instance)).toEqual([tag]);
+    });
+    expect(saved).toBe(`hello${typed}`);
   });
 
   it("leaves hashes inside code blocks alone", () => {
@@ -195,6 +208,10 @@ describe("escaped hashes in the rich editor", () => {
 
   it("keeps an escaped hash escaped when the line itself is edited", () => {
     expect(typedInto("plain \\#escaped", "plain", " text")).toBe("plain text \\#escaped");
+  });
+
+  it("keeps an escaped hash before a letter outside the BMP escaped", () => {
+    expect(typedInto("plain \\#𠮷野家", "plain", " text")).toBe("plain text \\#𠮷野家");
   });
 
   it("does not turn an escaped hash into a tag when the caret passes through it", () => {
