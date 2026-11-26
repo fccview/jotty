@@ -6,7 +6,7 @@ const SPACE = /\s/;
 const WIKILINK = /^\[\[[^\[\]\n]+\]\]/;
 const ENTITY = /^&(#\d+|#x[0-9a-f]+|[a-z][a-z0-9]*);/i;
 const BARE_URL = /(https?|ftp)(:\/\/)|(www)(\.)/gi;
-const TAG_START = /[a-zA-Z]/;
+const TAG_START = new RegExp("\\p{L}", "u");
 const SPACED_ENDS = new Set([">", "`"]);
 
 export interface EscapeContext {

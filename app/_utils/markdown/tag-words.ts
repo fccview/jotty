@@ -10,7 +10,7 @@ export interface TagWord {
   ready: boolean;
 }
 
-export const TAG_WORD = new RegExp(`(^|${TAG_BOUNDARY.source})${TAG_PATTERN.source}`, "g");
+export const TAG_WORD = new RegExp(`(^|${TAG_BOUNDARY.source})${TAG_PATTERN.source}`, "gu");
 const LEAF = "\ufffc";
 const LINE_BREAK = "\n";
 const WORD_CHAR = new RegExp("[\\p{L}\\p{N}\\p{M}]", "u");

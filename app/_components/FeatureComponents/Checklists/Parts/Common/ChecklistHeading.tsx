@@ -18,6 +18,7 @@ import { useQuickValue } from "@/app/_hooks/settings/useQuickSetting";
 import { QuickSettingId } from "@/app/_consts/quick-settings";
 import { CompletedSuggestionsDropdown } from "@/app/_components/FeatureComponents/Checklists/Parts/Common/CompletedSuggestionsDropdown";
 import { TaskStatus } from "@/app/_types/enums";
+import { TAG_AT_END } from "@/app/_utils/markdown/parse/tags";
 import { useTranslations } from "next-intl";
 import { TagMentionsList } from "@/app/_components/FeatureComponents/Notes/Parts/TipTap/CustomExtensions/TagMentionsList";
 import { useItemLinkSuggestions } from "@/app/_hooks/useItemLinkSuggestions";
@@ -97,7 +98,7 @@ export const ChecklistHeading = ({
   );
 
   const getHashtagQuery = (text: string): string | null => {
-    const full = text.match(/#([a-zA-Z][a-zA-Z0-9_/-]*)$/);
+    const full = text.match(TAG_AT_END);
     if (full) return full[1];
     const bare = text.match(/#$/);
     return bare ? "" : null;

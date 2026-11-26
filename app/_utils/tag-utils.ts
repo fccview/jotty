@@ -1,5 +1,6 @@
 import { Note, Checklist, TagsIndex, TagInfo } from "@/app/_types";
 import { isLegacyHtml } from "@/app/_utils/markdown/legacy";
+import { TAG_NAME } from "@/app/_utils/markdown/parse/tags";
 
 export type { TagsIndex, TagInfo };
 
@@ -87,7 +88,7 @@ const EMPHASIS_LEAD = `(?:^|${_spaceLead(`${EMPHASIS}#`)}|${_parenLead(`${EMPHAS
 
 export const TAG_LEAD = `(^|${_spaceLead("#")}|${_parenLead("#")}|${EMPHASIS_LEAD})`;
 
-const HASHTAG = new RegExp(`${TAG_LEAD}#([a-zA-Z][a-zA-Z0-9_/-]*)`, "g");
+const HASHTAG = new RegExp(`${TAG_LEAD}#(${TAG_NAME})`, "gu");
 const UNDERSCORE_RUN = /_+$/;
 const EMPHASIS_RUN = /[*_~]+$/;
 const PARAGRAPH_END = String.raw`\n[ \t]*\n`;

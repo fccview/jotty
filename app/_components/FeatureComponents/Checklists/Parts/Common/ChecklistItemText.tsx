@@ -2,6 +2,7 @@
 
 import { Fragment, ReactNode, SyntheticEvent } from "react";
 import { WIKI_EMBED_MARK, WIKILINK_REGEX } from "@/app/_consts/relations";
+import { TAG_PATTERN } from "@/app/_utils/markdown/parse/tags";
 import { currentOrigins, parseItemHref } from "@/app/_utils/item-href-utils";
 import { useAppMode } from "@/app/_providers/AppModeProvider";
 import { TagLinkViewComponent } from "@/app/_components/FeatureComponents/Tags/TagLinkComponent";
@@ -15,8 +16,7 @@ interface ChecklistItemTextProps {
 }
 
 const LINK_SOURCE = String.raw`\[((?:[^\[\]\\]|\\.)*)\]\(([^()\s]+)\)`;
-const TAG_SOURCE = String.raw`#([a-zA-Z][a-zA-Z0-9_/-]*)`;
-const TOKENS = new RegExp(`${LINK_SOURCE}|${WIKILINK_REGEX.source}|${TAG_SOURCE}`, "g");
+const TOKENS = new RegExp(`${LINK_SOURCE}|${WIKILINK_REGEX.source}|${TAG_PATTERN.source}`, "gu");
 
 const _unescape = (label: string) => label.replace(/\\(.)/g, "$1");
 

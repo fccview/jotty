@@ -57,6 +57,16 @@ describe("hashtags", () => {
     expect(cleanTag("two words")).toBeNull();
   });
 
+  it("cleans tag names in any script", () => {
+    expect(cleanTag("#Médical")).toBe("médical");
+    expect(cleanTag("工作/日報")).toBe("工作/日報");
+    expect(cleanTag("#１st")).toBeNull();
+  });
+
+  it("drops tags in any script without touching longer ones", () => {
+    expect(dropHashtags("Body #médical #médicale #工作\n", ["médical", "工作"])).toBe("Body #médicale\n");
+  });
+
   it("appends a tag line, or extends an existing one, keeping the ending", () => {
     expect(addHashtags("Notes here.\n", ["garden"])).toBe("Notes here.\n\n#garden\n");
     expect(addHashtags("Notes\r\n\r\n#garden\r\n", ["work"])).toBe("Notes\r\n\r\n#garden #work\r\n");

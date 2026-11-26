@@ -120,6 +120,11 @@ describe("Tag Utils", () => {
       expect(tags).toContain("tag2");
     });
 
+    it("should extract hashtags in any script", () => {
+      const content = "#médical, #工作 and #नेपाली/कक्षा but not #1st";
+      expect(extractHashtagsFromContent(content)).toEqual(["médical", "工作", "नेपाली/कक्षा"]);
+    });
+
     it("should extract nested hashtags", () => {
       const content = "Project #work/development";
       expect(extractHashtagsFromContent(content)).toContain("work/development");
