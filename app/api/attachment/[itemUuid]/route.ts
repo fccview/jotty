@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { UPLOAD_FORM_SLACK } from "@/app/_consts/attachments";
-import { sizeCap, uploadAs } from "@/app/_server/actions/attachments/write";
+import { admit, sizeCap, uploadAs } from "@/app/_server/actions/attachments/write";
+import { PermissionTypes } from "@/app/_types/enums";
 import { refuseAttachment } from "@/app/_server/api/attachment-refusals";
 import { defineRoute } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod, MediaType } from "@/app/_server/api/contract";
@@ -26,6 +27,10 @@ export const POST = defineRoute(
     body: attachmentUploadBody,
     bodyType: MediaType.FORM,
     bodyLimit: async () => (await sizeCap()) + UPLOAD_FORM_SLACK,
+    bouncer: async ({ user, params: { itemUuid } }) => {
+      const gate = await admit(user.username, itemUuid, PermissionTypes.EDIT);
+      return "error" in gate ? refuseAttachment(gate.error) : undefined;
+    },
     responses: {
       200: { description: "The stored attachment", schema: attachmentEnvelope },
       400: ERRORS[400],

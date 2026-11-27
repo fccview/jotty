@@ -1,5 +1,5 @@
 import { JottyError, type JottyClient } from "./client.ts";
-import type { OpenApiDocument, Operation } from "./openapi.ts";
+import { takesJson, type OpenApiDocument, type Operation } from "./openapi.ts";
 
 const SPEC_PATH = "/openapi.json";
 export const OPENAPI_SINCE = "1.28.0";
@@ -31,10 +31,9 @@ export const toSpec = (doc: OpenApiDocument): Spec => ({
   schemas: doc.components?.schemas ?? {},
   operations: new Map(
     Object.entries(doc.paths).flatMap(([path, methods]) =>
-      Object.entries(methods).map(([method, op]): [string, Operation] => [
-        op.operationId,
-        { ...op, method, path },
-      ]),
+      Object.entries(methods)
+        .filter(([, op]) => takesJson(op))
+        .map(([method, op]): [string, Operation] => [op.operationId, { ...op, method, path }]),
     ),
   ),
 });

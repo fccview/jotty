@@ -45,3 +45,20 @@ describe("toolNameOf", () => {
     expect(toolNameOf("uncheckChecklistItem")).toBe("uncheck_checklist_item");
   });
 });
+
+describe("toSpec", () => {
+  it("leaves out operations whose body is not JSON", () => {
+    const upload = { operationId: "uploadAttachment", summary: "Upload an attachment" };
+    const { operations } = toSpec({
+      info: { title: "Jotty API", version: "9.9.9" },
+      paths: {
+        "/attachment/{itemUuid}": {
+          post: { ...upload, requestBody: { content: { "multipart/form-data": { schema: { type: "object" } } } } },
+        },
+        "/attachment/{itemUuid}/{name}": { delete: { operationId: "deleteAttachment", summary: "Delete an attachment" } },
+      },
+    });
+
+    expect([...operations.keys()]).toEqual(["deleteAttachment"]);
+  });
+});

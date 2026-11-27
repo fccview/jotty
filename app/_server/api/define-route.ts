@@ -10,6 +10,7 @@ import {
   ApiHandler,
   ApiUser,
   MediaType,
+  Parsed,
   RouteAuth,
   RouteContract,
   RouteInput,
@@ -48,7 +49,7 @@ const _check = async <T extends Schema>(schema: T, value: unknown) => {
 
 const _readCapped = async (request: NextRequest, limit: number) => {
   if (Number(request.headers.get("content-length")) > limit) throw _tooLarge();
-  if (!request.body) return Buffer.alloc(0);
+  if (!request.body) return "";
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;
@@ -60,11 +61,11 @@ const _readCapped = async (request: NextRequest, limit: number) => {
     }
     chunks.push(chunk.value);
   }
-  return Buffer.concat(chunks);
+  return Buffer.concat(chunks).toString("utf8");
 };
 
 const _readBody = async (request: NextRequest, limit?: number) => {
-  const text = limit ? (await _readCapped(request, limit)).toString("utf8") : await request.text();
+  const text = limit ? await _readCapped(request, limit) : await request.text();
   if (!text.trim()) return {};
   try {
     return JSON.parse(text);
@@ -73,16 +74,29 @@ const _readBody = async (request: NextRequest, limit?: number) => {
   }
 };
 
+const _capped = (request: NextRequest, limit: number) => {
+  if (Number(request.headers.get("content-length")) > limit) throw _tooLarge();
+  const gauge = { size: 0, burst: false };
+  const meter = new TransformStream<Uint8Array, Uint8Array>({
+    transform: (chunk, controller) => {
+      gauge.size += chunk.byteLength;
+      if (gauge.size <= limit) return controller.enqueue(chunk);
+      gauge.burst = true;
+      controller.error(_tooLarge());
+    },
+  });
+  const form = new Response(request.body?.pipeThrough(meter), {
+    headers: { [CONTENT_TYPE]: request.headers.get(CONTENT_TYPE) || "" },
+  });
+  return { form, gauge };
+};
+
 const _readForm = async (request: NextRequest, limit?: number) => {
-  const source = limit
-    ? new Response(new Uint8Array(await _readCapped(request, limit)), {
-        headers: { [CONTENT_TYPE]: request.headers.get(CONTENT_TYPE) || "" },
-      })
-    : request;
+  const { form, gauge } = limit ? _capped(request, limit) : { form: request, gauge: { burst: false } };
   try {
-    return Object.fromEntries(await source.formData());
+    return Object.fromEntries(await form.formData());
   } catch {
-    throw new BadInput(INVALID_FORM);
+    throw gauge.burst ? _tooLarge() : new BadInput(INVALID_FORM);
   }
 };
 
@@ -94,7 +108,7 @@ const _read = async (contract: AnyContract, request: NextRequest) => {
   return contract.bodyType === MediaType.FORM ? _readForm(request, limit) : _readBody(request, limit);
 };
 
-const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
+const _address = async <P extends Schema, Q extends Schema, B extends Schema>(
   contract: RouteContract<P, Q, B>,
   request: NextRequest,
   params?: RouteParams,
@@ -104,9 +118,23 @@ const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
     contract.query,
     Object.fromEntries(request.nextUrl.searchParams),
   ),
-  body: contract.body
-    ? await _check(contract.body, await _read(contract as AnyContract, request))
-    : undefined,
+});
+
+const _payload = async <P extends Schema, Q extends Schema, B extends Schema>(
+  contract: RouteContract<P, Q, B>,
+  request: NextRequest,
+) =>
+  contract.body
+    ? _check(contract.body, await _read(contract as AnyContract, request))
+    : undefined;
+
+const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
+  contract: RouteContract<P, Q, B>,
+  request: NextRequest,
+  params?: RouteParams,
+) => ({
+  ...(await _address(contract, request, params)),
+  body: await _payload(contract, request),
 });
 
 const _run = async (
@@ -152,10 +180,13 @@ export const defineRoute = <
     _run(contract as AnyContract, async () => {
       const user = await _caller(request, contract.auth);
       if (!user) return refuse("Unauthorized", 401);
-      const input = await _parse(contract, request, context?.params);
-      return actAs(user, () =>
-        handler({ request, user, ...input } as RouteInput<P, Q, B, ApiUser>),
-      );
+      const address = await _address(contract, request, context?.params);
+      return actAs(user, async () => {
+        const turnedAway = await contract.bouncer?.({ user, params: address.params as Parsed<P> });
+        if (turnedAway) return turnedAway;
+        const body = await _payload(contract, request);
+        return handler({ request, user, ...address, body } as RouteInput<P, Q, B, ApiUser>);
+      });
     }),
   );
 

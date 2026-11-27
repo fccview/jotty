@@ -16,8 +16,14 @@ const _me = async (): Promise<string | undefined> => (await getCurrentUser())?.u
 const _gate = async (itemUuid: string, wanted: PermissionTypes) =>
   admit(await _me(), itemUuid, wanted);
 
-export const uploadFile = async (formData: FormData): Promise<Result<FileItem>> =>
-  uploadAs(await _me(), String(formData.get("itemUuid") || ""), formData.get("file"));
+export const uploadFile = async (formData: FormData): Promise<Result<FileItem>> => {
+  try {
+    return await uploadAs(await _me(), String(formData.get("itemUuid") || ""), formData.get("file"));
+  } catch (error) {
+    console.error("Error uploading attachment:", error);
+    return refusal(AttachmentErrors.FAILED);
+  }
+};
 
 export const listAttachments = async (itemUuid: string): Promise<Result<FileItem[]>> => {
   try {
@@ -34,7 +40,14 @@ export const listAttachments = async (itemUuid: string): Promise<Result<FileItem
 export const deleteAttachment = async (
   itemUuid: string,
   name: string,
-): Promise<Result<null>> => deleteAs(await _me(), itemUuid, name);
+): Promise<Result<null>> => {
+  try {
+    return await deleteAs(await _me(), itemUuid, name);
+  } catch (error) {
+    console.error("Error deleting attachment:", error);
+    return refusal(AttachmentErrors.FAILED);
+  }
+};
 
 export const attachTo = async (
   targetUuid: string,

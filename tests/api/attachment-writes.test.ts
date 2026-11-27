@@ -185,6 +185,29 @@ describe("POST /api/attachment/{itemUuid}", () => {
     expect(names(ALICE_PLAN)).toEqual([]);
   });
 
+  it("turns away someone who cannot edit before reading what they sent", async () => {
+    caller.user = BOB;
+    let pulled = 0;
+    const unread = new ReadableStream<Uint8Array>({
+      pull: (controller) => {
+        pulled++;
+        controller.enqueue(new Uint8Array(16));
+      },
+    }, { highWaterMark: 0 });
+    const response = await postAttachment(
+      new NextRequest(new URL(`/api/attachment/${ALICE_PLAN}`, "http://localhost"), {
+        method: "POST",
+        headers: { ...KEY, "content-type": "multipart/form-data; boundary=x" },
+        body: unread,
+        duplex: "half",
+      }),
+      params({ itemUuid: ALICE_PLAN }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(pulled).toBe(0);
+  });
+
   it("answers 400 when there is no file or the body is not a form", async () => {
     caller.user = ALICE;
 
