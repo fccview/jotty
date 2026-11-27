@@ -20,6 +20,7 @@ import {
 
 const INVALID_JSON = "Request body must be valid JSON";
 const INVALID_FORM = "Request body must be multipart/form-data";
+const REPEATED_FIELD = "Each form field can only be sent once";
 const BODY_TOO_LARGE = "Request body is too large";
 const PAYLOAD_TOO_LARGE = 413;
 const CONTENT_TYPE = "content-type";
@@ -93,11 +94,12 @@ const _capped = (request: NextRequest, limit: number) => {
 
 const _readForm = async (request: NextRequest, limit?: number) => {
   const { form, gauge } = limit ? _capped(request, limit) : { form: request, gauge: { burst: false } };
-  try {
-    return Object.fromEntries(await form.formData());
-  } catch {
+  const fields = await form.formData().catch(() => {
     throw gauge.burst ? _tooLarge() : new BadInput(INVALID_FORM);
-  }
+  });
+  const names = Array.from(fields.keys());
+  if (new Set(names).size < names.length) throw new BadInput(REPEATED_FIELD);
+  return Object.fromEntries(fields);
 };
 
 const _limitOf = async ({ bodyLimit }: AnyContract) =>

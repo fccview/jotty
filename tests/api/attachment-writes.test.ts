@@ -143,6 +143,23 @@ describe("POST /api/attachment/{itemUuid}", () => {
     expect(names(ALICE_PLAN)).toEqual([]);
   });
 
+  it("answers 404 for an item the caller cannot even read", async () => {
+    caller.user = BOB;
+    expect((await upload(ALICE_DIARY, "cat.png")).status).toBe(404);
+    expect((await remove(ALICE_DIARY, "cat.png")).status).toBe(404);
+    expect(names(ALICE_DIARY)).toEqual([]);
+  });
+
+  it("refuses a form that sends the file field twice", async () => {
+    caller.user = ALICE;
+    const twice = form("a.png", "one");
+    twice.append("file", new File(["two"], "b.png", { type: "image/png" }));
+    const response = await send(ALICE_PLAN, twice);
+
+    expect(response.status).toBe(400);
+    expect(names(ALICE_PLAN)).toEqual([]);
+  });
+
   it("answers 401 without a valid key", async () => {
     caller.user = ALICE;
     expect((await upload(ALICE_PLAN, "cat.png", "data", {})).status).toBe(401);
@@ -255,6 +272,7 @@ describe("DELETE /api/attachment/{itemUuid}/{name}", () => {
     expect((await remove(ALICE_PLAN, "cat.png", {})).status).toBe(401);
     expect((await remove(ALICE_PLAN, "dog.png")).status).toBe(404);
     expect((await remove(NOBODY, "cat.png")).status).toBe(404);
+    expect((await remove("not-a-uuid", "cat.png")).status).toBe(404);
     expect(names(ALICE_PLAN)).toEqual(["cat.png"]);
   });
 

@@ -5,7 +5,7 @@ import { MAX_FILE_SIZE } from "@/app/_consts/files";
 import { getSettings } from "@/app/_server/actions/config";
 import { broadcast } from "@/app/_server/actions/ws/broadcast";
 import { PermissionTypes } from "@/app/_types/enums";
-import { AttachedItem, locateItem, mayDo } from "./access";
+import { AttachedItem, locateItem, mayDo, mayView } from "./access";
 import { describeFile, fileOf, removeFile, storeUpload } from "./store";
 
 export type Gate = { item: AttachedItem; username: string } | { error: AttachmentErrors };
@@ -25,7 +25,10 @@ export const admit = async (
   const item = await locateItem(itemUuid);
   if (!item) return { error: AttachmentErrors.NOT_FOUND };
 
-  return (await mayDo(item, username, wanted)) ? { item, username } : { error: AttachmentErrors.DENIED };
+  if (await mayDo(item, username, wanted)) return { item, username };
+
+  const seesIt = wanted !== PermissionTypes.READ && (await mayView(item, username));
+  return { error: seesIt ? AttachmentErrors.DENIED : AttachmentErrors.NOT_FOUND };
 };
 
 export const announce = (itemUuid: string, username: string, action: "updated" | "deleted" = "updated") =>
@@ -72,10 +75,10 @@ export const deleteAs = async (
   name: string,
 ): Promise<Result<null>> => {
   try {
-    if (!fileOf(itemUuid, name)) return refusal(AttachmentErrors.BAD_NAME);
-
     const gate = await admit(username, itemUuid, PermissionTypes.DELETE);
     if ("error" in gate) return refusal(gate.error);
+
+    if (!fileOf(gate.item.uuid, name)) return refusal(AttachmentErrors.BAD_NAME);
 
     if (!(await removeFile(gate.item.uuid, name))) return refusal(AttachmentErrors.NOT_FOUND);
     await announce(gate.item.uuid, gate.username, "deleted");
