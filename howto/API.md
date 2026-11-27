@@ -173,6 +173,39 @@ Both answer with who holds the item afterwards:
 
 The person you share with gets a notification, and the item shows up in their shared items. Editing a shared item through the API keeps its shares. Sharing a whole folder is still done in Jotty itself.
 
+## Attachments
+
+Images, videos and files live next to the note or checklist they belong to, and whoever can read the item can open them.
+
+| Endpoint | What it does |
+|---|---|
+| `GET /api/attachment/{itemUuid}/{name}` | Sends the file. Works without a key when the item is public |
+| `POST /api/attachment/{itemUuid}` | Attaches a file. Send it as `multipart/form-data` in a field called `file`. You need to be able to edit the item |
+| `DELETE /api/attachment/{itemUuid}/{name}` | Removes the file. You need to be able to delete from the item |
+
+```bash
+curl -H "x-api-key: ck_your_api_key_here" -F "file=@cat.png" \
+  https://your-jotty-url.com/api/attachment/9f1c2a7e-4b3d-4c8e-9a61-2f5d7e0b8c14
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "fileName": "cat.png",
+    "name": "cat.png",
+    "url": "/api/attachment/9f1c2a7e-4b3d-4c8e-9a61-2f5d7e0b8c14/cat.png",
+    "type": "image",
+    "mimeType": "image/png",
+    "size": 48213,
+    "uploadedAt": "2026-11-27T09:00:00.000Z",
+    "itemUuid": "9f1c2a7e-4b3d-4c8e-9a61-2f5d7e0b8c14"
+  }
+}
+```
+
+The name is made safe, and gets a number on the end when the item already has a file called that, so use the `fileName` and `url` you get back. Uploading only stores the file. To show it, put the `url` in the item's content, `![cat](url)` for an image. A file over the maximum file size set in the admin settings is refused with `413`.
+
 ## Clippers and other apps
 
 Two endpoints help a web clipper or a companion app write notes that look like Jotty's own.

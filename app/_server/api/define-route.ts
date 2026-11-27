@@ -9,6 +9,7 @@ import {
   AnyContract,
   ApiHandler,
   ApiUser,
+  MediaType,
   RouteAuth,
   RouteContract,
   RouteInput,
@@ -17,6 +18,7 @@ import {
 } from "./contract";
 
 const INVALID_JSON = "Request body must be valid JSON";
+const INVALID_FORM = "Request body must be multipart/form-data";
 const BODY_TOO_LARGE = "Request body is too large";
 const PAYLOAD_TOO_LARGE = 413;
 
@@ -70,6 +72,20 @@ const _readBody = async (request: NextRequest, limit?: number) => {
   }
 };
 
+const _readForm = async (request: NextRequest, limit?: number) => {
+  if (limit && Number(request.headers.get("content-length")) > limit) throw _tooLarge();
+  try {
+    return Object.fromEntries(await request.formData());
+  } catch {
+    throw new BadInput(INVALID_FORM);
+  }
+};
+
+const _read = (contract: AnyContract, request: NextRequest) =>
+  contract.bodyType === MediaType.FORM
+    ? _readForm(request, contract.bodyLimit)
+    : _readBody(request, contract.bodyLimit);
+
 const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
   contract: RouteContract<P, Q, B>,
   request: NextRequest,
@@ -81,7 +97,7 @@ const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
     Object.fromEntries(request.nextUrl.searchParams),
   ),
   body: contract.body
-    ? await _check(contract.body, await _readBody(request, contract.bodyLimit))
+    ? await _check(contract.body, await _read(contract as AnyContract, request))
     : undefined,
 });
 

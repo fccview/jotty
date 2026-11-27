@@ -23,6 +23,7 @@ export enum ApiTag {
   USERS = "Users",
   EXPORTS = "Exports",
   LOGS = "Logs",
+  ATTACHMENTS = "Attachments",
   ADMIN = "Admin",
 }
 
@@ -39,6 +40,7 @@ export enum MediaType {
   CSV = "text/csv",
   CALENDAR = "text/calendar",
   BINARY = "application/octet-stream",
+  FORM = "multipart/form-data",
 }
 
 export interface ResponseBody {
@@ -71,6 +73,7 @@ export interface RouteContract<
   params?: P;
   query?: Q;
   body?: B;
+  bodyType?: MediaType;
   bodyLimit?: number;
   responses: Record<number, ResponseSpec>;
 }

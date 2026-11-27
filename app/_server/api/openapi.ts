@@ -103,7 +103,7 @@ const _operation = (contract: AnyContract, convert: Convert): SpecOperation => (
     ? {
         requestBody: {
           required: true,
-          content: { [MediaType.JSON]: { schema: convert(contract.body, "input") } },
+          content: { [contract.bodyType ?? MediaType.JSON]: { schema: convert(contract.body, "input") } },
         },
       }
     : {}),

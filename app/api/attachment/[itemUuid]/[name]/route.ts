@@ -4,6 +4,12 @@ import { whoGoesThere } from "@/app/_utils/api-utils";
 import { fileOf } from "@/app/_server/actions/attachments/store";
 import { locateItem, mayView } from "@/app/_server/actions/attachments/access";
 import { CachePolicies, safeDecode, sendFile } from "@/app/_server/actions/attachments/serve";
+import { deleteAs } from "@/app/_server/actions/attachments/write";
+import { refuseAttachment } from "@/app/_server/api/attachment-refusals";
+import { defineRoute } from "@/app/_server/api/define-route";
+import { ApiTag, HttpMethod } from "@/app/_server/api/contract";
+import { ERRORS, okSchema } from "@/app/_schemas/api/common";
+import { attachmentFileParams } from "@/app/_schemas/api/attachments";
 
 export const dynamic = "force-dynamic";
 
@@ -40,3 +46,30 @@ export const GET = async (
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 };
+
+export const DELETE = defineRoute(
+  {
+    id: "deleteAttachment",
+    method: HttpMethod.DELETE,
+    path: "/attachment/{itemUuid}/{name}",
+    tag: ApiTag.ATTACHMENTS,
+    summary: "Delete an attachment",
+    description:
+      "Removes a file from a note or checklist the API key owner can delete from. Anywhere the item still embeds it will show it as missing.",
+    params: attachmentFileParams,
+    responses: {
+      200: { description: "Deleted", schema: okSchema },
+      400: ERRORS[400],
+      401: ERRORS[401],
+      403: ERRORS[403],
+      404: ERRORS[404],
+      500: ERRORS[500],
+    },
+  },
+  async ({ user, params: { itemUuid, name } }) => {
+    const result = await deleteAs(user.username, itemUuid, safeDecode(name));
+    if (!result.success) return refuseAttachment(result.error);
+
+    return NextResponse.json({ success: true });
+  },
+);
