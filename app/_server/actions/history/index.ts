@@ -172,12 +172,12 @@ export const getVersion = async (
       "ls-tree",
       "-r",
       "--name-only",
+      "-z",
       commitHash,
     ]);
 
     const mdFiles = filesInCommit
-      .trim()
-      .split("\n")
+      .split("\0")
       .filter((f) => f.endsWith(".md") && f.length > 0);
 
     for (const file of mdFiles) {

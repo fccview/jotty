@@ -258,7 +258,7 @@ describe("History Actions", () => {
             });
 
             mockGitInstance.raw.mockResolvedValue(
-                "Category/note-id.md\nArchive/moved-note.md"
+                "Category/note-id.md\0Archive/moved-note.md\0"
             );
 
             mockGitInstance.show.mockImplementation(async (args: string[]) =>
@@ -287,6 +287,46 @@ describe("History Actions", () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.content).toBe("The right note");
+        });
+
+        it("should find notes in folders with non-ASCII names", async () => {
+            mockGitInstance.raw.mockResolvedValue(
+                "test/test_note.md\0тест/test_note1.md\0"
+            );
+
+            mockGitInstance.show.mockImplementation(async (args: string[]) =>
+                args[0] === "abc1234:тест/test_note1.md"
+                    ? "---\nuuid: test-uuid\n---\n\nCyrillic folder note"
+                    : "---\nuuid: other-uuid\n---\n\nOther note"
+            );
+
+            mockExtractYamlMetadata.mockImplementation((content: string) =>
+                content.includes("uuid: test-uuid")
+                    ? {
+                        metadata: { uuid: "test-uuid" },
+                        contentWithoutMetadata: "Cyrillic folder note",
+                    }
+                    : {
+                        metadata: { uuid: "other-uuid" },
+                        contentWithoutMetadata: "Other note",
+                    }
+            );
+
+            const result = await getVersion(
+                "test-uuid",
+                "testuser",
+                "abc1234"
+            );
+
+            expect(mockGitInstance.raw).toHaveBeenCalledWith([
+                "ls-tree",
+                "-r",
+                "--name-only",
+                "-z",
+                "abc1234",
+            ]);
+            expect(result.success).toBe(true);
+            expect(result.data?.content).toBe("Cyrillic folder note");
         });
 
         it("should fall back to a uuid-less file at the current path", async () => {
