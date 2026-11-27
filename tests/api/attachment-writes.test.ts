@@ -161,6 +161,30 @@ describe("POST /api/attachment/{itemUuid}", () => {
     expect(names(ALICE_PLAN)).toEqual([]);
   });
 
+  it("stops reading a body past the limit even when it does not say how long it is", async () => {
+    caller.user = ALICE;
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull: (controller) => {
+        pulled++;
+        controller.enqueue(new Uint8Array(64 * 1024));
+      },
+    });
+    const response = await postAttachment(
+      new NextRequest(new URL(`/api/attachment/${ALICE_PLAN}`, "http://localhost"), {
+        method: "POST",
+        headers: { ...KEY, "content-type": "multipart/form-data; boundary=x" },
+        body: endless,
+        duplex: "half",
+      }),
+      params({ itemUuid: ALICE_PLAN }),
+    );
+
+    expect(response.status).toBe(413);
+    expect(pulled).toBeLessThan(10);
+    expect(names(ALICE_PLAN)).toEqual([]);
+  });
+
   it("answers 400 when there is no file or the body is not a form", async () => {
     caller.user = ALICE;
 

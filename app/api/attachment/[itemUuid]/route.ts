@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { uploadAs } from "@/app/_server/actions/attachments/write";
+import { UPLOAD_FORM_SLACK } from "@/app/_consts/attachments";
+import { sizeCap, uploadAs } from "@/app/_server/actions/attachments/write";
 import { refuseAttachment } from "@/app/_server/api/attachment-refusals";
 import { defineRoute } from "@/app/_server/api/define-route";
 import { ApiTag, HttpMethod, MediaType } from "@/app/_server/api/contract";
@@ -24,6 +25,7 @@ export const POST = defineRoute(
     params: attachmentItemParams,
     body: attachmentUploadBody,
     bodyType: MediaType.FORM,
+    bodyLimit: async () => (await sizeCap()) + UPLOAD_FORM_SLACK,
     responses: {
       200: { description: "The stored attachment", schema: attachmentEnvelope },
       400: ERRORS[400],

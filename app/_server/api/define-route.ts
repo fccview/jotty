@@ -21,6 +21,7 @@ const INVALID_JSON = "Request body must be valid JSON";
 const INVALID_FORM = "Request body must be multipart/form-data";
 const BODY_TOO_LARGE = "Request body is too large";
 const PAYLOAD_TOO_LARGE = 413;
+const CONTENT_TYPE = "content-type";
 
 class BadInput extends Error {
   constructor(
@@ -47,7 +48,7 @@ const _check = async <T extends Schema>(schema: T, value: unknown) => {
 
 const _readCapped = async (request: NextRequest, limit: number) => {
   if (Number(request.headers.get("content-length")) > limit) throw _tooLarge();
-  if (!request.body) return "";
+  if (!request.body) return Buffer.alloc(0);
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;
@@ -59,11 +60,11 @@ const _readCapped = async (request: NextRequest, limit: number) => {
     }
     chunks.push(chunk.value);
   }
-  return Buffer.concat(chunks).toString("utf8");
+  return Buffer.concat(chunks);
 };
 
 const _readBody = async (request: NextRequest, limit?: number) => {
-  const text = limit ? await _readCapped(request, limit) : await request.text();
+  const text = limit ? (await _readCapped(request, limit)).toString("utf8") : await request.text();
   if (!text.trim()) return {};
   try {
     return JSON.parse(text);
@@ -73,18 +74,25 @@ const _readBody = async (request: NextRequest, limit?: number) => {
 };
 
 const _readForm = async (request: NextRequest, limit?: number) => {
-  if (limit && Number(request.headers.get("content-length")) > limit) throw _tooLarge();
+  const source = limit
+    ? new Response(new Uint8Array(await _readCapped(request, limit)), {
+        headers: { [CONTENT_TYPE]: request.headers.get(CONTENT_TYPE) || "" },
+      })
+    : request;
   try {
-    return Object.fromEntries(await request.formData());
+    return Object.fromEntries(await source.formData());
   } catch {
     throw new BadInput(INVALID_FORM);
   }
 };
 
-const _read = (contract: AnyContract, request: NextRequest) =>
-  contract.bodyType === MediaType.FORM
-    ? _readForm(request, contract.bodyLimit)
-    : _readBody(request, contract.bodyLimit);
+const _limitOf = async ({ bodyLimit }: AnyContract) =>
+  typeof bodyLimit === "function" ? bodyLimit() : bodyLimit;
+
+const _read = async (contract: AnyContract, request: NextRequest) => {
+  const limit = await _limitOf(contract);
+  return contract.bodyType === MediaType.FORM ? _readForm(request, limit) : _readBody(request, limit);
+};
 
 const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
   contract: RouteContract<P, Q, B>,

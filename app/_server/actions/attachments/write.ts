@@ -12,6 +12,9 @@ export type Gate = { item: AttachedItem; username: string } | { error: Attachmen
 
 export const refusal = <T>(error: AttachmentErrors): Result<T> => ({ success: false, error });
 
+export const sizeCap = async (): Promise<number> =>
+  (await getSettings())?.maximumFileSize || MAX_FILE_SIZE;
+
 export const admit = async (
   username: string | undefined,
   itemUuid: string,
@@ -45,8 +48,7 @@ export const uploadAs = async (
 
     if (!(file instanceof File)) return refusal(AttachmentErrors.NO_FILE);
 
-    const settings = await getSettings();
-    if (file.size > (settings?.maximumFileSize || MAX_FILE_SIZE)) {
+    if (file.size > (await sizeCap())) {
       return refusal(AttachmentErrors.TOO_LARGE);
     }
 

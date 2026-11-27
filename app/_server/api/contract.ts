@@ -57,6 +57,8 @@ export interface ResponseSpec {
 
 export type Schema = z.ZodType | undefined;
 
+export type BodyLimit = number | (() => Promise<number>);
+
 export interface RouteContract<
   P extends Schema = undefined,
   Q extends Schema = undefined,
@@ -74,7 +76,7 @@ export interface RouteContract<
   query?: Q;
   body?: B;
   bodyType?: MediaType;
-  bodyLimit?: number;
+  bodyLimit?: BodyLimit;
   responses: Record<number, ResponseSpec>;
 }
 
