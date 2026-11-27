@@ -1,6 +1,8 @@
 import * as adminDuplicateUuids from "@/app/api/admin/duplicate-uuids/route";
 import * as adminRebuildIndex from "@/app/api/admin/rebuild-index/route";
 import * as agentsTasks from "@/app/api/agents/tasks/route";
+import * as attachmentItemUuid from "@/app/api/attachment/[itemUuid]/route";
+import * as attachmentItemUuidName from "@/app/api/attachment/[itemUuid]/[name]/route";
 import * as brain from "@/app/api/brain/route";
 import * as categories from "@/app/api/categories/route";
 import * as checklists from "@/app/api/checklists/route";
@@ -65,6 +67,8 @@ export const ROUTE_MODULES: object[] = [
   adminDuplicateUuids,
   adminRebuildIndex,
   agentsTasks,
+  attachmentItemUuid,
+  attachmentItemUuidName,
   brain,
   categories,
   checklists,

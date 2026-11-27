@@ -9,6 +9,8 @@ import {
   AnyContract,
   ApiHandler,
   ApiUser,
+  MediaType,
+  Parsed,
   RouteAuth,
   RouteContract,
   RouteInput,
@@ -17,8 +19,11 @@ import {
 } from "./contract";
 
 const INVALID_JSON = "Request body must be valid JSON";
+const INVALID_FORM = "Request body must be multipart/form-data";
+const REPEATED_FIELD = "Each form field can only be sent once";
 const BODY_TOO_LARGE = "Request body is too large";
 const PAYLOAD_TOO_LARGE = 413;
+const CONTENT_TYPE = "content-type";
 
 class BadInput extends Error {
   constructor(
@@ -70,7 +75,42 @@ const _readBody = async (request: NextRequest, limit?: number) => {
   }
 };
 
-const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
+const _capped = (request: NextRequest, limit: number) => {
+  if (Number(request.headers.get("content-length")) > limit) throw _tooLarge();
+  const gauge = { size: 0, burst: false };
+  const meter = new TransformStream<Uint8Array, Uint8Array>({
+    transform: (chunk, controller) => {
+      gauge.size += chunk.byteLength;
+      if (gauge.size <= limit) return controller.enqueue(chunk);
+      gauge.burst = true;
+      controller.error(_tooLarge());
+    },
+  });
+  const form = new Response(request.body?.pipeThrough(meter), {
+    headers: { [CONTENT_TYPE]: request.headers.get(CONTENT_TYPE) || "" },
+  });
+  return { form, gauge };
+};
+
+const _readForm = async (request: NextRequest, limit?: number) => {
+  const { form, gauge } = limit ? _capped(request, limit) : { form: request, gauge: { burst: false } };
+  const fields = await form.formData().catch(() => {
+    throw gauge.burst ? _tooLarge() : new BadInput(INVALID_FORM);
+  });
+  const names = Array.from(fields.keys());
+  if (new Set(names).size < names.length) throw new BadInput(REPEATED_FIELD);
+  return Object.fromEntries(fields);
+};
+
+const _limitOf = async ({ bodyLimit }: AnyContract) =>
+  typeof bodyLimit === "function" ? bodyLimit() : bodyLimit;
+
+const _read = async (contract: AnyContract, request: NextRequest) => {
+  const limit = await _limitOf(contract);
+  return contract.bodyType === MediaType.FORM ? _readForm(request, limit) : _readBody(request, limit);
+};
+
+const _address = async <P extends Schema, Q extends Schema, B extends Schema>(
   contract: RouteContract<P, Q, B>,
   request: NextRequest,
   params?: RouteParams,
@@ -80,9 +120,23 @@ const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
     contract.query,
     Object.fromEntries(request.nextUrl.searchParams),
   ),
-  body: contract.body
-    ? await _check(contract.body, await _readBody(request, contract.bodyLimit))
-    : undefined,
+});
+
+const _payload = async <P extends Schema, Q extends Schema, B extends Schema>(
+  contract: RouteContract<P, Q, B>,
+  request: NextRequest,
+) =>
+  contract.body
+    ? _check(contract.body, await _read(contract as AnyContract, request))
+    : undefined;
+
+const _parse = async <P extends Schema, Q extends Schema, B extends Schema>(
+  contract: RouteContract<P, Q, B>,
+  request: NextRequest,
+  params?: RouteParams,
+) => ({
+  ...(await _address(contract, request, params)),
+  body: await _payload(contract, request),
 });
 
 const _run = async (
@@ -128,10 +182,13 @@ export const defineRoute = <
     _run(contract as AnyContract, async () => {
       const user = await _caller(request, contract.auth);
       if (!user) return refuse("Unauthorized", 401);
-      const input = await _parse(contract, request, context?.params);
-      return actAs(user, () =>
-        handler({ request, user, ...input } as RouteInput<P, Q, B, ApiUser>),
-      );
+      const address = await _address(contract, request, context?.params);
+      return actAs(user, async () => {
+        const turnedAway = await contract.bouncer?.({ user, params: address.params as Parsed<P> });
+        if (turnedAway) return turnedAway;
+        const body = await _payload(contract, request);
+        return handler({ request, user, ...address, body } as RouteInput<P, Q, B, ApiUser>);
+      });
     }),
   );
 

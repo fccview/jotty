@@ -23,6 +23,7 @@ export enum ApiTag {
   USERS = "Users",
   EXPORTS = "Exports",
   LOGS = "Logs",
+  ATTACHMENTS = "Attachments",
   ADMIN = "Admin",
 }
 
@@ -39,6 +40,7 @@ export enum MediaType {
   CSV = "text/csv",
   CALENDAR = "text/calendar",
   BINARY = "application/octet-stream",
+  FORM = "multipart/form-data",
 }
 
 export interface ResponseBody {
@@ -54,6 +56,19 @@ export interface ResponseSpec {
 }
 
 export type Schema = z.ZodType | undefined;
+
+export type BodyLimit = number | (() => Promise<number>);
+
+export type ApiUser = SanitisedUser;
+
+export type Parsed<T extends Schema> = T extends z.ZodType
+  ? z.output<T>
+  : undefined;
+
+export type Bouncer<P extends Schema> = (guest: {
+  user: ApiUser;
+  params: Parsed<P>;
+}) => Promise<Response | undefined>;
 
 export interface RouteContract<
   P extends Schema = undefined,
@@ -71,15 +86,13 @@ export interface RouteContract<
   params?: P;
   query?: Q;
   body?: B;
-  bodyLimit?: number;
+  bodyType?: MediaType;
+  bodyLimit?: BodyLimit;
+  bouncer?: Bouncer<P>;
   responses: Record<number, ResponseSpec>;
 }
 
 export type AnyContract = RouteContract<Schema, Schema, Schema>;
-
-export type Parsed<T extends Schema> = T extends z.ZodType
-  ? z.output<T>
-  : undefined;
 
 export interface RouteInput<
   P extends Schema,
@@ -100,5 +113,3 @@ export type ApiHandler = ((
   request: NextRequest,
   context?: { params: RouteParams },
 ) => Promise<Response>) & { contract: AnyContract };
-
-export type ApiUser = SanitisedUser;

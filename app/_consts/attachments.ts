@@ -10,6 +10,7 @@ export const ATTACHMENT_NAME_MAX = 180;
 export const ATTACHMENT_NAME_BYTES = 255;
 export const ATTACHMENT_FALLBACK_NAME = "file";
 export const ATTACHMENT_PAGE_SIZE = 60;
+export const UPLOAD_FORM_SLACK = 64 * 1024;
 
 export enum AttachmentKinds {
   IMAGE = "image",

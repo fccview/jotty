@@ -184,7 +184,7 @@ describe("listAttachments and deleteAttachment", () => {
     session.user = BOB;
     expect((await listAttachments(ALICE_PLAN)).data?.map((file) => file.name)).toEqual(["x.png"]);
     session.user = CAROL;
-    expect((await listAttachments(ALICE_PLAN)).error).toBe(AttachmentErrors.DENIED);
+    expect((await listAttachments(ALICE_PLAN)).error).toBe(AttachmentErrors.NOT_FOUND);
   });
 
   it("deletes only for the owner and people holding the delete grant", async () => {
@@ -252,7 +252,7 @@ describe("attachTo", () => {
 
   it("refuses a source the actor can't read", async () => {
     session.user = CAROL;
-    expect((await attachTo(ALICE_DIARY, ALICE_PLAN, "x.png")).error).toBe(AttachmentErrors.DENIED);
+    expect((await attachTo(ALICE_DIARY, ALICE_PLAN, "x.png")).error).toBe(AttachmentErrors.NOT_FOUND);
     expect(names(ALICE_DIARY)).toEqual([]);
   });
 

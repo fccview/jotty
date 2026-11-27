@@ -46,6 +46,10 @@ export interface Operation extends SpecOperation {
 
 const READABLE_MEDIA = /json|yaml|^text\//;
 const SUCCESS = "200";
+export const JSON_MEDIA = "application/json";
+
+export const takesJson = (op: SpecOperation): boolean =>
+  !op.requestBody || JSON_MEDIA in op.requestBody.content;
 
 export const binaryMediaOf = (op: SpecOperation): string | undefined => {
   const media = Object.keys(op.responses?.[SUCCESS]?.content ?? {});
